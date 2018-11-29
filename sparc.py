@@ -5,7 +5,7 @@ email: benmcomer@gmail.com
 import os
 import subprocess
 from ase.calculators.calculator import FileIOCalculator
-from ase.utils.timing import Timer
+#from ase.utils.timing import Timer
 from utilities import h2gpts
 import numpy as np
 from ase.units import Bohr, Hartree
@@ -82,7 +82,7 @@ class SPARC(FileIOCalculator):
             key.upper() not in self.default_parameters.keys():
                 raise TypeError('Unknown input parameter {}'.format(key))
                 
-        self.timer = Timer()
+        #self.timer = Timer()
         self.initialized = False
         self.write_defaults = write_defaults
         self.verbosity = verbosity
@@ -113,9 +113,9 @@ class SPARC(FileIOCalculator):
         os.chdir(self.directory)
         if [a == 90 for a in atoms.get_cell_lengths_and_angles()[3:]]\
                != [True, True, True]:  # check cell is a rectangle
-           raise NotImplementedError('Unit cells must be rectangular\
-                  , non-orthogonoal cells are currently \
-                  under development')
+           raise NotImplementedError("""Unit cells must be rectangular\
+, non-orthogonoal cells are currently under development'""")
+
         f = open(self.label + '.inpt','w')
         
         
@@ -123,7 +123,11 @@ class SPARC(FileIOCalculator):
         f.write('NTYPES: '+ str(len(set(atoms.get_chemical_symbols()))) + '\n')
         # input the cell
         # if the system has no cell, give 6 A of space on each side
-        if round(float(np.linalg.norm(atoms.cell)), 1) == 0:
+        if 'CELL' in kwargs:
+            f.write('CELL:')
+            for i,length in enumerate(kwargs['CELL']):
+                f.write(' '+length[i])
+        elif round(float(np.linalg.norm(atoms.cell)), 1) == 0:
             f.write('CELL:')
             cell = np.eye(3) * (np.max(atoms.positions, axis=0) + (6, 6, 6))
             atoms.set_cell(cell)
@@ -136,9 +140,8 @@ class SPARC(FileIOCalculator):
             for length in atoms.get_cell_lengths_and_angles()[:3]:
                 f.write(' ' + str(length / Bohr))
         else:
-            raise NotImplementedError('Unit cells must be rectangular\
-                                      , non-orthogonoal cells are currently \
-                                      under development')
+            raise NotImplementedError("""Unit cells must be rectangular\
+, non-orthogonoal cells are currently under development'""")
         f.write('\n')
         # input finite difference grid
         f.write('FD_GRID:')
@@ -277,11 +280,17 @@ class SPARC(FileIOCalculator):
             #                        +self.command + ' -name ' + self.prefix)
         #command = self.command.replace('PREFIX', self.prefix)
         #errorcode = subprocess.call(command, shell=True, cwd=self.directory)
-
+            errorcode = 1
+            while errorcode !=0:
             #time.sleep(2) # 2 second cushion on either side for safety, can be removed later
-            errorcode = subprocess.call('mpirun -np ' + str(self.num_nodes) + ' '
-                                    +self.command + ' -name ' + self.prefix, 
+                errorcode = subprocess.call('mpirun '
+                                    +'-env MV2_ENABLE_AFFINITY=1 -env '
+                                    +'MV2_CPU_BINDING_POLICY=bunch'
+                                    +' -np ' + str(self.num_nodes) + ' '
+                                    +self.command + ' -name ' + self.prefix,
+                                    #+' -log_summary > mpi.log'+
                                     shell=True, cwd=self.directory)
+                self.concatinate_output()
             #time.sleep(2)
         else:
             errorcode = subprocess.call(self.command + ' -name ' + self.prefix,
@@ -290,15 +299,14 @@ class SPARC(FileIOCalculator):
         if errorcode:
             raise RuntimeError('{} in {} returned an error: {}'
                                .format(self.name, self.directory, errorcode))
+        self.concatinate_output()
         self.read_results()
         self.num_calculations += 1
-        self.concatinate_output()
-        #print(self.atoms.positions)
-        #print(self.atoms.cell)
         
         
     def read_results(self):
-        #find the most recently modified output file to read
+        """"
+        # find the most recently modified output file to read
         time = -10**6
         for output_file in os.listdir('./'):
             if self.label in output_file and 'out' in output_file:
@@ -306,22 +314,24 @@ class SPARC(FileIOCalculator):
                 if new_time > time:
                     time = new_time
                     output = output_file
-        #read and parse output
+        """
+        output = self.label + '.out'
+        # read and parse output
         f = open(output,'r')
         log_text = f.read()
         body = log_text.rsplit('Timing info')[-2]
-        energy_force_block = body.rsplit('Energy and atomic forces')[-1]
+        #energy_force_block = body.rsplit('Energy and atomic forces')[-1]
+        energy_force_block = body.rsplit('Energy')[-1]
         energy_force_block = energy_force_block.split('\n')
         output_energies_in_order = []
-        #read off energies printed by SPARC, energies are in Ha
+        # read off energies printed by SPARC, energies are in Ha
         for energy in energy_force_block[2:8]:
             _,eng = energy.split(':')
             output_energies_in_order.append(float(eng.strip()[:-5]))
-
-        #read forces, forces are in Ha/Bohr
+        # read forces, forces are in Ha/Bohr
         if 'PRINT_FORCES: 1' in log_text:
             forces = np.empty((len(self.atoms),3))
-            for i,force in enumerate(energy_force_block[9:-2]):
+            for i,force in enumerate(energy_force_block[9:-5]):
                 forces[i,:] = [float(a) for a in force.split()]
         
 
@@ -361,14 +371,16 @@ class SPARC(FileIOCalculator):
         #return self.get_property('forces', atoms)
 
     def concatinate_output(self):
-        if self.results == {}:
-            return None
-        if self.num_calculations > 1:
-            f = open(self.label + '.out', 'a')
-            g = open(self.label + '.out_1', 'r')
-            text = g.read()
-            f.write('\n' + text)
-            os.remove(self.label + '.out_1')
+        files = os.listdir('.')
+        files.sort()
+        for item in files:
+            if item.startswith(self.label) and 'out' in item and \
+               item != self.label + '.out':
+                f = open(self.label + '.out', 'a')
+                g = open(item, 'r')
+                text = g.read()
+                f.write('\n' + text)
+                os.remove(item)
  
 #   def get_number_of_grid_points(): implement in the future
         
