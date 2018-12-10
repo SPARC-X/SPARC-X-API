@@ -183,8 +183,15 @@ class SPARC(FileIOCalculator):
         elif 'PSP_PATH' in os.environ:
             f.write('PSEUDOPOTENTIAL_FILE: ')
             for element in sorted(list(set(atoms.get_chemical_symbols()))):
-                os.system('cp $PSP_PATH/psd_oncv_' + element + '.pot .')
-                psp_path = 'psd_oncv_' + element + '.pot'
+                pseudos_in_dir = [a for a in os.listdir(os.environ['PSP_PATH']) \
+                            if a.endswith(element+'.pot')]
+                if pseudos_in_dir != [] and len(pseudos_in_dir) > 1:
+                    f.write(pseudos_in_dir[0] + ' ')
+                    continue
+                filename = [a for a in os.listdir(os.environ['PSP_PATH']) \
+                            if a.endswith(element+'.pot')][0]
+                os.system('cp $PSP_PATH/' + filename + ' .')
+                psp_path = filename
                 f.write(psp_path + ' ')
             f.write('\n')
         elif write_defaults is True:
@@ -280,7 +287,8 @@ class SPARC(FileIOCalculator):
             #                        +self.command + ' -name ' + self.prefix)
         #command = self.command.replace('PREFIX', self.prefix)
         #errorcode = subprocess.call(command, shell=True, cwd=self.directory)
-            errorcode = 1
+            errorcode = 2
+            print("here")
             while errorcode !=0:
             #time.sleep(2) # 2 second cushion on either side for safety, can be removed later
                 errorcode = subprocess.call('mpirun '
