@@ -36,10 +36,6 @@ class RunSparcASE(FiretaskBase):
         atoms.set_calculator(calc)
         calc.calculate()
         calc.calc_to_mongo( 
-                            database='gt_medford_atomate',
-                            user='gt_medford_atomate_admin',
-                            password='ekekek19294jdwss2k',
-                            port=2222
                             )
 
 class Sparc_SCF_FW(Firework):
