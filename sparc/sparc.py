@@ -603,7 +603,7 @@ class SPARC(FileIOCalculator):
         inserts a dictionary version of the calculator into a mongo database.
         
         """
-        from mongo import MongoDatabase, mongo_doc
+        from sparc.mongo import MongoDatabase, mongo_doc
         
         db = MongoDatabase(
                  host=host,

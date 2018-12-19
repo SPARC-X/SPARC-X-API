@@ -1,4 +1,4 @@
-from sparc import SPARC, default_parameters
+from sparc.sparc import SPARC, default_parameters
 from sparc.utilities import atoms_dict, dict_atoms
 import os
 from fireworks import explicit_serialize, FiretaskBase, FWAction, Firework, Workflow
@@ -36,10 +36,11 @@ class RunSparcASE(FiretaskBase):
         atoms.set_calculator(calc)
         calc.calculate()
         calc.calc_to_mongo( 
-                            database='gt_medford_atomate',
-                            user='gt_medford_atomate_admin',
-                            password='ekekek19294jdwss2k',
-                            port=2222
+                            host='',
+                            database='',
+                            user='',
+                            password='',
+                            port=27017
                             )
 
 class Sparc_SCF_FW(Firework):
