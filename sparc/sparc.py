@@ -17,6 +17,41 @@ all_properties = ['energy', 'forces', 'stress', 'dipole',
 
 all_changes = ['positions', 'numbers', 'cell', 'pbc',
                'initial_charges', 'initial_magmoms']
+default_parameters = {
+            # 'label': 'sprc-calc',
+            # 'calculation_directory':'sprk.log',
+
+
+            'BOUNDRY_CONDITION': 2,
+            'EXCHAGE_CORRELATION': 'LDA_PZ',  # 'LDA'
+            'KPOINT_GRID': (1, 1, 1),
+            'BETA': 1000.000000,
+            'CHEN_DEGREE': 20,
+            'NSTATES': None,
+            'MAXIT_SCF': 100,
+            'TOL_SCF': 1.00E-06,
+            'TOL_POISSON': 1.00E-08,
+            'TOL_LANCZOS': 1.00E-02,
+            'TOL_PSEUDOCHARGE': 1.00E-08,
+            'MIXING_PARAMETER': 0.30,
+            'MIXING_HISTORY': 7,
+            'PULAY_FREQUENCY': 1,
+            'PULAY_RESTART': 0,
+            'REFERENCE_CUTOFF': 0.50,
+            'RHO_TRIGER': 3,
+            'PRINT_FORCES': 0,
+            'PRINT_ATOMS': 0,
+            'PRINT_EIGEN': 0,
+            'PRINT_DENSITY': 0,
+            'PSEUDOPOTENTIAL_LOCAL': 4,
+            # 'PSEUDOPOTENTIAL_FILE': '../psdpots/psd_oncv_{}.pot',
+            'OUTPUT_FILE': None,
+
+            'NP_KPOINT_PARAL': None,
+            'NP_BAND_PARAL': None,
+            'NP_DOMAIN_PARAL': None,
+            'NP_DOMAIN_PHI_PARAL': None,
+                        }
 
 
 class SPARC(FileIOCalculator):
@@ -38,7 +73,7 @@ class SPARC(FileIOCalculator):
             'CHEN_DEGREE': 20,
             'NSTATES': None,
             'MAXIT_SCF': 100,
-            'TOL_SCF': 1.00E-06,
+            'TOL_SCF': 1.00E-05,
             'TOL_POISSON': 1.00E-08,
             'TOL_LANCZOS': 1.00E-02,
             'TOL_PSEUDOCHARGE': 1.00E-08,
@@ -77,11 +112,12 @@ class SPARC(FileIOCalculator):
                  label='sprc-calc', atoms=None, command=None,
                  write_defaults=False, verbosity='normal', **kwargs):
         for key in kwargs:
-            if key not in self.default_parameters.keys() + \
-            self.equivalencies.keys() + self.misc.keys() and \
+            if key not in list(self.default_parameters.keys()) + \
+            list(self.equivalencies.keys()) + list(self.misc.keys()) and \
             key.upper() not in self.default_parameters.keys():
                 raise TypeError('Unknown input parameter {}'.format(key))
                 
+        self.kwargs = kwargs
         #self.timer = Timer()
         self.initialized = False
         self.write_defaults = write_defaults
@@ -103,12 +139,11 @@ class SPARC(FileIOCalculator):
         self.set(**kwargs)
        # self.write_input(atoms=atoms,write_defaults=write_defaults, **kwargs)
 
- 
     def write_input(self, atoms, write_defaults=False,
                     verbosity='normal', **kwargs):
         
         if atoms is None:
-            raise Exception('Atoms object is required to creat input file')
+            raise Exception('Atoms object is required to create input file')
         FileIOCalculator.write_input(self, atoms=atoms)
         os.chdir(self.directory)
         if [a == 90 for a in atoms.get_cell_lengths_and_angles()[3:]]\
@@ -288,7 +323,6 @@ class SPARC(FileIOCalculator):
         #command = self.command.replace('PREFIX', self.prefix)
         #errorcode = subprocess.call(command, shell=True, cwd=self.directory)
             errorcode = 2
-            print("here")
             while errorcode !=0:
             #time.sleep(2) # 2 second cushion on either side for safety, can be removed later
                 errorcode = subprocess.call('mpirun '
@@ -309,6 +343,8 @@ class SPARC(FileIOCalculator):
                                .format(self.name, self.directory, errorcode))
         self.concatinate_output()
         self.read_results()
+        if self.converged == False:
+            Warning('SPARC did not converge')
         self.num_calculations += 1
         
         
@@ -327,29 +363,41 @@ class SPARC(FileIOCalculator):
         # read and parse output
         f = open(output,'r')
         log_text = f.read()
+        log_text = log_text.split('SPARC')[-1]  # isolate the most recent run
         body = log_text.rsplit('Timing info')[-2]
-        #energy_force_block = body.rsplit('Energy and atomic forces')[-1]
+
+        # check that the SCF cycle converged
+        conv_check = body.rsplit('Energy')[-2]
+        conv_check = conv_check.split('\n')[-3]  # Parse the last step
+        conv_check = float(conv_check.split()[-2])
+        if conv_check > float(self.parameters['TOL_SCF']):
+            self.converged = False  
+        else:
+            self.converged = True
+        
         energy_force_block = body.rsplit('Energy')[-1]
         energy_force_block = energy_force_block.split('\n')
         output_energies_in_order = []
+        #energy_force_block = body.rsplit('Energy and atomic forces')[-1]
         # read off energies printed by SPARC, energies are in Ha
         for energy in energy_force_block[2:8]:
             _,eng = energy.split(':')
             output_energies_in_order.append(float(eng.strip()[:-5]))
+        
         # read forces, forces are in Ha/Bohr
         if 'PRINT_FORCES: 1' in log_text:
             forces = np.empty((len(self.atoms),3))
             for i,force in enumerate(energy_force_block[9:-5]):
                 forces[i,:] = [float(a) for a in force.split()]
         
-
         free_eng, band_struc_eng, xc_eng, self_corr_eng, \
         Entr_kbt, fermi_level = output_energies_in_order
         self.results = {
                 'energy': free_eng * Hartree,
                 'free_energy': free_eng * Hartree,
-                'forces': forces * Hartree * Bohr,
                 }
+        if 'PRINT_FORCES: 1' in log_text:
+            self.results['forces'] =  forces * Hartree * Bohr
         #print('output read')
         self.fermi_level = fermi_level
        
@@ -389,19 +437,159 @@ class SPARC(FileIOCalculator):
                 text = g.read()
                 f.write('\n' + text)
                 os.remove(item)
- 
-#   def get_number_of_grid_points(): implement in the future
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
 
-            
+    def get_runtime(self):
+        if self.results == {}:  # Check that SPARC has run
+            return None
+        f = os.popen('grep "Total walltime" ' + self.label + '.out')
+        time = f.readlines()[-1].split(':')[1]
+        time = float(time.split('sec')[0].strip())
+        f.close()
+        return time
+
+    def get_geometric_steps(self):
+        """
+        Gets the number of geometric steps run in SPARC's internal optimizer
+
+        returns:
+            steps (int):
+                The number of geometric steps run in SPARC's internal optimizer
+        """
+        if self.results == {}: # Check that SPARC has run
+            return None
+        if self.parameters['RELAX_FLAG'] == 1:
+            f = os.popen('grep "SCF#" ' + self.label + '.out')
+            steps = f.readlines()[-1].split('SCF#')[1]
+            steps = int(steps.split(')'))
+            return steps + 1
+        else:
+            return None            
+
+    def get_scf_steps(self, step_num = -1, 
+                      include_uncompleted_last_step = False):
+        """
+        Gets the number of SCF steps in a geometric step
+
+        inputs:
+
+        step_num (int):
+            The step number for which the number of SCF steps will be returned
+        include_uncompleted_last_step (bool):
+            If set to True, the parser will count any uncompleted SCF cycles
+            at the end of the file. This is only relevant if SPARC did not 
+            terminate normally.
+
+        returns:
+        
+        steps (int):
+            The number of SCF steps in the chosen geometric step
+        """
+        if self.results == {}: # Check that SPARC has run
+            return None
+        f = open(self.label+'.out','r')
+        out = f.read()
+        out = out.split('SCF#')
+        if step_num < 0:
+            steps_block = out[step_num].split('=' * 68)[1]
+        else:
+            steps_block = out[step_num+1].split('=' * 68)[1]
+        num_steps = len(steps_block.split('\n')) - 3
+        return num_steps
+
+    def todict(self,only_nondefaults=False):
+        """
+        Coverts calculator object into a dictionary representation appropriate to be placed
+        in a MongoDB. By default this returns only the settings that are not the default values.
+        This function is based loosely off the todict function from the Kitchen Group's VASP
+        environment. in modifying this function please attempt to conform to the naming 
+        conventions found there:
+        https://github.com/jkitchin/vasp/blob/master/vasp/vasp_core.py
+        only_nondefaults: bool
+        If set to True, only the non-default keyword arguments are returned. If False all
+            key word arguements are returned
+        """
+    
+        from collections import OrderedDict
+        import getpass 
+        dict_version = OrderedDict()
+        for item in default_parameters:  # rewrite this section
+            if item in self.kwargs.keys():
+                if self.kwargs[item] == default_parameters[item] and only_nondefaults == True:
+                    pass
+                elif type(self.kwargs[item]) == dict:
+                    dict_version[item] = OrderedDict(self.kwargs[item])
+                else:
+                    dict_version[item] = self.kwargs[item]
+            elif only_nondefaults == False:
+                dict_version[item] = default_parameters[item]
+        if hasattr(self,'converged'):
+            dict_version['SCF-converged'] = self.converged
+        dict_version['path'] = os.path.abspath('.').split(os.sep)[1:]
+        if self.results == {}:
+            return dict_version
+        for prop in self.implemented_properties:
+            val = self.results.get(prop, None)
+            dict_version[prop] = val 
+        f = self.results.get('forces', None)
+        if f is not None:
+            dict_version['fmax'] = max(np.abs(f.flatten()))
+        #s = self.results.get('stress', None)
+        #if s is not None:
+        #    dict_version['smax'] = max(np.abs(s.flatten()))
+        time = self.get_runtime()
+        if time is not None:
+            dict_version['elapsed-time'] = time
+        steps = self.get_scf_steps()
+        if steps is not None:
+            dict_version['SCF-steps'] = steps
+        dict_version['name'] = 'SPARC-X'
+        # Try to get a version. Since the code is in alpha, this is just the
+        # time of the most recent commit.
+        c_dir = os.getcwd()
+        try:
+            os.chdir(os.environ['ASE_SPARC_COMMAND'][:-5]) #  rewrite
+            f = os.popen('git log | grep "Date"')
+            recent_commit_date = f.readlines()[0]
+            rc = recent_commit_date.split('Date:')[1]
+            rc = rc.split('-')[0]
+            dict_version['version'] = rc.strip()
+            os.chdir(c_dir)
+        except:
+            os.chdir(c_dir)
+        for item in ['EXCHAGE_CORRELATION']: # These should always be in
+            dict_version[item] = self.parameters[item]
+        for item in dict_version:
+            if type(dict_version[item]) not in \
+            [dict, list, str, float, int, None, tuple] and \
+            dict_version[item] is not None:  # converting numpy arrays to lists
+                try:
+                    dict_version[item] = dict_version[item].tolist()
+                except:
+                    pass
+        return dict_version
+
+    def calc_to_mongo(self,
+                 host='localhost',
+                 port=27017,
+                 database='atoms',
+                 collection='atoms',
+                 user=None,
+                 password=None):
+        """
+        inserts a dictionary version of the calculator into a mongo database.
+        
+        """
+        from mongo import MongoDatabase, mongo_doc
+        
+        db = MongoDatabase(
+                 host=host,
+                 port=port,
+                 database=database,
+                 collection=collection,
+                 user=user,
+                 password=password)
+        d = mongo_doc(self.get_atoms())
+        db.write(d)
+
+
+#   def get_number_of_grid_points(): implement in the future
