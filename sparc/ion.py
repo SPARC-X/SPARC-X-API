@@ -7,7 +7,7 @@ Created on Thu Oct 18 14:16:21 2018
 """
 
 from ase import Atoms, Atom
-from sparc.utilities import valence_dict
+from .utilities import valence_dict
 from ase.units import Bohr
 
 

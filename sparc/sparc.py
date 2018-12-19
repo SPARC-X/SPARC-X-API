@@ -5,10 +5,10 @@ import os
 import subprocess
 from ase.calculators.calculator import FileIOCalculator
 #from ase.utils.timing import Timer
-from sparc.utilities import h2gpts
+from .utilities import h2gpts
 import numpy as np
 from ase.units import Bohr, Hartree
-from sparc.ion import write_ion
+from .ion import write_ion
 
 all_properties = ['energy', 'forces', 'stress', 'dipole',
                   'charges', 'magmom', 'magmoms', 'free_energy']
@@ -603,7 +603,7 @@ class SPARC(FileIOCalculator):
         inserts a dictionary version of the calculator into a mongo database.
         
         """
-        from sparc.mongo import MongoDatabase, mongo_doc
+        from .mongo import MongoDatabase, mongo_doc
         
         db = MongoDatabase(
                  host=host,
