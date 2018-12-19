@@ -1,15 +1,14 @@
 """
 author: Ben Comer (Georgia Tech)
-email: benmcomer@gmail.com
 """
 import os
 import subprocess
 from ase.calculators.calculator import FileIOCalculator
 #from ase.utils.timing import Timer
-from utilities import h2gpts
+from sparc.utilities import h2gpts
 import numpy as np
 from ase.units import Bohr, Hartree
-from ion import write_ion
+from sparc.ion import write_ion
 
 all_properties = ['energy', 'forces', 'stress', 'dipole',
                   'charges', 'magmom', 'magmoms', 'free_energy']
@@ -56,7 +55,8 @@ default_parameters = {
 
 class SPARC(FileIOCalculator):
     """
-    ase calculator class for SPARC
+    ase calculator class for SPARC. SPARC can be obtained from:
+    https://github.com/SPARC-X/SPARC
     """
     
     implemented_properties = ['energy', 'forces']
@@ -111,6 +111,26 @@ class SPARC(FileIOCalculator):
     def __init__(self, restart=None, ignore_bad_restart=False,
                  label='sprc-calc', atoms=None, command=None,
                  write_defaults=False, verbosity='normal', **kwargs):
+        """
+        restart (None):
+            Not implemented
+        ignore_bad_restart (None):
+            Not implemented
+        label (str):
+            The prefix you would like sparc files to have in your directory
+        atoms (ase atoms object):
+            The atomic structure to perform a calculation on. If None, you 
+            can still pass one in as an arguement 
+            (i.e. SPARC().get_potential_energy([atoms object]).)
+            alternatively you may attach the calculator to an atoms object
+            (i.e. [atoms object].set_calculator(SPARC()))
+        command (str):
+            A command used to run SPARC-X. This can also be set with the environment
+            variable ASE_SPARC_COMMAND.
+        verbosity (str):
+            The level of verbosity you would like from SPARC. options are
+            'normal', 'low', and 'high'
+        """
         for key in kwargs:
             if key not in list(self.default_parameters.keys()) + \
             list(self.equivalencies.keys()) + list(self.misc.keys()) and \
@@ -318,8 +338,6 @@ class SPARC(FileIOCalculator):
             f = open(os.environ['PBS_NODEFILE'],'r')
             nodes = len(f.readlines())
             self.num_nodes = nodes
-            #print('mpirun -np '+str(self.num_nodes)+' '
-            #                        +self.command + ' -name ' + self.prefix)
         #command = self.command.replace('PREFIX', self.prefix)
         #errorcode = subprocess.call(command, shell=True, cwd=self.directory)
             errorcode = 2
@@ -375,11 +393,11 @@ class SPARC(FileIOCalculator):
         else:
             self.converged = True
         
+        # Parse out the total energy, energies are in Ha
         energy_force_block = body.rsplit('Energy')[-1]
         energy_force_block = energy_force_block.split('\n')
         output_energies_in_order = []
         #energy_force_block = body.rsplit('Energy and atomic forces')[-1]
-        # read off energies printed by SPARC, energies are in Ha
         for energy in energy_force_block[2:8]:
             _,eng = energy.split(':')
             output_energies_in_order.append(float(eng.strip()[:-5]))
@@ -420,13 +438,16 @@ class SPARC(FileIOCalculator):
     def get_forces(self, atom=None):
         #print('force call')
         if self.parameters['PRINT_FORCES']==0:
-            raise Exception('verbosity must be set to normal, or PRINT_FORCES must be set to 1')
+            raise Exception('verbosity must be set to normal, or PRINT_FORCES must be set to 1 to call get_forces')
         if self.results == {}:
             self.calculate()
         return self.results['forces']
         #return self.get_property('forces', atoms)
 
     def concatinate_output(self):
+        """
+        Combines together all .out files in the current directory.
+        """
         files = os.listdir('.')
         files.sort()
         for item in files:
@@ -439,6 +460,9 @@ class SPARC(FileIOCalculator):
                 os.remove(item)
 
     def get_runtime(self):
+        """
+        Parses the walltime from the SPARC output file
+        """
         if self.results == {}:  # Check that SPARC has run
             return None
         f = os.popen('grep "Total walltime" ' + self.label + '.out')

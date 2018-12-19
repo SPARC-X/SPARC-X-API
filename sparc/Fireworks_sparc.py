@@ -1,10 +1,10 @@
 from sparc import SPARC, default_parameters
-from utilities import atoms_dict, dict_atoms
+from sparc.utilities import atoms_dict, dict_atoms
 import os
 from fireworks import explicit_serialize, FiretaskBase, FWAction, Firework, Workflow
 from ase.atoms import Atoms
 from ase.atom import Atom
-from mongo import mongo_atoms_doc, mongo_doc_atoms
+from sparc.mongo import mongo_atoms_doc, mongo_doc_atoms
 from pymatgen.io.ase import AseAtomsAdaptor
 from collections import OrderedDict
 from ase.io.jsonio import encode
