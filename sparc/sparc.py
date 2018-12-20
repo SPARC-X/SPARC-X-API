@@ -5,10 +5,11 @@ import os
 import subprocess
 from ase.calculators.calculator import FileIOCalculator
 #from ase.utils.timing import Timer
-from .utilities import h2gpts
+from .utilities import h2gpts, parse_output
 import numpy as np
 from ase.units import Bohr, Hartree
 from .ion import write_ion
+
 
 all_properties = ['energy', 'forces', 'stress', 'dipole',
                   'charges', 'magmom', 'magmoms', 'free_energy']
@@ -16,22 +17,24 @@ all_properties = ['energy', 'forces', 'stress', 'dipole',
 
 all_changes = ['positions', 'numbers', 'cell', 'pbc',
                'initial_charges', 'initial_magmoms']
+required_manual = ['PSEUDOPOTENTIAL_FILE','CELL','EXCHAGE_CORRELATION','FD_GRID','NTYPES','PSEUDOPOTENTIAL_LOCAL','KPOINT_GRID']
 default_parameters = {
             # 'label': 'sprc-calc',
             # 'calculation_directory':'sprk.log',
 
 
             'BOUNDRY_CONDITION': 2,
-            'EXCHAGE_CORRELATION': 'LDA_PZ',  # 'LDA'
+            'EXCHANGE_CORRELATION': 'LDA_PZ',  # 'LDA'
             'KPOINT_GRID': (1, 1, 1),
-            'BETA': 1000.000000,
+            'MIXING_PARAMETER': 0.30,
             'CHEN_DEGREE': 20,
             'NSTATES': None,
             'MAXIT_SCF': 100,
-            'TOL_SCF': 1.00E-06,
-            'TOL_POISSON': 1.00E-08,
+            'TOL_SCF': 1.00E-05,
+            'TOL_POISSON': 1.00E-06,
             'TOL_LANCZOS': 1.00E-02,
             'TOL_PSEUDOCHARGE': 1.00E-08,
+            'TWTIME': 999999999.000000,
             'MIXING_PARAMETER': 0.30,
             'MIXING_HISTORY': 7,
             'PULAY_FREQUENCY': 1,
@@ -42,15 +45,51 @@ default_parameters = {
             'PRINT_ATOMS': 0,
             'PRINT_EIGEN': 0,
             'PRINT_DENSITY': 0,
-            'PSEUDOPOTENTIAL_LOCAL': 4,
-            # 'PSEUDOPOTENTIAL_FILE': '../psdpots/psd_oncv_{}.pot',
+            'PRINT_RESTART_FQ': 1,
+            'PRINT_RESTART': 1,
+            'PSEUDOPOTENTIAL_LOCAL': None,
+            'PSEUDOPOTENTIAL_FILE': None,
             'OUTPUT_FILE': None,
+            'BOUNDARY_CONDITION': 2,        
+            'CELL': None,
+            'FD_GRID': None,
+            'FD_ORDER': 12,
+            'ELEC_TEMP': 315.775131,
+            'CHEB_DEGREE': 25,
+            'NTYPES': None,
 
             'NP_KPOINT_PARAL': None,
             'NP_BAND_PARAL': None,
             'NP_DOMAIN_PARAL': None,
             'NP_DOMAIN_PHI_PARAL': None,
+
+            'TOL_RELAX': 1.00E-03,
+            'PRINT_RELAXOUT': 0,
+            'RELAX_FLAG': 0,
+            'RELAX_METHOD': 'NLCG',
+            'RELAX_MAXITER': 300,
+            'NLCG_sigma': 0.500000,
+            'L_HISTORY': 20,
+            'L_FINIT_STP': 0.005000,
+            'L_MAXMOV': 0.200000,
+            'L_AUTOSCALE': 1,
+            'L_LINEOPT': 1,
+            'L_ICURV': 1.000000,
+
                         }
+
+equivalencies = {
+            'xc': 'EXCHANGE_CORRELATION',
+            'kpts': 'KPOINT_GRID',
+            'nbands': 'NSTATES',
+
+            'gpts': 'FD_GRID'
+
+
+            }
+misc = {'h': 'grid_spacing', 
+    
+        }
 
 
 class SPARC(FileIOCalculator):
@@ -60,7 +99,7 @@ class SPARC(FileIOCalculator):
     """
     
     implemented_properties = ['energy', 'forces']
-
+    """
     default_parameters = {
             # 'label': 'sprc-calc',
             # 'calculation_directory':'sprk.log',
@@ -69,7 +108,7 @@ class SPARC(FileIOCalculator):
             'BOUNDRY_CONDITION': 2,
             'EXCHAGE_CORRELATION': 'LDA_PZ',  # 'LDA'
             'KPOINT_GRID': (1, 1, 1),
-            'BETA': 1000.000000,
+            'MIXING_PARAMETER': 0.30,
             'CHEN_DEGREE': 20,
             'NSTATES': None,
             'MAXIT_SCF': 100,
@@ -87,6 +126,7 @@ class SPARC(FileIOCalculator):
             'PRINT_ATOMS': 0,
             'PRINT_EIGEN': 0,
             'PRINT_DENSITY': 0,
+            'PRINT_RESTART_FQ': 1,
             'PSEUDOPOTENTIAL_LOCAL': 4,
             # 'PSEUDOPOTENTIAL_FILE': '../psdpots/psd_oncv_{}.pot',
             'OUTPUT_FILE': None,
@@ -95,6 +135,15 @@ class SPARC(FileIOCalculator):
             'NP_BAND_PARAL': None,
             'NP_DOMAIN_PARAL': None,
             'NP_DOMAIN_PHI_PARAL': None,
+            'CELL': None,
+            'FD_GRID': None,
+            'FD_ORDER': 12,
+
+            'TOL_RELAX': 1.00E-03,
+            'PRINT_RELAXOUT': 0,
+            'RELAX_FLAG': 0,
+            'RELAX_METHOD': 'NLCG',
+            
                         }
     
     equivalencies = {
@@ -107,7 +156,7 @@ class SPARC(FileIOCalculator):
             
             }
     misc = {'h': 'grid_spacing', }
-    
+   """ 
     def __init__(self, restart=None, ignore_bad_restart=False,
                  label='sprc-calc', atoms=None, command=None,
                  write_defaults=False, verbosity='normal', **kwargs):
@@ -131,12 +180,26 @@ class SPARC(FileIOCalculator):
             The level of verbosity you would like from SPARC. options are
             'normal', 'low', and 'high'
         """
+        if restart is not None:
+            atoms, kwargs = parse_output(label)
+            del kwargs['label']
+        for key in kwargs:  # Make all keys upper case for convenience
+            if key.upper() in default_parameters:
+                kwargs[key.upper()] = kwargs.pop(key)
         for key in kwargs:
-            if key not in list(self.default_parameters.keys()) + \
-            list(self.equivalencies.keys()) + list(self.misc.keys()) and \
-            key.upper() not in self.default_parameters.keys():
+            if key not in list(default_parameters.keys()) + \
+            list(equivalencies.keys()) + list(misc.keys()):# and \
+            #key.upper() not in default_parameters.keys():
                 raise TypeError('Unknown input parameter {}'.format(key))
-                
+
+        if 'RELAX_METHOD' in [a.upper() for a in kwargs.keys()]:
+            kwargs['RELAX_FLAG'] = 1
+            kwargs['PRINT_RELAXOUT'] = 1
+            if 'relax_flag' in kwargs.keys():
+                del kwargs['relax_flag']
+            if 'print_relaxout' in kwargs.keys():
+                del kwargs['relax_flag']
+
         self.kwargs = kwargs
         #self.timer = Timer()
         self.initialized = False
@@ -156,32 +219,51 @@ class SPARC(FileIOCalculator):
                 if verbosity == 'high':
                     kwargs['PRINT_EIGEN'] = 1
                     kwargs['PRINT_DENSITY'] = 1
+            
         self.set(**kwargs)
+
        # self.write_input(atoms=atoms,write_defaults=write_defaults, **kwargs)
 
-    def write_input(self, atoms, write_defaults=False,
-                    verbosity='normal', **kwargs):
-        
+    @staticmethod
+    def write_input(atoms = None, write_defaults = False,
+                    verbosity = 'normal', label = 'sprc-calc',
+                    directory = '.',
+                     **kwargs):
         if atoms is None:
             raise Exception('Atoms object is required to create input file')
-        FileIOCalculator.write_input(self, atoms=atoms)
-        os.chdir(self.directory)
+        #FileIOCalculator.write_input(self, atoms=atoms)
+        if directory != os.curdir and not os.path.isdir(directory):
+            os.makedirs(directory)
+
+        os.chdir(directory)
         if [a == 90 for a in atoms.get_cell_lengths_and_angles()[3:]]\
                != [True, True, True]:  # check cell is a rectangle
            raise NotImplementedError("""Unit cells must be rectangular\
 , non-orthogonoal cells are currently under development'""")
 
-        f = open(self.label + '.inpt','w')
+        f = open(os.path.join(directory, label) + '.inpt','w')
         
-        
+        # Begin writing the file
         f.write('# Input File Generated By SPARC ASE Calculator #\n')
         f.write('NTYPES: '+ str(len(set(atoms.get_chemical_symbols()))) + '\n')
         # input the cell
         # if the system has no cell, give 6 A of space on each side
         if 'CELL' in kwargs:
             f.write('CELL:')
-            for i,length in enumerate(kwargs['CELL']):
-                f.write(' '+length[i])
+            if type(kwargs['CELL']) not in [str,list,tuple]:
+                raise ValueError('CELL must be entered as a list, tuple, or space separted string')
+            
+            if type(kwargs['CELL']) == str:
+                #self.parameters['CELL'] = \
+                #        [float(a) for a in kwargs['CELL'].split()]
+                kwargs['CELL'] = kwargs['CELL'].split()
+            kwargs['CELL'] = [float(a) for a in kwargs['CELL']]
+            cell = kwargs['CELL']
+            if len(cell) != 3:
+                raise ValueError('The value of CELL must have 3 elements')
+            for i,length in enumerate(cell):
+                f.write(' ' + str(length))
+            atoms.cell = np.eye(3) * np.array(cell) * Bohr
         elif round(float(np.linalg.norm(atoms.cell)), 1) == 0:
             f.write('CELL:')
             cell = np.eye(3) * (np.max(atoms.positions, axis=0) + (6, 6, 6))
@@ -200,8 +282,8 @@ class SPARC(FileIOCalculator):
         f.write('\n')
         # input finite difference grid
         f.write('FD_GRID:')
-        if 'FD_GRID' in kwargs:  # fix to be able to take gts or lower case CELL
-            for n_pts in kwargs['CELL']:
+        if 'FD_GRID' in kwargs:  # fix 
+            for n_pts in kwargs['FD_GRID']:
               f.write(' ' + str(n_pts))
         elif 'h' in kwargs:
             fd_grid = h2gpts(kwargs['h'], atoms.cell, idiv=1)
@@ -256,12 +338,12 @@ class SPARC(FileIOCalculator):
             f.write('\n')
 
         # xc should be put in separately
-        if 'EXCHAGE_CORRELATION' not in [a.upper() for a in kwargs]:
-            f.write('EXCHAGE_CORRELATION: ' +
-                    self.default_parameters['EXCHAGE_CORRELATION'] + '\n')
+        if 'EXCHANGE_CORRELATION' not in [a.upper() for a in kwargs]:
+            f.write('EXCHAGE_CORRELATION: ' +  # Note the miss-spelling
+                    default_parameters['EXCHANGE_CORRELATION'] + '\n')
         else:
-            f.write('EXCHAGE_CORRELATION: ' +
-                    kwargs['EXCHAGE_CORRELATION'] + '\n')
+            f.write('EXCHAGE_CORRELATION: ' +  # Note the Miss-spelling
+                    kwargs['EXCHANGE_CORRELATION'] + '\n')
 
         # check if the user has defined some print settings, these override verbosity inputs
         non_standard_verbosity_input = [a for a in kwargs if 'PRINT' in a]
@@ -274,25 +356,38 @@ class SPARC(FileIOCalculator):
             f.write('PRINT_FORCES: 1\nPRINT_ATOMS: 1\n \
                     PRINT_EIGEN: 1\nPRINT_DENSITY: 1\n')
   
+        f.write('# Non-Required Inputs Below #\n')
         # take care of all the other parameters, this does most of the work    
         for key,value in kwargs.items():
-            if key in self.equivalencies:
-                f.write(self.equivalencies[key]+ ': ' + str(value) + '\n')
-            elif key in self.default_parameters.keys():
-                if ((self.default_parameters[key.upper()] != value) or write_defaults==True)\
-                   and value != None:
-                    f.write(key.upper() + ': ' + str(value) + '\n')
+            if key in equivalencies:  # handle ase style inputs such as 'xc'
+                f.write(equivalencies[key]+ ': ' + str(value) + '\n')
+
+            elif key in default_parameters.keys() and key not in required_manual:
+                try: 
+                    float(default_parameters[key])
+                    if float(default_parameters[key]) == float(value):
+                        continue
+                except:
+                    pass
+                if (default_parameters[key.upper()] != value) \
+                   and value != None:  # if it's not default, write it
+                    if type(value) in [tuple, list]:
+                        f.write(key)
+                        for i in value:
+                            f.write(' ' + str(i))
+                        f.write('\n')
+                    else:
+                        f.write(key.upper() + ': ' + str(value) + '\n')
             #f.write('\n')
-        
         #If the user wants the defaults explicitly in the input file
         if write_defaults is True:
-            for key, value in self.default_parameters.items():
-                if key not in kwargs.keys() and key !='EXCHAGE_CORRELATION' \
+            for key, value in default_parameters.items():
+                if key not in kwargs.keys() and key !='EXCHANGE_CORRELATION' \
                 and value != None:
                     f.write(key + ': '+str(value))
                 f.write('\n')
         #write the atomic positions file (.ion file)
-        write_ion(open(self.label + '.ion','w'),atoms)
+        write_ion(open(os.path.join(directory, label) + '.ion','w'),atoms)
 
  
     def calculate(self, atoms=None, properties=['energy'],
@@ -327,7 +422,9 @@ class SPARC(FileIOCalculator):
             self.atoms = atoms.copy()
         else:
             atoms=self.atoms
-        self.write_input(atoms=atoms, verbosity=self.verbosity, **self.parameters)
+        self.write_input(atoms = atoms, verbosity = self.verbosity,
+                         label = self.label,directory = self.directory, 
+                         **self.parameters)
         if self.command is None:
             raise RuntimeError(
                 'Please set ${} environment variable '
@@ -377,6 +474,11 @@ class SPARC(FileIOCalculator):
                     time = new_time
                     output = output_file
         """
+        if self.parameters['RELAX_FLAG'] == 1:
+            cell = self.atoms.cell
+            self.atoms,params = parse_output(self.label)
+            self.atoms.cell = cell
+            
         output = self.label + '.out'
         # read and parse output
         f = open(output,'r')
@@ -388,7 +490,15 @@ class SPARC(FileIOCalculator):
         conv_check = body.rsplit('Energy')[-2]
         conv_check = conv_check.split('\n')[-3]  # Parse the last step
         conv_check = float(conv_check.split()[-2])
-        if conv_check > float(self.parameters['TOL_SCF']):
+
+        # get the convergence critera
+        if 'TOL_SCF' in self.parameters.keys():
+            conv_criteria = self.parameters['TOL_SCF']
+        else:
+            conv_criteria = default_parameters['TOL_SCF']
+       
+        # check convergence 
+        if conv_check > float(conv_criteria):
             self.converged = False  
         else:
             self.converged = True
@@ -407,9 +517,11 @@ class SPARC(FileIOCalculator):
             forces = np.empty((len(self.atoms),3))
             for i,force in enumerate(energy_force_block[9:-5]):
                 forces[i,:] = [float(a) for a in force.split()]
-        
+
+        # This is the order these values are in in the output        
         free_eng, band_struc_eng, xc_eng, self_corr_eng, \
         Entr_kbt, fermi_level = output_energies_in_order
+
         self.results = {
                 'energy': free_eng * Hartree,
                 'free_energy': free_eng * Hartree,
@@ -446,18 +558,19 @@ class SPARC(FileIOCalculator):
 
     def concatinate_output(self):
         """
-        Combines together all .out files in the current directory.
+        Combines together all outputs in the current directory.
         """
         files = os.listdir('.')
         files.sort()
-        for item in files:
-            if item.startswith(self.label) and 'out' in item and \
-               item != self.label + '.out':
-                f = open(self.label + '.out', 'a')
-                g = open(item, 'r')
-                text = g.read()
-                f.write('\n' + text)
-                os.remove(item)
+        for sufix in ['.out','.relax','.restart']:
+            for item in files:
+                if item.startswith(self.label) and sufix in item and \
+                item != self.label + sufix:
+                    f = open(self.label + sufix, 'a')
+                    g = open(item, 'r')
+                    text = g.read()
+                    f.write('\n' + text)
+                    os.remove(item)
 
     def get_runtime(self):
         """
@@ -548,6 +661,9 @@ class SPARC(FileIOCalculator):
                 dict_version[item] = default_parameters[item]
         if hasattr(self,'converged'):
             dict_version['SCF-converged'] = self.converged
+        f = os.popen('tail ' + self.label + '.out')
+        if ' U.S. National Science' in f.readlines()[-2]:
+            dict_version['SPARC-completed'] = True
         dict_version['path'] = os.path.abspath('.').split(os.sep)[1:]
         if self.results == {}:
             return dict_version
@@ -571,7 +687,7 @@ class SPARC(FileIOCalculator):
         # time of the most recent commit.
         c_dir = os.getcwd()
         try:
-            os.chdir(os.environ['ASE_SPARC_COMMAND'][:-5]) #  rewrite
+            os.chdir(os.environ['ASE_SPARC_COMMAND'][:-5]) #  rewrite later
             f = os.popen('git log | grep "Date"')
             recent_commit_date = f.readlines()[0]
             rc = recent_commit_date.split('Date:')[1]
@@ -580,7 +696,7 @@ class SPARC(FileIOCalculator):
             os.chdir(c_dir)
         except:
             os.chdir(c_dir)
-        for item in ['EXCHAGE_CORRELATION']: # These should always be in
+        for item in ['EXCHANGE_CORRELATION']: # These should always be in
             dict_version[item] = self.parameters[item]
         for item in dict_version:
             if type(dict_version[item]) not in \

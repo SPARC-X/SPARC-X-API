@@ -8,12 +8,16 @@ Created on Thu Oct 18 12:52:34 2018
 
 import numpy as np
 from ase.data import chemical_symbols
+from ase.units import Bohr, Hartree
 from ase.io.jsonio import encode
 from ase.atoms import Atoms
 from ase.atom import Atom
+from ase.calculators.singlepoint import SinglePointCalculator
+from ase.io.trajectory import Trajectory
 from scipy.misc import factorial
 from collections import OrderedDict
 import json
+import os
 
 valences = [0]+[1,2]+[1,2,3,4,5,6,7,8]*2+ \
            [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]*2+ \
@@ -67,6 +71,95 @@ def dict_atoms(d):
                           info=d['info'],
                           constraint=[dict2constraint(c) for c in d['constraints']])
     return atoms
+
+def parse_output(label='sprc-calc',write_traj = False):
+    """
+    converts a sparc output file into an ase traj
+    """
+    f = open(label + '.out', 'r')
+    text = f.read()
+    f.close()
+    text = text.split('SPARC')[-1]  # Get only the last run in the file
+
+    # Recover the original input parameters
+    input_parameters = text.split('*' * 75)[2]  # Use this later
+    input_parameters = input_parameters.split('\n')
+    input_dict = {}
+    for input_arg in input_parameters[1:-1]:
+        kw,arg = input_arg.split(':')
+        input_dict[kw.strip()] = arg.strip()
+        if len(arg.split()) > 1:  # Some arugments are lists
+            input_dict[kw.strip()] = arg.split()
+    input_dict['label'] = input_dict['OUTPUT_FILE']
+    del input_dict['OUTPUT_FILE']
+
+    cell = [float(a) for a in input_dict['CELL']]
+    cell = np.eye(3) * cell * Bohr
+    if input_dict['BOUNDARY_CONDITION'] == '2':
+        pbc = [True, True, True]
+    else:
+        pbc = [False, False, False]
+
+    # Figure out how many 'types' of atoms there are
+    s = os.popen('grep "NTYPES" ' + label + '.out')
+    ntypes = int(s.readlines()[-1].split(':')[1].strip())
+    s.close()
+    
+    # For each type, grep out the chemical symbol
+    s = os.popen('grep "Atom type" ' + label + '.out')
+    atom_elements = s.readlines()[-ntypes:]
+    elements = [a.split()[-2] for a in atom_elements]
+    s.close()
+
+    # For each type, grep out how many of that type there are
+    s = os.popen('grep "Number of atoms of type" ' + label + '.out')
+    num_elements = s.readlines()[-ntypes:]
+    numbers = [int(a.split()[-1]) for a in num_elements]
+    s.close()
+
+    # Make a list containing the elements of each atom in order
+    chemical_symbols = []
+    for sym,num in zip(elements,numbers):
+        chemical_symbols += num * [sym]
+
+    if not os.path.isfile(label + '.relax'):
+        return None
+
+    f = open(label + '.relax')
+    text = f.read()
+    # Parse out the steps
+    steps = text.split(':RELAXSTEP:')[1:]
+    if write_traj == False:
+        steps = [steps[-1]]
+    else:
+        traj = Trajectory(label + '.traj', mode = 'w')
+
+    # Pasre out the energies
+    n_geometric = len(steps)
+    s = os.popen('grep "Total free energy" ' + label + '.out')
+    engs = s.readlines()[-n_geometric:]
+    engs = [float(a.split()[-2]) * Hartree for a in engs]
+    s.close()
+
+    # build a traj file out of the steps
+    for j, step in enumerate(steps):
+        positions = step.split(':')[2].strip().split('\n')   
+        forces = step.split(':')[4].strip().split('\n')
+        frc = np.empty((len(forces), 3))
+        atoms = Atoms()
+        for i,f in enumerate(forces):
+            frc[i,:] = [float(a) * Hartree * Bohr for a in f.split()]
+            atoms += Atom(chemical_symbols[i],
+                          [float(a) * Bohr for a in positions[i].split()])
+        
+        atoms.set_calculator(SinglePointCalculator(atoms, energy = engs[j],
+                                                   forces=frc))
+        atoms.set_pbc(pbc)
+        atoms.cell = cell
+        if write_traj ==True:
+            traj.write(atoms)
+    atoms.set_calculator()
+    return atoms, input_dict
 
 def Ecut2h(FDn,Ecut,tol=0.1):
     #to do complete python conversion and integrate

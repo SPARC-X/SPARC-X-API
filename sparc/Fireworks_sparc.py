@@ -36,12 +36,11 @@ class RunSparcASE(FiretaskBase):
         atoms.set_calculator(calc)
         calc.calculate()
         calc.calc_to_mongo( 
-                            host='',
-                            database='',
-                            user='',
-                            password='',
-                            port=27017
-                            )
+                           host='ds153593.mlab.com',
+                           port=53593,
+                           database='comer-test-db',
+                           user='AJ',
+                           password='a123456',)
 
 class Sparc_SCF_FW(Firework):
     def __init__(self, atoms, 
