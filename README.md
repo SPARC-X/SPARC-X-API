@@ -14,6 +14,8 @@ python packages:
 
 `ase`
 
+`spglib`
+
 software:
 
 `SPARC`
