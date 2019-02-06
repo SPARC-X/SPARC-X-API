@@ -22,8 +22,7 @@ default_parameters = {
             # 'label': 'sprc-calc',
             # 'calculation_directory':'sprk.log',
 
-
-            'BOUNDRY_CONDITION': 2,
+            'BOUNDARY_CONDITION': 2,
             'EXCHANGE_CORRELATION': 'LDA_PZ',  # 'LDA'
             'KPOINT_GRID': (1, 1, 1),
             'MIXING_PARAMETER': 0.30,
@@ -50,7 +49,6 @@ default_parameters = {
             'PSEUDOPOTENTIAL_LOCAL': None,
             'PSEUDOPOTENTIAL_FILE': None,
             'OUTPUT_FILE': None,
-            'BOUNDARY_CONDITION': 2,        
             'CELL': None,
             'FD_GRID': None,
             'FD_ORDER': 12,
@@ -106,7 +104,7 @@ class SPARC(FileIOCalculator):
             
             
             'BOUNDRY_CONDITION': 2,
-            'EXCHAGE_CORRELATION': 'LDA_PZ',  # 'LDA'
+            'EXCHANGE_CORRELATION': 'LDA_PZ',  # 'LDA'
             'KPOINT_GRID': (1, 1, 1),
             'MIXING_PARAMETER': 0.30,
             'CHEN_DEGREE': 20,
@@ -147,7 +145,7 @@ class SPARC(FileIOCalculator):
                         }
     
     equivalencies = {
-            'xc': 'EXCHAGE_CORRELATION',
+            'xc': 'EXCHANGE_CORRELATION',
             'kpts': 'KPOINT_GRID',
             'nbands': 'NSTATES',
             
@@ -201,7 +199,7 @@ class SPARC(FileIOCalculator):
                 if 'print_relaxout' in kwargs.keys():
                     del kwargs['relax_flag']
 
-        self.kwargs = kwargs
+        self.kwargs = kwargs  # Save the original user input
         #self.timer = Timer()
         self.initialized = False
         self.write_defaults = write_defaults
@@ -311,8 +309,13 @@ class SPARC(FileIOCalculator):
         f.write('FD_GRID:')
 
         if kwargs['FD_GRID'] is not None:  # fix 
-            for n_pts in kwargs['FD_GRID']:
-              f.write(' ' + str(n_pts))
+            if type(kwargs['FD_GRID']) == str:
+                if len(n_pts.split(' ')) != 3:
+                    raise Exception('if FD_GRID is entered as a string, it must be 3 numbers separated by spaces (i.e. 30 30 30).')
+                f.write(n_pts)
+            else:
+                for n_pts in kwargs['FD_GRID']:
+                    f.write(' ' + str(n_pts))
         elif 'h' in kwargs:
             fd_grid = h2gpts(kwargs['h'], atoms.cell, idiv=1)
             for n_pts in fd_grid:
@@ -329,9 +332,7 @@ class SPARC(FileIOCalculator):
         f.write('\n')
         
         # deal with pseudopotential file path
-        #if 'PSEUDOPOTENTIAL_FILE' not in kwargs:
-        #    kwargs['PSEUDOPOTENTIAL_FILE'] = None
-        if kwargs['PSEUDOPOTENTIAL_FILE'] is not None:  # fix to allow lower case
+        if kwargs['PSEUDOPOTENTIAL_FILE'] is not None:
             f.write('PSEUDOPOTENTIAL_FILE: ')
             for psp_path in kwargs['PSEUDOPOTENTIAL_FILE']:
                 f.write(psp_path + ' ')
@@ -352,14 +353,14 @@ class SPARC(FileIOCalculator):
             for element in sorted(list(set(atoms.get_chemical_symbols()))):
                 pseudos_in_dir = [a for a in os.listdir(os.environ['PSP_PATH']) \
                             if a.endswith(element+'.pot')]
-                if pseudos_in_dir != [] and len(pseudos_in_dir) > 1:
-                    f.write(pseudos_in_dir[0] + ' ')
-                    continue
                 filename = [a for a in os.listdir(os.environ['PSP_PATH']) \
                             if a.endswith(element+'.pot')][0]
                 os.system('cp $PSP_PATH/' + filename + ' .')
-                psp_path = filename
-                f.write(psp_path + ' ')
+                if pseudos_in_dir != [] and len(pseudos_in_dir) > 1:
+                    f.write(pseudos_in_dir[0] + ' ')
+                else:
+                    psp_path = filename
+                    f.write(psp_path + ' ')
             f.write('\n')
         elif write_defaults is True:
             f.write('PSEUDOPOTENTIAL_FILE: ')
@@ -368,12 +369,21 @@ class SPARC(FileIOCalculator):
             f.write('\n')
 
         # xc should be put in separately
-        if 'EXCHANGE_CORRELATION' not in [a.upper() for a in kwargs]:
-            f.write('EXCHAGE_CORRELATION: ' +  # Note the miss-spelling
-                    default_parameters['EXCHANGE_CORRELATION'] + '\n')
+        if 'printDens' in os.environ['ASE_SPARC_COMMAND']:
+            if 'EXCHANGE_CORRELATION' not in [a.upper() for a in kwargs]:
+                f.write('EXCHAGE_CORRELATION: ' +  # Note the miss-spelling
+                        default_parameters['EXCHANGE_CORRELATION'] + '\n')
+            else:
+                f.write('EXCHAGE_CORRELATION: ' +  # Note the Miss-spelling
+                        kwargs['EXCHANGE_CORRELATION'] + '\n')
         else:
-            f.write('EXCHAGE_CORRELATION: ' +  # Note the Miss-spelling
-                    kwargs['EXCHANGE_CORRELATION'] + '\n')
+            if 'EXCHANGE_CORRELATION' not in [a.upper() for a in kwargs]:
+                f.write('EXCHANGE_CORRELATION: ' +  # Note the miss-spelling
+                        default_parameters['EXCHANGE_CORRELATION'] + '\n')
+            else:
+                f.write('EXCHANGE_CORRELATION: ' +  # Note the Miss-spelling
+                        kwargs['EXCHANGE_CORRELATION'] + '\n')
+ 
 
         # check if the user has defined some print settings, these override verbosity inputs
         non_standard_verbosity_input = [a for a in kwargs if 'PRINT' in a]
@@ -468,7 +478,8 @@ class SPARC(FileIOCalculator):
             self.num_nodes = nodes
         #command = self.command.replace('PREFIX', self.prefix)
         #errorcode = subprocess.call(command, shell=True, cwd=self.directory)
-            errorcode = 2
+            errorcode = 9999  # initialize a non-zero errorcode
+            tries = 0
             while errorcode !=0:
             #time.sleep(2) # 2 second cushion on either side for safety, can be removed later
                 errorcode = subprocess.call('mpirun '
@@ -479,6 +490,9 @@ class SPARC(FileIOCalculator):
                                     #+' -log_summary > mpi.log'+
                                     shell=True, cwd=self.directory)
                 self.concatinate_output()
+                tries += 1
+                if tries > 1000:
+                    break
             #time.sleep(2)
         else:
             errorcode = subprocess.call(self.command + ' -name ' + self.prefix,
@@ -505,6 +519,7 @@ class SPARC(FileIOCalculator):
                     time = new_time
                     output = output_file
         """
+        # If the relaxation built into SPARC was used, read the results
         if 'RELAX_FLAG' in self.parameters:
             if self.parameters['RELAX_FLAG'] == 1:
                 cell = self.atoms.cell
@@ -665,7 +680,7 @@ class SPARC(FileIOCalculator):
         num_steps = len(steps_block.split('\n')) - 3
         return num_steps
 
-    def todict(self,only_nondefaults=False):
+    def todict(self, only_nondefaults = False, return_atoms = True):
         """
         Coverts calculator object into a dictionary representation appropriate to be placed
         in a MongoDB. By default this returns only the settings that are not the default values.
@@ -728,8 +743,11 @@ class SPARC(FileIOCalculator):
             os.chdir(c_dir)
         except:
             os.chdir(c_dir)
-        for item in ['EXCHANGE_CORRELATION']: # These should always be in
-            dict_version[item] = self.parameters[item]
+        for item in ['EXCHANGE_CORRELATION','EXCHAGE_CORRELATION']: # These should always be in
+            try:
+                dict_version[item] = self.parameters[item]
+            except:
+                pass
         for item in dict_version:
             if type(dict_version[item]) not in \
             [dict, list, str, float, int, None, tuple] and \
@@ -738,8 +756,27 @@ class SPARC(FileIOCalculator):
                     dict_version[item] = dict_version[item].tolist()
                 except:
                     pass
+
+        if return_atoms == True:
+            from .utilities import atoms_dict
+            dict_version['atoms'] = atoms_dict(self.atoms)
         return dict_version
 
+    @staticmethod
+    def fromdict(atoms = None, **kwargs):
+        """
+        Regenerates the sparc calculator from a dictionary version
+        """
+    #   other_keys = [None, ignore_bad_restart=False,
+    #                 label='sprc-calc', atoms=None, command=None,
+    #                 write_defaults=False, verbosity='normal',]
+        extraneous_args = [a for a in kwargs.keys() if a not in default_parameters.keys()]
+        from .utilities import dict_atoms
+        atoms = dict_atoms(atoms)
+        for key in extraneous_args:
+            del kwargs[key]
+        return SPARC(atoms = atoms, **kwargs)
+            
     def calc_to_mongo(self,
                  host='localhost',
                  port=27017,
@@ -761,7 +798,9 @@ class SPARC(FileIOCalculator):
                  user=user,
                  password=password)
         d = mongo_doc(self.get_atoms())
-        db.write(d)
+        id_ = db.write(d)
+        print('entry was added to db with id {}'.format(id_))
+        return id_
 
 
 #   def get_number_of_grid_points(): implement in the future

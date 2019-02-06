@@ -74,7 +74,27 @@ def dict_atoms(d):
 
 def parse_output(label='sprc-calc',write_traj = False):
     """
-    converts a sparc output file into an ase traj
+    Parses almost all useful information from the SPARC
+    output file
+
+    inputs:
+        label (str):
+            The base name of the output files
+
+        write_traj (bool):
+            If set to True, a trajectory file will be written
+            from the outputfile.
+
+    returns:
+        atoms (ASE atoms object):
+            An ASE atoms object from the last step. This is mainly
+            used to set the new atoms for the calculator after 
+            running SPARC using the internal relaxation algorithms.
+
+        input_dict (dict):
+            A dictionary containing the original input arguements
+            put into SPARC. This can be used to rebuild a calculator
+            object (e.g. SPARC(atoms = atoms, **input_dict))
     """
     f = open(label + '.out', 'r')
     text = f.read()

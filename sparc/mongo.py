@@ -47,6 +47,7 @@ def mongo_atoms_doc(atoms):
     d['chemical_symbols'] = list(set(syms))
     d['symbol_counts'] = {sym: syms.count(sym) for sym in syms}
     d['spacegroup'] = spglib.get_spacegroup(atoms)
+    d['hash'] = get_hash(atoms)
 
     return json.loads(encode(d))
 
@@ -95,7 +96,7 @@ def mongo_doc(atoms, **kwargs):
         if calc is not None:
 
             if hasattr(calc, 'todict'):
-                d['calculator'] = calc.todict()
+                d['calculator'] = calc.todict(return_atoms = False)
             else:
                 d['calculator'] = {}
 
@@ -186,3 +187,38 @@ class MongoDatabase(MongoClient):
         cursor = self.collection.find(*args, **kwargs)
         for doc in cursor:
             yield mongo_doc_atoms(doc)
+    def modify(self, _id, d, **kwargs):
+        """Thin wrapper on update
+        """
+        d.update(kwargs)
+        self.collection.update_one({'_id':_id}, {"$set": d}, upsert=False)
+
+def get_hash(atoms):
+    """Creates a unique signature for a particular ASE atoms object.
+
+    This is used to check whether an image has been seen before. This is just
+    an md5 hash of a string representation of the atoms object.
+    taken from amp:
+    https://bitbucket.org/andrewpeterson/amp/src/8fb19b2405df3e32294573d6bd7b6ea29a49e6db/amp/utilities.py?at=master&fileviewer=file-view-default
+
+    Parameters
+    ----------
+    atoms : ASE dict
+        ASE atoms object.
+
+    Returns
+    -------
+        Hash string key of 'atoms'.
+    """
+    string = str(atoms.pbc)
+    for number in atoms.cell.flatten():
+        string += '%.15f' % number
+    for number in atoms.get_atomic_numbers():
+        string += '%3d' % number
+    for number in atoms.get_positions().flatten():
+        string += '%.15f' % number
+
+    md5 = hashlib.md5(string.encode('utf-8'))
+    hash = md5.hexdigest()
+    return hash
+

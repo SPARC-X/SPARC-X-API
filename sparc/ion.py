@@ -35,7 +35,12 @@ def write_ion(fileobj, atoms, comment=''):
     for element in elements:
         fileobj.write('ATOM_TYPE: ')
         fileobj.write(element + ' ')
-        fileobj.write(str(valence_dict[element]) + '\n')
+        if element =='Cu': # fix this hack when the .ion file is fixed
+            fileobj.write('19' + '\n')
+        elif element == 'Ti': # fix this hack when the .ion file is fixed
+            fileobj.write('10' + '\n')
+        else:
+            fileobj.write(str(valence_dict[element]) + '\n')
         
         fileobj.write('N_TYPE_ATOM: ')
         fileobj.write(str(atoms.get_chemical_symbols().count(element)) + '\n')
