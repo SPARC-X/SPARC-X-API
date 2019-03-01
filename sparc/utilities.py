@@ -72,7 +72,7 @@ def dict_atoms(d):
                           constraint=[dict2constraint(c) for c in d['constraints']])
     return atoms
 
-def parse_output(label='sprc-calc',write_traj = False):
+def parse_output(label = 'sprc-calc', write_traj = False):
     """
     Parses almost all useful information from the SPARC
     output file
@@ -105,7 +105,26 @@ def parse_output(label='sprc-calc',write_traj = False):
     input_parameters = text.split('*' * 75)[2]  # Use this later
     input_parameters = input_parameters.split('\n')
     input_dict = {}
+    in_lattice_block = False
     for input_arg in input_parameters[1:-1]:
+        # once we find LATVEC, we analyze the next 3 lines differently
+        if 'LATVEC' in input_arg or in_lattice_block:
+            if not 'blk_ln' in locals():
+                input_dict['LATVEC'] = []
+                in_lattice_block = True
+                blk_ln = 1
+                continue
+            lat_vec = [float(a) for a in input_arg.strip().split()]
+            input_dict['LATVEC'].append(lat_vec)
+            if blk_ln == 3:
+                in_lattice_block = False
+                input_dict['LATVEC'] = np.array(input_dict['LATVEC'])
+                continue
+            else:
+                blk_ln += 1
+                continue
+            
+        #print(input_arg)
         kw,arg = input_arg.split(':')
         input_dict[kw.strip()] = arg.strip()
         if len(arg.split()) > 1:  # Some arugments are lists
@@ -121,7 +140,7 @@ def parse_output(label='sprc-calc',write_traj = False):
         pbc = [False, False, False]
 
     # Figure out how many 'types' of atoms there are
-    s = os.popen('grep "NTYPES" ' + label + '.out')
+    s = os.popen('grep "Total number of atom types" ' + label + '.out')
     ntypes = int(s.readlines()[-1].split(':')[1].strip())
     s.close()
     
@@ -154,7 +173,7 @@ def parse_output(label='sprc-calc',write_traj = False):
     else:
         traj = Trajectory(label + '.traj', mode = 'w')
 
-    # Pasre out the energies
+    # Parse out the energies
     n_geometric = len(steps)
     s = os.popen('grep "Total free energy" ' + label + '.out')
     engs = s.readlines()[-n_geometric:]

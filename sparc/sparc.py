@@ -17,12 +17,13 @@ all_properties = ['energy', 'forces', 'stress', 'dipole',
 
 all_changes = ['positions', 'numbers', 'cell', 'pbc',
                'initial_charges', 'initial_magmoms']
-required_manual = ['PSEUDOPOTENTIAL_FILE','CELL','EXCHAGE_CORRELATION','FD_GRID','PSEUDOPOTENTIAL_LOCAL','KPOINT_GRID']
+required_manual = ['PSEUDOPOTENTIAL_FILE','CELL','EXCHAGE_CORRELATION','FD_GRID','PSEUDOPOTENTIAL_LOCAL','KPOINT_GRID', 'LATVEC']
 default_parameters = {
             # 'label': 'sprc-calc',
             # 'calculation_directory':'sprk.log',
 
             'BOUNDARY_CONDITION': 2,
+            'LATVEC': None,
             'EXCHANGE_CORRELATION': 'LDA_PZ',  # 'LDA'
             'KPOINT_GRID': (1, 1, 1),
             'MIXING_PARAMETER': 0.30,
@@ -66,6 +67,7 @@ default_parameters = {
             'RELAX_FLAG': 0,
             'RELAX_METHOD': None,
             'RELAX_MAXITER': 300,
+            'RELAX_NITER': 300,
             'NLCG_sigma': 0.500000,
             'L_HISTORY': 20,
             'L_FINIT_STP': 0.005000,
@@ -226,8 +228,35 @@ class SPARC(FileIOCalculator):
     @staticmethod
     def write_input(atoms = None, write_defaults = False,
                     verbosity = 'normal', label = 'sprc-calc',
-                    directory = '.',
+                    directory = '.', coordinates = 'fractional',
                      **kwargs):
+        """
+        A method to write a sparc input set. This includes the .inpt
+        input file as well as the .ion positions file.
+
+        parameters:
+            atoms (ASE Atoms Object):
+                An ase atoms object for the system of interest
+            write_defaults (bool):
+                If set to true, the code will write all the default
+                values into the .inpt file
+            verbosity (str):
+                a flag to set the level of output for the SPARC code,
+                options are 'low', 'normal', and 'high'. It is
+                recommended this be left on 'normal'. Note, the low 
+                verbosity does not print forces
+            label (str):
+                the prefix for the output filenames. The files will be
+                named [label].inpt and [label].ion. Note that sparc's
+                ouput file names will all begin with this prefix
+            directory (str):
+                The path of the directory where the output is to be
+                saved
+            coordinates (str):
+                options are 'fractional' and 'absolute'. It is 
+                recommended that users stick to fractional.
+            
+        """
         ################ Check the input arguements ###################
         if atoms is None:
             raise Exception('Atoms object is required to create input file')
@@ -260,23 +289,73 @@ class SPARC(FileIOCalculator):
         # if the system has no cell, give 6 A of space on each side
         #if 'CELL' not in kwargs:
         #    kwargs['CELL'] = None
-        if kwargs['CELL'] == None:
-            if round(float(np.linalg.norm(atoms.cell)), 1) == 0:
-                f.write('CELL:')
-                cell = np.eye(3) * (np.max(atoms.positions, axis=0) + (6, 6, 6))
-                atoms.set_cell(cell)
-                for cell_param in atoms.get_cell_lengths_and_angles()[0:3]:
-                    f.write(' ' + str((cell_param) / Bohr))
-                atoms.center()
-            elif [a == 90 for a in atoms.get_cell_lengths_and_angles()[3:]] \
-                   == [True, True, True]:  # check cell is a rectangle (again)
-                f.write('CELL:')
-                for length in atoms.get_cell_lengths_and_angles()[:3]:
-                    f.write(' ' + str(length / Bohr))
+
+        # Scold/warn the user about using the CELL/LATVEC arguments
+        if  kwargs['LATVEC'] is not None and  kwargs['CELL'] is None:
+            raise ValueError('If LATVEC is input, you also must provide the CELL argument')
+
+        if  kwargs['LATVEC'] is None and  kwargs['CELL'] is not None:
+            raise Warning('The CELL argument was entered, but not the LATVEC argument. The unit cell in the input atoms object will be ignored and the cell will be assumed to be orthogonal')
+
+        # Deal with CELL and LATVEC inputs
+        if kwargs['CELL'] is not None:
+            # If there's no LATVEC input, just assume it's an orthogonal unit cell
+            if kwargs['LATVEC'] is None:
+                    lattice = np.eye((3,3))
             else:
-                raise NotImplementedError("""Unit cells must be rectangular\
-, non-orthogonoal cells are currently under development'""")
+                # Decipher the LATVEC input
+                try:  # try to deal with numpy arrays by making them lists
+                    kwargs['LATVEC'] = list(kwargs['LATVEC'])
+                except:
+                    pass
+                # Check that LATVEC is a native iterable
+                if type(kwargs['LATVEC']) not in [str,list,tuple]:
+                    raise ValueError('LATVEC must be entered as a list, tuple, or space and linebreak separated string')
+                # Deal with space separated raw text entries
+                elif type(kwargs['LATVEC']) == str:
+                    kwargs['LATVEC'] = kwargs['LATVEC'].split()
+                    if len(kwargs['LATVEC']) != 9:
+                        raise ValueError('The value of LATVEC must have 9 elements (3x3)')
+                    lattice = np.array(kwargs['LATVEC'])
+                    lattice = np.reshape(lattice, (3,3))
+                # Deal with the simple case of lists or tuples
+                else:
+                    lattice = np.array(kwargs['LATVEC'])
+                    lattice = np.reshape(lattice,(3,3))
+            
+            # Decipher CELL input
+            if type(kwargs['CELL']) not in [str,list,tuple]:
+                raise ValueError('CELL must be entered as a list, tuple, or space separated string')
+            f.write('CELL:')
+            if type(kwargs['CELL']) == str:
+                kwargs['CELL'] = kwargs['CELL'].split()
+            kwargs['CELL'] = [float(a) for a in kwargs['CELL']]
+            cell = np.array(kwargs['CELL'])
+            if len(cell) != 3:
+                raise ValueError('The value of CELL must have 3 elements')
+            atoms.cell = atoms.cell = (lattice.T * cell).T * Bohr
+
+
+        # Use the cell of the atoms object to write the input           
+        if round(float(np.linalg.norm(atoms.cell)), 1) == 0:
+            f.write('CELL:')
+            cell = np.eye(3) * (np.max(atoms.positions, axis=0) + (6, 6, 6))
+            atoms.set_cell(cell)
+            for cell_param in atoms.get_cell_lengths_and_angles()[0:3]:
+                f.write(' ' + str((cell_param) / Bohr))
+            atoms.center()
         else:
+            f.write('CELL:')
+            for length in atoms.get_cell_lengths_and_angles()[:3]:
+                f.write(' ' + str(length / Bohr))
+            f.write('\nLATVEC:\n')
+            for cell_vec in atoms.cell:
+                lat_vec = cell_vec / np.linagl.norm(cell_vec)
+                f.write('\n')
+                for element in lat_vec:
+                    f.write(' ' + str(element))
+
+        else:  # cell comes from inputs
             if type(kwargs['CELL']) not in [str,list,tuple]:
                 raise ValueError('CELL must be entered as a list, tuple, or space separted string')
             f.write('CELL:')
@@ -288,9 +367,50 @@ class SPARC(FileIOCalculator):
             cell = kwargs['CELL']
             if len(cell) != 3:
                 raise ValueError('The value of CELL must have 3 elements')
-            for i,length in enumerate(cell):
+            for i, length in enumerate(cell):
                 f.write(' ' + str(length))
-            atoms.cell = np.eye(3) * np.array(cell) * Bohr
+            #atoms.cell = np.eye(3) * np.array(cell) * Bohr
+"""
+            if kwargs['LATVEC'] is None:
+                raise(Warning('The CELL argument was used without entering any lattice vectors (LATVEC) The unit cell will be assumed to be '))
+            if kwargs['LATVEC'] is not None:
+                f.write('\n')
+                f.write('LATVEC:\n')
+                try:
+                    kwargs['LATVEC'] = list(kwargs['LATVEC'])
+                except:
+                    pass
+                if type(kwargs['LATVEC']) not in [str,list,tuple]:
+                    raise ValueError('LATVEC must be entered as a list, tuple, or space and linebreak separated string')
+                elif type(kwargs['LATVEC']) == str:
+                    kwargs['LATVEC'] = kwargs['LATVEC'].split()
+                    if len(kwargs['LATVEC']) != 9:
+                        raise ValueError('The value of LATVEC must have 9 elements (3x3)')
+                    lattice = np.array(kwargs['LATVEC'])
+                    lattice = np.reshape(lattice, (3,3))
+                    for lat_vec in lattice:
+                        f.write('\n')
+                        for element in lat_vec:
+                            f.write(' ' + str(element))
+                else:
+                    lattice = kwargs['LATVEC']
+                    lattice = np.reshape(lattice,(3,3))
+                for lat_vec in lattice:
+                    f.write('\n')
+                    for element in lat_vec:
+                        f.write(' ' + str(element))
+            else:
+                f.write('\n')
+                f.write('LATVEC:')
+                for cell_vec in atoms.cell:
+                    lat_vec = cell_vec / np.linalg.norm(cell_vec)
+                    f.write('\n')
+                    for element in lat_vec:
+                        f.write(' ' + str(element))
+"""                 
+                
+
+
             """
         elif round(float(np.linalg.norm(atoms.cell)), 1) == 0:
             f.write('CELL:')
@@ -387,7 +507,6 @@ class SPARC(FileIOCalculator):
             else:
                 f.write('EXCHANGE_CORRELATION: ' +  # Note the Miss-spelling
                         kwargs['EXCHANGE_CORRELATION'] + '\n')
- 
 
         # check if the user has defined some print settings, these override verbosity inputs
         non_standard_verbosity_input = [a for a in kwargs if 'PRINT' in a]
@@ -415,7 +534,7 @@ class SPARC(FileIOCalculator):
                 except:
                     pass
                 if (default_parameters[key.upper()] != value) \
-                   and value != None:  # if it's not default, write it
+                   and value is not None:  # if it's not default, write it
                     if type(value) in [tuple, list]:
                         f.write(key)
                         for i in value:
