@@ -37,6 +37,8 @@ default_parameters = {
             'TWTIME': 999999999.000000,
             'MIXING_PARAMETER': 0.30,
             'MIXING_HISTORY': 7,
+            'MIXING_VARIABLE': None,
+            'MIXING_PRECOND': None,
             'PULAY_FREQUENCY': 1,
             'PULAY_RESTART': 0,
             'REFERENCE_CUTOFF': 0.50,
@@ -266,10 +268,10 @@ class SPARC(FileIOCalculator):
             os.makedirs(directory)
 
         os.chdir(directory)
-        if [a == 90 for a in atoms.get_cell_lengths_and_angles()[3:]]\
-               != [True, True, True]:  # check cell is a rectangle
-           raise NotImplementedError("""Unit cells must be rectangular\
-, non-orthogonoal cells are currently under development'""")
+#        if [a == 90 for a in atoms.get_cell_lengths_and_angles()[3:]]\
+#               != [True, True, True]:  # check cell is a rectangle
+#           raise NotImplementedError("""Unit cells must be rectangular\
+#, non-orthogonoal cells are currently under development'""")
 
         # replace all arguments that are nNone by default with None in the input dict
         for key in default_parameters:  
@@ -284,24 +286,18 @@ class SPARC(FileIOCalculator):
         ###### Requred Inputs Block
         # This section writes the minimal inputs needed to run SPARC
 
-        #f.write('NTYPES: '+ str(len(set(atoms.get_chemical_symbols()))) + '\n')
-        # input the cell
-        # if the system has no cell, give 6 A of space on each side
-        #if 'CELL' not in kwargs:
-        #    kwargs['CELL'] = None
-
         # Scold/warn the user about using the CELL/LATVEC arguments
         if  kwargs['LATVEC'] is not None and  kwargs['CELL'] is None:
             raise ValueError('If LATVEC is input, you also must provide the CELL argument')
 
         if  kwargs['LATVEC'] is None and  kwargs['CELL'] is not None:
-            raise Warning('The CELL argument was entered, but not the LATVEC argument. The unit cell in the input atoms object will be ignored and the cell will be assumed to be orthogonal')
+            UserWarning('The CELL argument was entered, but not the LATVEC argument. The unit cell in the input atoms object will be ignored and the cell will be assumed to be orthogonal')
 
         # Deal with CELL and LATVEC inputs
         if kwargs['CELL'] is not None:
             # If there's no LATVEC input, just assume it's an orthogonal unit cell
             if kwargs['LATVEC'] is None:
-                    lattice = np.eye((3,3))
+                    lattice = np.eye(3)
             else:
                 # Decipher the LATVEC input
                 try:  # try to deal with numpy arrays by making them lists
@@ -326,7 +322,6 @@ class SPARC(FileIOCalculator):
             # Decipher CELL input
             if type(kwargs['CELL']) not in [str,list,tuple]:
                 raise ValueError('CELL must be entered as a list, tuple, or space separated string')
-            f.write('CELL:')
             if type(kwargs['CELL']) == str:
                 kwargs['CELL'] = kwargs['CELL'].split()
             kwargs['CELL'] = [float(a) for a in kwargs['CELL']]
@@ -348,68 +343,12 @@ class SPARC(FileIOCalculator):
             f.write('CELL:')
             for length in atoms.get_cell_lengths_and_angles()[:3]:
                 f.write(' ' + str(length / Bohr))
-            f.write('\nLATVEC:\n')
+            f.write('\nLATVEC:')
             for cell_vec in atoms.cell:
-                lat_vec = cell_vec / np.linagl.norm(cell_vec)
+                lat_vec = cell_vec / np.linalg.norm(cell_vec)
                 f.write('\n')
                 for element in lat_vec:
-                    f.write(' ' + str(element))
-
-        else:  # cell comes from inputs
-            if type(kwargs['CELL']) not in [str,list,tuple]:
-                raise ValueError('CELL must be entered as a list, tuple, or space separted string')
-            f.write('CELL:')
-            if type(kwargs['CELL']) == str:
-                #self.parameters['CELL'] = \
-                #        [float(a) for a in kwargs['CELL'].split()]
-                kwargs['CELL'] = kwargs['CELL'].split()
-            kwargs['CELL'] = [float(a) for a in kwargs['CELL']]
-            cell = kwargs['CELL']
-            if len(cell) != 3:
-                raise ValueError('The value of CELL must have 3 elements')
-            for i, length in enumerate(cell):
-                f.write(' ' + str(length))
-            #atoms.cell = np.eye(3) * np.array(cell) * Bohr
-"""
-            if kwargs['LATVEC'] is None:
-                raise(Warning('The CELL argument was used without entering any lattice vectors (LATVEC) The unit cell will be assumed to be '))
-            if kwargs['LATVEC'] is not None:
-                f.write('\n')
-                f.write('LATVEC:\n')
-                try:
-                    kwargs['LATVEC'] = list(kwargs['LATVEC'])
-                except:
-                    pass
-                if type(kwargs['LATVEC']) not in [str,list,tuple]:
-                    raise ValueError('LATVEC must be entered as a list, tuple, or space and linebreak separated string')
-                elif type(kwargs['LATVEC']) == str:
-                    kwargs['LATVEC'] = kwargs['LATVEC'].split()
-                    if len(kwargs['LATVEC']) != 9:
-                        raise ValueError('The value of LATVEC must have 9 elements (3x3)')
-                    lattice = np.array(kwargs['LATVEC'])
-                    lattice = np.reshape(lattice, (3,3))
-                    for lat_vec in lattice:
-                        f.write('\n')
-                        for element in lat_vec:
-                            f.write(' ' + str(element))
-                else:
-                    lattice = kwargs['LATVEC']
-                    lattice = np.reshape(lattice,(3,3))
-                for lat_vec in lattice:
-                    f.write('\n')
-                    for element in lat_vec:
-                        f.write(' ' + str(element))
-            else:
-                f.write('\n')
-                f.write('LATVEC:')
-                for cell_vec in atoms.cell:
-                    lat_vec = cell_vec / np.linalg.norm(cell_vec)
-                    f.write('\n')
-                    for element in lat_vec:
-                        f.write(' ' + str(element))
-"""                 
-                
-
+                    f.write(str(element) + ' ')
 
             """
         elif round(float(np.linalg.norm(atoms.cell)), 1) == 0:
@@ -418,12 +357,7 @@ class SPARC(FileIOCalculator):
             atoms.set_cell(cell)
             for cell_param in atoms.get_cell_lengths_and_angles()[0:3]:
                 f.write(' ' + str((cell_param) / Bohr))
-            atoms.center()
-        if [a == 90 for a in atoms.get_cell_lengths_and_angles()[3:]] \
-               == [True, True, True]:  # check cell is a rectangle
-            f.write('CELL:')
-            for length in atoms.get_cell_lengths_and_angles()[:3]:
-                f.write(' ' + str(length / Bohr))"""
+            atoms.center()"""
         f.write('\n')
         # input finite difference grid
         f.write('FD_GRID:')
@@ -552,7 +486,8 @@ class SPARC(FileIOCalculator):
                 f.write('\n')
         #write the atomic positions file (.ion file)
         write_ion(open(os.path.join(directory, label) + '.ion','w'),
-                  atoms, pseudo_dir = os.environ['PSP_PATH'])
+                  atoms, pseudo_dir = os.environ['PSP_PATH'],
+                  scaled = False)
 
  
     def calculate(self, atoms=None, properties=['energy'],
@@ -651,6 +586,7 @@ class SPARC(FileIOCalculator):
                 self.atoms.cell = cell
             
         output = self.label + '.out'
+
         # read and parse output
         f = open(output,'r')
         log_text = f.read()
@@ -659,21 +595,11 @@ class SPARC(FileIOCalculator):
 
         # check that the SCF cycle converged
         conv_check = body.rsplit('Energy')[-2]
-        conv_check = conv_check.split('\n')[-3]  # Parse the last step
-        conv_check = float(conv_check.split()[-2])
-
-        # get the convergence critera
-        if 'TOL_SCF' in self.parameters.keys():
-            conv_criteria = self.parameters['TOL_SCF']
-        else:
-            conv_criteria = default_parameters['TOL_SCF']
-       
-        # check convergence 
-        if conv_check > float(conv_criteria):
-            self.converged = False  
+        if 'did not converge to desired accuracy' in conv_check:
+            self.converged = False
         else:
             self.converged = True
-        
+
         # Parse out the total energy, energies are in Ha
         energy_force_block = body.rsplit('Energy')[-1]
         energy_force_block = energy_force_block.split('\n')

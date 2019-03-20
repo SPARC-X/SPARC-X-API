@@ -156,13 +156,14 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True, comment = ''):
         
         if scaled == False:
             fileobj.write('COORD:\n')
-            positions = atoms.get_postions()
+            positions = atoms.get_positions()
+            positions /= Bohr
         else:
             fileobj.write('COORD_FRAC:\n')
             positions = atoms.get_scaled_positions()
         for atom, position in zip(atoms, positions):
             if atom.symbol == element:
                 for component in position:
-                    fileobj.write('    ' + str(component / Bohr))
+                    fileobj.write('    ' + str(component))
                 fileobj.write('\n')
         fileobj.write('\n\n')

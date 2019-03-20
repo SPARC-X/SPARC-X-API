@@ -158,7 +158,7 @@ def parse_output(label = 'sprc-calc', write_traj = False):
 
     # Make a list containing the elements of each atom in order
     chemical_symbols = []
-    for sym,num in zip(elements,numbers):
+    for sym, num in zip(elements, numbers):
         chemical_symbols += num * [sym]
 
     if not os.path.isfile(label + '.relax'):

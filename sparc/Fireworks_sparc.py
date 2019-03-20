@@ -21,10 +21,10 @@ class RunSparcASE(FiretaskBase):
         parameter_dict (Dict): A dictionary of input parameters to run SPARC with
         
     """
-    required_params = ['atoms', 'parameter_dict','to_db']
+    required_params = ['atoms', 'parameter_dict','to_db','identifier','db_file']
     optional_params = ['sparc_command']
 
-    _fw_name = 'Write Sparc Input From Dict'
+    _fw_name = 'Run SPARC-X'
     def run_task(self,fw_spec):
         #if self.get("expand_vars"):
         #    os.environ['ASE_SPARC_COMMAND'] = fw_spec['sparc_command']
@@ -36,8 +36,15 @@ class RunSparcASE(FiretaskBase):
         atoms.set_calculator(calc)
         calc.calculate()
         if self['to_db'] == True:
-            calc.calc_to_mongo( 
-                           )
+            from json import load
+            db_info = load(open(self['db_file'],'r'))
+            id_ = calc.calc_to_mongo(**db_info )
+            if self['identifier'] is not None:
+                db = MongoDatabase(**db_info)
+                db.modify(id_,{'identifier':self['identifier']})
+                print(id_)
+        formula = atoms.get_chemical_formula()
+
         formula = atoms.get_chemical_formula()
         try:
             os.system('cp sprc-calc.Dens /gpfs/pace1/project/chbe-medford/medford-share/users/xlei38/sparc_w_print_executable/molecular_systems/density_files/' + formula + '.Dens')
@@ -54,6 +61,7 @@ class Sparc_SCF_FW(Firework):
                  db_file = None,
                  parents = None,
                  to_db = False,
+                 identifier = None,
                  **kwargs
                  ):  
         """
@@ -88,25 +96,33 @@ class Sparc_SCF_FW(Firework):
         t.append(RunSparcASE(atoms = atoms, parameter_dict = parameters,
              sparc_command = sparc_command, 
              psuedo_potentials_path = psuedo_potentials_path,
-             to_db = to_db))
+             to_db = to_db,
+             db_file = db_file,
+             identifier = identifier))
         super(Sparc_SCF_FW, self).__init__(t, parents=parents, name="{}-{}".
                                          format(
                                              dict_atoms(atoms).get_chemical_formula(), name),
                                          **kwargs)
 
-def get_sparc_convergence_tests(structures, parameters = default_parameters,
+def get_sparc_runs(structures, parameters = default_parameters,
                                 sparc_command = None,
                                 to_db = True,
-                                psuedo_potentials_path = None):
+                                db_file = None,
+                                psuedo_potentials_path = None,
+                                identifiers = None):
     fws = []
     if type(parameters) != list:  # If no list of parameters is given, use the same for all
         parameters = [parameters] * len(structures) 
-    for struct, param in zip(structures, parameters):
+    if type(identifiers) != list:
+        identifiers = [identifiers]
+    for struct, param, identifier in zip(structures, parameters, identifiers):
         name = struct.get_chemical_formula()
         fws.append(Sparc_SCF_FW(atoms_dict(struct),param,
                     sparc_command = sparc_command,
                     psuedo_potentials_path = psuedo_potentials_path,
-                    to_db = to_db))
+                    to_db = to_db,
+                    db_file = db_file,
+                    identifier = identifier))
     return Workflow(fws, name="{} tests wf, e.g.,".format(len(fws)))
     #return Workflow(fws, name="{} tests wf, e.g., {}".format(len(fws), fws[0].name))
 
