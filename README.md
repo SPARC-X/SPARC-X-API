@@ -33,7 +33,7 @@ To enable the SPARC calculator to work you need to tell it what command to use t
 
 `export SPARC_PSP_PATH=[location of pseudopotentials]`
 
-The `ASE_SPARC_COMMAND` variable is somewhat tricky to set up. All the information about parallelization should be included (i.e. `mpirun -np X`) and the word `PREFIX` should be put in after the `-name` flag for SPARC. Here is an example command:
+The `ASE_SPARC_COMMAND` variable is somewhat tricky to set up. All the information about parallelization should be included where appropriate in the command (i.e. `mpirun -np X`.) SPARC takes in a flag `-name` followed by the prefix of the input file names. This wrapper deals with the prefixes completely internally, but the word `PREFIX` should be put in after the `-name` flag for SPARC. Here is an example command if the `sparc` executable is in your `$PATH` environment variable:
 
 `mpirun -np $PBS_NP sparc -name PREFIX`
 
