@@ -17,7 +17,7 @@ all_properties = ['energy', 'forces', 'stress', 'dipole',
 
 all_changes = ['positions', 'numbers', 'cell', 'pbc',
                'initial_charges', 'initial_magmoms']
-required_manual = ['PSEUDOPOTENTIAL_FILE','CELL','EXCHAGE_CORRELATION','FD_GRID','PSEUDOPOTENTIAL_LOCAL','KPOINT_GRID', 'LATVEC']
+required_manual = ['PSEUDOPOTENTIAL_FILE','CELL','EXCHANGE_CORRELATION','FD_GRID','PSEUDOPOTENTIAL_LOCAL','KPOINT_GRID', 'LATVEC']
 default_parameters = {
             # 'label': 'sprc-calc',
             # 'calculation_directory':'sprk.log',
@@ -29,7 +29,12 @@ default_parameters = {
             'MIXING_PARAMETER': 0.30,
             'CHEN_DEGREE': 20,
             'NSTATES': None,
+            'SMEARING': None,
             'MAXIT_SCF': 100,
+            'BETA': 1000,
+            'ELEC_TEMP': None,
+            'CALC_STRESS': None,
+            'CALC_PRES': None,
             'TOL_SCF': 1.00E-05,
             'TOL_POISSON': 1.00E-06,
             'TOL_LANCZOS': 1.00E-02,
@@ -56,6 +61,7 @@ default_parameters = {
             'FD_GRID': None,
             'FD_ORDER': 12,
             'ELEC_TEMP': 315.775131,
+            'ELEC_TEMP_TYPE': None,
             'CHEB_DEGREE': 25,
             #'NTYPES': None,
 
@@ -77,6 +83,15 @@ default_parameters = {
             'L_AUTOSCALE': 1,
             'L_LINEOPT': 1,
             'L_ICURV': 1.000000,
+
+            'MD_FLAG': None,
+            'MD_METHOD': None,
+            'MD_TIMESTEP': None,
+            'MD_NSTEP': None,
+            'PRINT_RESTART_FQ': None,
+            'RESTART_FLAG': None,
+            'ION_TEMP': None,
+            'ION_ELEC_EQT': None,
 
                         }
 
@@ -101,64 +116,7 @@ class SPARC(FileIOCalculator):
     """
     
     implemented_properties = ['energy', 'forces']
-    """
-    default_parameters = {
-            # 'label': 'sprc-calc',
-            # 'calculation_directory':'sprk.log',
-            
-            
-            'BOUNDRY_CONDITION': 2,
-            'EXCHANGE_CORRELATION': 'LDA_PZ',  # 'LDA'
-            'KPOINT_GRID': (1, 1, 1),
-            'MIXING_PARAMETER': 0.30,
-            'CHEN_DEGREE': 20,
-            'NSTATES': None,
-            'MAXIT_SCF': 100,
-            'TOL_SCF': 1.00E-05,
-            'TOL_POISSON': 1.00E-08,
-            'TOL_LANCZOS': 1.00E-02,
-            'TOL_PSEUDOCHARGE': 1.00E-08,
-            'MIXING_PARAMETER': 0.30,
-            'MIXING_HISTORY': 7,
-            'PULAY_FREQUENCY': 1,
-            'PULAY_RESTART': 0,
-            'REFERENCE_CUTOFF': 0.50,
-            'RHO_TRIGER': 3,
-            'PRINT_FORCES': 0,
-            'PRINT_ATOMS': 0,
-            'PRINT_EIGEN': 0,
-            'PRINT_DENSITY': 0,
-            'PRINT_RESTART_FQ': 1,
-            'PSEUDOPOTENTIAL_LOCAL': 4,
-            # 'PSEUDOPOTENTIAL_FILE': '../psdpots/psd_oncv_{}.pot',
-            'OUTPUT_FILE': None,
-            
-            'NP_KPOINT_PARAL': None,
-            'NP_BAND_PARAL': None,
-            'NP_DOMAIN_PARAL': None,
-            'NP_DOMAIN_PHI_PARAL': None,
-            'CELL': None,
-            'FD_GRID': None,
-            'FD_ORDER': 12,
-
-            'TOL_RELAX': 1.00E-03,
-            'PRINT_RELAXOUT': 0,
-            'RELAX_FLAG': 0,
-            'RELAX_METHOD': 'NLCG',
-            
-                        }
     
-    equivalencies = {
-            'xc': 'EXCHANGE_CORRELATION',
-            'kpts': 'KPOINT_GRID',
-            'nbands': 'NSTATES',
-            
-            'gpts': 'FD_GRID'
-            
-            
-            }
-    misc = {'h': 'grid_spacing', }
-   """ 
     def __init__(self, restart=None, ignore_bad_restart=False,
                  label='sprc-calc', atoms=None, command=None,
                  write_defaults=False, verbosity='normal', **kwargs):
@@ -211,7 +169,6 @@ class SPARC(FileIOCalculator):
         FileIOCalculator.__init__(self, restart, ignore_bad_restart, label,
                                   atoms, command)
         self.atoms = atoms
-        self.num_calculations = 0
         if 'PRINT_FORCES' not in kwargs and 'PRINT_ATOMS' not in kwargs and \
         'PRINT_EIGEN' not in kwargs and 'PRINT_DENSITY' not in kwargs:
             if verbosity == 'low':
@@ -268,12 +225,8 @@ class SPARC(FileIOCalculator):
             os.makedirs(directory)
 
         os.chdir(directory)
-#        if [a == 90 for a in atoms.get_cell_lengths_and_angles()[3:]]\
-#               != [True, True, True]:  # check cell is a rectangle
-#           raise NotImplementedError("""Unit cells must be rectangular\
-#, non-orthogonoal cells are currently under development'""")
 
-        # replace all arguments that are nNone by default with None in the input dict
+        # replace all arguments that are None by default with None in the input dict
         for key in default_parameters:  
             if key not in kwargs.keys() and default_parameters[key] == None:
                 kwargs[key] = None
@@ -350,14 +303,6 @@ class SPARC(FileIOCalculator):
                 for element in lat_vec:
                     f.write(str(element) + ' ')
 
-            """
-        elif round(float(np.linalg.norm(atoms.cell)), 1) == 0:
-            f.write('CELL:')
-            cell = np.eye(3) * (np.max(atoms.positions, axis=0) + (6, 6, 6))
-            atoms.set_cell(cell)
-            for cell_param in atoms.get_cell_lengths_and_angles()[0:3]:
-                f.write(' ' + str((cell_param) / Bohr))
-            atoms.center()"""
         f.write('\n')
         # input finite difference grid
         f.write('FD_GRID:')
@@ -398,22 +343,22 @@ class SPARC(FileIOCalculator):
             If issue with pseudos not being in an absolute path and the
             limited length of file location is fixed this code will become
             useful
-        elif 'PSP_PATH' in os.environ:
+        elif 'SPARC_PSP_PATH' in os.environ:
             f.write('PSEUDOPOTENTIAL_FILE: ')
             for element in sorted(list(set(atoms.get_chemical_symbols()))):
-                psp_path = os.path.join(os.environ['PSP_PATH'],'psd_oncv_'+element+'.pot')
+                psp_path = os.path.join(os.environ['SPARC_PSP_PATH'],'psd_oncv_'+element+'.pot')
                 f.write(psp_path+' ')
             f.write('\n')
         """
         """
-        elif 'PSP_PATH' in os.environ:
+        elif 'SPARC_PSP_PATH' in os.environ:
             f.write('PSEUDOPOTENTIAL_FILE: ')
             for element in sorted(list(set(atoms.get_chemical_symbols()))):
-                pseudos_in_dir = [a for a in os.listdir(os.environ['PSP_PATH']) \
+                pseudos_in_dir = [a for a in os.listdir(os.environ['SPARC_PSP_PATH']) \
                             if a.endswith(element+'.pot')]
-                filename = [a for a in os.listdir(os.environ['PSP_PATH']) \
+                filename = [a for a in os.listdir(os.environ['SPARC_PSP_PATH']) \
                             if a.endswith(element+'.pot')][0]
-                os.system('cp $PSP_PATH/' + filename + ' .')
+                os.system('cp $SPARC_PSP_PATH/' + filename + ' .')
                 if pseudos_in_dir != [] and len(pseudos_in_dir) > 1:
                     f.write(pseudos_in_dir[0] + ' ')
                 else:
@@ -486,10 +431,9 @@ class SPARC(FileIOCalculator):
                 f.write('\n')
         #write the atomic positions file (.ion file)
         write_ion(open(os.path.join(directory, label) + '.ion','w'),
-                  atoms, pseudo_dir = os.environ['PSP_PATH'],
+                  atoms, pseudo_dir = os.environ['SPARC_PSP_PATH'],
                   scaled = False)
 
- 
     def calculate(self, atoms=None, properties=['energy'],
                   system_changes=all_changes):
         """Do the calculation.
@@ -525,36 +469,37 @@ class SPARC(FileIOCalculator):
         self.write_input(atoms = atoms, verbosity = self.verbosity,
                          label = self.label,directory = self.directory, 
                          **self.parameters)
+        os.environ['MV2_ENABLE_AFFINITY'] = '1'
+        os.environ['MV2_CPU_BINDING_POLICY'] = 'bunch'
         if self.command is None:
             raise RuntimeError(
                 'Please set ${} environment variable '
                 .format('ASE_' + self.name.upper() + '_COMMAND') +
                 'or supply the command keyword')
-        #This is designed only for PACE at the moment
-        if 'PBS_NODEFILE' in os.environ:
-            f = open(os.environ['PBS_NODEFILE'],'r')
-            nodes = len(f.readlines())
-            self.num_nodes = nodes
-        #command = self.command.replace('PREFIX', self.prefix)
         #errorcode = subprocess.call(command, shell=True, cwd=self.directory)
-            errorcode = 9999  # initialize a non-zero errorcode
+            errorcode = 20  # initialize a non-zero errorcode
             tries = 0
+            # random codes failures at the end have been mitigated with
+            # a while loop
+            command = self.command.replace('PREFIX', self.prefix)
+
             while errorcode !=0:
-            #time.sleep(2) # 2 second cushion on either side for safety, can be removed later
-                errorcode = subprocess.call('mpirun '
-                                    +'-env MV2_ENABLE_AFFINITY=1 -env '
-                                    +'MV2_CPU_BINDING_POLICY=bunch'
-                                    +' -np ' + str(self.num_nodes) + ' '
-                                    +self.command + ' -name ' + self.prefix,
+                #errorcode = subprocess.call('mpirun '
+                                    #+'-env MV2_ENABLE_AFFINITY=1 -env '
+                                    #+'MV2_CPU_BINDING_POLICY=bunch'
+                                    #+' -np ' + str(self.num_nodes) + ' '
+                                    #+self.command + ' -name ' + self.prefix,
                                     #+' -log_summary > mpi.log'+
-                                    shell=True, cwd=self.directory)
+                                    #shell=True, cwd=self.directory)
+                errorcode = subprocess.call(command, shell = True,
+                                            cwd = self.directory)
                 self.concatinate_output()
                 tries += 1
-                if tries > 1000:
+                if tries > 4:
                     break
-            #time.sleep(2)
         else:
-            errorcode = subprocess.call(self.command + ' -name ' + self.prefix,
+            command = self.command.replace('PREFIX', self.prefix)
+            errorcode = subprocess.call(command,
                                     shell=True, cwd=self.directory)
 
         if errorcode:
@@ -564,8 +509,6 @@ class SPARC(FileIOCalculator):
         self.read_results()
         if self.converged == False:
             Warning('SPARC did not converge')
-        self.num_calculations += 1
-        
         
     def read_results(self):
         """"
@@ -582,8 +525,16 @@ class SPARC(FileIOCalculator):
         if 'RELAX_FLAG' in self.parameters:
             if self.parameters['RELAX_FLAG'] == 1:
                 cell = self.atoms.cell
-                self.atoms,params = parse_output(self.label)
+                self.atoms, params = parse_output(self.label,
+                                                  calc_type = 'relax')
                 self.atoms.cell = cell
+        if 'MD_FLAG' in self.parameters:
+            if self.parameters['MD_FLAG'] == 1:
+                cell = self.atoms.cell
+                self.atoms, params = parse_output(self.label,
+                                                  calc_type = 'MD')
+                self.atoms.cell = cell
+
             
         output = self.label + '.out'
 
@@ -605,19 +556,21 @@ class SPARC(FileIOCalculator):
         energy_force_block = energy_force_block.split('\n')
         output_energies_in_order = []
         #energy_force_block = body.rsplit('Energy and atomic forces')[-1]
-        for energy in energy_force_block[2:8]:
+        for energy in energy_force_block[2:9]:
             _,eng = energy.split(':')
-            output_energies_in_order.append(float(eng.strip()[:-5]))
+            eng,_ = eng.split('(')
+            output_energies_in_order.append(float(eng.strip()))
         
         # read forces, forces are in Ha/Bohr
         if 'PRINT_FORCES: 1' in log_text:
             forces = np.empty((len(self.atoms),3))
-            for i,force in enumerate(energy_force_block[9:-5]):
+            for i,force in enumerate(energy_force_block[10:-5]):
                 forces[i,:] = [float(a) for a in force.split()]
 
         # This is the order these values are in in the output        
-        free_eng, band_struc_eng, xc_eng, self_corr_eng, \
-        Entr_kbt, fermi_level = output_energies_in_order
+        p_atom_eng, free_eng, band_struc_eng, xc_eng, \
+        self_corr_eng, Entr_kbt, fermi_level \
+        = output_energies_in_order
 
         self.results = {
                 'energy': free_eng * Hartree,
@@ -748,17 +701,25 @@ class SPARC(FileIOCalculator):
         dict_version = OrderedDict()
         for item in default_parameters:  # rewrite this section
             if item in self.kwargs.keys():
-                if self.kwargs[item] == default_parameters[item] and only_nondefaults == True:
+                
+                if item == 'LATVEC':
+                    dict_version[item] = self.kwargs[item]
+                elif self.kwargs[item] == default_parameters[item] and\
+                   only_nondefaults == True:
                     pass
                 elif type(self.kwargs[item]) == dict:
                     dict_version[item] = OrderedDict(self.kwargs[item])
                 else:
                     dict_version[item] = self.kwargs[item]
+                
             elif only_nondefaults == False:
                 dict_version[item] = default_parameters[item]
         if hasattr(self,'converged'):
             dict_version['SCF-converged'] = self.converged
         f = os.popen('tail ' + self.label + '.out')
+        
+
+        # Check if SPARC terminated normally
         if ' U.S. National Science' in f.readlines()[-2]:
             dict_version['SPARC-completed'] = True
         dict_version['path'] = os.path.abspath('.').split(os.sep)[1:]
@@ -779,6 +740,10 @@ class SPARC(FileIOCalculator):
         steps = self.get_scf_steps()
         if steps is not None:
             dict_version['SCF-steps'] = steps
+        f = os.popen('grep "Total number of electrons" {}.out | tail -1'.format(self.label))
+        if f is not None:
+            txt = f.read()
+            dict_version['nvalence'] = float(txt.split(':')[1].strip())
         dict_version['name'] = 'SPARC-X'
         # Try to get a version. Since the code is in alpha, this is just the
         # time of the most recent commit.

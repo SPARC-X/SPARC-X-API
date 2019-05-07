@@ -101,7 +101,12 @@ def read_ion(fileobj):  # ,index):
             frac = 'COORD_FRAC' in comments_removed[i + 4]
             if frac and sum(sum(atoms.cell)) == 0:
                 raise(Exception('There is no specified unit cell and the coordinates are in fractional units. This file cannot be converted to an atoms object'))
-            for coord_set in comments_removed[i + 5: i + num + 5]:
+            if 'ATOMIC MASS' in ''.join(comments_removed) or \
+               'ATOMIC_MASS' in ''.join(comments_removed):
+                offset = 5
+            else:
+                offset = 4
+            for coord_set in comments_removed[i + offset: i + num + offset]:
                 if frac:
                     x1, x2, x3 = [float(a) for a in coord_set.split()]
                     x, y, z = sum([x * a for x, a in zip([x1, x2, x3], atoms.cell)])
@@ -143,11 +148,11 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True, comment = ''):
         fileobj.write(str(atoms.get_chemical_symbols().count(element)) + '\n')
 
         if pseudo_dir is not None:
-            pseudos_in_dir = [a for a in os.listdir(os.environ['PSP_PATH']) \
+            pseudos_in_dir = [a for a in os.listdir(os.environ['SPARC_PSP_PATH']) \
                         if a.endswith(element+'.pot')]
-            filename = [a for a in os.listdir(os.environ['PSP_PATH']) \
+            filename = [a for a in os.listdir(os.environ['SPARC_PSP_PATH']) \
                         if a.endswith(element+'.pot')][0]
-            os.system('cp $PSP_PATH/' + filename + ' .')
+            os.system('cp $SPARC_PSP_PATH/' + filename + ' .')
             fileobj.write('PSEUDO_POT: {}\n'.format(filename)) 
             
             atomic_number = chemical_symbols.index(element)

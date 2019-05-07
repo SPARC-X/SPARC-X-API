@@ -8,7 +8,7 @@ Created on Thu Oct 18 12:52:34 2018
 
 import numpy as np
 from ase.data import chemical_symbols
-from ase.units import Bohr, Hartree
+from ase.units import Bohr, Hartree, fs
 from ase.io.jsonio import encode
 from ase.atoms import Atoms
 from ase.atom import Atom
@@ -72,7 +72,7 @@ def dict_atoms(d):
                           constraint=[dict2constraint(c) for c in d['constraints']])
     return atoms
 
-def parse_output(label = 'sprc-calc', write_traj = False):
+def parse_output(label = 'sprc-calc', calc_type = None, write_traj = False):
     """
     Parses almost all useful information from the SPARC
     output file
@@ -161,10 +161,22 @@ def parse_output(label = 'sprc-calc', write_traj = False):
     for sym, num in zip(elements, numbers):
         chemical_symbols += num * [sym]
 
-    if not os.path.isfile(label + '.relax'):
-        return None
+    #if not os.path.isfile(label + '.relax'):
+    #if os.path.isfile(label + '.relax'):
+    if calc_type == 'relax':
+        return parse_relax(label, write_traj = write_traj,
+                           pbc = pbc, cell = cell,
+                           chemical_symbols = chemical_symbols), input_dict
+    elif calc_type == 'MD':
+        return parse_MD(label, write_traj = write_traj,
+                        pbc = pbc, cell = cell,
+                        chemical_symbols = chemical_symbols), input_dict
 
+
+def parse_relax(label, write_traj = False, 
+                pbc = False, cell = None,chemical_symbols = []):
     f = open(label + '.relax')
+    #f = open(label + '.restart')
     text = f.read()
     # Parse out the steps
     steps = text.split(':RELAXSTEP:')[1:]
@@ -198,7 +210,48 @@ def parse_output(label = 'sprc-calc', write_traj = False):
         if write_traj ==True:
             traj.write(atoms)
     atoms.set_calculator()
-    return atoms, input_dict
+    return atoms
+
+def parse_MD(label, write_traj = False, pbc = False, cell = None, chemical_symbols = []):
+    f = open(label + '.aimd')
+    #f = open(label + '.restart')
+    text = f.read()
+    # Parse out the steps
+    steps = text.split(':MDSTEP:')[1:]
+    if write_traj == False:
+        steps = [steps[-1]]
+    else:
+        traj = Trajectory(label + '.traj', mode = 'w')
+
+    # Parse out the energies
+    n_images = len(steps)
+    s = os.popen('grep "Total free energy" ' + label + '.out')
+    engs = s.readlines()[-n_images:]
+    engs = [float(a.split()[-2]) * Hartree for a in engs]
+    s.close()
+
+    # build a traj file out of the steps
+    for j, step in enumerate(steps):
+        positions = step.split(':')[2].strip().split('\n')
+        forces = step.split(':')[18].strip().split('\n')
+        velocities = step.split(':')[20].strip().split('\n')
+        frc = np.empty((len(forces), 3))
+        vel = np.empty((len(velocities), 3))
+        atoms = Atoms()
+        for i, f, v in zip(range(len(forces)), forces, velocities):
+            frc[i,:] = [float(a) * Hartree * Bohr for a in f.split()]
+            vel[i,:] = [float(a) / Bohr / fs  for a in v.split()]
+            atoms += Atom(chemical_symbols[i],
+                          [float(a) * Bohr for a in positions[i].split()])
+        atoms.set_calculator(SinglePointCalculator(atoms, energy = engs[j],
+                                                   forces=frc))
+        atoms.set_velocities(vel)
+        atoms.set_pbc(pbc)
+        atoms.cell = cell
+        if write_traj ==True:
+            traj.write(atoms)
+    atoms.set_calculator()
+    return atoms    
 
 def Ecut2h(FDn,Ecut,tol=0.1):
     #to do complete python conversion and integrate
@@ -315,3 +368,9 @@ def h2Ecut():
     N_r = (h_pw / h)^3
     """    
         
+def cutoff2gridspacing(E):
+    """Convert planewave energy cutoff to a real-space gridspacing.
+       Taken from GPAW
+    """
+    return np.pi / np.sqrt(2 * E / Hartree) * Bohr
+
