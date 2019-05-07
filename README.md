@@ -27,13 +27,17 @@ Currently installation is barebones, simply clone this repository (`git clone ht
 
 ## Usage
 
-To enable the SPARC calculator to work you need to tell it where your sparc executable is and where your pseudopotentials are. These should be stored in the environment variables `$ASE_SPARC_COMMAND` and `$PSP_PATH` respectively. e.g.:
+To enable the SPARC calculator to work you need to tell it what command to use to run sparc and where your pseudopotentials are. These should be stored in the environment variables `$ASE_SPARC_COMMAND` and `$SPARC_PSP_PATH` respectively. e.g.:
 
-`export ASE_SPARC_COMMAND=[location of SPARC executable]`
+`export ASE_SPARC_COMMAND=[command to run SPARC]`
 
-`export PSP_PATH=[location of pseudopotentials]`
+`export SPARC_PSP_PATH=[location of pseudopotentials]`
 
-Once those environment varible are in place, the SPARC ASE calculator works like any other ASE calculator. It must be imported, instantiated, and called here is some example code for calculating bulk Si:
+The `ASE_SPARC_COMMAND` variable is somewhat tricky to set up. All the information about parallelization should be included (i.e. `mpirun -np X`) and the word `PREFIX` should be put in after the `-name` flag for SPARC. Here is an example command:
+
+`mpirun -np $PBS_NP sparc -name PREFIX`
+
+Once those environment varibles are in place, the SPARC ASE calculator works like any other ASE calculator. It must be imported, instantiated, and called here is some example code for calculating bulk Si:
 
 ~~~
 #get sparc calculator
