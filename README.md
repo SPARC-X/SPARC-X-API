@@ -3,6 +3,11 @@
 sparc-x_ase is an ASE based python wrapper for the density functional theory (DFT) code SPARC. SPARC is under heavy software development, so much of this wrapper is likely to change. However, the wrapper is functional for single point energy calculations.
 
 ## Installation:
+The following command should install the package:
+
+~~~
+pip install git+https://github.com/SPARC-X/pysparcx/
+~~~
 
 prerequisites:
 
