@@ -225,16 +225,23 @@ def parse_MD(label, write_traj = False, pbc = False, cell = None, chemical_symbo
 
     # Parse out the energies
     n_images = len(steps)
-    s = os.popen('grep "Total free energy" ' + label + '.out')
+    s = os.popen('grep ":FEN(Ha/atom):" ' + label + '.aimd')
     engs = s.readlines()[-n_images:]
-    engs = [float(a.split()[-2]) * Hartree for a in engs]
+    engs = [float(a.split()[-1]) * Hartree for a in engs]
     s.close()
 
     # build a traj file out of the steps
     for j, step in enumerate(steps):
-        positions = step.split(':')[2].strip().split('\n')
-        forces = step.split(':')[18].strip().split('\n')
-        velocities = step.split(':')[20].strip().split('\n')
+        # Find Indicies
+        colons = step.split(':')
+        pos_index = colons.index('R(Bohr)') + 1
+        frc_index = colons.index('F(Ha/Bohr)') + 1
+        vel_index = colons.index('V(Bohr/atu)') + 1 
+        # Parse the text
+        positions = colons[pos_index].strip().split('\n')
+        forces = colons[frc_index].strip().split('\n')
+        velocities = colons[vel_index].strip().split('\n')
+        # Initialize the arrays
         frc = np.empty((len(forces), 3))
         vel = np.empty((len(velocities), 3))
         stress = np.zeros((3, 3))
@@ -245,15 +252,16 @@ def parse_MD(label, write_traj = False, pbc = False, cell = None, chemical_symbo
             atoms += Atom(chemical_symbols[i],
                           [float(a) * Bohr for a in positions[i].split()])
         if 'STRESS' in step:
-            stress_index = step.split('\n').index(':STRESS_TOT(GPa):') + 1
-            for i, s in enumerate(step.split('\n')[stress_index:stress_index + 3]):
+            stress_index = colons.index('STRESS_TOT(GPa)') + 1
+            for i, s in enumerate(colons[stress_index].strip().split('\n')):
                 stress[i,:] = [float(a) * GPa for a in s.split()]
-        atoms.set_calculator(SinglePointCalculator(atoms, energy = engs[j],
-                                                   stress = stress,
-                                                   forces=frc))
         atoms.set_velocities(vel)
         atoms.set_pbc(pbc)
         atoms.cell = cell
+        atoms.set_calculator(SinglePointCalculator(atoms, 
+                                                   energy = engs[j] * len(atoms),
+                                                   stress = stress,
+                                                   forces=frc))
         if write_traj ==True:
             traj.write(atoms)
     atoms.set_calculator()
