@@ -8,7 +8,7 @@ Created on Thu Oct 18 12:52:34 2018
 
 import numpy as np
 from ase.data import chemical_symbols
-from ase.units import Bohr, Hartree, fs
+from ase.units import Bohr, Hartree, fs, GPa
 from ase.io.jsonio import encode
 from ase.atoms import Atoms
 from ase.atom import Atom
@@ -237,13 +237,19 @@ def parse_MD(label, write_traj = False, pbc = False, cell = None, chemical_symbo
         velocities = step.split(':')[20].strip().split('\n')
         frc = np.empty((len(forces), 3))
         vel = np.empty((len(velocities), 3))
+        stress = np.zeros((3, 3))
         atoms = Atoms()
         for i, f, v in zip(range(len(forces)), forces, velocities):
             frc[i,:] = [float(a) * Hartree * Bohr for a in f.split()]
             vel[i,:] = [float(a) / Bohr / fs  for a in v.split()]
             atoms += Atom(chemical_symbols[i],
                           [float(a) * Bohr for a in positions[i].split()])
+        if 'STRESS' in step:
+            stress_index = step.split('\n').index(':STRESS_TOT(GPa):') + 1
+            for i, s in enumerate(step.split('\n')[stress_index:stress_index + 3]):
+                stress[i,:] = [float(a) * GPa for a in s.split()]
         atoms.set_calculator(SinglePointCalculator(atoms, energy = engs[j],
+                                                   stress = stress,
                                                    forces=frc))
         atoms.set_velocities(vel)
         atoms.set_pbc(pbc)
