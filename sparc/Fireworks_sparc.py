@@ -108,6 +108,7 @@ def get_sparc_runs(structures, parameters = default_parameters,
                                 sparc_command = None,
                                 to_db = True,
                                 db_file = None,
+                                optimize = False,
                                 psuedo_potentials_path = None,
                                 identifiers = None):
     fws = []
@@ -115,9 +116,13 @@ def get_sparc_runs(structures, parameters = default_parameters,
         parameters = [parameters] * len(structures) 
     if type(identifiers) != list:
         identifiers = [identifiers]
+    if optimize == False:
+        FW = Sparc_SCF_FW
+    else:
+        FW = Sparc_Optimize_FW 
     for struct, param, identifier in zip(structures, parameters, identifiers):
         name = struct.get_chemical_formula()
-        fws.append(Sparc_SCF_FW(atoms_dict(struct),param,
+        fws.append(FW(atoms_dict(struct),param,
                     sparc_command = sparc_command,
                     psuedo_potentials_path = psuedo_potentials_path,
                     to_db = to_db,
@@ -243,4 +248,100 @@ def get_sparc_lattice_optimizations(structures, parameters = default_parameters,
                     identifier = identifier,
                     to_db = to_db))
     return Workflow(fws, name="{} tests wf, e.g.,".format(len(fws)))
+
+
+@explicit_serialize
+class OptimizeSparcASE(FiretaskBase):
+    """
+    Runs SPARC using ASE based on some input dictionary
+
+    Args:
+        atoms (Atoms Object): An ase atoms object to run SPARC on
+        parameter_dict (Dict): A dictionary of input parameters to run SPARC with
+        
+    """
+    required_params = ['atoms', 'parameter_dict','to_db','identifier','db_file','fmax']
+    optional_params = ['sparc_command']
+
+    _fw_name = 'Run SPARC-X'
+    def run_task(self,fw_spec):
+        from ase.optimize import QuasiNewton
+        parameter_dict = self['parameter_dict']
+        atoms = dict_atoms(self['atoms'])
+        calc = SPARC(**parameter_dict)
+        atoms.set_calculator(calc)
+        relax = QuasiNewton(atoms,logfile='opt.log',
+                            trajectory='opt.traj',
+                            restart='opt.pckl')
+        relax.run(self['fmax'])
+        if self['to_db'] == True:
+            from json import load
+            db_info = load(open(self['db_file'],'r'))
+            id_ = calc.calc_to_mongo(**db_info )
+            if self['identifier'] is not None:
+                db = MongoDatabase(**db_info)
+                db.modify(id_,{'identifier':self['identifier']})
+                print(id_)
+        formula = atoms.get_chemical_formula()
+
+        formula = atoms.get_chemical_formula()
+        try:
+            os.system('cp sprc-calc.Dens /gpfs/pace1/project/chbe-medford/medford-share/users/xlei38/sparc_w_print_executable/molecular_systems/density_files/' + formula + '.Dens')
+        except:
+            pass
+
+
+class Sparc_Optimize_FW(Firework):
+    def __init__(self, atoms,
+                 parameters = default_parameters,
+                 name = 'SPARC SCF',
+                 sparc_command = None,
+                 psuedo_potentials_path = None,
+                 db_file = None,
+                 parents = None,
+                 to_db = False,
+                 identifier = None,
+                 fmax = 0.02,
+                 **kwargs
+                 ):
+        """
+        Runs an SCF calculation in SPARC on the given structure
+
+        Args:
+            atoms (Atoms Object or Pymatgen Structure): Input structure
+        
+            name (str): Name for the Firework
+        
+            parameters (Dict): the input parameters for SPARC
+        
+            sparc_command (str): optional, a command used by ase to run SPARC.
+                This can also be set with the $ASE_SPARC_COMMAND environment
+                variable.
+
+            psuedo_potentials_path (str): optional, a path to the pseudopotentials
+                you'd like used. This can also be set using the $PSP_PATH environment
+                Variable.
+
+            db_file (str): Not implemented
+
+            parents ([Firework]): Parents of this Firework
+        """
+
+        t = []
+        try:
+            translator = AseAtomsAdaptor()
+            atoms = translator.get_atoms(atoms)
+        except:
+            pass
+        t.append(OptimizeSparcASE(atoms = atoms, parameter_dict = parameters,
+             sparc_command = sparc_command,
+             psuedo_potentials_path = psuedo_potentials_path,
+             to_db = to_db,
+             db_file = db_file,
+             identifier = identifier,
+             fmax = fmax))
+        super(Sparc_Optimize_FW, self).__init__(t, parents=parents, name="{}-{}".
+                                         format(
+                                             dict_atoms(atoms).get_chemical_formula(), name),
+                                         **kwargs)
 

@@ -179,6 +179,8 @@ def parse_relax(label, write_traj = False,
     #f = open(label + '.restart')
     text = f.read()
     # Parse out the steps
+    if text == '':
+        return None
     steps = text.split(':RELAXSTEP:')[1:]
     if write_traj == False:
         steps = [steps[-1]]
@@ -199,7 +201,7 @@ def parse_relax(label, write_traj = False,
         frc = np.empty((len(forces), 3))
         atoms = Atoms()
         for i,f in enumerate(forces):
-            frc[i,:] = [float(a) * Hartree * Bohr for a in f.split()]
+            frc[i,:] = [float(a) * Hartree / Bohr for a in f.split()]
             atoms += Atom(chemical_symbols[i],
                           [float(a) * Bohr for a in positions[i].split()])
         
@@ -216,6 +218,8 @@ def parse_MD(label, write_traj = False, pbc = False, cell = None, chemical_symbo
     f = open(label + '.aimd')
     #f = open(label + '.restart')
     text = f.read()
+    if text == '':
+        return None
     # Parse out the steps
     steps = text.split(':MDSTEP:')[1:]
     if write_traj == False:
@@ -247,7 +251,7 @@ def parse_MD(label, write_traj = False, pbc = False, cell = None, chemical_symbo
         stress = np.zeros((3, 3))
         atoms = Atoms()
         for i, f, v in zip(range(len(forces)), forces, velocities):
-            frc[i,:] = [float(a) * Hartree * Bohr for a in f.split()]
+            frc[i,:] = [float(a) * Hartree / Bohr for a in f.split()]
             vel[i,:] = [float(a) / Bohr / fs  for a in v.split()]
             atoms += Atom(chemical_symbols[i],
                           [float(a) * Bohr for a in positions[i].split()])

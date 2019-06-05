@@ -179,7 +179,14 @@ class SPARC(FileIOCalculator):
                 if verbosity == 'high':
                     kwargs['PRINT_EIGEN'] = 1
                     kwargs['PRINT_DENSITY'] = 1
-            
+        
+        # convert smearing to hartree
+        if 'SMEARING' in kwargs:
+            if kwargs['SMEARING'] is not None:
+                kwargs['SMEARING'] /= Hartree
+
+        self.calc_to_database = self.calc_to_mongo
+ 
         self.set(**kwargs)
 
        # self.write_input(atoms=atoms,write_defaults=write_defaults, **kwargs)
@@ -330,6 +337,27 @@ class SPARC(FileIOCalculator):
             for n_pts in fd_grid:
                f.write(' ' + str(n_pts))
         f.write('\n')
+
+        # kpoints
+        if 'kpts' in kwargs:
+            if 'KPOINT_GRID' in kwargs:
+                Warning('both kpts and KPOINT_GRID were input, defaulting to kpts')
+            kwargs['KPOINT_GRID'] = kwargs['kpts']
+        if 'KPOINT_GRID' in kwargs:
+            if kwargs['KPOINT_GRID'] is not None:
+                f.write('KPOINT_GRID: ')
+                if len(kwargs['KPOINT_GRID']) == 3:
+                    for kpoint in kwargs['KPOINT_GRID']:
+                        if type(kpoint) != int:
+                            raise Exception('when KPOINT_GRID is entered as an iterable, the values must be in the integer type (i.e. (4,4,4))')
+                        f.write(str(kpoint) + ' ')
+                elif type(kwargs['KPOINT_GRID']) == str:
+                    if len(kwargs['KPOINT_GRID'].split(' ')) != 3:
+                        raise Exception('when KPOINT_GRID is entered as a string, it must have 3 elements separated by spaces (i.e. \'4 4 4\')')
+                    f.write(kwargs['KPOINT_GRID'])
+                elif len(kwargs['KPOINT_GRID']) != 3 or type(kwargs['KPOINT_GRID']) is not str:
+                    raise Exception('KPOINT_GRID must be either a length 3 object (i.e. (4,4,4)) or a string (i.e. \'4 4 4 \')')
+                f.write('\n')
         
         # deal with pseudopotential file path
         """
@@ -372,6 +400,9 @@ class SPARC(FileIOCalculator):
             f.write('\n')
         """
         # xc should be put in separately
+        if 'xc' in kwargs:
+            kwargs['EXCHANGE_CORRELATION'] = kwargs['xc']
+
         if 'printDens' in os.environ['ASE_SPARC_COMMAND']:
             if 'EXCHANGE_CORRELATION' not in [a.upper() for a in kwargs]:
                 f.write('EXCHAGE_CORRELATION: ' +  # Note the miss-spelling
@@ -398,11 +429,13 @@ class SPARC(FileIOCalculator):
             f.write('PRINT_FORCES: 1\nPRINT_ATOMS: 1\n \
                     PRINT_EIGEN: 1\nPRINT_DENSITY: 1\n')
   
-        ####### Non Minimal Input Arguements Block
+        ####### Non Minimal Input Arguments Block
         # This takes care of all the other parameters, this section does most of the work
 
         for key,value in kwargs.items():
             if key in equivalencies:  # handle ase style inputs such as 'xc'
+                if equivalencies[key] in required_manual:
+                    continue
                 f.write(equivalencies[key]+ ': ' + str(value) + '\n')
 
             elif key in default_parameters.keys() and key not in required_manual:
@@ -469,8 +502,10 @@ class SPARC(FileIOCalculator):
         self.write_input(atoms = atoms, verbosity = self.verbosity,
                          label = self.label,directory = self.directory, 
                          **self.parameters)
-        os.environ['MV2_ENABLE_AFFINITY'] = '1'
-        os.environ['MV2_CPU_BINDING_POLICY'] = 'bunch'
+        if 'PBS_NP' in os.environ:
+            if float(os.environ['PBS_NP']) > 1:
+                os.environ['MV2_ENABLE_AFFINITY'] = '1'
+                os.environ['MV2_CPU_BINDING_POLICY'] = 'bunch'
         if self.command is None:
             raise RuntimeError(
                 'Please set ${} environment variable '
@@ -499,8 +534,16 @@ class SPARC(FileIOCalculator):
                     break
         else:
             command = self.command.replace('PREFIX', self.prefix)
-            errorcode = subprocess.call(command,
+            errorcode = 20  # initialize a non-zero errorcode
+            tries = 0
+
+            while errorcode != 0:
+                errorcode = subprocess.call(command,
                                     shell=True, cwd=self.directory)
+                self.concatinate_output()
+                tries += 1
+                if tries > 4:
+                    break
 
         if errorcode:
             raise RuntimeError('{} in {} returned an error: {}'
@@ -525,15 +568,17 @@ class SPARC(FileIOCalculator):
         if 'RELAX_FLAG' in self.parameters:
             if self.parameters['RELAX_FLAG'] == 1:
                 cell = self.atoms.cell
-                self.atoms, params = parse_output(self.label,
+                atoms, params = parse_output(self.label,
                                                   calc_type = 'relax')
-                self.atoms.cell = cell
+                if atoms is not None:
+                    self.atoms.cell = cell
         if 'MD_FLAG' in self.parameters:
             if self.parameters['MD_FLAG'] == 1:
                 cell = self.atoms.cell
-                self.atoms, params = parse_output(self.label,
+                atoms, params = parse_output(self.label,
                                                   calc_type = 'MD')
-                self.atoms.cell = cell
+                if atoms is not None:
+                    self.atoms.cell = cell
 
             
         output = self.label + '.out'
@@ -577,7 +622,7 @@ class SPARC(FileIOCalculator):
                 'free_energy': free_eng * Hartree,
                 }
         if 'PRINT_FORCES: 1' in log_text:
-            self.results['forces'] =  forces * Hartree * Bohr
+            self.results['forces'] =  forces * Hartree / Bohr
         #print('output read')
         self.fermi_level = fermi_level
        
@@ -792,6 +837,7 @@ class SPARC(FileIOCalculator):
             del kwargs[key]
         return SPARC(atoms = atoms, **kwargs)
             
+
     def calc_to_mongo(self,
                  host='localhost',
                  port=27017,
@@ -816,6 +862,5 @@ class SPARC(FileIOCalculator):
         id_ = db.write(d)
         print('entry was added to db with id {}'.format(id_))
         return id_
-
 
 #   def get_number_of_grid_points(): implement in the future
