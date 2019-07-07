@@ -402,7 +402,7 @@ class SPARC(FileIOCalculator):
         # xc should be put in separately
         if 'xc' in kwargs:
             kwargs['EXCHANGE_CORRELATION'] = kwargs['xc']
-
+            """
         if 'printDens' in os.environ['ASE_SPARC_COMMAND']:
             if 'EXCHANGE_CORRELATION' not in [a.upper() for a in kwargs]:
                 f.write('EXCHAGE_CORRELATION: ' +  # Note the miss-spelling
@@ -410,6 +410,7 @@ class SPARC(FileIOCalculator):
             else:
                 f.write('EXCHAGE_CORRELATION: ' +  # Note the Miss-spelling
                         kwargs['EXCHANGE_CORRELATION'] + '\n')
+            """
         else:
             if 'EXCHANGE_CORRELATION' not in [a.upper() for a in kwargs]:
                 f.write('EXCHANGE_CORRELATION: ' +  # Note the miss-spelling

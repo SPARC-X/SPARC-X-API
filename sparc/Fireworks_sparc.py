@@ -47,7 +47,9 @@ class RunSparcASE(FiretaskBase):
 
         formula = atoms.get_chemical_formula()
         try:
-            os.system('cp sprc-calc.Dens /gpfs/pace1/project/chbe-medford/medford-share/users/xlei38/sparc_w_print_executable/molecular_systems/density_files/' + formula + '.Dens')
+            if self['db_file'] == None:
+                os.system('mkdir /nv/hp13/bcomer3/data/density_outputs/' + self['identifier'])
+                os.system('mv * /nv/hp13/bcomer3/data/density_outputs/' + self['identifier'] + '/')
         except:
             pass
 
