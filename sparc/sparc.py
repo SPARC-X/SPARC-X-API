@@ -4,7 +4,6 @@ import warnings
 import re
 import subprocess
 
-from utilities import h2gpts
 from ase.units import Bohr, Hartree, fs, GPa
 from ase.calculators.calculator import FileIOCalculator
 from ase.calculators.calculator import CalculatorError, CalculatorSetupError
@@ -190,7 +189,7 @@ class SPARC(FileIOCalculator):
             kwargs['h'] = 0.15
         
         if 'h' in kwargs:
-            fd_grid = h2gpts(kwargs['h'], atoms.cell) 
+            fd_grid = self.h2gpts(kwargs['h'], atoms.cell) 
         if 'FD_GRID' in kwargs:
             if type(kwargs['FD_GRID']) == str:
                 fd_grid = kwargs['FD_GRID'].split()
@@ -426,7 +425,8 @@ class SPARC(FileIOCalculator):
             if int(self.parameters['RELAX_FLAG']) == 1:
                 parse_traj = True                
 
-        self.parse_output(parse_traj = True)
+        atoms = self.parse_output(parse_traj = parse_traj)
+        
 
     def terminated_normally(self):
         """
@@ -684,12 +684,10 @@ class SPARC(FileIOCalculator):
                     forces.append(last_step[j].split()[:-1])
                 forces = np.array(forces, dtype = 'float64')
                 forces *= Hartree / Bohr
-                self.results['forces'] = forces
-            
-                
+                self.results['forces'] = forces            
 
-        # Recover the original input parameters
-        # set, only do this if it's needed
+        # Recover the original input parameters set, 
+        #only do this if it's needed
         if recover_input:
             input_parameters = text[2].splitlines()
             input_dict = {}
@@ -744,12 +742,14 @@ class SPARC(FileIOCalculator):
                                       cell = read_atoms.cell,
                                       chemical_symbols = read_atoms.get_chemical_symbols())
                 self.results['forces'] = atoms.get_forces()
-            if 'RELAX_FLAG: 1' in text[2]:
+            elif 'RELAX_FLAG: 1' in text[2]:
                 atoms = self.parse_relax(label = self.label, write_traj = True,
                                          pbc = read_atoms.pbc,
                                          cell = read_atoms.cell,
                                          chemical_symbols = read_atoms.get_chemical_symbols())
                 self.results['forces'] = atoms.get_forces()
+            else:
+                atoms = read_atoms
         bundle = []
         if parse_traj:
             bundle.append(atoms)
@@ -902,18 +902,39 @@ class SPARC(FileIOCalculator):
                 traj.write(atoms)
         return atoms
 
+    def read(self, label):
+        """
+        Attempts to regenerate the SPARC calculator from a previous
+        set of output files
+        """
+        self.label = label
+        if os.path.isdir(label + '.out'):
+            atoms, input_dict = self.parse_output(recover_input = True,
+                                                   parse_traj = True)
+        else:
+            return None
+        self.__init__(atoms = atoms, label = label, **input_dict)
+
     def set_atoms(self, atoms):
         if (atoms != self.atoms):
             self.reset()
         self.atoms = atoms.copy()
  
-    def set_atoms(self, atoms):
-        if (atoms != self.atoms):
-            self.reset()
-        self.atoms = atoms.copy()
-
     def get_atoms(self):
         atoms = self.atoms.copy()
         atoms.set_calculator(self)
         return atoms
-    
+
+    def h2gpts(self, h, cell_cv, idiv=4):
+        """Convert grid spacing to number of grid points divisible by idiv.
+        Taken from GPAW:
+            https://gitlab.com/gpaw/gpaw/blob/master/gpaw/utilities/__init__.py
+        Note that units of h and cell_cv must match!
+        h: float
+            Desired grid spacing in.
+        cell_cv: 3x3 ndarray
+            Unit cell.
+        """
+
+        L_c = (np.linalg.inv(cell_cv)**2).sum(0)**-0.5
+        return np.maximum(idiv, (L_c / h / idiv + 0.5).astype(int) * idiv) 
