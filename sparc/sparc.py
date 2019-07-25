@@ -266,19 +266,19 @@ class SPARC(FileIOCalculator):
             cell = np.eye(3) * (np.max(atoms.positions, axis=0) + (6, 6, 6))
             atoms.set_cell(cell)
             for cell_param in atoms.get_cell_lengths_and_angles()[0:3]:
-                f.write(' {:.16f}'.format(cell_param / Bohr))
+                f.write('  {}'.format(format(cell_param / Bohr,' .16f')))
             atoms.center()
             f.write('\n')
         else:
             f.write('CELL:')
             for length in atoms.get_cell_lengths_and_angles()[:3]:
-                f.write(' {:.16f}'.format(length / Bohr))
+                f.write('  {}'.format(format(length / Bohr, ' .16f')))
             f.write('\nLATVEC:')
             for cell_vec in atoms.cell:
                 lat_vec = cell_vec / np.linalg.norm(cell_vec)
                 f.write('\n')
                 for element in lat_vec:
-                    f.write('{:.16f} '.format(float(element)))
+                    f.write('{}  '.format(format(float(element), ' .16f')))
             f.write('\n')
 
         if 'KPOINT_GRID' in kwargs:
@@ -404,10 +404,10 @@ class SPARC(FileIOCalculator):
                 path = os.path.abspath(self.directory)
                 raise CalculationFailed('{} in {} returned an error: {}'
                                     .format(self.name, path, errorcode))
-        self.concatinate_output()
         self.read_results()
 
     def read_results(self):
+        self.concatinate_output()
         # quick checks on the run to see if it finished
         if not self.terminated_normally():
             raise CalculationFailed('SPARC did not terminate normally'
@@ -417,16 +417,23 @@ class SPARC(FileIOCalculator):
         if not self.scf_converged():
             raise SCFError('The last SCF cycle of your run did not converge')
         parse_traj = False
+        # regenerate the capitalized version of the input parameters
+        kwargs = self.parameters
+        for arg in list(kwargs):
+            if arg.upper() in default_parameters:
+                kwargs[arg.upper()] = kwargs.pop(arg)
+
         # if it's MD or relaxation, we have to parse those files
-        if 'MD_FLAG' in self.parameters:
-            if int(self.parameters['MD_FLAG']) == 1:
+        if 'MD_FLAG' in kwargs:
+            if int(kwargs['MD_FLAG']) == 1:
                 parse_traj = True
-        elif 'RELAX_FLAG' in self.parameters:
-            if int(self.parameters['RELAX_FLAG']) == 1:
+        if 'RELAX_FLAG' in kwargs:
+            if int(kwargs['RELAX_FLAG']) == 1:
                 parse_traj = True                
 
         atoms = self.parse_output(parse_traj = parse_traj)
-        
+        if parse_traj:
+            self.atoms = atoms[0]
 
     def terminated_normally(self):
         """
@@ -548,7 +555,7 @@ class SPARC(FileIOCalculator):
         """
         files = os.listdir(self.directory)
         files.sort()
-        for sufix in ['.out','.relax','.restart']:
+        for sufix in ['.out','.relax','.restart','.aimd','.geopt']:
             for item in files:
                 if item.startswith(self.label) and sufix in item and \
                 item != self.label + sufix:
@@ -860,7 +867,7 @@ class SPARC(FileIOCalculator):
             s = f.read()
         s = s.split('SPARC')[-1] # I think this makes searching faster
         s = re.findall('^.*Total free energy.*$',s,re.MULTILINE)
-        engs = s[-n_geometric:]
+        engs = s[-n_images:]
         engs = [float(a.split()[-2]) * Hartree for a in engs]
 
         # build a traj file out of the steps
