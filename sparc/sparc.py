@@ -862,7 +862,8 @@ class SPARC(FileIOCalculator):
     def parse_MD(self, label, write_traj = False,
                  pbc = False, cell = None,
                  chemical_symbols = []):
-        f = open(label + '.aimd')
+        with open(label + '.aimd') as f:
+            text = f.read()
         if cell is None and chemical_symbols == []:
             try:
                 warnings.warn('attempting to rebuild atoms from'
@@ -878,13 +879,11 @@ class SPARC(FileIOCalculator):
                                 'or have a .ion and .inpt file for the'
                                 ' system')
 
-        #f = open(label + '.restart')
-        text = f.read()
         if text == '':
             return None
         # Parse out the steps
         steps = text.split(':MDSTEP: 1')[-1] # get only the most recent run
-        steps = text.split(':MDSTEP:')
+        steps = steps.split(':MDSTEP:')
         if write_traj == False:
             steps = [steps[-1]]
         else:
@@ -1101,7 +1100,7 @@ class SPARC(FileIOCalculator):
         inserts a dictionary version of the calculator into a mongo database.
         
         """
-        from .mongo import MongoDatabase, mongo_doc
+        from mongo import MongoDatabase, mongo_doc
 
         db = MongoDatabase(
                  host=host,
