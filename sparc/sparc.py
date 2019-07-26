@@ -11,11 +11,14 @@ from ase.calculators.calculator import EnvironmentError, InputError
 from ase.calculators.calculator import CalculationFailed, SCFError, ReadError
 from ase.calculators.calculator import PropertyNotImplementedError, PropertyNotPresent
 from ase.calculators.singlepoint import SinglePointCalculator
+from ase.calculators.calculator import compare_atoms
 from ase.io.trajectory import Trajectory
 from ase.atoms import Atoms
 from ase.atom import Atom
 
 from ion import write_ion, read_ion
+
+from ase.visualize import view
 
 required_inputs = ['PSEUDOPOTENTIAL_FILE',
                     'CELL','EXCHANGE_CORRELATION',
@@ -133,6 +136,7 @@ class SPARC(FileIOCalculator):
         self.directory = directory
         self.label = label
         self.prefix = self.label
+        self.results = {}
 
         # check that all arguements are legitimate arguements
         for arg in kwargs.keys():
@@ -266,19 +270,19 @@ class SPARC(FileIOCalculator):
             cell = np.eye(3) * (np.max(atoms.positions, axis=0) + (6, 6, 6))
             atoms.set_cell(cell)
             for cell_param in atoms.get_cell_lengths_and_angles()[0:3]:
-                f.write('  {}'.format(format(cell_param / Bohr,' .16f')))
+                f.write('  {}'.format(format(cell_param / Bohr,' .15f')))
             atoms.center()
             f.write('\n')
         else:
             f.write('CELL:')
             for length in atoms.get_cell_lengths_and_angles()[:3]:
-                f.write('  {}'.format(format(length / Bohr, ' .16f')))
+                f.write('  {}'.format(format(length / Bohr, ' .15f')))
             f.write('\nLATVEC:')
             for cell_vec in atoms.cell:
                 lat_vec = cell_vec / np.linalg.norm(cell_vec)
                 f.write('\n')
                 for element in lat_vec:
-                    f.write('{}  '.format(format(float(element), ' .16f')))
+                    f.write('{}  '.format(format(float(element), ' .15f')))
             f.write('\n')
 
         if 'KPOINT_GRID' in kwargs:
@@ -384,7 +388,7 @@ class SPARC(FileIOCalculator):
             self.setup_parallel_env()
         # more or less a copy of the parent class with small tweaks
         if atoms is not None:
-            self.atoms = atoms.copy()
+            self.atoms = atoms
         
         self.write_input(self.atoms, **self.parameters)
         if self.command is None:
@@ -431,9 +435,13 @@ class SPARC(FileIOCalculator):
             if int(kwargs['RELAX_FLAG']) == 1:
                 parse_traj = True                
 
-        atoms = self.parse_output(parse_traj = parse_traj)
+        bundle = self.parse_output(parse_traj = parse_traj)
         if parse_traj:
-            self.atoms = atoms[0]
+            pass
+            # update the atoms after relaxation/MD
+            self.atoms.positions = bundle[0].get_positions()
+            self.atoms.set_chemical_symbols(bundle[0].get_chemical_symbols())
+            
 
     def terminated_normally(self):
         """
@@ -445,9 +453,9 @@ class SPARC(FileIOCalculator):
             return False
         # check that the termination block is there
         with open(self.label + '.out', 'r') as f:
-            last_few_lines = f.readlines()[-15:] # just to narrow the search
+            last_few_lines = f.readlines()[-10:] # just to narrow the search
             for line in last_few_lines:
-                if 'Material Physics & Mechanics Group, Georgia Tech' in line:
+                if 'Acknowledgements: U.S. DOE (DE-SC0019410)' in line:
                     return True
         return False
 
@@ -661,7 +669,7 @@ class SPARC(FileIOCalculator):
             elif 'Pseudopotential' in line:
                 pseudo = self.read_line(line ,typ = str)
             elif 'Total number of electrons' in line:
-                nvalence = self.read_line(line, typ = int)
+                self.nvalence = self.read_line(line, typ = int)
             elif 'Total number of atoms' in line:
                 natoms = self.read_line(line, typ = int)
             elif 'Number of atoms of type' in line:
@@ -742,7 +750,9 @@ class SPARC(FileIOCalculator):
                 pbc = [True, False, False]
 
         if parse_traj:
-            read_atoms = read_ion(open(self.label + '.ion', 'r'))
+            read_atoms = read_ion(open(self.label + '.ion', 'r'),
+                                 recover_indices = False)
+            inds = self.recover_index_order_from_ion_file(self.label)
             if 'MD_FLAG' in text[2]:
                 atoms = self.parse_MD(label = self.label, write_traj = True,
                                       pbc = read_atoms.pbc,
@@ -757,6 +767,23 @@ class SPARC(FileIOCalculator):
                 self.results['forces'] = atoms.get_forces()
             else:
                 atoms = read_atoms
+            if len(inds) == len(atoms):
+                new_atoms = Atoms(['X'] * len(atoms), positions = [(0,0,0)] * len(atoms))
+                new_atoms.set_cell(atoms.cell)
+                # reassign indicies
+                for old_index, new_index in enumerate(inds):
+                    new_atoms[new_index].symbol = atoms[old_index].symbol
+                    new_atoms[new_index].position = atoms[old_index].position
+                    new_atoms.pbc = atoms.pbc
+                assert new_atoms.get_chemical_formula() == atoms.get_chemical_formula()
+                atoms = new_atoms
+            else:
+                raise CalculationFailed('The SPARC ASE calculator was unable to '
+                                        'reconstruct the atoms object from the input'
+                                        ' files, this likely means that the .ion file'
+                                        ' was modified during the run.') 
+ 
+            
         bundle = []
         if parse_traj:
             bundle.append(atoms)
@@ -794,7 +821,8 @@ class SPARC(FileIOCalculator):
         # Parse out the steps
         if text == '':
             return None
-        steps = text.split(':RELAXSTEP:')[1:]
+        steps = text.split(':RELAXSTEP: 1')[-1] # cut previous runs
+        steps = steps.split(':RELAXSTEP:')
         if write_traj == False:
             steps = [steps[-1]]
         else:
@@ -855,7 +883,8 @@ class SPARC(FileIOCalculator):
         if text == '':
             return None
         # Parse out the steps
-        steps = text.split(':MDSTEP:')[1:]
+        steps = text.split(':MDSTEP: 1')[-1] # get only the most recent run
+        steps = text.split(':MDSTEP:')
         if write_traj == False:
             steps = [steps[-1]]
         else:
@@ -909,6 +938,21 @@ class SPARC(FileIOCalculator):
                 traj.write(atoms)
         return atoms
 
+    def recover_index_order_from_ion_file(self, label):
+        """
+        quickly parses the .ion file with the same label 
+        to get the order of the indices so the MD or relaxtion
+        file can be reordered
+        """
+        with open(label + '.ion', 'r') as f:
+            txt = f.readlines()
+        inds = []
+        for line in txt:
+            if '# index' in line:
+                inds.append(int(line.split('# index')[1]))
+        return inds
+                
+
     def read(self, label):
         """
         Attempts to regenerate the SPARC calculator from a previous
@@ -925,7 +969,7 @@ class SPARC(FileIOCalculator):
     def set_atoms(self, atoms):
         if (atoms != self.atoms):
             self.reset()
-        self.atoms = atoms.copy()
+        self.atoms = atoms
  
     def get_atoms(self):
         atoms = self.atoms.copy()
@@ -945,3 +989,130 @@ class SPARC(FileIOCalculator):
 
         L_c = (np.linalg.inv(cell_cv)**2).sum(0)**-0.5
         return np.maximum(idiv, (L_c / h / idiv + 0.5).astype(int) * idiv) 
+
+    def todict(self, only_nondefaults = False, return_atoms = True):
+        """
+        Coverts calculator object into a dictionary representation appropriate to be placed
+        in a MongoDB. By default this returns only the settings that are not the default values.
+        This function is based loosely off the todict function from the Kitchen Group's VASP
+        environment. in modifying this function please attempt to conform to the naming 
+        conventions found there:
+        https://github.com/jkitchin/vasp/blob/master/vasp/vasp_core.py
+        only_nondefaults: bool
+        If set to True, only the non-default keyword arguments are returned. If False all
+            key word arguements are returned
+        """
+
+        from collections import OrderedDict
+        dict_version = OrderedDict()
+        if self.results != {}:
+            bundle = self.parse_output(recover_input = True, 
+                                       parse_traj = True)
+            atoms, input_dict = bundle
+        else:
+            input_dict = dict(**self.parameters)
+        dict_version.update(**input_dict)
+        
+        """
+        for item in default_parameters:  # rewrite this section
+            if item in self.kwargs.keys():
+                if item == 'LATVEC':
+                    dict_version[item] = self.kwargs[item]
+                elif self.kwargs[item] == default_parameters[item] and\
+                   only_nondefaults == True:
+                    pass
+                elif type(self.kwargs[item]) == dict:
+                    dict_version[item] = OrderedDict(self.kwargs[item])
+                else:
+                    dict_version[item] = self.kwargs[item]
+
+            elif only_nondefaults == False:
+                dict_version[item] = default_parameters[item]
+        if hasattr(self,'converged'):
+            dict_version['SCF-converged'] = self.converged
+        f = os.popen('tail ' + self.label + '.out')
+        """
+
+        # Check if SPARC terminated normally
+        dict_version['SPARC-completed'] = self.terminated_normally()
+        dict_version['path'] = os.path.abspath('.').split(os.sep)[1:]
+        if self.results == {}:
+            return dict_version
+        for prop in self.implemented_properties:
+            val = self.results.get(prop, None)
+            dict_version[prop] = val
+        f = self.results.get('forces', None)
+        if f is not None:
+            dict_version['fmax'] = max(np.abs(f.flatten()))
+        #s = self.results.get('stress', None)
+        #if s is not None:
+        #    dict_version['smax'] = max(np.abs(s.flatten()))
+        time = self.get_runtime()
+        if time is not None:
+            dict_version['elapsed-time'] = time
+        steps = self.get_scf_steps()
+        if steps is not None:
+            dict_version['SCF-steps'] = steps
+        if hasattr(self, 'nvalence'):
+            dict_version['nvalence'] = self.nvalence
+        dict_version['name'] = 'SPARC-X'
+        # Try to get a version. Since the code is in alpha, this is just the
+        # time of the most recent commit.
+        c_dir = os.getcwd()
+        try:
+            os.chdir(os.environ['ASE_SPARC_COMMAND'][:-5]) #  rewrite later
+            f = os.popen('git log | grep "Date"')
+            recent_commit_date = f.readlines()[0]
+            rc = recent_commit_date.split('Date:')[1]
+            rc = rc.split('-')[0]
+            dict_version['version'] = rc.strip()
+            os.chdir(c_dir)
+        except:
+            os.chdir(c_dir)
+        # rewrite
+        for item in ['EXCHANGE_CORRELATION']: # These should always be in
+            try:
+                dict_version[item] = self.parameters[item]
+            except:
+                pass
+        for item in dict_version:
+            if type(dict_version[item]) not in \
+            [dict, list, str, float, int, None, tuple] and \
+            dict_version[item] is not None:  # converting numpy arrays to lists
+                try:
+                    dict_version[item] = dict_version[item].tolist()
+                except:
+                    pass
+
+        if return_atoms == True:
+            from utilities import atoms_dict
+            dict_version['atoms'] = atoms_dict(self.atoms)
+        return dict_version
+
+
+    def calc_to_mongo(self,
+                 host='localhost',
+                 port=27017,
+                 database='atoms',
+                 collection='atoms',
+                 user=None,
+                 password=None):
+        """
+        inserts a dictionary version of the calculator into a mongo database.
+        
+        """
+        from .mongo import MongoDatabase, mongo_doc
+
+        db = MongoDatabase(
+                 host=host,
+                 port=port,
+                 database=database,
+                 collection=collection,
+                 user=user,
+                 password=password)
+        d = mongo_doc(self.get_atoms())
+        id_ = db.write(d)
+        print('entry was added to db with id {}'.format(id_))
+        return id_
+
+
