@@ -51,7 +51,7 @@ def mongo_atoms_doc(atoms):
 
     return json.loads(encode(d))
 
-def mongo_doc_atoms(doc):
+def mongo_doc_atoms(self, doc):
     atoms = Atoms([Atom(atom['symbol'],
                                 atom['position'],
                                 tag=atom['tag'],
@@ -73,7 +73,7 @@ def mongo_doc_atoms(doc):
     atoms.set_calculator(calc)
     return atoms
 
-def mongo_doc(atoms, **kwargs):
+def mongo_doc(self, atoms, **kwargs):
         """atoms is an ase.atoms.Atoms object.
         kwargs are key-value pairs that will be written to the database.
 

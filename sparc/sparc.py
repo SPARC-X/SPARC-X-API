@@ -3,6 +3,8 @@ import numpy as np
 import warnings
 import re
 import subprocess
+import json
+from collections import OrderedDict
 
 from ase.units import Bohr, Hartree, fs, GPa
 from ase.calculators.calculator import FileIOCalculator
@@ -15,10 +17,10 @@ from ase.calculators.calculator import compare_atoms
 from ase.io.trajectory import Trajectory
 from ase.atoms import Atoms
 from ase.atom import Atom
+from ase.io.jsonio import encode
 
-from ion import write_ion, read_ion
+from .ion import write_ion, read_ion
 
-from ase.visualize import view
 
 required_inputs = ['PSEUDOPOTENTIAL_FILE',
                     'CELL','EXCHANGE_CORRELATION',
@@ -437,7 +439,6 @@ class SPARC(FileIOCalculator):
 
         bundle = self.parse_output(parse_traj = parse_traj)
         if parse_traj:
-            pass
             # update the atoms after relaxation/MD
             self.atoms.positions = bundle[0].get_positions()
             self.atoms.set_chemical_symbols(bundle[0].get_chemical_symbols())
@@ -757,13 +758,15 @@ class SPARC(FileIOCalculator):
                 atoms = self.parse_MD(label = self.label, write_traj = True,
                                       pbc = read_atoms.pbc,
                                       cell = read_atoms.cell,
-                                      chemical_symbols = read_atoms.get_chemical_symbols())
+                                      chemical_symbols = read_atoms.get_chemical_symbols(),
+                                      constraints=read_atoms.contraints)
                 self.results['forces'] = atoms.get_forces()
             elif 'RELAX_FLAG: 1' in text[2]:
                 atoms = self.parse_relax(label = self.label, write_traj = True,
                                          pbc = read_atoms.pbc,
                                          cell = read_atoms.cell,
-                                         chemical_symbols = read_atoms.get_chemical_symbols())
+                                         chemical_symbols = read_atoms.get_chemical_symbols(),
+                                         constraints=read_atoms.constraints)
                 self.results['forces'] = atoms.get_forces()
             else:
                 atoms = read_atoms
@@ -791,9 +794,11 @@ class SPARC(FileIOCalculator):
             bundle.append(input_dict)
         return tuple(bundle)
 
-    def parse_relax(self,label, write_traj = False,
-                    pbc = False, cell = None,
-                    chemical_symbols = []):
+    def parse_relax(self,label, write_traj=False,
+                    pbc=False, cell=None,
+                    chemical_symbols=[],
+                    constraints=None,
+                    reorder=True):
         if os.path.isfile(label + '.geopt'):
             f = open(label + '.geopt')
         elif os.path.isfile(label + '.restart'):
@@ -850,7 +855,37 @@ class SPARC(FileIOCalculator):
                 frc[i,:] = [float(a) * Hartree / Bohr for a in f.split()]
                 atoms += Atom(chemical_symbols[i],
                           [float(a) * Bohr for a in positions[i].split()])
-
+            if reorder:
+                inds = self.recover_index_order_from_ion_file(self.label)
+                new_atoms = Atoms(['X'] * len(atoms))
+                for old_index, new_index in enumerate(inds):
+                    new_atoms[new_index].symbol = atoms[old_index].symbol
+                    new_atoms[new_index].position = atoms[old_index].position
+                # reorder the constraints
+                if constraints is not None:
+                    new_constraints = []
+                    for constraint in constraints:
+                        if type(constraint).__name__ == 'FixAtoms':
+                            for index in constraint.index:
+                                new_index = inds.index(index)
+                                cons = constraint.copy()
+                                cons.index_shuffle(new_atoms, [index, new_index])
+                                new_constraints.append(cons)
+                        elif type(constraint).__name__ in ['FixedLine', 'FixedPlan']:
+                            for index in constraint.a:
+                                new_index = inds[index]
+                                cons = contraint.copy()
+                                cons.index_shuffle(new_atoms, (index, new_index))
+                                new_contraints.append(cons)
+                        else:
+                            warnings.warn('A constraint that is not of the types '
+                                          'FixAtoms, FixedPlane, or FixedLine was '
+                                          'found. These are not supported by SPARC'
+                                          ' and will be ignored.')
+                    constraints = new_constraints
+                atoms = new_atoms
+            if constraints is not None:
+                atoms.set_constraint(constraints)
             atoms.set_pbc(pbc)
             atoms.cell = cell
             atoms.set_calculator(SinglePointCalculator(atoms, energy = engs[j],
@@ -859,9 +894,11 @@ class SPARC(FileIOCalculator):
                 traj.write(atoms)
         return atoms
 
-    def parse_MD(self, label, write_traj = False,
-                 pbc = False, cell = None,
-                 chemical_symbols = []):
+    def parse_MD(self, label, write_traj=False,
+                 pbc=False, cell=None,
+                 chemical_symbols=[],
+                 constraints=None,
+                 reorder=True):
         with open(label + '.aimd') as f:
             text = f.read()
         if cell is None and chemical_symbols == []:
@@ -926,9 +963,42 @@ class SPARC(FileIOCalculator):
                 stress_index = colons.index('STRESS_TOT(GPa)') + 1
                 for i, s in enumerate(colons[stress_index].strip().split('\n')):
                     stress[i,:] = [float(a) * GPa for a in s.split()]
+            if reorder:
+                inds = self.recover_index_order_from_ion_file(self.label)
+                new_atoms = Atoms(['X'] * len(atoms))
+                for old_index, new_index in enumerate(inds):
+                    new_atoms[new_index].symbol = atoms[old_index].symbol
+                    new_atoms[new_index].position = atoms[old_index].position
+                # reorder constraints
+                if constraints is not None:
+                    new_constraints = []
+                    for constraint in constraints:
+                        if type(constraint).__name__ == 'FixAtoms':
+                            for index in constraint.index:
+                                new_index = inds.index(index)
+                                cons = constraint.copy()
+                                cons.index_shuffle(new_atoms, [index, new_index])
+                                new_constraints.append(cons)
+                        elif type(constraint).__name__ in ['FixedLine', 'FixedPlan']:
+                            for index in constraint.a:
+                                new_index = inds[index]
+                                cons = contraint.copy()
+                                cons.index_shuffle(new_atoms, (index, new_index))
+                                new_contraints.append(cons)
+                        else:
+                            warnings.warn('A constraint that is not of the types '
+                                          'FixAtoms, FixedPlane, or FixedLine was '
+                                          'found. These are not supported by SPARC'
+                                          ' and will be ignored.')
+                    constraints = new_constraints
+                atoms = new_atoms
+                
+
             atoms.set_velocities(vel)
             atoms.set_pbc(pbc)
             atoms.cell = cell
+            if constraints is not None:
+                atoms.set_constraint(constraints)
             atoms.set_calculator(SinglePointCalculator(atoms,
                                                        energy = engs[j] * len(atoms),
                                                        stress = stress,
@@ -1002,7 +1072,6 @@ class SPARC(FileIOCalculator):
             key word arguements are returned
         """
 
-        from collections import OrderedDict
         dict_version = OrderedDict()
         if self.results != {}:
             bundle = self.parse_output(recover_input = True, 
@@ -1084,8 +1153,7 @@ class SPARC(FileIOCalculator):
                     pass
 
         if return_atoms == True:
-            from utilities import atoms_dict
-            dict_version['atoms'] = atoms_dict(self.atoms)
+            dict_version['atoms'] = self.atoms_dict(self.atoms)
         return dict_version
 
 
@@ -1100,7 +1168,7 @@ class SPARC(FileIOCalculator):
         inserts a dictionary version of the calculator into a mongo database.
         
         """
-        from mongo import MongoDatabase, mongo_doc
+        from .mongo import MongoDatabase, mongo_doc
 
         db = MongoDatabase(
                  host=host,
@@ -1114,4 +1182,31 @@ class SPARC(FileIOCalculator):
         print('entry was added to db with id {}'.format(id_))
         return id_
 
+    def atoms_dict(self, atoms):
+        d = OrderedDict(atoms=[{'symbol': atom.symbol,
+                            'position': json.loads(encode(atom.position)),
+                            'tag': atom.tag,
+                            'index': atom.index,
+                            'charge': atom.charge,
+                            'momentum': json.loads(encode(atom.momentum)),
+                            'magmom': atom.magmom}
+                           for atom in atoms],
+                    cell=atoms.cell,
+                    pbc=atoms.pbc,
+                    info=atoms.info,
+                    constraints=[c.todict() for c in atoms.constraints])
+        return d
 
+    def dict_atoms(self, d):
+        atoms = Atoms([Atom(atom['symbol'],
+                                atom['position'],
+                                tag=atom['tag'],
+                                momentum=atom['momentum'],
+                                magmom=atom['magmom'],
+                                charge=atom['charge'])
+                           for atom in d['atoms']],
+                          cell=d['cell'],
+                          pbc=d['pbc'],
+                          info=d['info'],
+                          constraint=[dict2constraint(c) for c in d['constraints']])
+        return atoms
