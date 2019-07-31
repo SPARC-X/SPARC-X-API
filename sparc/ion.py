@@ -13,7 +13,6 @@ from ase import Atoms, Atom
 from ase.units import Bohr
 from ase.data import chemical_symbols, atomic_masses_iupac2016
 
-#TODO: add constraints
 
 def read_ion(fileobj, recover_indices=True, recover_constraints=True):
     text = fileobj.read()
@@ -57,6 +56,8 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
             with open(label + '.inpt','r') as f:
                 input_file = f.read()
             if 'CELL' not in input_file:
+                # We can't find the CELL in the input file
+                # set the flag to false and re-run the while loop.
                 inpt_file_usable = False
                 del input_file
                 continue 
@@ -82,7 +83,8 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
                 inpt_file_usable = False
                 del input_file
                 continue
-        
+
+        # if the input file isn't usable, check the comments of the .ion file
         elif comments != [] and comments_bad == False:
             if 'CELL' in comments[1]:  # Check only the second line for a CELL
                 cell = np.empty((3,3))
@@ -119,10 +121,9 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
     ############################################
 
     # parse apart the comments to try to recover the indices and boundary conditions
-    # TODO: add constraints
 
     """
-    The strategy of this code is to get the full text separated from the
+    The strategy of this code is to get the input text separated from the
     comments.
 
     The comments are then used to glean the information that is
@@ -141,6 +142,7 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
 
     indices_from_comments = []
     constraints = []
+    spins = []
     for comment in comments:
         if 'index' in comment:
             if len(comment.split()) == 2:
@@ -162,6 +164,7 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
     # find the index of line for all the different atom types
     atom_types = [i for i, x in enumerate(comments_removed) if 'ATOM_TYPE:' in x]
     relax_blocks = [i for i, x in enumerate(comments_removed) if 'RELAX:' in x]
+    spin_blocks = [i for i, x in enumerate(comments_removed) if 'SPIN:' in x]
     for i, atom_type in enumerate(atom_types):
         type_dict = {}
         if i == len(atom_types) - 1: # treat the last block differently
@@ -171,6 +174,7 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
             # figure out if there are constraints after this block
             if recover_constraints:
                 relax_block_index = [a for a in relax_blocks if a > atom_type]
+            spin_block_index = [a for a in spin_blocks if a > atom_type]
         else:
             # Get the slice of text associated with this atom type
             type_slice = comments_removed[atom_types[i]: atom_types[i+1]]
@@ -182,6 +186,10 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
             if recover_constraints:
                 relax_block_index = [a for a in relax_blocks if a > atom_types[i]]
                 relax_block_index = [a for a in relax_blocks if a < atom_types[i+1]]
+            spin_block_index = [a for a in spin_blocks if a > atom_types[i]]
+            spin_block_index = [a for a in spin_blocks if a < atom_types[i+1]]
+
+            
 
         # extract informaton about the atom type from the section header
         for info in ['PSEUDO_POT', 'ATOM_TYPE', 'ATOMIC_MASS', 'COORD',\
@@ -211,6 +219,21 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
                                 ' it to repear it or pass in'
                                 '`recover_constraints = False` to ingore'
                                 ' constraints')
+        if len(spin_block_index) == 0:
+            pass
+        elif len(spin_block_index) == 1:
+            spin_block_index = spin_block_index[0] + 1 # offest by one line
+            spin_block_end = spin_block_index + int(type_dict['N_TYPE_ATOM'])
+            spin_slice = comments_removed[spin_block_index: spin_block_end]
+        elif len(spin_block_index) > 1:
+            raise Exception('There appear to be multiple blocks of'
+                            ' constraints in one or more of the atom'
+                            ' types in your .ion file. Please inspect'
+                            ' it to repear it or pass in'
+                            '`recover_constraints = False` to ingore'
+                            ' constraints')
+
+        
         # now parse out the atomic positions
         for coord_set in type_slice[len(type_dict):int(type_dict['N_TYPE_ATOM']) + len(type_dict)]:
             if 'COORD_FRAC' in type_dict.keys():
@@ -228,23 +251,35 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
             else:
                 # there aren't constraints with this block, put in empty lists
                 constraints += [[]] * int(type_dict['N_TYPE_ATOM'])
+        if 'spin_slice' in locals():
+            for init_spin in spin_slice:
+                spins.append(float(init_spin))
+            del spin_slice
+        else:
+            # there aren't spins with this block, put in zeros
+            spins += [0] * int(type_dict['N_TYPE_ATOM'])
     # check if we can reorganize the indices
     if len(indices_from_comments) == len(atoms) and recover_indices:
         new_atoms = Atoms(['X'] * len(atoms), positions = [(0,0,0)] * len(atoms))
         new_atoms.set_cell(atoms.cell)
+        new_spins = [None] * len(atoms)
         # reassign indicies
         for old_index, new_index in enumerate(indices_from_comments):
             new_atoms[new_index].symbol = atoms[old_index].symbol
             new_atoms[new_index].position = atoms[old_index].position
             new_atoms.pbc = atoms.pbc
+            new_spins[new_index] = spins[old_index]
         assert new_atoms.get_chemical_formula() == atoms.get_chemical_formula()
         atoms = new_atoms
+        spins = new_spins
         # reorganize the constraints now
         if recover_constraints:
             new_constraints = [0] * len(atoms)
             for old_index, new_index in enumerate(indices_from_comments):
                 new_constraints[new_index] = constraints[old_index]
             constraints = new_constraints
+
+    atoms.set_initial_magnetic_moments(spins)
     # add constraints
     if recover_constraints:
         constraints = decipher_constraints(constraints)
@@ -355,6 +390,9 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
         fileobj.write(str(atoms.get_chemical_symbols().count(element)) + '\n')
         if add_constraints:
             constraints_string = 'RELAX:\n'
+        magmoms = [float(a) for a in atoms.get_initial_magnetic_moments()]
+        if magmoms != [0.] * len(atoms):
+            spin_string = 'SPIN:\n'
 
         # TODO: fix this psuedopotential finding code
         if pseudo_dir is not None:
@@ -399,9 +437,13 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
                         constraints_string += cons_strings[constraints_indices_index]
                     else:
                         constraints_string += '1 1 1\n'
+                if 'spin_string' in locals():
+                    spin_string += format(atom.magmom,' .15f') + '\n'
         # dump in the constraints
         if add_constraints:
             fileobj.write(constraints_string)
+        if 'spin_string' in locals():
+            fileobj.write(spin_string)
         fileobj.write('\n\n')
 
 

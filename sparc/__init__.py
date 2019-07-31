@@ -1,2 +1,2 @@
 __Author__= "Ben Comer"
-from .sparc import SPARC
+from .sparc_core import SPARC
