@@ -216,9 +216,10 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
                 raise Exception('There appear to be multiple blocks of'
                                 ' constraints in one or more of the atom'
                                 ' types in your .ion file. Please inspect'
-                                ' it to repear it or pass in'
+                                ' it to repair it or pass in'
                                 '`recover_constraints = False` to ingore'
                                 ' constraints')
+        # the same as the code above, but for spin
         if len(spin_block_index) == 0:
             pass
         elif len(spin_block_index) == 1:
@@ -227,11 +228,9 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
             spin_slice = comments_removed[spin_block_index: spin_block_end]
         elif len(spin_block_index) > 1:
             raise Exception('There appear to be multiple blocks of'
-                            ' constraints in one or more of the atom'
+                            ' spin values in one or more of the atom'
                             ' types in your .ion file. Please inspect'
-                            ' it to repear it or pass in'
-                            '`recover_constraints = False` to ingore'
-                            ' constraints')
+                            ' it to repair it or pass in')
 
         
         # now parse out the atomic positions
