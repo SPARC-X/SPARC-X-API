@@ -11,7 +11,8 @@ from ase.calculators.calculator import FileIOCalculator
 from ase.calculators.calculator import CalculatorError, CalculatorSetupError
 from ase.calculators.calculator import EnvironmentError, InputError
 from ase.calculators.calculator import CalculationFailed, SCFError, ReadError
-from ase.calculators.calculator import PropertyNotImplementedError, PropertyNotPresent
+from ase.calculators.calculator import PropertyNotImplementedError 
+from ase.calculators.calculator import PropertyNotPresent
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase.calculators.calculator import compare_atoms
 from ase.io.trajectory import Trajectory
@@ -23,9 +24,9 @@ from .ion import write_ion, read_ion
 
 
 required_inputs = ['PSEUDOPOTENTIAL_FILE',
-                    'CELL','EXCHANGE_CORRELATION',
-                    'FD_GRID','PSEUDOPOTENTIAL_LOCAL',
-                    'KPOINT_GRID', 'LATVEC']
+                   'CELL', 'EXCHANGE_CORRELATION',
+                   'FD_GRID', 'PSEUDOPOTENTIAL_LOCAL',
+                   'KPOINT_GRID', 'LATVEC']
 
 default_parameters = {
             # 'label': 'sprc-calc',
@@ -48,6 +49,7 @@ default_parameters = {
             'TOL_POISSON': 1.00E-06,
             'TOL_LANCZOS': 1.00E-02,
             'TOL_PSEUDOCHARGE': 1.00E-08,
+            'SCF_ENERGY_ACC': None,
             'TWTIME': 999999999.000000,
             'MIXING_PARAMETER': 0.30,
             'MIXING_HISTORY': 7,
@@ -56,13 +58,15 @@ default_parameters = {
             'PULAY_FREQUENCY': 1,
             'PULAY_RESTART': 0,
             'REFERENCE_CUTOFF': 0.50,
-            'RHO_TRIGER': 3,
+            'RHO_TRIGGER': 3,
+            'Verbosity': 1,
             'PRINT_FORCES': 0,
             'PRINT_ATOMS': 0,
             'PRINT_EIGEN': 0,
             'PRINT_DENSITY': 0,
             'PRINT_RESTART_FQ': 1,
             'PRINT_RESTART': 1,
+            'PRINT_VELS': 1,
             'PSEUDOPOTENTIAL_LOCAL': None,
             'PSEUDOPOTENTIAL_FILE': None,
             'OUTPUT_FILE': None,
@@ -72,10 +76,12 @@ default_parameters = {
             'ELEC_TEMP': 315.775131,
             'ELEC_TEMP_TYPE': None,
             'CHEB_DEGREE': 25,
+            'CHEFSI_BOUND_FLAG': None,
+            'FIX_RAND': None,
 
             'SPIN_TYP': 1,
 
-            #'NTYPES': None,
+            # 'NTYPES': None,
             'NP_KPOINT_PARAL': None,
             'NP_BAND_PARAL': None,
             'NP_DOMAIN_PARAL': None,
@@ -126,13 +132,13 @@ class SPARC(FileIOCalculator):
                    'initial_charges', 'initial_magmoms']
 
     def __init__(self, restart=None, ignore_bad_restart_file=False,
-                 label='sprc-calc', atoms=None, command=None, directory = '.',
+                 label='sprc-calc', atoms=None, command=None, directory='.',
                  **kwargs):
         FileIOCalculator.__init__(self, restart=None, ignore_bad_restart_file=False,
-                 label=None, atoms=None, command=None, directory = directory, **kwargs)
+                 label=None, atoms=None, command=None, directory=directory, **kwargs)
 
         # setting up label
-        ## TODO: figure out how to do this with ASE calculator default classes
+        # TODO: figure out how to do this with ASE calculator default classes
         if self.directory != '.' and '/' in label:
             raise CalculatorSetupError('cannot set both directory and input `/`'
                                        ' in the label name')
@@ -155,16 +161,17 @@ class SPARC(FileIOCalculator):
         FileIOCalculator.set(self, **kwargs)
         self.atoms = atoms
 
-    def write_input(self, atoms = None, scaled = True,
+    def write_input(self, atoms=None, scaled=True,
                     **kwargs):
 
-        if atoms == None:
-            if self.atoms == None:
+        if atoms is None:
+            if self.atoms is None:
                 raise InputError('An atoms object must be provided or the '
                                  'calculator object must have atoms attached to'
                                  ' write an input file')
             atoms = self.atoms
         FileIOCalculator.write_input(self, atoms)
+
 
         #TODO: think about if this next conditional is a good idea
         if 'label' in kwargs:
@@ -172,6 +179,10 @@ class SPARC(FileIOCalculator):
             del kwargs['label']
 
         f = open(os.path.join(self.directory, self.label + '.inpt'), 'w')
+
+        # this finds it's way into the kwargs and isn't needed
+        if 'directory' in kwargs:
+            del kwargs['directory']
 
         # deal with the equivalent arguments, this gets complicated
         args = list(kwargs.copy())
@@ -197,9 +208,11 @@ class SPARC(FileIOCalculator):
 
         # deal with the finite differnce grid
         if 'h' in kwargs and 'FD_GRID' in kwargs:
-            raise CalculatorSetupError('You cannot specify a grid spacing (h) '
-                                       'and input the FD_GRID input arguement at'
-                                       ' the same time')
+            if kwargs['FD_GRID'] is not None and kwargs['h'] is not None:
+                raise CalculatorSetupError('You cannot specify a grid'
+                                           ' spacing (h) and input the'
+                                           ' FD_GRID input argument'
+                                           ' at the same time')
         if 'h' not in kwargs and 'FD_GRID' not in kwargs:
             warnings.warn('neither a grid spacing (h) nor a finite difference '
                           'grid (FD_GRID) has been specified, this is not ideal.'
@@ -364,15 +377,16 @@ class SPARC(FileIOCalculator):
                 f.write('{}: {}\n'.format(flag,'1'))
 
         # convert the Tols and such to eV and angstrom units
-        hartree_inputs = ['SMEARING','TOL_SCF','TOL_POISSON',
-                          'TOL_LANCZOS','TOL_PSEUDOCHARGE']
-        """
+        hartree_inputs = ['SMEARING',
+                          #'TOL_SCF',
+                          #'TOL_POISSON',
+                          #'TOL_LANCZOS','TOL_PSEUDOCHARGE',
+                          'SCF_ENERGY_ACC']
         if 'TOL_RELAX' in kwargs: # this is Ha/Bohr
             kwargs['TOL_RELAX'] /= Hartree / Bohr
         for setting in hartree_inputs:
             if setting in kwargs:
                 kwargs[setting] /= Hartree
-        """
 
         # all non-required inputs
         for arg, value in kwargs.items():
@@ -426,6 +440,7 @@ class SPARC(FileIOCalculator):
             if mpi:
                 command += '{} -np {}'.format(mpi, np)
         command += '{} -name PREFIX'.format(exe)
+        
         return command
         
             
@@ -676,7 +691,8 @@ class SPARC(FileIOCalculator):
         elif typ == str:
             return str(text.split(':')[1])
 
-    def parse_output(self, recover_input=False, parse_traj=False):
+    def parse_output(self, label=None, recover_input=False, parse_traj=False,
+                     return_results = False):
         """
         This function attempts to parse the output files of SPARC.
         You may ask it to parse the auxiliary atomic positions and
@@ -700,7 +716,8 @@ class SPARC(FileIOCalculator):
                 the values of `recover_input` and `parse_traj`
 
         """
-
+        if label is not None:
+            self.label = label
         with open(self.label + '.out', 'r') as f:
             text = f.read()
         text = text.split('SPARC')[-1]  # Get only the last run in the file
@@ -757,6 +774,9 @@ class SPARC(FileIOCalculator):
                 stress = np.array(stress, dtype = 'float64')
                 stress *= GPa
                 assert np.shape(stress) == (3,3)
+                # convert to Voigt form
+                stress = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
+                                   stress[1, 2], stress[0, 2], stress[0, 1]])
                 self.results['stress'] = stress
             elif 'Fermi level' in line:
                 self.fermi_level = self.read_line(line, strip_text = True) * Hartree
@@ -825,18 +845,22 @@ class SPARC(FileIOCalculator):
             inds = self.recover_index_order_from_ion_file(self.label)
             # you need a scrambled version of the indices to read the MD/relax files
             if 'MD_FLAG' in text[2]:
+                # this function automatically unscrambles indices
                 atoms = self.parse_MD(label = self.label, write_traj = True,
                                       pbc = read_atoms.pbc,
                                       cell = read_atoms.cell,
                                       chemical_symbols = read_atoms.get_chemical_symbols(),
-                                      constraints=read_atoms.constraints)
+                                      constraints=read_atoms.constraints,
+                                      reorder=True)
                 self.results['forces'] = atoms.get_forces()
             elif 'RELAX_FLAG: 1' in text[2]:
+                # this function automatically unscrambles indices
                 atoms = self.parse_relax(label = self.label, write_traj = True,
                                          pbc = read_atoms.pbc,
                                          cell = read_atoms.cell,
                                          chemical_symbols = read_atoms.get_chemical_symbols(),
-                                         constraints=read_atoms.constraints)
+                                         constraints=read_atoms.constraints,
+                                         reorder=True)
                 self.results['forces'] = atoms.get_forces()
             else:
                 # quickly unscramble
@@ -852,10 +876,11 @@ class SPARC(FileIOCalculator):
                     assert new_atoms.get_chemical_formula() == atoms.get_chemical_formula()
                     atoms = new_atoms
                 else:
-                    raise CalculationFailed('The SPARC ASE calculator was unable to '
+                    warnings.warn('The SPARC ASE calculator was unable to '
                                         'reconstruct the atoms object from the input'
                                         ' files, this likely means that the .ion file'
-                                        ' was modified during the run.') 
+                                        ' was modified during the run. Proceed with'
+                                        ' Caution') 
  
             
         bundle = []
@@ -863,6 +888,8 @@ class SPARC(FileIOCalculator):
             bundle.append(atoms)
         if recover_input:
             bundle.append(input_dict)
+        if return_results:
+            bundle.append(self.results)
         return tuple(bundle)
 
     def parse_relax(self,label, write_traj=False,
@@ -1002,6 +1029,7 @@ class SPARC(FileIOCalculator):
         with open(label + '.out', 'r') as f:
             s = f.read()
         s = s.split('SPARC')[-1] # I think this makes searching faster
+        # regex to search for this line
         s = re.findall('^.*Total free energy.*$',s,re.MULTILINE)
         engs = s[-n_images:]
         engs = [float(a.split()[-2]) * Hartree for a in engs]
@@ -1027,7 +1055,7 @@ class SPARC(FileIOCalculator):
             atoms = Atoms()
             for i, f, v in zip(range(len(forces)), forces, velocities):
                 frc[i,:] = [float(a) * Hartree / Bohr for a in f.split()]
-                vel[i,:] = [float(a) / Bohr / fs  for a in v.split()]
+                vel[i,:] = [float(a) * Bohr / fs  for a in v.split()]
                 atoms += Atom(chemical_symbols[i],
                           [float(a) * Bohr for a in positions[i].split()])
             if 'STRESS' in step:
@@ -1092,19 +1120,25 @@ class SPARC(FileIOCalculator):
                 inds.append(int(line.split('# index')[1]))
         return inds
                 
-
-    def read(self, label):
+    @staticmethod
+    def read(label):
         """
         Attempts to regenerate the SPARC calculator from a previous
         set of output files
         """
-        self.label = label
-        if os.path.isdir(label + '.out'):
-            atoms, input_dict = self.parse_output(recover_input = True,
-                                                   parse_traj = True)
+        calc = SPARC()
+        #os.path.isfile(label + '.out')
+        if os.path.isfile(label + '.out'):
+            atoms, input_dict, results = calc.parse_output(label = label,
+                                                           recover_input = True,
+                                                           parse_traj = True,
+                                                           return_results = True)
         else:
             return None
-        self.__init__(atoms = atoms, label = label, **input_dict)
+        # just reinitialize now
+        calc.__init__(atoms = atoms, **input_dict)
+        calc.results = results
+        return calc
 
     def set_atoms(self, atoms):
         if (atoms != self.atoms):

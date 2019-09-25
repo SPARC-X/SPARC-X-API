@@ -185,9 +185,9 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
             # the current block and the next block
             if recover_constraints:
                 relax_block_index = [a for a in relax_blocks if a > atom_types[i]]
-                relax_block_index = [a for a in relax_blocks if a < atom_types[i+1]]
+                relax_block_index = [a for a in relax_block_index if a < atom_types[i+1]]
             spin_block_index = [a for a in spin_blocks if a > atom_types[i]]
-            spin_block_index = [a for a in spin_blocks if a < atom_types[i+1]]
+            spin_block_index = [a for a in spin_block_index if a < atom_types[i+1]]
 
             
 
@@ -216,7 +216,7 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
                 raise Exception('There appear to be multiple blocks of'
                                 ' constraints in one or more of the atom'
                                 ' types in your .ion file. Please inspect'
-                                ' it to repair it or pass in'
+                                ' it to repair it or pass in '
                                 '`recover_constraints = False` to ingore'
                                 ' constraints')
         # the same as the code above, but for spin
@@ -354,7 +354,7 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
             name = type(constraint).__name__
             if name == 'FixAtoms':
                 cons_indices += list(constraint.index)
-                cons_strings += ['0 0 0\n' * len(constraint.index)]
+                cons_strings += ['0 0 0\n'] * len(constraint.index)
             elif name == 'FixedLine' or 'FixedPlane':
                 line_dir = [int(np.ceil(a)) for a in constraint.dir]
                 max_dirs = 1 # for FixedLine
@@ -432,6 +432,7 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
                 # mess with the constraints
                 if add_constraints:
                     if atom.index in cons_indices:
+                        print(cons_strings)
                         constraints_indices_index = cons_indices.index(atom.index)
                         constraints_string += cons_strings[constraints_indices_index]
                     else:
