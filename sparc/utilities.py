@@ -14,7 +14,7 @@ from ase.atoms import Atoms
 from ase.atom import Atom
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase.io.trajectory import Trajectory
-from scipy.misc import factorial
+#from scipy.misc import factorial
 from collections import OrderedDict
 import json
 import os
@@ -229,7 +229,7 @@ def parse_MD(label, write_traj = False, pbc = False, cell = None, chemical_symbo
 
     # Parse out the energies
     n_images = len(steps)
-    s = os.popen('grep ":FEN(Ha/atom):" ' + label + '.aimd')
+    s = os.popen('grep ":FEN:" ' + label + '.aimd')
     engs = s.readlines()[-n_images:]
     engs = [float(a.split()[-1]) * Hartree for a in engs]
     s.close()
@@ -238,9 +238,12 @@ def parse_MD(label, write_traj = False, pbc = False, cell = None, chemical_symbo
     for j, step in enumerate(steps):
         # Find Indicies
         colons = step.split(':')
-        pos_index = colons.index('R(Bohr)') + 1
-        frc_index = colons.index('F(Ha/Bohr)') + 1
-        vel_index = colons.index('V(Bohr/atu)') + 1 
+        #pos_index = colons.index('R(Bohr)') + 1
+        #frc_index = colons.index('F(Ha/Bohr)') + 1
+        #vel_index = colons.index('V(Bohr/atu)') + 1 
+        pos_index = colons.index('R') + 1
+        frc_index = colons.index('F') + 1
+        vel_index = colons.index('V') + 1 
         # Parse the text
         positions = colons[pos_index].strip().split('\n')
         forces = colons[frc_index].strip().split('\n')
