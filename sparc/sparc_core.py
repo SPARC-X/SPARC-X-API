@@ -420,7 +420,8 @@ class SPARC(FileIOCalculator):
                                         ' the current directory to be used.')
             #kwargs['pseudo_dir'] = None
         write_ion(open(self.label + '.ion','w'),
-                  atoms, pseudo_dir = kwargs['pseudo_dir'], scaled=scaled)
+                  atoms, pseudo_dir = kwargs['pseudo_dir'], scaled=scaled,
+                  directory=self.directory)
 
     def setup_parallel_env(self):
         """
