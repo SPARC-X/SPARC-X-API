@@ -178,6 +178,7 @@ class SPARC(FileIOCalculator):
                                  'calculator object must have atoms attached to'
                                  ' write an input file')
             atoms = self.atoms
+
         FileIOCalculator.write_input(self, atoms)
 
 
@@ -419,9 +420,10 @@ class SPARC(FileIOCalculator):
                                         'pseudopotentials or pass in None for'
                                         ' the current directory to be used.')
             #kwargs['pseudo_dir'] = None
-        write_ion(open(self.label + '.ion','w'),
-                  atoms, pseudo_dir = kwargs['pseudo_dir'], scaled=scaled,
-                  directory=self.directory)
+
+        outpath = os.path.join(self.directory, self.label)
+        write_ion(open(outpath + '.ion','w'),
+                  atoms, pseudo_dir = kwargs['pseudo_dir'], scaled=scaled)
 
     def setup_parallel_env(self):
         """
