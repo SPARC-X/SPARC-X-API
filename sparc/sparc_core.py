@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import warnings
+import inspect
 import re
 import subprocess
 import json
@@ -363,15 +364,18 @@ class SPARC(FileIOCalculator):
                 kwargs['xc'] = 'GGA_PBE'
             f.write('EXCHANGE_CORRELATION: ' +  
                         default_parameters['EXCHANGE_CORRELATION'] + '\n')
+            xc = default_parameters['EXCHANGE_CORRELATION']
         else:
             if 'EXCHANGE_CORRELATION' not in kwargs:
                 f.write('EXCHANGE_CORRELATION: ' +  
                         default_parameters['EXCHANGE_CORRELATION'] + '\n')
+                xc = default_parameters['EXCHANGE_CORRELATION']
             else:
                 if kwargs['EXCHANGE_CORRELATION'] == 'PBE':
                     kwargs['EXCHANGE_CORRELATION'] = 'GGA_PBE'
                 f.write('EXCHANGE_CORRELATION: ' +  # Note the Miss-spelling
                         kwargs['EXCHANGE_CORRELATION'] + '\n')
+                xc = kwargs['EXCHANGE_CORRELATION']
 
         # you generally want this flag on if you're doing relaxation
         if 'RELAX_FLAG' in kwargs:
@@ -416,12 +420,19 @@ class SPARC(FileIOCalculator):
         if 'pseudo_dir' not in kwargs.keys() and 'SPARC_PSP_PATH' in os.environ:
             kwargs['pseudo_dir'] = os.environ['SPARC_PSP_PATH']
         elif 'pseudo_dir' not in kwargs.keys():
-            raise  CalculatorSetupError('No $SPARC_PSP_PATH has been set and'
-                                        ' no `psuedo_dir` argument has been '
-                                        'passed, either set a path for you '
-                                        'pseudopotentials or pass in None for'
-                                        ' the current directory to be used.')
-            #kwargs['pseudo_dir'] = None
+            # find where the defaults are
+            current_file = inspect.getfile(inspect.currentframe())
+            package_directory = os.path.dirname(os.path.abspath(current_file))
+            psps_path = os.path.join(package_directory, 'pseudos')
+
+            if 'LDA' in xc:
+                psps_path = os.path.join(psps_path, 'LDA_pseudos')
+            elif 'PBE' in xc:
+                psps_path = os.path.join(psps_path, 'PBE_pseudos')
+            kwargs['pseudo_dir'] = psps_path
+            warnings.warn('No `pseudo_dir` argument was passed in and no '
+                          '$SPARC_PSP_PATH environment variable was set '
+                          'default pseudopotentials are being used.')
 
         outpath = os.path.join(self.directory, self.label)
         write_ion(open(outpath + '.ion','w'),
