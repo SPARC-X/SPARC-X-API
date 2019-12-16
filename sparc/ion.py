@@ -416,6 +416,8 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
             atomic_number = chemical_symbols.index(element)
             atomic_mass = atomic_masses_iupac2016[atomic_number]
             fileobj.write('ATOMIC_MASS: {}\n'.format(atomic_mass))
+        else:
+            fileobj.write('PSEUDO_POT: {}.pot\n'.format(element))
         if scaled == False:
             fileobj.write('COORD:\n')
             positions = atoms.get_positions(wrap = False)
@@ -432,7 +434,6 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
                 # mess with the constraints
                 if add_constraints:
                     if atom.index in cons_indices:
-                        print(cons_strings)
                         constraints_indices_index = cons_indices.index(atom.index)
                         constraints_string += cons_strings[constraints_indices_index]
                     else:
