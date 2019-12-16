@@ -14,9 +14,6 @@ from ase.units import Bohr
 from ase.data import chemical_symbols, atomic_masses_iupac2016
 import warnings
 
-os.environ['SPARC_PSP_PATH'] = '$SPARC_PSP_PATH'
-
-
 def read_ion(fileobj, recover_indices=True, recover_constraints=True):
     text = fileobj.read()
     comments_removed = []
@@ -319,7 +316,7 @@ def decipher_constraints(constraints):
     return cons_list
 
 def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
-              add_constraints = True, comment = '', directory=None):
+              add_constraints = True, comment = ''):
     """
     Standard ase io file for reading the sparc-x .ion format
     
@@ -330,8 +327,7 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
             a list of the locations of the pseudopotential files to be used
     """
 
-    if directory == None:
-        directory = os.getcwd()
+    directory = os.path.dirname(fileobj.name)
 
     elements = sorted(list(set(atoms.get_chemical_symbols())))
     
@@ -468,5 +464,3 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
         if 'spin_string' in locals():
             fileobj.write(spin_string)
         fileobj.write('\n\n')
-
-
