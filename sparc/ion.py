@@ -239,7 +239,6 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
         # now parse out the atomic positions
         for coord_set in type_slice[len(type_dict):int(type_dict['N_TYPE_ATOM']) + len(type_dict)]:
             if 'COORD_FRAC' in type_dict.keys():
-                print(coord_set)
                 x1, x2, x3 = [float(a) for a in coord_set.split()[:3]]
                 x, y, z = sum([x * a for x, a in zip([x1, x2, x3], atoms.cell)])
             elif 'COORD' in type_dict.keys():
@@ -401,10 +400,6 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
         if magmoms != [0.] * len(atoms):
             spin_string = 'SPIN:\n'
 
-        atomic_number = chemical_symbols.index(element)
-        atomic_mass = atomic_masses_iupac2016[atomic_number]
-        fileobj.write('ATOMIC_MASS: {}\n'.format(atomic_mass))
-
         # TODO: fix this psuedopotential finding code
         if pseudo_dir is not None:
             if not os.path.isdir(pseudo_dir):
@@ -442,6 +437,11 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
             atomic_mass = atomic_masses_iupac2016[atomic_number]
         else:
             fileobj.write('PSEUDO_POT: {}.pot\n'.format(element))
+
+        atomic_number = chemical_symbols.index(element)
+        atomic_mass = atomic_masses_iupac2016[atomic_number]
+        fileobj.write('ATOMIC_MASS: {}\n'.format(atomic_mass))
+
         if scaled == False:
             fileobj.write('COORD:\n')
             positions = atoms.get_positions(wrap = False)
