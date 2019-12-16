@@ -12,6 +12,7 @@ import numpy as np
 from ase import Atoms, Atom
 from ase.units import Bohr
 from ase.data import chemical_symbols, atomic_masses_iupac2016
+import warnings
 
 
 def read_ion(fileobj, recover_indices=True, recover_constraints=True):
