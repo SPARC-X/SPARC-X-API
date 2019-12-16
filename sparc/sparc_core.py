@@ -397,9 +397,14 @@ class SPARC(FileIOCalculator):
         f.close()
 
         # make the atomic inputs (.ion) file
+        if 'SPARC_PSP_PATH' in os.environ.keys():
+            psp_path = os.environ['SPARC_PSP_PATH']
+        else:
+            psp_path = '$SPARC_PSP_PATH'
+
         write_ion(open(self.label + '.ion','w'),
-                  atoms, pseudo_dir = os.environ['SPARC_PSP_PATH'],
-                  scaled = scaled)
+                  atoms, pseudo_dir = psp_path,
+                  scaled = scaled, directory=self.directory)
 
     def setup_parallel_env(self):
         """
