@@ -433,8 +433,6 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
                 #os.system('cp $SPARC_PSP_PATH/' + filename + ' .')
                 fileobj.write('PSEUDO_POT: {}\n'.format(filename)) 
             
-            atomic_number = chemical_symbols.index(element)
-            atomic_mass = atomic_masses_iupac2016[atomic_number]
         else:
             fileobj.write('PSEUDO_POT: {}.pot\n'.format(element))
 
