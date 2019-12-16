@@ -23,10 +23,10 @@ from ase.io.jsonio import encode
 from .ion import write_ion, read_ion
 
 
-required_inputs = ['PSEUDOPOTENTIAL_FILE',
+special_inputs = ['PSEUDOPOTENTIAL_FILE',
                    'CELL', 'EXCHANGE_CORRELATION',
                    'FD_GRID', 'PSEUDOPOTENTIAL_LOCAL',
-                   'KPOINT_GRID', 'LATVEC']
+                   'pseudo_dir', 'KPOINT_GRID', 'LATVEC']
 
 default_parameters = {
             # 'label': 'sprc-calc',
@@ -179,7 +179,6 @@ class SPARC(FileIOCalculator):
                                  ' write an input file')
             atoms = self.atoms
         FileIOCalculator.write_input(self, atoms)
-
 
         #TODO: think about if this next conditional is a good idea
         if 'label' in kwargs:
@@ -403,8 +402,11 @@ class SPARC(FileIOCalculator):
 
         # all non-required inputs
         for arg, value in kwargs.items():
-            if arg not in required_inputs and arg not in equivalencies:
-                f.write('{}: {}\n'.format(arg, value))
+            if arg in special_inputs:
+                continue
+            if arg in equivalencies:
+                continue
+            f.write('{}: {}\n'.format(arg, value))
                 
         
         f.close()
