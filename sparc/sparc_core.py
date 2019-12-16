@@ -36,11 +36,14 @@ default_parameters = {
             'LATVEC': None,
             'EXCHANGE_CORRELATION': 'LDA_PZ',  # 'LDA'
             'KPOINT_GRID': (1, 1, 1),
+            'KPOINT_SHIFT': None,
             'MIXING_PARAMETER': 0.30,
             'CHEN_DEGREE': 20,
             'NSTATES': None,
             'SMEARING': None,
             'MAXIT_SCF': 100,
+            'MINIT_SCF': 3,
+            'MAXIT_POISSON': 3000,
             'BETA': 1000,
             'ELEC_TEMP': None,
             'CALC_STRESS': None,
@@ -57,9 +60,10 @@ default_parameters = {
             'MIXING_PRECOND': None,
             'PULAY_FREQUENCY': 1,
             'PULAY_RESTART': 0,
+            'TOL_SCF_QE':None,
             'REFERENCE_CUTOFF': 0.50,
             'RHO_TRIGGER': 3,
-            'Verbosity': 1,
+            'VERBOSITY': 1,
             'PRINT_FORCES': 0,
             'PRINT_ATOMS': 0,
             'PRINT_EIGEN': 0,
@@ -106,9 +110,13 @@ default_parameters = {
             'MD_TIMESTEP': None,
             'MD_NSTEP': None,
             'PRINT_RESTART_FQ': None,
+            'PRINT_MDOUT': None,
             'RESTART_FLAG': None,
             'ION_TEMP': None,
             'ION_ELEC_EQT': None,
+            'ION_VEL_DSTR': None,
+            'ION_TEMP_END': None,
+            'QMASS': None,
 
                         }
 
@@ -351,6 +359,8 @@ class SPARC(FileIOCalculator):
         # xc should be put in separately
         if 'xc' in kwargs:
             kwargs['EXCHANGE_CORRELATION'] = kwargs['xc']
+            if kwargs['xc'] == 'PBE':
+                kwargs['xc'] = 'GGA_PBE'
             f.write('EXCHANGE_CORRELATION: ' +  
                         default_parameters['EXCHANGE_CORRELATION'] + '\n')
         else:
@@ -358,6 +368,8 @@ class SPARC(FileIOCalculator):
                 f.write('EXCHANGE_CORRELATION: ' +  
                         default_parameters['EXCHANGE_CORRELATION'] + '\n')
             else:
+                if kwargs['EXCHANGE_CORRELATION'] == 'PBE':
+                    kwargs['EXCHANGE_CORRELATION'] = 'GGA_PBE'
                 f.write('EXCHANGE_CORRELATION: ' +  # Note the Miss-spelling
                         kwargs['EXCHANGE_CORRELATION'] + '\n')
 
@@ -381,6 +393,7 @@ class SPARC(FileIOCalculator):
                           #'TOL_SCF',
                           #'TOL_POISSON',
                           #'TOL_LANCZOS','TOL_PSEUDOCHARGE',
+                          'TOL_SCF_QE'
                           'SCF_ENERGY_ACC']
         if 'TOL_RELAX' in kwargs: # this is Ha/Bohr
             kwargs['TOL_RELAX'] /= Hartree / Bohr
@@ -397,14 +410,18 @@ class SPARC(FileIOCalculator):
         f.close()
 
         # make the atomic inputs (.ion) file
-        if 'SPARC_PSP_PATH' in os.environ.keys():
-            psp_path = os.environ['SPARC_PSP_PATH']
-        else:
-            psp_path = '$SPARC_PSP_PATH'
-
+        if 'pseudo_dir' not in kwargs.keys() and 'SPARC_PSP_PATH' in os.environ:
+            kwargs['pseudo_dir'] = os.environ['SPARC_PSP_PATH']
+        elif 'pseudo_dir' not in kwargs.keys():
+            raise  CalculatorSetupError('No $SPARC_PSP_PATH has been set and'
+                                        ' no `psuedo_dir` argument has been '
+                                        'passed, either set a path for you '
+                                        'pseudopotentials or pass in None for'
+                                        ' the current directory to be used.')
+            #kwargs['pseudo_dir'] = None
         write_ion(open(self.label + '.ion','w'),
-                  atoms, pseudo_dir = psp_path,
-                  scaled = scaled, directory=self.directory)
+                  atoms, pseudo_dir = kwargs['pseudo_dir'], scaled=scaled,
+                  directory=self.directory)
 
     def setup_parallel_env(self):
         """
@@ -636,9 +653,27 @@ class SPARC(FileIOCalculator):
         with open(self.label + '.out','r') as f:
             txt = f.read()
         txt = txt.split('SPARC')[-1] # get the most recent run
-        txt = re.findall('^.*Total walltime.*$', txt, re.MULTILINE)[-1]
-        time = self.read_line(txt, strip_text = True)
+        walltime = re.findall('^.*Total walltime.*$', txt, re.MULTILINE)[-1]
+        time = self.read_line(walltime, strip_text = True)
         return time
+
+    def get_extra_time_frm_QE(self):
+        """
+        parses the extra time that was used because of the need to obtain
+        the quantum espresso tolerence
+        """
+        if self.results == {}:  # Check that SPARC has run
+            return None
+        with open(self.label + '.out','r') as f:
+            txt = f.read()
+        txt = txt.split('SPARC')[-1] # get the most recent run
+        # find the extra time if TOL_SCF_QE is used
+        extra_time = re.findall('^.*Extra time.*$', txt, re.MULTILINE)
+        if extra_time == []:
+            return None
+        extra = float(extra_time[-1].split()[-2])
+        return extra
+
 
     def get_fermi_level(self):
         if hasattr(self, 'fermi_level'):
@@ -822,7 +857,7 @@ class SPARC(FileIOCalculator):
 
                 # This next conditional is just make sure this code doesn't 
                 # break if lines are added in the future that don't have colons
-                if ':' not in input_arg:
+                if ':' not in input_arg or input_arg[0] == '#':
                     continue
 
                 kw, arg = input_arg.split(':')
@@ -1228,6 +1263,9 @@ class SPARC(FileIOCalculator):
         time = self.get_runtime()
         if time is not None:
             dict_version['elapsed-time'] = time
+        extra_time = self.get_extra_time_frm_QE()
+        if extra_time is not None:
+            dict_version['extra-time'] = extra_time
         steps = self.get_scf_steps()
         if steps is not None:
             dict_version['SCF-steps'] = steps

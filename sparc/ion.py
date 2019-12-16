@@ -400,10 +400,6 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
         if magmoms != [0.] * len(atoms):
             spin_string = 'SPIN:\n'
 
-        atomic_number = chemical_symbols.index(element)
-        atomic_mass = atomic_masses_iupac2016[atomic_number]
-        fileobj.write('ATOMIC_MASS: {}\n'.format(atomic_mass))
-
         # TODO: fix this psuedopotential finding code
         if pseudo_dir is not None:
             if not os.path.isdir(pseudo_dir):
@@ -437,6 +433,13 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
                 #os.system('cp $SPARC_PSP_PATH/' + filename + ' .')
                 fileobj.write('PSEUDO_POT: {}\n'.format(filename)) 
             
+        else:
+            fileobj.write('PSEUDO_POT: {}.pot\n'.format(element))
+
+        atomic_number = chemical_symbols.index(element)
+        atomic_mass = atomic_masses_iupac2016[atomic_number]
+        fileobj.write('ATOMIC_MASS: {}\n'.format(atomic_mass))
+
         if scaled == False:
             fileobj.write('COORD:\n')
             positions = atoms.get_positions(wrap = False)
@@ -453,7 +456,6 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
                 # mess with the constraints
                 if add_constraints:
                     if atom.index in cons_indices:
-                        #print(cons_strings)
                         constraints_indices_index = cons_indices.index(atom.index)
                         constraints_string += cons_strings[constraints_indices_index]
                     else:
