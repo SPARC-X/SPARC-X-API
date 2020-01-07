@@ -369,7 +369,7 @@ class SPARC(FileIOCalculator):
                                                        'entered for boundary '
                                                        'conditions')
                 f.write('BC:{}\n'.format(pbc_str))
-
+        """
         if 'KPOINT_GRID' in kwargs:
             if kwargs['KPOINT_GRID'] is not None:
                 f.write('KPOINT_GRID: ')
@@ -392,6 +392,9 @@ class SPARC(FileIOCalculator):
                 f.write('\n')
             else:
                 f.write('KPOINT_GRID: 1 1 1\n') # default to gamma point 
+        """
+        kpt_grid = self.interpret_kpoint_input(atoms, **kwargs)
+        f.write('KPOINT_GRID: {} {} {}\n'.format(*kpt_grid))
 
         # check the spin situation
         if [float(a) for a in atoms.get_initial_magnetic_moments()] != [0] * len(atoms):
@@ -519,6 +522,39 @@ class SPARC(FileIOCalculator):
                                  ' must be have dimension 3')
         return fd_grid
 
+    def interpret_kpoint_input(self, atoms, **kwargs):
+        if kwargs.get('KPOINT_GRID'):
+            if len(kwargs['KPOINT_GRID']) == 3:
+                for kpoint in kwargs['KPOINT_GRID']:
+                    if type(kpoint) != int:
+                        raise InputError('when KPOINT_GRID is entered as an'
+                                         ' iterable, the values must be in the'
+                                         ' integer type (i.e. (4,4,4))')
+                kpt_grid = kwargs['KPOINT_GRID']
+            elif type(kwargs['KPOINT_GRID']) == str:
+                if len(kwargs['KPOINT_GRID'].split()) != 3:
+                    raise InputError('when KPOINT_GRID is entered as a string, it'
+                                    ' must have 3 elements separated by spaces '
+                                    '(i.e. \'4 4 4\')')
+                kpt_grid = [int(a) for a in kwargs['KPOINT_GRID'].split()]
+            elif len(kwargs['KPOINT_GRID']) != 3 or type(kwargs['KPOINT_GRID']) is not str:
+                raise InputError('KPOINT_GRID must be either a length 3 object'
+                                 ' (i.e. (4,4,4)) or a string (i.e. \'4 4 4 \')')
+        else:
+            kpt_grid = (1,1,1)
+        return kpt_grid
+
+        # check the spin situation
+        if [float(a) for a in atoms.get_initial_magnetic_moments()] != [0] * len(atoms):
+            spin_warn = str('inital magentic moments were set on the'
+                            ' provided atoms, bu the spin polarization '
+                            'flag has not been set. To run spin polarized'
+                            ' pass in the flag `SPIN_TYP = 2`')
+            if 'SPIN_TYP' in kwargs:
+                if int(kwargs['SPIN_TYP']) != 2:
+                    warnings.warn(spin_warn)
+            else:
+                warnings.warn(spin_warn)
 
     def setup_parallel_env(self):
         """
@@ -562,7 +598,7 @@ class SPARC(FileIOCalculator):
         
         return command
 
-    def estimate_memory(self, **kwargs):
+    def estimate_memory(self, atoms=None, units='GB', **kwargs):
         """
         a function to estimate the amount of memory required to run
         the selected calculation. This function takes in **kwargs,
@@ -571,8 +607,15 @@ class SPARC(FileIOCalculator):
         """
         if kwargs is None:
             kwargs = self.parameters
+        if atoms is None:
+            atoms = self.atoms
 
-        states = kwargs.get('NSTATES')
+        nstates = kwargs.get('NSTATES')
+        npoints = np.product(interpret_grid_input(atoms, **kwargs))
+
+        kpt_grid = interpret_kpoint_input(atoms, **kwargs)
+        kpt_factor = np.ceil(np.product(kpt_grid)/2)
+        estimate = 5 * npoints * states * kpt_factor * 8 # bytes
         
 
     def calculate(self, atoms = None, properties = ['energy'],
