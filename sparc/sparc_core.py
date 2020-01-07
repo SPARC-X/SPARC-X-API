@@ -27,7 +27,8 @@ from .ion import write_ion, read_ion
 special_inputs = ['PSEUDOPOTENTIAL_FILE',
                    'CELL', 'EXCHANGE_CORRELATION',
                    'FD_GRID', 'PSEUDOPOTENTIAL_LOCAL',
-                   'pseudo_dir', 'KPOINT_GRID', 'LATVEC']
+                   'pseudo_dir', 'KPOINT_GRID', 'LATVEC',
+                   'BC']
 
 default_parameters = {
             # 'label': 'sprc-calc',
@@ -180,6 +181,9 @@ class SPARC(FileIOCalculator):
                                  'calculator object must have atoms attached to'
                                  ' write an input file')
             atoms = self.atoms
+        if kwargs == {}:
+            kwargs = self.parameters
+
 
         FileIOCalculator.write_input(self, atoms)
 
