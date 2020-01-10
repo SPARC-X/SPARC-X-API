@@ -473,6 +473,8 @@ class SPARC(FileIOCalculator):
         f.close()
 
         # make the atomic inputs (.ion) file
+        kwargs['pseudo_dir'] = self.get_pseudopotential_directory(**kwargs)
+        """
         if 'pseudo_dir' not in kwargs.keys() and 'SPARC_PSP_PATH' in os.environ:
             kwargs['pseudo_dir'] = os.environ['SPARC_PSP_PATH']
         elif 'pseudo_dir' not in kwargs.keys():
@@ -489,6 +491,7 @@ class SPARC(FileIOCalculator):
             warnings.warn('No `pseudo_dir` argument was passed in and no '
                           '$SPARC_PSP_PATH environment variable was set '
                           'default pseudopotentials are being used.')
+        """
 
         outpath = os.path.join(self.directory, self.label)
         write_ion(open(outpath + '.ion','w'),
@@ -527,6 +530,10 @@ class SPARC(FileIOCalculator):
         return fd_grid
 
     def interpret_kpoint_input(self, atoms, **kwargs):
+        """
+        helper function to figure out what the kpoints input is and return
+        it as an iterable
+        """
         if kwargs.get('KPOINT_GRID'):
             if len(kwargs['KPOINT_GRID']) == 3:
                 for kpoint in kwargs['KPOINT_GRID']:
@@ -559,6 +566,62 @@ class SPARC(FileIOCalculator):
                     warnings.warn(spin_warn)
             else:
                 warnings.warn(spin_warn)
+
+    def get_pseudopotential_directory(self, **kwargs):
+        if 'pseudo_dir' in kwargs.keys():
+            return  kwargs['pseudo_dir']
+        elif 'pseudo_dir' not in kwargs.keys() and 'SPARC_PSP_PATH' in os.environ:
+            kwargs['pseudo_dir'] = os.environ['SPARC_PSP_PATH']
+            return os.environ['SPARC_PSP_PATH']
+        elif 'pseudo_dir' not in kwargs.keys():
+            # find where the defaults are
+            current_file = inspect.getfile(inspect.currentframe())
+            package_directory = os.path.dirname(os.path.abspath(current_file))
+            psps_path = os.path.join(package_directory, 'pseudos')
+
+            if 'LDA' in xc:
+                psps_path = os.path.join(psps_path, 'LDA_pseudos')
+            elif 'PBE' in xc:
+                psps_path = os.path.join(psps_path, 'PBE_pseudos')
+            kwargs['pseudo_dir'] = psps_path
+            warnings.warn('No `pseudo_dir` argument was passed in and no '
+                          '$SPARC_PSP_PATH environment variable was set '
+                          'default pseudopotentials are being used.')
+            return psps_path
+
+    def get_nstates(self, atoms=None, **kwargs):
+        if kwargs == {}:
+            kwargs = self.parameters
+        if atoms is None:
+            atoms = self.atoms
+
+        if kwargs.get('nstates'):
+            return kwargs.get('nstates')
+        elif kwargs.get('NSTATES'):
+            return kwargs.get('NSTATES')
+
+
+        psp_path = self.get_pseudopotential_directory(**kwargs)
+
+        syms = list(set(atoms.get_chemical_symbols()))
+        syms_valence_dict = {}
+        for sym in syms:
+            # read the pseudopotential file to find the number of valence
+            with open(os.path.join(psp_path, sym + '.pot')) as f:
+                lines = f.readlines()[:100] # just grab the start
+            for line in lines:
+                if 'zion' in line:
+                    valence = float(line.split()[1])
+                    syms_valence_dict[sym] = valence
+                    break # stop once we find it
+        tot_valence = sum([syms_valence_dict[a] for a in atoms.get_chemical_symbols()])
+
+
+        # per Qimen this is the formula in SPARC
+        nstates = np.floor(tot_valence/2) * 1.2 + 5
+        nstates = round(nstates)
+
+        return nstates
 
     def setup_parallel_env(self):
         """
@@ -609,17 +672,38 @@ class SPARC(FileIOCalculator):
         but if none are passed in, it will fall back on the parameters
         input when the class was instantiated
         """
+        conversion_dict = {'MB':1e-6, 'GB':1e-9,'B':1, 'byte':1,
+                           'KB':1e-3}
         if kwargs is None:
             kwargs = self.parameters
         if atoms is None:
             atoms = self.atoms
 
         nstates = kwargs.get('NSTATES')
-        npoints = np.product(interpret_grid_input(atoms, **kwargs))
+        if nstates is None:
+            nstates = self.get_nstates(atoms=atoms, **kwargs)
 
-        kpt_grid = interpret_kpoint_input(atoms, **kwargs)
+        # some annoying code to figure out if it's a spin system
+        spin_polarized = kwargs.get('nstates')
+        if spin_polarized is not None:
+            spin_polarized = int(spin_polarized)
+        else:
+            spin_polarized = 1
+        if spin_polarized == 2:
+            spin_factor = 2
+        else:
+            spin_factor = 1
+
+        npoints = np.product(self.interpret_grid_input(atoms, **kwargs))
+
+        kpt_grid = self.interpret_kpoint_input(atoms, **kwargs)
         kpt_factor = np.ceil(np.product(kpt_grid)/2)
-        estimate = 5 * npoints * states * kpt_factor * 8 # bytes
+
+        # this is a pretty generous over-estimate
+        # TODO: check this function is working
+        estimate = 5 * npoints * nstates * kpt_factor * spin_factor * 8 # bytes
+        converted_estimate = estimate * conversion_dict[units]
+        return converted_estimate
         
 
     def calculate(self, atoms = None, properties = ['energy'],
