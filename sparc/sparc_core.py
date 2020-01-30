@@ -502,6 +502,8 @@ class SPARC(FileIOCalculator):
         helper function to translate whatever the user put in into
         a grid that can be directly written to an input file
         """
+        if 'H' in kwargs:
+            kwargs['h'] = kwargs.pop('H')
         if 'h' in kwargs and 'FD_GRID' in kwargs:
             if kwargs['FD_GRID'] is not None and kwargs['h'] is not None:
                 raise CalculatorSetupError('You cannot specify a grid'
