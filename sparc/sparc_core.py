@@ -48,6 +48,8 @@ default_parameters = {
             'MINIT_SCF': 3,
             'MAXIT_POISSON': 3000,
             'BETA': 1000,
+            'TOL_PRECOND':None,
+            'PRECOND_KERKER_KTF': None,
             'ELEC_TEMP': None,
             'CALC_STRESS': None,
             'CALC_PRES': None,
@@ -418,6 +420,9 @@ class SPARC(FileIOCalculator):
             kwargs['EXCHANGE_CORRELATION'] = kwargs['xc']
             if kwargs['xc'] == 'PBE':
                 kwargs['xc'] = 'GGA_PBE'
+            if kwargs['xc'] == 'LDA':
+                kwargs['xc'] = 'LDA_PW'
+
             f.write('EXCHANGE_CORRELATION: ' +  
                         default_parameters['EXCHANGE_CORRELATION'] + '\n')
             xc = default_parameters['EXCHANGE_CORRELATION']
@@ -429,6 +434,9 @@ class SPARC(FileIOCalculator):
             else:
                 if kwargs['EXCHANGE_CORRELATION'] == 'PBE':
                     kwargs['EXCHANGE_CORRELATION'] = 'GGA_PBE'
+                if kwargs['xc'] == 'LDA':
+                    kwargs['xc'] = 'LDA_PW'
+
                 f.write('EXCHANGE_CORRELATION: ' +  # Note the Miss-spelling
                         kwargs['EXCHANGE_CORRELATION'] + '\n')
                 xc = kwargs['EXCHANGE_CORRELATION']
@@ -473,25 +481,7 @@ class SPARC(FileIOCalculator):
         f.close()
 
         # make the atomic inputs (.ion) file
-        kwargs['pseudo_dir'] = self.get_pseudopotential_directory(**kwargs)
-        """
-        if 'pseudo_dir' not in kwargs.keys() and 'SPARC_PSP_PATH' in os.environ:
-            kwargs['pseudo_dir'] = os.environ['SPARC_PSP_PATH']
-        elif 'pseudo_dir' not in kwargs.keys():
-            # find where the defaults are
-            current_file = inspect.getfile(inspect.currentframe())
-            package_directory = os.path.dirname(os.path.abspath(current_file))
-            psps_path = os.path.join(package_directory, 'pseudos')
-
-            if 'LDA' in xc:
-                psps_path = os.path.join(psps_path, 'LDA_pseudos')
-            elif 'PBE' in xc:
-                psps_path = os.path.join(psps_path, 'PBE_pseudos')
-            kwargs['pseudo_dir'] = psps_path
-            warnings.warn('No `pseudo_dir` argument was passed in and no '
-                          '$SPARC_PSP_PATH environment variable was set '
-                          'default pseudopotentials are being used.')
-        """
+        kwargs['pseudo_dir'] = self.get_pseudopotential_directory(xc=xc, **kwargs)
 
         outpath = os.path.join(self.directory, self.label)
         write_ion(open(outpath + '.ion','w'),
@@ -1069,6 +1059,9 @@ class SPARC(FileIOCalculator):
                 forces = np.array(forces, dtype = 'float64')
                 forces *= Hartree / Bohr
                 self.results['forces'] = forces            
+            elif 'Entropy*kb*T' in line:
+                TS = self.read_line(line, strip_text = True) * Hartree
+                self.results['energy'] += TS
 
         # Recover the original input parameters set, 
         #only do this if it's needed
@@ -1427,8 +1420,10 @@ class SPARC(FileIOCalculator):
                                                            recover_input = True,
                                                            parse_traj = True,
                                                            return_results = True)
+            if not calc.scf_converged():
+                raise Exception('The SCF on this calculation did not converge')
         else:
-            return None
+            raise Exception('no .out file was found')
         # just reinitialize now
         calc.__init__(atoms = atoms, **input_dict)
         calc.results = results
