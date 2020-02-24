@@ -434,8 +434,8 @@ class SPARC(FileIOCalculator):
             else:
                 if kwargs['EXCHANGE_CORRELATION'] == 'PBE':
                     kwargs['EXCHANGE_CORRELATION'] = 'GGA_PBE'
-                if kwargs['xc'] == 'LDA':
-                    kwargs['xc'] = 'LDA_PW'
+                if kwargs['EXCHANGE_CORRELATION'] == 'LDA':
+                    kwargs['EXCHANGE_CORRELATION'] = 'LDA_PW'
 
                 f.write('EXCHANGE_CORRELATION: ' +  # Note the Miss-spelling
                         kwargs['EXCHANGE_CORRELATION'] + '\n')
@@ -1055,13 +1055,14 @@ class SPARC(FileIOCalculator):
                 self.results['free_energy'] = energy
             elif 'Atomic forces' in line:
                 for j in range(i + 1, i + natoms + 1):
-                    forces.append(last_step[j].split()[:-1])
+                    forces.append(last_step[j].split())
                 forces = np.array(forces, dtype = 'float64')
                 forces *= Hartree / Bohr
                 self.results['forces'] = forces            
             elif 'Entropy*kb*T' in line:
                 TS = self.read_line(line, strip_text = True) * Hartree
-                self.results['energy'] += TS
+                #TODO: figure out what to do with this
+                #self.results['energy'] -= TS * 0.5
 
         # Recover the original input parameters set, 
         #only do this if it's needed
@@ -1155,13 +1156,19 @@ class SPARC(FileIOCalculator):
                 if len(inds) == len(atoms):
                     new_atoms = Atoms(['X'] * len(atoms), positions = [(0,0,0)] * len(atoms))
                     new_atoms.set_cell(atoms.cell)
+                    if 'forces' in self.results:
+                        forces = np.empty((len(atoms), 3))
                     # reassign indicies
                     for old_index, new_index in enumerate(inds):
                         new_atoms[new_index].symbol = atoms[old_index].symbol
                         new_atoms[new_index].position = atoms[old_index].position
                         new_atoms.pbc = atoms.pbc
+                        if 'forces' in self.results:
+                            forces[new_index] = self.results['forces'][old_index]
                     assert new_atoms.get_chemical_formula() == atoms.get_chemical_formula()
                     atoms = new_atoms
+                    if 'forces' in self.results:
+                        self.results['forces'] =  forces
                 else:
                     warnings.warn('The SPARC ASE calculator was unable to '
                                         'reconstruct the atoms object from the input'
@@ -1232,6 +1239,9 @@ class SPARC(FileIOCalculator):
 
         # build a traj file out of the steps
         for j, step in enumerate(steps):
+            # Sometimes if it fails, a final empty step will exist
+            if len(step.splitlines()) == 1:
+                continue
             positions = step.split(':')[2].strip().split('\n')
             forces = step.split(':')[4].strip().split('\n')
             frc = np.empty((len(forces), 3))
@@ -1247,15 +1257,16 @@ class SPARC(FileIOCalculator):
                     new_atoms[new_index].symbol = atoms[old_index].symbol
                     new_atoms[new_index].position = atoms[old_index].position
                 # reorder the constraints
+                #print(constraints)
                 if constraints is not None:
                     new_constraints = []
+                    new_indices = []
                     for constraint in constraints:
                         if type(constraint).__name__ == 'FixAtoms':
                             for index in constraint.index:
-                                new_index = inds.index(index)
-                                cons = constraint.copy()
-                                cons.index_shuffle(new_atoms, [index, new_index])
-                                new_constraints.append(cons)
+                                new_indices.append(inds.index(index))
+                            cons = constraint.copy()
+                            new_constraints.append(cons)
                         elif type(constraint).__name__ in ['FixedLine', 'FixedPlan']:
                             for index in [constraint.a]:
                                 new_index = inds[index]
@@ -1267,9 +1278,9 @@ class SPARC(FileIOCalculator):
                                           'FixAtoms, FixedPlane, or FixedLine was '
                                           'found. These are not supported by SPARC'
                                           ' and will be ignored.')
-                    constraints = new_constraints
                 atoms = new_atoms
-            if constraints is not None:
+                atoms.set_constraint(new_constraints)
+            elif constraints is not None:
                 atoms.set_constraint(constraints)
             atoms.set_pbc(pbc)
             atoms.cell = cell

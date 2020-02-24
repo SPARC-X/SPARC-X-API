@@ -45,14 +45,16 @@ def h2gpts(h, cell_cv, idiv=4):
 
 def atoms_dict(atoms):
     d = OrderedDict(atoms=[{'symbol': atom.symbol,
-                            'position': json.loads(encode(atom.position)),
+                            #'position': json.loads(encode(atom.position)),
+                            'position': [float(a) for a in atom.position],
                             'tag': atom.tag,
                             'index': atom.index,
                             'charge': atom.charge,
-                            'momentum': json.loads(encode(atom.momentum)),
+                            #'momentum': json.loads(encode(atom.momentum)),
+                            'momentum': [float(a) for a in atom.momentum],
                             'magmom': atom.magmom}
                            for atom in atoms],
-                    cell=atoms.cell,
+                    cell=atoms.cell.array,
                     pbc=atoms.pbc,
                     info=atoms.info,
                     constraints=[c.todict() for c in atoms.constraints])
@@ -60,7 +62,7 @@ def atoms_dict(atoms):
 
 def dict_atoms(d):
     atoms = Atoms([Atom(atom['symbol'],
-                                atom['position'],
+                                position=atom['position'],
                                 tag=atom['tag'],
                                 momentum=atom['momentum'],
                                 magmom=atom['magmom'],
