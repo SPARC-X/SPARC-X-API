@@ -27,8 +27,10 @@ valence_dict = {}
 for number,element in enumerate(chemical_symbols):
     valence_dict[element] = valences[number]
 
+"""
 def h2gpts(h, cell_cv, idiv=4):
-    """Convert grid spacing to number of grid points divisible by idiv.
+"""
+"""Convert grid spacing to number of grid points divisible by idiv.
     Taken from GPAW:
         https://gitlab.com/gpaw/gpaw/blob/master/gpaw/utilities/__init__.py
 
@@ -38,10 +40,18 @@ def h2gpts(h, cell_cv, idiv=4):
         Desired grid spacing in.
     cell_cv: 3x3 ndarray
         Unit cell.
-    """
-
+"""
+"""
     L_c = (np.linalg.inv(cell_cv)**2).sum(0)**-0.5
     return np.maximum(idiv, (L_c / h / idiv + 0.5).astype(int) * idiv)
+"""
+
+def h2gpts(h, cell_cv, idiv=4):
+    cell_lengths = np.linalg.norm(cell_cv, axis=1)
+    grid = np.ceil(cell_lengths/h)
+    grid = np.maximum(idiv, grid)
+    return [int(a) for a in grid]
+    
 
 def atoms_dict(atoms):
     d = OrderedDict(atoms=[{'symbol': atom.symbol,

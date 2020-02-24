@@ -434,8 +434,8 @@ class SPARC(FileIOCalculator):
             else:
                 if kwargs['EXCHANGE_CORRELATION'] == 'PBE':
                     kwargs['EXCHANGE_CORRELATION'] = 'GGA_PBE'
-                if kwargs['xc'] == 'LDA':
-                    kwargs['xc'] = 'LDA_PW'
+                if kwargs['EXCHANGE_CORRELATION'] == 'LDA':
+                    kwargs['EXCHANGE_CORRELATION'] = 'LDA_PW'
 
                 f.write('EXCHANGE_CORRELATION: ' +  # Note the Miss-spelling
                         kwargs['EXCHANGE_CORRELATION'] + '\n')
@@ -507,7 +507,7 @@ class SPARC(FileIOCalculator):
             kwargs['h'] = 0.15
 
         if 'h' in kwargs:
-            fd_grid = self.h2gpts(kwargs['h'], atoms.cell)
+            fd_grid = self.h2gpts(h=kwargs['h'], cell_cv=atoms.cell)
         if 'FD_GRID' in kwargs:
             if type(kwargs['FD_GRID']) == str:
                 fd_grid = kwargs['FD_GRID'].split()
@@ -1442,18 +1442,11 @@ class SPARC(FileIOCalculator):
         return atoms
 
     def h2gpts(self, h, cell_cv, idiv=4):
-        """Convert grid spacing to number of grid points divisible by idiv.
-        Taken from GPAW:
-            https://gitlab.com/gpaw/gpaw/blob/master/gpaw/utilities/__init__.py
-        Note that units of h and cell_cv must match!
-        h: float
-            Desired grid spacing in.
-        cell_cv: 3x3 ndarray
-            Unit cell.
-        """
-
-        L_c = (np.linalg.inv(cell_cv)**2).sum(0)**-0.5
-        return np.maximum(idiv, (L_c / h / idiv + 0.5).astype(int) * idiv) 
+        cell_cv = np.array(cell_cv)
+        cell_lengths = np.linalg.norm(cell_cv, axis=1)
+        grid = np.ceil(cell_lengths/h)
+        grid = np.maximum(idiv, grid)
+        return [int(a) for a in grid]
 
     def todict(self, only_nondefaults = False, return_atoms = True):
         """
