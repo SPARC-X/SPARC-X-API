@@ -64,7 +64,7 @@ def atoms_dict(atoms):
                             'momentum': [float(a) for a in atom.momentum],
                             'magmom': atom.magmom}
                            for atom in atoms],
-                    cell=atoms.cell.array,
+                    cell=list(atoms.cell.array),
                     pbc=atoms.pbc,
                     info=atoms.info,
                     constraints=[c.todict() for c in atoms.constraints])
