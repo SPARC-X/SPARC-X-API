@@ -167,8 +167,9 @@ class SPARC(FileIOCalculator):
             in_args = arg in default_parameters.keys()
             upper_in_args = arg.upper() in default_parameters.keys()
             equivalent_to_arg = arg in equivalencies.keys()
+            special_args = arg in special_inputs
             
-            if not in_args and not upper_in_args and not equivalent_to_arg:
+            if not in_args and not upper_in_args and not equivalent_to_arg and not special_args:
                 raise InputError('the argument {} was not found in the list of '
                                  'allowable arguments'.format(arg))
         FileIOCalculator.set(self, **kwargs)
