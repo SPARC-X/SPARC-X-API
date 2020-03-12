@@ -28,7 +28,7 @@ special_inputs = ['PSEUDOPOTENTIAL_FILE',
                    'CELL', 'EXCHANGE_CORRELATION',
                    'FD_GRID', 'PSEUDOPOTENTIAL_LOCAL',
                    'pseudo_dir', 'KPOINT_GRID', 'LATVEC',
-                   'BC']
+                   'copy_psp', 'BC']
 
 default_parameters = {
             # 'label': 'sprc-calc',
@@ -38,6 +38,7 @@ default_parameters = {
             'BC': 'P P P',
             'LATVEC': None,
             'EXCHANGE_CORRELATION': 'LDA_PZ',  # 'LDA'
+            'MESH_SPACING': 0.4,
             'KPOINT_GRID': (1, 1, 1),
             'KPOINT_SHIFT': None,
             'MIXING_PARAMETER': 0.30,
@@ -464,11 +465,17 @@ class SPARC(FileIOCalculator):
                           #'TOL_LANCZOS','TOL_PSEUDOCHARGE',
                           'TOL_SCF_QE'
                           'SCF_ENERGY_ACC']
+        bohr_inputs = ['MESH_SPACING']
+
         if 'TOL_RELAX' in kwargs: # this is Ha/Bohr
             kwargs['TOL_RELAX'] /= Hartree / Bohr
         for setting in hartree_inputs:
             if setting in kwargs:
                 kwargs[setting] /= Hartree
+        for setting in bohr_inputs:
+            if setting in kwargs:
+                kwargs[setting] /= Bohr
+
 
         # all non-required inputs
         for arg, value in kwargs.items():
@@ -485,8 +492,13 @@ class SPARC(FileIOCalculator):
         kwargs['pseudo_dir'] = self.get_pseudopotential_directory(xc=xc, **kwargs)
 
         outpath = os.path.join(self.directory, self.label)
+        if kwargs.get('copy_psp') is None:
+            copy_psp = True
+        else:
+            copy_psp = kwargs.get('copy_psp')
         write_ion(open(outpath + '.ion','w'),
-                  atoms, pseudo_dir = kwargs['pseudo_dir'], scaled=scaled)
+                  atoms, pseudo_dir = kwargs['pseudo_dir'],
+                  scaled=scaled, copy_psp=copy_psp)
 
     def interpret_grid_input(self, atoms, **kwargs):
         """
