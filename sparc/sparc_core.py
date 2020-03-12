@@ -58,6 +58,7 @@ default_parameters = {
             'TOL_POISSON': 1.00E-06,
             'TOL_LANCZOS': 1.00E-02,
             'TOL_PSEUDOCHARGE': 1.00E-08,
+            'TOL_RELAX_CELL':None,
             'SCF_ENERGY_ACC': None,
             'TWTIME': 999999999.000000,
             'MIXING_PARAMETER': 0.30,
@@ -104,6 +105,7 @@ default_parameters = {
             'RELAX_METHOD': None,
             'RELAX_MAXITER': 300,
             'RELAX_NITER': 300,
+            'RELAX_MAXDILAT': None,
             'NLCG_sigma': 0.500000,
             'L_HISTORY': 20,
             'L_FINIT_STP': 0.005000,
@@ -1007,7 +1009,7 @@ class SPARC(FileIOCalculator):
         """
         # get the details of the calculation
         self.results = {}
-        step_split = text[6].split('=' * 68)
+        step_split = text[-5].split('=' * 68)
         last_step = step_split[-1].splitlines()
         initialization = step_split[0].splitlines()
         atom_types = []
@@ -1037,7 +1039,6 @@ class SPARC(FileIOCalculator):
                n_atoms_of_type.append(self.read_line(line, typ = int))
         
         # get the energy and forces from the last step
-                 
         for i, line in enumerate(last_step):
             if 'Pressure' in line:
                 self.pressure = self.read_line(line, strip_text = True)
@@ -1122,6 +1123,7 @@ class SPARC(FileIOCalculator):
                                         ' input file and ensure only \'P\''
                                         ' or \'D\' were selected in the BC'
                                         ' arugument')
+            # TODO: remove this if it is truly removed from SPARC
             elif 'BOUNDARY_CONDITION' in input_dict:
                 if input_dict['BOUNDARY_CONDITION'] == '2':
                     pbc = [True, True, True]
@@ -1146,7 +1148,7 @@ class SPARC(FileIOCalculator):
                                       constraints=read_atoms.constraints,
                                       reorder=True)
                 self.results['forces'] = atoms.get_forces()
-            elif 'RELAX_FLAG: 1' in text[2]:
+            elif 'RELAX_FLAG: 1' in text[2] or 'RELAX_FLAG: 3' in text[2]:
                 # this function automatically unscrambles indices
                 atoms = self.parse_relax(label = self.label, write_traj = True,
                                          pbc = read_atoms.pbc,
