@@ -316,7 +316,7 @@ def decipher_constraints(constraints):
     return cons_list
 
 def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
-              add_constraints = True, comment = ''):
+              add_constraints = True, copy_psp=True, comment = ''):
     """
     Standard ase io file for reading the sparc-x .ion format
     
@@ -421,10 +421,12 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
                     if len(filename) > 1:
                         warnings.warn('Multiple psudopotentials detected for ' 
                                       '{} ({}).'.format(element, str(filename))+' Using '+filename[0]+'.')
-
-                    filename = filename[0]
-                    shutil.copyfile(os.path.join(pseudo_dir, filename), 
-                                    os.path.join(directory, filename))
+                    if copy_psp:
+                        filename = filename[0]
+                        shutil.copyfile(os.path.join(pseudo_dir, filename), 
+                                        os.path.join(directory, filename))
+                    else:
+                        filename = os.path.join(pseudo_dir, filename[0])
 
                 #os.system('cp $SPARC_PSP_PATH/' + filename + ' .')
                 fileobj.write('PSEUDO_POT: {}\n'.format(filename)) 
