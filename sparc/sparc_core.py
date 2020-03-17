@@ -257,7 +257,8 @@ class SPARC(FileIOCalculator):
                 raise InputError('if an iterable type is used for the FD_GRID flag, it'
                                  ' must be have dimension 3')
         """
-        f.write('FD_GRID: {} {} {}\n'.format(*fd_grid))
+        if fd_grid is not None:
+            f.write('FD_GRID: {} {} {}\n'.format(*fd_grid))
 
         # Deal with the unit cell
 
@@ -509,6 +510,8 @@ class SPARC(FileIOCalculator):
         helper function to translate whatever the user put in into
         a grid that can be directly written to an input file
         """
+        if 'MESH_SPACING' in kwargs:
+            return None
         if 'H' in kwargs:
             kwargs['h'] = kwargs.pop('H')
         if 'h' in kwargs and 'FD_GRID' in kwargs:
@@ -517,11 +520,11 @@ class SPARC(FileIOCalculator):
                                            ' spacing (h) and input the'
                                            ' FD_GRID input argument'
                                            ' at the same time')
-        if 'h' not in kwargs and 'FD_GRID' not in kwargs:
-            warnings.warn('neither a grid spacing (h) nor a finite difference '
-                          'grid (FD_GRID) has been specified, this is not ideal.'
-                          ' A default value of h = 0.15 angstrom has been inserted.')
-            kwargs['h'] = 0.15
+        #if 'h' not in kwargs and 'FD_GRID' not in kwargs:
+        #    warnings.warn('neither a grid spacing (h) nor a finite difference '
+        #                  'grid (FD_GRID) has been specified, this is not ideal.'
+        #                  ' A default value of h = 0.15 angstrom has been inserted.')
+        #    kwargs['h'] = 0.15
 
         if 'h' in kwargs:
             fd_grid = self.h2gpts(h=kwargs['h'], cell_cv=atoms.cell)
@@ -703,6 +706,8 @@ class SPARC(FileIOCalculator):
         else:
             spin_factor = 1
 
+        if 'MESH_SPACING' in kwargs:
+            kwargs['h'] = kwargs.pop('MESH_SPACING')
         npoints = np.product(self.interpret_grid_input(atoms, **kwargs))
 
         kpt_grid = self.interpret_kpoint_input(atoms, **kwargs)
