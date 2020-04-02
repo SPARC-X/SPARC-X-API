@@ -591,9 +591,9 @@ class SPARC(FileIOCalculator):
             package_directory = os.path.dirname(os.path.abspath(current_file))
             psps_path = os.path.join(package_directory, 'pseudos')
 
-            if 'LDA' in xc:
+            if 'LDA' in kwargs['xc']:
                 psps_path = os.path.join(psps_path, 'LDA_pseudos')
-            elif 'PBE' in xc:
+            elif 'PBE' in kwargs['xc']:
                 psps_path = os.path.join(psps_path, 'PBE_pseudos')
             kwargs['pseudo_dir'] = psps_path
             warnings.warn('No `pseudo_dir` argument was passed in and no '
@@ -606,11 +606,15 @@ class SPARC(FileIOCalculator):
             kwargs = self.parameters
         if atoms is None:
             atoms = self.atoms
+        kwargs = kwargs.copy()
 
         if kwargs.get('nstates'):
             return kwargs.get('nstates')
         elif kwargs.get('NSTATES'):
             return kwargs.get('NSTATES')
+        if 'xc' not in kwargs:
+            if kwargs.get('EXCHANGE_CORRELATION'):
+                kwargs['xc'] = kwargs.get('EXCHANGE_CORRELATION')
 
 
         psp_path = self.get_pseudopotential_directory(**kwargs)
