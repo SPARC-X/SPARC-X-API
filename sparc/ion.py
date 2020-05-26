@@ -14,13 +14,14 @@ from ase.units import Bohr
 from ase.data import chemical_symbols, atomic_masses_iupac2016
 import warnings
 
+
 def read_ion(fileobj, recover_indices=True, recover_constraints=True):
     text = fileobj.read()
     comments_removed = []
     comments = []
     label = fileobj.name.split('.ion')[0]
-        
-    for line in text.splitlines(): # break into lines
+
+    for line in text.splitlines():  # break into lines
         # remove and store the comments
         entry = line.split('#')
         if not entry[0]:
@@ -53,14 +54,14 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
     while True:
         # try to get the unit cell from the .inpt file in the same directory
         if label + '.inpt' in os.listdir('.') and inpt_file_usable == True:
-            with open(label + '.inpt','r') as f:
+            with open(label + '.inpt', 'r') as f:
                 input_file = f.read()
             if 'CELL' not in input_file:
                 # We can't find the CELL in the input file
                 # set the flag to false and re-run the while loop.
                 inpt_file_usable = False
                 del input_file
-                continue 
+                continue
             input_file = input_file.split('\n')
             for line in input_file:
                 if 'CELL' in line:  # find the line with the cell info
@@ -72,7 +73,8 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
                     for lat_vec in [input_file[a] for a in range(index + 1, index + 4)]:
                         vec = lat_vec.strip().split()
                         vec = np.array([float(a) for a in vec])
-                        lat_array.append(vec / np.linalg.norm(vec))  # normalize
+                        lat_array.append(
+                            vec / np.linalg.norm(vec))  # normalize
                     lat_array = np.array(lat_array)
             if lat_vec_speficied == False:
                 lat_array = np.eye(3)
@@ -87,14 +89,15 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
         # if the input file isn't usable, check the comments of the .ion file
         elif comments != [] and comments_bad == False:
             if 'CELL' in comments[1]:  # Check only the second line for a CELL
-                cell = np.empty((3,3))
+                cell = np.empty((3, 3))
                 try:
                     cell = comments[1].strip().split()[1:]
                     cell = [float(a) for a in cell]
                     for lat_vec in comments[3:6]:  # check only these lines
                         vec = lat_vec.strip().split()
                         vec = np.array([float(a) for a in vec])
-                        lat_array.append(vec / np.linalg.norm(vec))  # normalize
+                        lat_array.append(
+                            vec / np.linalg.norm(vec))  # normalize
                     lat_array = np.array(lat_array)
                     atoms.cell = (lat_array.T * cell).T * Bohr
                     break
@@ -106,15 +109,14 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
                               ' unit cell was set for the resulting atoms object. '
                               'Use the output atoms at your own risk')
                 atoms.cell = np.zeros((3, 3))
-                break    
+                break
         else:  # if there is no cell in the .inpt file, and the .ion file, return 0 unit cell
             warnings.warn('No lattice vectors were found in either the .inpt file '
                           'or in the comments of the .ion file. Thus no unit cell '
                           'was set for the resulting atoms object. Use the output '
                           'atoms at your own risk')
-            atoms.cell = np.zeros((3,3))
+            atoms.cell = np.zeros((3, 3))
             break
-
 
     ############################################
     # parse the atoms
@@ -162,15 +164,16 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
             atoms.set_pbc(pbc_list)
             del pbc_list, pbc
     # find the index of line for all the different atom types
-    atom_types = [i for i, x in enumerate(comments_removed) if 'ATOM_TYPE:' in x]
+    atom_types = [i for i, x in enumerate(
+        comments_removed) if 'ATOM_TYPE:' in x]
     relax_blocks = [i for i, x in enumerate(comments_removed) if 'RELAX:' in x]
     spin_blocks = [i for i, x in enumerate(comments_removed) if 'SPIN:' in x]
     for i, atom_type in enumerate(atom_types):
         type_dict = {}
-        if i == len(atom_types) - 1: # treat the last block differently
+        if i == len(atom_types) - 1:  # treat the last block differently
             # Get the slice of text associated with this atom type
             type_slice = comments_removed[atom_types[i]:]
-            
+
             # figure out if there are constraints after this block
             if recover_constraints:
                 relax_block_index = [a for a in relax_blocks if a > atom_type]
@@ -179,22 +182,23 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
             # Get the slice of text associated with this atom type
             type_slice = comments_removed[atom_types[i]: atom_types[i+1]]
             [a for a in relax_blocks if a > atom_type]
-            
+
             # figure out if there are constraints after this block.
             # the constraint index will be sandwiched between the indicies
             # the current block and the next block
             if recover_constraints:
-                relax_block_index = [a for a in relax_blocks if a > atom_types[i]]
-                relax_block_index = [a for a in relax_block_index if a < atom_types[i+1]]
+                relax_block_index = [
+                    a for a in relax_blocks if a > atom_types[i]]
+                relax_block_index = [
+                    a for a in relax_block_index if a < atom_types[i+1]]
             spin_block_index = [a for a in spin_blocks if a > atom_types[i]]
-            spin_block_index = [a for a in spin_block_index if a < atom_types[i+1]]
-
-            
+            spin_block_index = [
+                a for a in spin_block_index if a < atom_types[i+1]]
 
         # extract informaton about the atom type from the section header
-        for info in ['PSEUDO_POT', 'ATOM_TYPE', 'ATOMIC_MASS', 'COORD',\
+        for info in ['PSEUDO_POT', 'ATOM_TYPE', 'ATOMIC_MASS', 'COORD',
                      'N_TYPE_ATOM']:
-             for line in type_slice[:15]: # narrow the search for speed 
+            for line in type_slice[:15]:  # narrow the search for speed
                 if info in line:
                     if 'COORD' in line:
                         if 'FRAC' in line:
@@ -209,8 +213,10 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
             if len(relax_block_index) == 0:
                 pass
             elif len(relax_block_index) == 1:
-                relax_block_index = relax_block_index[0] + 1 # offest by one line
-                relax_block_end = relax_block_index + int(type_dict['N_TYPE_ATOM'])
+                # offest by one line
+                relax_block_index = relax_block_index[0] + 1
+                relax_block_end = relax_block_index + \
+                    int(type_dict['N_TYPE_ATOM'])
                 relax_slice = comments_removed[relax_block_index: relax_block_end]
             elif len(relax_block_index) > 1:
                 raise Exception('There appear to be multiple blocks of'
@@ -223,7 +229,7 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
         if len(spin_block_index) == 0:
             pass
         elif len(spin_block_index) == 1:
-            spin_block_index = spin_block_index[0] + 1 # offest by one line
+            spin_block_index = spin_block_index[0] + 1  # offest by one line
             spin_block_end = spin_block_index + int(type_dict['N_TYPE_ATOM'])
             spin_slice = comments_removed[spin_block_index: spin_block_end]
         elif len(spin_block_index) > 1:
@@ -232,15 +238,15 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
                             ' types in your .ion file. Please inspect'
                             ' it to repair it or pass in')
 
-        
         # now parse out the atomic positions
         for coord_set in type_slice[len(type_dict):int(type_dict['N_TYPE_ATOM']) + len(type_dict)]:
             if 'COORD_FRAC' in type_dict.keys():
                 x1, x2, x3 = [float(a) for a in coord_set.split()[:3]]
-                x, y, z = sum([x * a for x, a in zip([x1, x2, x3], atoms.cell)])
+                x, y, z = sum(
+                    [x * a for x, a in zip([x1, x2, x3], atoms.cell)])
             elif 'COORD' in type_dict.keys():
                 x, y, z = [float(a) * Bohr for a in coord_set.split()[:3]]
-            atoms += Atom(symbol = type_dict['ATOM_TYPE'], position=(x, y, z))
+            atoms += Atom(symbol=type_dict['ATOM_TYPE'], position=(x, y, z))
         # get the constraints
         if recover_constraints:
             if 'relax_slice' in locals():
@@ -259,7 +265,8 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
             spins += [0] * int(type_dict['N_TYPE_ATOM'])
     # check if we can reorganize the indices
     if len(indices_from_comments) == len(atoms) and recover_indices:
-        new_atoms = Atoms(['X'] * len(atoms), positions = [(0,0,0)] * len(atoms))
+        new_atoms = Atoms(['X'] * len(atoms),
+                          positions=[(0, 0, 0)] * len(atoms))
         new_atoms.set_cell(atoms.cell)
         new_spins = [None] * len(atoms)
         # reassign indicies
@@ -284,6 +291,7 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
         constraints = decipher_constraints(constraints)
         atoms.set_constraint(constraints)
     return atoms
+
 
 def decipher_constraints(constraints):
     """
@@ -310,16 +318,17 @@ def decipher_constraints(constraints):
         elif constraint.count(1) == 1:
             cons_list.append(c.FixedLine(i, constraint))
         elif constraint.count(1) == 2:
-            tmp = [int(not a) for a in constraint] # flip ones and zeros
+            tmp = [int(not a) for a in constraint]  # flip ones and zeros
             cons_list.append(c.FixedPlane(i, tmp))
     cons_list.append(c.FixAtoms(fix_atoms))
     return cons_list
 
-def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
-              add_constraints = True, copy_psp=True, comment = ''):
+
+def write_ion(fileobj, atoms, pseudo_dir=None, scaled=True,
+              add_constraints=True, copy_psp=True, comment=''):
     """
     Standard ase io file for reading the sparc-x .ion format
-    
+
     inputs:
         atoms (ase atoms object):
             an ase atoms object of the system being written to a file
@@ -330,11 +339,12 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
     directory = os.path.dirname(fileobj.name)
 
     elements = sorted(list(set(atoms.get_chemical_symbols())))
-    
+
     fileobj.write('# Input File Generated By SPARC ASE Calculator #\n')
     fileobj.write('#CELL:')
     for comp in atoms.cell:
-        fileobj.write('  {}'.format(format(np.linalg.norm(comp) /  Bohr, ' .15f')))
+        fileobj.write('  {}'.format(
+            format(np.linalg.norm(comp) / Bohr, ' .15f')))
     fileobj.write('\n#LATVEC\n')
     for comp in atoms.cell:
         fileobj.write('#')
@@ -360,12 +370,12 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
                 cons_strings += ['0 0 0\n'] * len(constraint.index)
             elif name == 'FixedLine' or 'FixedPlane':
                 line_dir = [int(np.ceil(a)) for a in constraint.dir]
-                max_dirs = 1 # for FixedLine
+                max_dirs = 1  # for FixedLine
                 # The API of FixedLine and FixedPlane is the same
                 # except for the need for an inversion of indices
                 if name == 'FixedPlane':
                     line_dir = [int(not a) for a in line_dir]
-                    max_dirs = 2 
+                    max_dirs = 2
                 if line_dir.count(1) > max_dirs:
                     warnings.warn('The .ion filetype can only support'
                                   'freezing entire dimensions (x,y,z).'
@@ -380,7 +390,6 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
                               ' the .ion format. This constraint will be'
                               ' ignored')
 
-                
         # just make sure that there aren't repeats
         assert len(set(cons_indices)) == len(cons_indices)
 
@@ -404,33 +413,34 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
                               'not be found. Using SPARC_PSP_PATH and generic pseudopotential '
                               'file names (<symbol>.pot). Psuedopotentials must be added '
                               'manually for SPARC to execute successfully.')
-                fileobj.write('PSEUDO_POT: {}.pot\n'.format(element)) 
+                fileobj.write('PSEUDO_POT: {}.pot\n'.format(element))
             else:
-                pseudos_in_dir = [a for a in os.listdir(pseudo_dir) \
-                            if a.endswith(element+'.pot')]
+                pseudos_in_dir = [a for a in os.listdir(pseudo_dir)
+                                  if a.endswith(element+'.pot')]
 
-                filename = [a for a in os.listdir(pseudo_dir) \
+                filename = [a for a in os.listdir(pseudo_dir)
                             if a.endswith(element+'.pot')]
 
                 if len(filename) == 0:
                     filename = element+'.pot'
                     warnings.warn('No pseudopotential detected for '+element+'. '
-                                  'Using generic filename ('+element+'.pot). The pseudopotential '
+                                  'Using generic filename ('+element +
+                                  '.pot). The pseudopotential '
                                   ' must be added manually for SPARC to execute successfully.')
                 else:
                     if len(filename) > 1:
-                        warnings.warn('Multiple psudopotentials detected for ' 
+                        warnings.warn('Multiple psudopotentials detected for '
                                       '{} ({}).'.format(element, str(filename))+' Using '+filename[0]+'.')
                     if copy_psp:
                         filename = filename[0]
-                        shutil.copyfile(os.path.join(pseudo_dir, filename), 
+                        shutil.copyfile(os.path.join(pseudo_dir, filename),
                                         os.path.join(directory, filename))
                     else:
                         filename = os.path.join(pseudo_dir, filename[0])
 
                 #os.system('cp $SPARC_PSP_PATH/' + filename + ' .')
-                fileobj.write('PSEUDO_POT: {}\n'.format(filename)) 
-            
+                fileobj.write('PSEUDO_POT: {}\n'.format(filename))
+
         else:
             fileobj.write('PSEUDO_POT: {}.pot\n'.format(element))
 
@@ -440,11 +450,11 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
 
         if scaled == False:
             fileobj.write('COORD:\n')
-            positions = atoms.get_positions(wrap = False)
+            positions = atoms.get_positions(wrap=False)
             positions /= Bohr
         else:
             fileobj.write('COORD_FRAC:\n')
-            positions = atoms.get_scaled_positions(wrap = False)
+            positions = atoms.get_scaled_positions(wrap=False)
         for atom, position in zip(atoms, positions):
             if atom.symbol == element:
                 for component in position:
@@ -454,12 +464,13 @@ def write_ion(fileobj, atoms, pseudo_dir = None, scaled = True,
                 # mess with the constraints
                 if add_constraints:
                     if atom.index in cons_indices:
-                        constraints_indices_index = cons_indices.index(atom.index)
+                        constraints_indices_index = cons_indices.index(
+                            atom.index)
                         constraints_string += cons_strings[constraints_indices_index]
                     else:
                         constraints_string += '1 1 1\n'
                 if 'spin_string' in locals():
-                    spin_string += format(atom.magmom,' .15f') + '\n'
+                    spin_string += format(atom.magmom, ' .15f') + '\n'
         # dump in the constraints
         if add_constraints:
             fileobj.write(constraints_string)

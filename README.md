@@ -1,6 +1,6 @@
 # sparc-x_ase
 
-sparc-x_ase is an ASE based python wrapper for the density functional theory (DFT) code SPARC. SPARC is under heavy software development, so much of this wrapper is likely to change. However, the wrapper is functional for single point energy calculations.
+sparc-x_ase is an ASE based python wrapper for the density functional theory (DFT) code SPARC. This wrapper is currently in alpha, so it's performance is not guaranteed.
 
 ## Installation:
 The following command should install the package:
@@ -46,8 +46,8 @@ Once those environment varibles are in place, the SPARC ASE calculator works lik
 
 ~~~
 #get sparc calculator
-from sparc import SPARC
-calc = SPARC()
+from sparc_core import SPARC
+calc = SPARC(h=0.2)
 
 #make atoms
 from ase.build import bulk
@@ -56,4 +56,3 @@ atoms.set_calculator(calc)
 atoms.get_potential_energy()
 ~~~
 
-SPARC is still under development, so features are somewhat limited.

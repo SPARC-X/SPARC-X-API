@@ -69,7 +69,6 @@ default_parameters = {
     'PRECOND_KERKER_THRESH': None,
     'PULAY_FREQUENCY': 1,
     'PULAY_RESTART': 0,
-    'TOL_SCF_QE': None,
     'REFERENCE_CUTOFF': 0.50,
     'RHO_TRIGGER': 3,
     'VERBOSITY': 1,
@@ -458,7 +457,6 @@ class SPARC(FileIOCalculator):
                           # 'TOL_SCF',
                           # 'TOL_POISSON',
                           # 'TOL_LANCZOS','TOL_PSEUDOCHARGE',
-                          'TOL_SCF_QE'
                           'SCF_ENERGY_ACC']
         bohr_inputs = ['MESH_SPACING']
 
@@ -910,23 +908,6 @@ class SPARC(FileIOCalculator):
         walltime = re.findall('^.*Total walltime.*$', txt, re.MULTILINE)[-1]
         time = self.read_line(walltime, strip_text=True)
         return time
-
-    def get_extra_time_frm_QE(self):
-        """
-        parses the extra time that was used because of the need to obtain
-        the quantum espresso tolerence
-        """
-        if self.results == {}:  # Check that SPARC has run
-            return None
-        with open(self.label + '.out', 'r') as f:
-            txt = f.read()
-        txt = txt.split('SPARC')[-1]  # get the most recent run
-        # find the extra time if TOL_SCF_QE is used
-        extra_time = re.findall('^.*Extra time.*$', txt, re.MULTILINE)
-        if extra_time == []:
-            return None
-        extra = float(extra_time[-1].split()[-2])
-        return extra
 
     def get_fermi_level(self):
         if hasattr(self, 'fermi_level'):
@@ -1588,9 +1569,6 @@ class SPARC(FileIOCalculator):
         time = self.get_runtime()
         if time is not None:
             dict_version['elapsed-time'] = time
-        extra_time = self.get_extra_time_frm_QE()
-        if extra_time is not None:
-            dict_version['extra-time'] = extra_time
         steps = self.get_scf_steps()
         if steps is not None:
             dict_version['SCF-steps'] = steps
