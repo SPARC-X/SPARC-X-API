@@ -12,7 +12,7 @@ from ase.calculators.calculator import FileIOCalculator
 from ase.calculators.calculator import CalculatorError, CalculatorSetupError
 from ase.calculators.calculator import EnvironmentError, InputError
 from ase.calculators.calculator import CalculationFailed, SCFError, ReadError
-from ase.calculators.calculator import PropertyNotImplementedError 
+from ase.calculators.calculator import PropertyNotImplementedError
 from ase.calculators.calculator import PropertyNotPresent
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase.calculators.calculator import compare_atoms
@@ -25,120 +25,120 @@ from .ion import write_ion, read_ion
 
 
 special_inputs = ['PSEUDOPOTENTIAL_FILE',
-                   'CELL', 'EXCHANGE_CORRELATION',
-                   'FD_GRID', 'PSEUDOPOTENTIAL_LOCAL',
-                   'pseudo_dir', 'KPOINT_GRID', 'LATVEC',
-                   'copy_psp', 'BC']
+                  'CELL', 'EXCHANGE_CORRELATION',
+                  'FD_GRID', 'PSEUDOPOTENTIAL_LOCAL',
+                  'pseudo_dir', 'KPOINT_GRID', 'LATVEC',
+                  'copy_psp', 'BC']
 
 default_parameters = {
-            # 'label': 'sprc-calc',
-            # 'calculation_directory':'sprk.log',
+    # 'label': 'sprc-calc',
+    # 'calculation_directory':'sprk.log',
 
-            'BOUNDARY_CONDITION': 2,
-            'BC': 'P P P',
-            'LATVEC': None,
-            'EXCHANGE_CORRELATION': 'LDA_PZ',  # 'LDA'
-            'MESH_SPACING': 0.4,
-            'KPOINT_GRID': (1, 1, 1),
-            'KPOINT_SHIFT': None,
-            'MIXING_PARAMETER': 0.30,
-            'CHEN_DEGREE': 20,
-            'NSTATES': None,
-            'SMEARING': None,
-            'MAXIT_SCF': 100,
-            'MINIT_SCF': 3,
-            'MAXIT_POISSON': 3000,
-            'POISSON_SOLVER': None,
-            'BETA': 1000,
-            'TOL_PRECOND':None,
-            'PRECOND_KERKER_KTF': None,
-            'ELEC_TEMP': None,
-            'CALC_STRESS': None,
-            'CALC_PRES': None,
-            'TOL_SCF': 1.00E-05,
-            'TOL_POISSON': 1.00E-06,
-            'TOL_LANCZOS': 1.00E-02,
-            'TOL_PSEUDOCHARGE': 1.00E-08,
-            'TOL_RELAX_CELL':None,
-            'SCF_ENERGY_ACC': None,
-            'TWTIME': 999999999.000000,
-            'MIXING_PARAMETER': 0.30,
-            'MIXING_HISTORY': 7,
-            'MIXING_VARIABLE': None,
-            'MIXING_PRECOND': None,
-            'PRECOND_KERKER_THRESH': None,
-            'PULAY_FREQUENCY': 1,
-            'PULAY_RESTART': 0,
-            'TOL_SCF_QE':None,
-            'REFERENCE_CUTOFF': 0.50,
-            'RHO_TRIGGER': 3,
-            'VERBOSITY': 1,
-            'PRINT_FORCES': 0,
-            'PRINT_ATOMS': 0,
-            'PRINT_EIGEN': 0,
-            'PRINT_DENSITY': 0,
-            'PRINT_RESTART_FQ': 1,
-            'PRINT_RESTART': 1,
-            'PRINT_VELS': 1,
-            'PSEUDOPOTENTIAL_LOCAL': None,
-            'PSEUDOPOTENTIAL_FILE': None,
-            'OUTPUT_FILE': None,
-            'CELL': None,
-            'FD_GRID': None,
-            'FD_ORDER': 12,
-            'ELEC_TEMP': 315.775131,
-            'ELEC_TEMP_TYPE': None,
-            'CHEB_DEGREE': 25,
-            'CHEFSI_BOUND_FLAG': None,
-            'FIX_RAND': None,
+    'BOUNDARY_CONDITION': 2,
+    'BC': 'P P P',
+    'LATVEC': None,
+    'EXCHANGE_CORRELATION': 'LDA_PZ',  # 'LDA'
+    'MESH_SPACING': 0.4,
+    'KPOINT_GRID': (1, 1, 1),
+    'KPOINT_SHIFT': None,
+    'MIXING_PARAMETER': 0.30,
+    'CHEN_DEGREE': 20,
+    'NSTATES': None,
+    'SMEARING': None,
+    'MAXIT_SCF': 100,
+    'MINIT_SCF': 3,
+    'MAXIT_POISSON': 3000,
+    'POISSON_SOLVER': None,
+    'BETA': 1000,
+    'TOL_PRECOND': None,
+    'PRECOND_KERKER_KTF': None,
+    'ELEC_TEMP': None,
+    'CALC_STRESS': None,
+    'CALC_PRES': None,
+    'TOL_SCF': 1.00E-05,
+    'TOL_POISSON': 1.00E-06,
+    'TOL_LANCZOS': 1.00E-02,
+    'TOL_PSEUDOCHARGE': 1.00E-08,
+    'TOL_RELAX_CELL': None,
+    'SCF_ENERGY_ACC': None,
+    'TWTIME': 999999999.000000,
+    'MIXING_PARAMETER': 0.30,
+    'MIXING_HISTORY': 7,
+    'MIXING_VARIABLE': None,
+    'MIXING_PRECOND': None,
+    'PRECOND_KERKER_THRESH': None,
+    'PULAY_FREQUENCY': 1,
+    'PULAY_RESTART': 0,
+    'TOL_SCF_QE': None,
+    'REFERENCE_CUTOFF': 0.50,
+    'RHO_TRIGGER': 3,
+    'VERBOSITY': 1,
+    'PRINT_FORCES': 0,
+    'PRINT_ATOMS': 0,
+    'PRINT_EIGEN': 0,
+    'PRINT_DENSITY': 0,
+    'PRINT_RESTART_FQ': 1,
+    'PRINT_RESTART': 1,
+    'PRINT_VELS': 1,
+    'PSEUDOPOTENTIAL_LOCAL': None,
+    'PSEUDOPOTENTIAL_FILE': None,
+    'OUTPUT_FILE': None,
+    'CELL': None,
+    'FD_GRID': None,
+    'FD_ORDER': 12,
+    'ELEC_TEMP': 315.775131,
+    'ELEC_TEMP_TYPE': None,
+    'CHEB_DEGREE': 25,
+    'CHEFSI_BOUND_FLAG': None,
+    'FIX_RAND': None,
 
-            'SPIN_TYP': 1,
+    'SPIN_TYP': 1,
 
-            # 'NTYPES': None,
-            'NP_KPOINT_PARAL': None,
-            'NP_BAND_PARAL': None,
-            'NP_DOMAIN_PARAL': None,
-            'NP_DOMAIN_PHI_PARAL': None,
+    # 'NTYPES': None,
+    'NP_KPOINT_PARAL': None,
+    'NP_BAND_PARAL': None,
+    'NP_DOMAIN_PARAL': None,
+    'NP_DOMAIN_PHI_PARAL': None,
 
-            'TOL_RELAX': 1.00E-03,
-            'PRINT_RELAXOUT': 0,
-            'RELAX_FLAG': 0,
-            'RELAX_METHOD': None,
-            'RELAX_MAXITER': 300,
-            'RELAX_NITER': 300,
-            'RELAX_MAXDILAT': None,
-            'NLCG_sigma': 0.500000,
-            'L_HISTORY': 20,
-            'L_FINIT_STP': 0.005000,
-            'L_MAXMOV': 0.200000,
-            'L_AUTOSCALE': 1,
-            'L_LINEOPT': 1,
-            'L_ICURV': 1.000000,
+    'TOL_RELAX': 1.00E-03,
+    'PRINT_RELAXOUT': 0,
+    'RELAX_FLAG': 0,
+    'RELAX_METHOD': None,
+    'RELAX_MAXITER': 300,
+    'RELAX_NITER': 300,
+    'RELAX_MAXDILAT': None,
+    'NLCG_sigma': 0.500000,
+    'L_HISTORY': 20,
+    'L_FINIT_STP': 0.005000,
+    'L_MAXMOV': 0.200000,
+    'L_AUTOSCALE': 1,
+    'L_LINEOPT': 1,
+    'L_ICURV': 1.000000,
 
-            'MD_FLAG': None,
-            'MD_METHOD': None,
-            'MD_TIMESTEP': None,
-            'MD_NSTEP': None,
-            'PRINT_RESTART_FQ': None,
-            'PRINT_MDOUT': None,
-            'RESTART_FLAG': None,
-            'ION_TEMP': None,
-            'ION_ELEC_EQT': None,
-            'ION_VEL_DSTR': None,
-            'ION_TEMP_END': None,
-            'QMASS': None,
+    'MD_FLAG': None,
+    'MD_METHOD': None,
+    'MD_TIMESTEP': None,
+    'MD_NSTEP': None,
+    'PRINT_RESTART_FQ': None,
+    'PRINT_MDOUT': None,
+    'RESTART_FLAG': None,
+    'ION_TEMP': None,
+    'ION_ELEC_EQT': None,
+    'ION_VEL_DSTR': None,
+    'ION_TEMP_END': None,
+    'QMASS': None,
 
-                        }
+}
 
 equivalencies = {
-            'xc': 'EXCHANGE_CORRELATION',
-            'kpts': 'KPOINT_GRID',
+    'xc': 'EXCHANGE_CORRELATION',
+    'kpts': 'KPOINT_GRID',
             'nbands': 'NSTATES',
             'h': None,
 
             'gpts': 'FD_GRID'
 
-            }
+}
 
 
 class SPARC(FileIOCalculator):
@@ -153,7 +153,7 @@ class SPARC(FileIOCalculator):
                  label='sprc-calc', atoms=None, command=None, directory='.',
                  **kwargs):
         FileIOCalculator.__init__(self, restart=None, ignore_bad_restart_file=False,
-                 label=None, atoms=None, command=None, directory=directory, **kwargs)
+                                  label=None, atoms=None, command=None, directory=directory, **kwargs)
 
         # setting up label
         # TODO: figure out how to do this with ASE calculator default classes
@@ -182,10 +182,9 @@ class SPARC(FileIOCalculator):
         if kwargs == {}:
             kwargs = self.parameters
 
-
         FileIOCalculator.write_input(self, atoms)
 
-        #TODO: think about if this next conditional is a good idea
+        # TODO: think about if this next conditional is a good idea
         if 'label' in kwargs:
             self.label = kwargs['label']
             del kwargs['label']
@@ -207,12 +206,12 @@ class SPARC(FileIOCalculator):
                         raise InputError('Both {} and {} were input into the sparc '
                                          'calculator. These are equivalent arguments. '
                                          'Please only enter one of these.'.format(arg,
-                                                                                 equivalencies[arg]))
+                                                                                  equivalencies[arg]))
                     kwargs[equivalencies[arg]] = kwargs.pop(arg)
 
         # make all kwargs upper case
         for arg in list(kwargs):
-            if arg.upper() in default_parameters: 
+            if arg.upper() in default_parameters:
                 kwargs[arg.upper()] = kwargs.pop(arg)
 
         ############## Begin writing the file ####################
@@ -259,10 +258,11 @@ class SPARC(FileIOCalculator):
             kwargs['CELL'] = None
 
         # Scold/warn the user about using the CELL/LATVEC arguments
-        if  kwargs['LATVEC'] is not None and  kwargs['CELL'] is None:
-            raise InputError('If LATVEC is input, you also must provide the CELL argument')
+        if kwargs['LATVEC'] is not None and kwargs['CELL'] is None:
+            raise InputError(
+                'If LATVEC is input, you also must provide the CELL argument')
 
-        if  kwargs['LATVEC'] is None and  kwargs['CELL'] is not None:
+        if kwargs['LATVEC'] is None and kwargs['CELL'] is not None:
             warnings.warn('The CELL argument was entered, but not the LATVEC argument.'
                           ' The unit cell in the input atoms object will be ignored and'
                           ' the cell will be assumed to be orthogonal')
@@ -271,14 +271,15 @@ class SPARC(FileIOCalculator):
         if kwargs['CELL'] is not None:
             # If there's no LATVEC input, just assume it's an orthogonal unit cell
             if kwargs['LATVEC'] is None:
-                    lattice = np.eye(3)
+                lattice = np.eye(3)
             elif type(kwargs['LATVEC']) == str:
                 kwargs['LATVEC'] = kwargs['LATVEC'].split()
                 kwargs['LATVEC'] = [float(a) for a in kwargs['LATVEC']]
                 if len(kwargs['LATVEC']) != 9:
-                    raise InputError('The value of LATVEC must have 9 elements (3x3)')
+                    raise InputError(
+                        'The value of LATVEC must have 9 elements (3x3)')
                 lattice = np.array(kwargs['LATVEC'])
-                lattice = np.reshape(lattice, (3,3))
+                lattice = np.reshape(lattice, (3, 3))
             else:
                 # Decipher the LATVEC input
                 try:  # try to deal with numpy arrays by making them lists
@@ -292,10 +293,10 @@ class SPARC(FileIOCalculator):
                 # Deal with the simple case of lists or tuples
                 else:
                     lattice = np.array(kwargs['LATVEC'])
-                    lattice = np.reshape(lattice,(3,3))
+                    lattice = np.reshape(lattice, (3, 3))
 
             # Decipher CELL input
-            if type(kwargs['CELL']) not in [str,list,tuple]:
+            if type(kwargs['CELL']) not in [str, list, tuple]:
                 raise InputError('CELL must be entered as a list, tuple, or space'
                                  ' separated string')
             if type(kwargs['CELL']) == str:
@@ -313,7 +314,7 @@ class SPARC(FileIOCalculator):
             cell = np.eye(3) * (np.max(atoms.positions, axis=0) + (6, 6, 6))
             atoms.set_cell(cell)
             for cell_param in atoms.get_cell_lengths_and_angles()[0:3]:
-                f.write('  {}'.format(format(cell_param / Bohr,' .15f')))
+                f.write('  {}'.format(format(cell_param / Bohr, ' .15f')))
             atoms.center()
             f.write('\n')
         else:
@@ -333,13 +334,13 @@ class SPARC(FileIOCalculator):
             raise CalculatorSetupError('both BC and BOUNDARY_CONDITION'
                                        ' were set please only enter one'
                                        ' of these arguments')
-        if 'BOUNDARY_CONDITION'in kwargs:
+        if 'BOUNDARY_CONDITION' in kwargs:
             warnings.warn('the BOUNDARY_CONDITION arguement is depricated'
-                  ' please use the BC argument instead')
+                          ' please use the BC argument instead')
         else:
             if 'BC' in kwargs:
                 iter_pbc = False
-                # BC can either be an iterable with 3 boolean elements 
+                # BC can either be an iterable with 3 boolean elements
                 # (i.e. [True, True, True]) or a string to be put directly
                 # in (i.e. 'P P P')
                 if type(kwargs['BC']) == str:
@@ -356,21 +357,21 @@ class SPARC(FileIOCalculator):
                                                    'boolean elements (i.e. '
                                                    '[True, True, True]')
                     pbc = kwargs['BC']
-            else: # if no boundary condition arugments are present, use the
-                  # pbc in the atoms object
+            else:  # if no boundary condition arugments are present, use the
+                # pbc in the atoms object
                 iter_pbc = True
                 pbc = atoms.get_pbc()
             if iter_pbc:
                 pbc_str = ''
                 for condition in pbc:
-                        if condition:
-                            pbc_str += ' P'
-                        elif not condition:
-                            pbc_str += ' D'
-                        else:
-                            raise CalculatorSetupError('only booleans may be '
-                                                       'entered for boundary '
-                                                       'conditions')
+                    if condition:
+                        pbc_str += ' P'
+                    elif not condition:
+                        pbc_str += ' D'
+                    else:
+                        raise CalculatorSetupError('only booleans may be '
+                                                   'entered for boundary '
+                                                   'conditions')
                 f.write('BC:{}\n'.format(pbc_str))
         """
         if 'KPOINT_GRID' in kwargs:
@@ -410,7 +411,6 @@ class SPARC(FileIOCalculator):
                     warnings.warn(spin_warn)
             else:
                 warnings.warn(spin_warn)
-            
 
         # xc should be put in separately
         if 'xc' in kwargs:
@@ -420,12 +420,12 @@ class SPARC(FileIOCalculator):
             if kwargs['xc'] == 'LDA':
                 kwargs['xc'] = 'LDA_PW'
 
-            f.write('EXCHANGE_CORRELATION: ' +  
-                        default_parameters['EXCHANGE_CORRELATION'] + '\n')
+            f.write('EXCHANGE_CORRELATION: ' +
+                    default_parameters['EXCHANGE_CORRELATION'] + '\n')
             xc = default_parameters['EXCHANGE_CORRELATION']
         else:
             if 'EXCHANGE_CORRELATION' not in kwargs:
-                f.write('EXCHANGE_CORRELATION: ' +  
+                f.write('EXCHANGE_CORRELATION: ' +
                         default_parameters['EXCHANGE_CORRELATION'] + '\n')
                 xc = default_parameters['EXCHANGE_CORRELATION']
             else:
@@ -446,23 +446,23 @@ class SPARC(FileIOCalculator):
                 elif 'PRINT_RELAXOUT' == 0:
                     warnings.warn('When PRINT_RELAXOUT is set to 0 '
                                   'there is no way to recover the ')
-        
+
         # turn on the flags for these print settings by default
         # it generally doesn't make sense to have these off
-        for flag in ['PRINT_FORCES','PRINT_ATOMS']:
+        for flag in ['PRINT_FORCES', 'PRINT_ATOMS']:
             if flag not in kwargs:
-                f.write('{}: {}\n'.format(flag,'1'))
+                f.write('{}: {}\n'.format(flag, '1'))
 
         # convert the Tols and such to eV and angstrom units
         hartree_inputs = ['SMEARING',
-                          #'TOL_SCF',
-                          #'TOL_POISSON',
-                          #'TOL_LANCZOS','TOL_PSEUDOCHARGE',
+                          # 'TOL_SCF',
+                          # 'TOL_POISSON',
+                          # 'TOL_LANCZOS','TOL_PSEUDOCHARGE',
                           'TOL_SCF_QE'
                           'SCF_ENERGY_ACC']
         bohr_inputs = ['MESH_SPACING']
 
-        if 'TOL_RELAX' in kwargs: # this is Ha/Bohr
+        if 'TOL_RELAX' in kwargs:  # this is Ha/Bohr
             kwargs['TOL_RELAX'] /= Hartree / Bohr
         for setting in hartree_inputs:
             if setting in kwargs:
@@ -471,7 +471,6 @@ class SPARC(FileIOCalculator):
             if setting in kwargs:
                 kwargs[setting] /= Bohr
 
-
         # all non-required inputs
         for arg, value in kwargs.items():
             if arg in special_inputs:
@@ -479,20 +478,20 @@ class SPARC(FileIOCalculator):
             if arg in equivalencies:
                 continue
             f.write('{}: {}\n'.format(arg, value))
-                
-        
+
         f.close()
 
         # make the atomic inputs (.ion) file
-        kwargs['pseudo_dir'] = self.get_pseudopotential_directory(xc=xc, **kwargs)
+        kwargs['pseudo_dir'] = self.get_pseudopotential_directory(
+            xc=xc, **kwargs)
 
         outpath = os.path.join(self.directory, self.label)
         if kwargs.get('copy_psp') is None:
             copy_psp = True
         else:
             copy_psp = kwargs.get('copy_psp')
-        write_ion(open(outpath + '.ion','w'),
-                  atoms, pseudo_dir = kwargs['pseudo_dir'],
+        write_ion(open(outpath + '.ion', 'w'),
+                  atoms, pseudo_dir=kwargs['pseudo_dir'],
                   scaled=scaled, copy_psp=copy_psp)
 
     def interpret_grid_input(self, atoms, **kwargs):
@@ -510,7 +509,7 @@ class SPARC(FileIOCalculator):
                                            ' spacing (h) and input the'
                                            ' FD_GRID input argument'
                                            ' at the same time')
-        #if 'h' not in kwargs and 'FD_GRID' not in kwargs:
+        # if 'h' not in kwargs and 'FD_GRID' not in kwargs:
         #    warnings.warn('neither a grid spacing (h) nor a finite difference '
         #                  'grid (FD_GRID) has been specified, this is not ideal.'
         #                  ' A default value of h = 0.15 angstrom has been inserted.')
@@ -530,8 +529,8 @@ class SPARC(FileIOCalculator):
                 raise InputError('if an iterable type is used for the FD_GRID flag, it'
                                  ' must be have dimension 3')
         else:
-                raise InputError('one of the following must be specified:'
-                                 ' MESH_SPACING, h, or FD_GRID')
+            raise InputError('one of the following must be specified:'
+                             ' MESH_SPACING, h, or FD_GRID')
         return fd_grid
 
     def interpret_kpoint_input(self, atoms, **kwargs):
@@ -550,14 +549,14 @@ class SPARC(FileIOCalculator):
             elif type(kwargs['KPOINT_GRID']) == str:
                 if len(kwargs['KPOINT_GRID'].split()) != 3:
                     raise InputError('when KPOINT_GRID is entered as a string, it'
-                                    ' must have 3 elements separated by spaces '
-                                    '(i.e. \'4 4 4\')')
+                                     ' must have 3 elements separated by spaces '
+                                     '(i.e. \'4 4 4\')')
                 kpt_grid = [int(a) for a in kwargs['KPOINT_GRID'].split()]
             elif len(kwargs['KPOINT_GRID']) != 3 or type(kwargs['KPOINT_GRID']) is not str:
                 raise InputError('KPOINT_GRID must be either a length 3 object'
                                  ' (i.e. (4,4,4)) or a string (i.e. \'4 4 4 \')')
         else:
-            kpt_grid = (1,1,1)
+            kpt_grid = (1, 1, 1)
         return kpt_grid
 
         # check the spin situation
@@ -574,7 +573,7 @@ class SPARC(FileIOCalculator):
 
     def get_pseudopotential_directory(self, **kwargs):
         if 'pseudo_dir' in kwargs.keys():
-            return  kwargs['pseudo_dir']
+            return kwargs['pseudo_dir']
         elif 'pseudo_dir' not in kwargs.keys() and 'SPARC_PSP_PATH' in os.environ:
             kwargs['pseudo_dir'] = os.environ['SPARC_PSP_PATH']
             return os.environ['SPARC_PSP_PATH']
@@ -609,7 +608,6 @@ class SPARC(FileIOCalculator):
             if kwargs.get('EXCHANGE_CORRELATION'):
                 kwargs['xc'] = kwargs.get('EXCHANGE_CORRELATION')
 
-
         psp_path = self.get_pseudopotential_directory(**kwargs)
 
         syms = list(set(atoms.get_chemical_symbols()))
@@ -617,14 +615,14 @@ class SPARC(FileIOCalculator):
         for sym in syms:
             # read the pseudopotential file to find the number of valence
             with open(os.path.join(psp_path, sym + '.pot')) as f:
-                lines = f.readlines()[:100] # just grab the start
+                lines = f.readlines()[:100]  # just grab the start
             for line in lines:
                 if 'zion' in line:
                     valence = float(line.split()[1])
                     syms_valence_dict[sym] = valence
-                    break # stop once we find it
-        tot_valence = sum([syms_valence_dict[a] for a in atoms.get_chemical_symbols()])
-
+                    break  # stop once we find it
+        tot_valence = sum([syms_valence_dict[a]
+                           for a in atoms.get_chemical_symbols()])
 
         # per Qimen this is the formula in SPARC
         nstates = np.floor(tot_valence/2) * 1.2 + 5
@@ -638,7 +636,7 @@ class SPARC(FileIOCalculator):
         environment variables.
         """
         # TODO: make this smarter to check the number of cores
-        #if 'PBS_NP' in os.environ:
+        # if 'PBS_NP' in os.environ:
         #    if float(os.environ['PBS_NP']) > 1:
         os.environ['MV2_ENABLE_AFFINITY'] = '1'
         os.environ['MV2_CPU_BINDING_POLICY'] = 'bunch'
@@ -671,7 +669,7 @@ class SPARC(FileIOCalculator):
             if mpi:
                 command += '{} -np {}'.format(mpi, np)
         command += '{} -name PREFIX'.format(exe)
-        
+
         return command
 
     def estimate_memory(self, atoms=None, units='GB', **kwargs):
@@ -681,8 +679,8 @@ class SPARC(FileIOCalculator):
         but if none are passed in, it will fall back on the parameters
         input when the class was instantiated
         """
-        conversion_dict = {'MB':1e-6, 'GB':1e-9,'B':1, 'byte':1,
-                           'KB':1e-3}
+        conversion_dict = {'MB': 1e-6, 'GB': 1e-9, 'B': 1, 'byte': 1,
+                           'KB': 1e-3}
         if kwargs == {}:
             kwargs = self.parameters
         if atoms is None:
@@ -712,14 +710,13 @@ class SPARC(FileIOCalculator):
 
         # this is a pretty generous over-estimate
         # TODO: check this function is working
-        estimate = 5 * npoints * nstates * kpt_factor * spin_factor * 8 # bytes
+        estimate = 5 * npoints * nstates * kpt_factor * spin_factor * 8  # bytes
         converted_estimate = estimate * conversion_dict[units]
         return converted_estimate
-        
 
-    def calculate(self, atoms = None, properties = ['energy'],
-                  system_changes = all_changes, command = None,
-                  parallel = True, guess_command = False):
+    def calculate(self, atoms=None, properties=['energy'],
+                  system_changes=all_changes, command=None,
+                  parallel=True, guess_command=False):
         # mash together all the output files for convienience
         self.concatinate_output()
 
@@ -748,7 +745,7 @@ class SPARC(FileIOCalculator):
         # more or less a copy of the parent class with small tweaks
         if atoms is not None:
             self.atoms = atoms
-        
+
         self.write_input(self.atoms, **self.parameters)
         if self.command is None:
             raise CalculatorSetupError(
@@ -760,13 +757,13 @@ class SPARC(FileIOCalculator):
             command = command.replace('PREFIX', self.prefix)
         errorcode = subprocess.call(command, shell=True, cwd=self.directory)
 
-        if errorcode: # it will sometimes return an errorcode even though it finished
+        if errorcode:  # it will sometimes return an errorcode even though it finished
             if self.terminated_normally():
                 pass
             else:
                 path = os.path.abspath(self.directory)
                 raise CalculationFailed('{} in {} returned an error: {}'
-                                    .format(self.name, path, errorcode))
+                                        .format(self.name, path, errorcode))
         self.read_results()
 
     def read_results(self):
@@ -776,22 +773,23 @@ class SPARC(FileIOCalculator):
             raise CalculationFailed('SPARC did not terminate normally'
                                     ' in the last run, please check the'
                                     ' output files to see what the error '
-                                    'was')    
+                                    'was')
         if not self.scf_converged():
             raise SCFError('The last SCF cycle of your run did not converge')
         parse_traj = False
         # regenerate the capitalized version of the input parameters
         kwargs = self.parameters
-        #for arg in list(kwargs):
+        # for arg in list(kwargs):
         #    if arg.upper() in default_parameters:
         #        kwargs[arg.upper()] = kwargs.pop(arg)
 
         # if it's MD or relaxation, we have to parse those files
         if 'MD_FLAG' in kwargs:
-            if int(kwargs['MD_FLAG']) == 1:
+            if int(kwargs['MD_FLAG']) != 0 and kwargs['MD_FLAG'] is not None:
                 parse_traj = True
         elif 'md_flag' in kwargs:
-            if int('md_flag' in kwargs) == 1:
+            print('here')
+            if int('md_flag' in kwargs) != 0 and kwargs['md_flag'] is not None:
                 parse_traj = True
         if 'RELAX_FLAG' in kwargs:
             if int(kwargs['RELAX_FLAG']) in [1, 2, 3]:
@@ -800,11 +798,11 @@ class SPARC(FileIOCalculator):
             if int(kwargs['relax_flag']) in [1, 2, 3]:
                 parse_traj = True
 
-        bundle = self.parse_output(parse_traj = parse_traj)
+        bundle = self.parse_output(parse_traj=parse_traj)
         if parse_traj:
             # update the atoms after relaxation/MD
             self.atoms.positions = bundle[0].get_positions()
-            self.atoms.set_chemical_symbols(bundle[0].get_chemical_symbols()) 
+            self.atoms.set_chemical_symbols(bundle[0].get_chemical_symbols())
 
     def terminated_normally(self):
         """
@@ -816,7 +814,7 @@ class SPARC(FileIOCalculator):
             return False
         # check that the termination block is there
         with open(self.label + '.out', 'r') as f:
-            last_few_lines = f.readlines()[-10:] # just to narrow the search
+            last_few_lines = f.readlines()[-10:]  # just to narrow the search
             for line in last_few_lines:
                 if 'Acknowledgements: U.S. DOE (DE-SC0019410)' in line:
                     return True
@@ -830,7 +828,7 @@ class SPARC(FileIOCalculator):
         """
         with open(self.label + '.out', 'r') as f:
             txt = f.read()
-        txt = txt.split('SPARC')[-1] # get the last run
+        txt = txt.split('SPARC')[-1]  # get the last run
         if 'did not converge to desired accuracy' in txt:
             some_failed = True
         else:
@@ -858,20 +856,20 @@ class SPARC(FileIOCalculator):
             terminate normally.
 
         returns:
-        
+
         steps (list):
             A list containing the number of SCF steps for each geometric
             step in order
         """
-        if self.results == {}: # Check that SPARC has run
+        if self.results == {}:  # Check that SPARC has run
             return None
-        f = open(self.label+'.out','r')
+        f = open(self.label+'.out', 'r')
         out = f.read()
         # isolate the most recent run
         out = out.split('Input parameters')[-1]
         # cut the last run into individual SCF steps
         out_steps = out.split('SCF#')
-        del out # free up memory
+        del out  # free up memory
         steps = []
         for step in out_steps:
             for line in step.split('\n'):
@@ -895,8 +893,8 @@ class SPARC(FileIOCalculator):
             num_steps (int):
                 The number of geometric steps
         """
-        inc = include_uncompleted_last_step # because pep8
-        steps = self.get_scf_steps(include_uncompleted_last_step = inc)
+        inc = include_uncompleted_last_step  # because pep8
+        steps = self.get_scf_steps(include_uncompleted_last_step=inc)
         num_steps = len(steps)
         return num_steps
 
@@ -906,11 +904,11 @@ class SPARC(FileIOCalculator):
         """
         if self.results == {}:  # Check that SPARC has run
             return None
-        with open(self.label + '.out','r') as f:
+        with open(self.label + '.out', 'r') as f:
             txt = f.read()
-        txt = txt.split('SPARC')[-1] # get the most recent run
+        txt = txt.split('SPARC')[-1]  # get the most recent run
         walltime = re.findall('^.*Total walltime.*$', txt, re.MULTILINE)[-1]
-        time = self.read_line(walltime, strip_text = True)
+        time = self.read_line(walltime, strip_text=True)
         return time
 
     def get_extra_time_frm_QE(self):
@@ -920,9 +918,9 @@ class SPARC(FileIOCalculator):
         """
         if self.results == {}:  # Check that SPARC has run
             return None
-        with open(self.label + '.out','r') as f:
+        with open(self.label + '.out', 'r') as f:
             txt = f.read()
-        txt = txt.split('SPARC')[-1] # get the most recent run
+        txt = txt.split('SPARC')[-1]  # get the most recent run
         # find the extra time if TOL_SCF_QE is used
         extra_time = re.findall('^.*Extra time.*$', txt, re.MULTILINE)
         if extra_time == []:
@@ -930,13 +928,11 @@ class SPARC(FileIOCalculator):
         extra = float(extra_time[-1].split()[-2])
         return extra
 
-
     def get_fermi_level(self):
         if hasattr(self, 'fermi_level'):
             return self.fermi_level
         else:
             self.calculate()
-
 
     def concatinate_output(self):
         """
@@ -944,17 +940,17 @@ class SPARC(FileIOCalculator):
         """
         files = os.listdir(self.directory)
         files.sort()
-        for sufix in ['.out','.relax','.restart','.aimd','.geopt', '.static']:
+        for sufix in ['.out', '.relax', '.restart', '.aimd', '.geopt', '.static']:
             for item in files:
                 if item.startswith(self.label) and sufix in item and \
-                item != self.label + sufix:
+                        item != self.label + sufix:
                     f = open(self.label + sufix, 'a')
                     g = open(os.path.join(self.directory, item), 'r')
                     text = g.read()
                     f.write('\n' + text)
                     os.remove(item)
 
-    def read_line(self,text, typ = float, strip_text = False):
+    def read_line(self, text, typ=float, strip_text=False):
         """
         helper function to parse lines that are simple a colon separated
         keyword and value pair.
@@ -988,7 +984,7 @@ class SPARC(FileIOCalculator):
             return str(text.split(':')[1])
 
     def parse_output(self, label=None, parse_traj=False,
-                     return_results = False):
+                     return_results=False):
         """
         This function attempts to parse the output files of SPARC.
         You may ask it to parse the auxiliary atomic positions and
@@ -1014,7 +1010,7 @@ class SPARC(FileIOCalculator):
         with open(self.label + '.out', 'r') as f:
             text = f.read()
         text = text.split('SPARC')[-1]  # Get only the last run in the file
-        text = text.split('*' * 75) # break it into blocks
+        text = text.split('*' * 75)  # break it into blocks
 
         """
         This is a guide to the different blocks in the `text` variable
@@ -1036,9 +1032,9 @@ class SPARC(FileIOCalculator):
         fractional = False
         forces = []
         stress = []
-        
+
         for i, line in enumerate(initialization):
-            #if 'oordinates of atoms' in line:
+            # if 'oordinates of atoms' in line:
             #    if 'Fractional' in line:
             #        Fractional = True
             #    for j in range(i+1, i + n_atoms_of_type[-1] + 1):
@@ -1047,53 +1043,54 @@ class SPARC(FileIOCalculator):
                 atom_types.append(line.split()[-2])
                 atom_valences.append(line.split()[-1])
             elif 'Pseudopotential' in line:
-                pseudo = self.read_line(line ,typ = str)
+                pseudo = self.read_line(line, typ=str)
             elif 'Total number of electrons' in line:
-                self.nvalence = self.read_line(line, typ = int)
+                self.nvalence = self.read_line(line, typ=int)
             elif 'Total number of atoms' in line:
-                natoms = self.read_line(line, typ = int)
+                natoms = self.read_line(line, typ=int)
             elif 'Number of atoms of type' in line:
-               n_atoms_of_type.append(self.read_line(line, typ = int))
-        
+                n_atoms_of_type.append(self.read_line(line, typ=int))
+
         # get the energy and forces from the last step
         for i, line in enumerate(last_step):
             if 'Pressure' in line:
-                self.pressure = self.read_line(line, strip_text = True)
-                self.pressure *= GPa 
+                self.pressure = self.read_line(line, strip_text=True)
+                self.pressure *= GPa
             elif 'Stress' in line:
                 for j in range(i + 1, i + 4):
                     stress.append(last_step[j].split())
-                stress = np.array(stress, dtype = 'float64')
+                stress = np.array(stress, dtype='float64')
                 stress *= GPa
-                assert np.shape(stress) == (3,3)
+                assert np.shape(stress) == (3, 3)
                 # convert to Voigt form
                 stress = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
                                    stress[1, 2], stress[0, 2], stress[0, 1]])
                 self.results['stress'] = stress
             elif 'Fermi level' in line:
-                self.fermi_level = self.read_line(line, strip_text = True) * Hartree
+                self.fermi_level = self.read_line(
+                    line, strip_text=True) * Hartree
             elif 'Total free energy' in line:
-                energy = self.read_line(line, strip_text = True) * Hartree
+                energy = self.read_line(line, strip_text=True) * Hartree
                 self.results['energy'] = energy
                 self.results['free_energy'] = energy
             elif 'Atomic forces' in line:
                 for j in range(i + 1, i + natoms + 1):
                     forces.append(last_step[j].split())
-                forces = np.array(forces, dtype = 'float64')
+                forces = np.array(forces, dtype='float64')
                 forces *= Hartree / Bohr
-                self.results['forces'] = forces            
+                self.results['forces'] = forces
             elif 'Entropy*kb*T' in line:
-                TS = self.read_line(line, strip_text = True) * Hartree
-                #TODO: figure out what to do with this
+                TS = self.read_line(line, strip_text=True) * Hartree
+                # TODO: figure out what to do with this
                 #self.results['energy'] -= TS * 0.5
 
-        # Recover the original input parameters set, 
-        #only do this if it's needed
+        # Recover the original input parameters set,
+        # only do this if it's needed
         input_parameters = text[2].splitlines()
         input_dict = {}
         in_lattice_block = False
         for input_arg in input_parameters:
-        # once we find LATVEC, we analyze the next 3 lines differently
+            # once we find LATVEC, we analyze the next 3 lines differently
             if 'LATVEC' in input_arg or in_lattice_block:
                 if not 'block_line' in locals():
                     input_dict['LATVEC'] = []
@@ -1110,7 +1107,7 @@ class SPARC(FileIOCalculator):
                     block_line += 1
                     continue
 
-            # This next conditional is just make sure this code doesn't 
+            # This next conditional is just make sure this code doesn't
             # break if lines are added in the future that don't have colons
             if ':' not in input_arg or input_arg[0] == '#':
                 continue
@@ -1171,7 +1168,7 @@ class SPARC(FileIOCalculator):
                 _, forces = static.split('Atomic forces (Ha/Bohr):\n')
                 forces = forces.splitlines()[:len(atom_coordinates)]
                 forces = [a.split() for a in forces]
-                forces = np.array(forces, dtype = 'float64')
+                forces = np.array(forces, dtype='float64')
                 forces *= Hartree / Bohr
                 self.results['forces'] = forces
 
@@ -1180,22 +1177,22 @@ class SPARC(FileIOCalculator):
                 stress = stress.splitlines()[1:4]
                 stress = np.array([a.split() for a in stress], dtype='float64')
                 stress *= GPa
-                assert np.shape(stress) == (3,3)
+                assert np.shape(stress) == (3, 3)
                 # convert to Voigt form
                 stress = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
                                    stress[1, 2], stress[0, 2], stress[0, 1]])
                 self.results['stress'] = stress
         if parse_traj:
             read_atoms = read_ion(open(self.label + '.ion', 'r'),
-                                  recover_indices = False)
+                                  recover_indices=False)
             inds = self.recover_index_order_from_ion_file(self.label)
             # you need a scrambled version of the indices to read the MD/relax files
             if 'MD_FLAG' in text[2]:
                 # this function automatically unscrambles indices
-                atoms = self.parse_MD(label = self.label, write_traj = True,
-                                      pbc = read_atoms.pbc,
-                                      cell = read_atoms.cell,
-                                      chemical_symbols = read_atoms.get_chemical_symbols(),
+                atoms = self.parse_MD(label=self.label, write_traj=True,
+                                      pbc=read_atoms.pbc,
+                                      cell=read_atoms.cell,
+                                      chemical_symbols=read_atoms.get_chemical_symbols(),
                                       constraints=read_atoms.constraints,
                                       reorder=True)
                 self.results['forces'] = atoms.get_forces()
@@ -1203,21 +1200,21 @@ class SPARC(FileIOCalculator):
                     self.results['stress'] = atoms.get_stress()
             elif 'RELAX_FLAG: 1' in text[2] or 'RELAX_FLAG: 3' in text[2]:
                 # this function automatically unscrambles indices
-                atoms = self.parse_relax(label = self.label, write_traj = True,
-                                         pbc = read_atoms.pbc,
-                                         cell = read_atoms.cell,
-                                         chemical_symbols = read_atoms.get_chemical_symbols(),
+                atoms = self.parse_relax(label=self.label, write_traj=True,
+                                         pbc=read_atoms.pbc,
+                                         cell=read_atoms.cell,
+                                         chemical_symbols=read_atoms.get_chemical_symbols(),
                                          constraints=read_atoms.constraints,
                                          reorder=True)
                 self.results['forces'] = atoms.get_forces()
-                print(atoms.calc.results)
                 if 'stress' in atoms.calc.results:
                     self.results['stress'] = atoms.get_stress()
             else:
                 # quickly unscramble
                 atoms = read_atoms
                 if len(inds) == len(atoms):
-                    new_atoms = Atoms(['X'] * len(atoms), positions = [(0,0,0)] * len(atoms))
+                    new_atoms = Atoms(['X'] * len(atoms),
+                                      positions=[(0, 0, 0)] * len(atoms))
                     new_atoms.set_cell(atoms.cell)
                     if 'forces' in self.results:
                         forces = np.empty((len(atoms), 3))
@@ -1234,17 +1231,16 @@ class SPARC(FileIOCalculator):
                     with open(self.label + '.static') as f:
                         static = f.read()
                     static = static.split('*' * 75)[-1]
-                    
-                    
+
                     if 'forces' in self.results:
-                        self.results['forces'] =  forces
+                        self.results['forces'] = forces
                 else:
                     warnings.warn('The SPARC ASE calculator was unable to '
-                                    'reconstruct the atoms object from the input'
-                                    ' files, this likely means that the .ion file'
-                                    ' was modified during the run. Proceed with'
-                                    ' Caution') 
- 
+                                  'reconstruct the atoms object from the input'
+                                  ' files, this likely means that the .ion file'
+                                  ' was modified during the run. Proceed with'
+                                  ' Caution')
+
         bundle = []
         if parse_traj:
             bundle.append(atoms)
@@ -1253,7 +1249,7 @@ class SPARC(FileIOCalculator):
             bundle.append(self.results)
         return tuple(bundle)
 
-    def parse_relax(self,label, write_traj=False,
+    def parse_relax(self, label, write_traj=False,
                     pbc=False, cell=None,
                     chemical_symbols=[],
                     constraints=None,
@@ -1285,12 +1281,12 @@ class SPARC(FileIOCalculator):
         # Parse out the steps
         if text == '':
             return None
-        steps = text.split(':RELAXSTEP: 1')[-1] # cut previous runs
+        steps = text.split(':RELAXSTEP: 1')[-1]  # cut previous runs
         steps = steps.split(':RELAXSTEP:')
         if write_traj == False:
             steps = [steps[-1]]
         else:
-            traj = Trajectory(label + '.traj', mode = 'w')
+            traj = Trajectory(label + '.traj', mode='w')
 
         if f.name.endswith('.restart'):
             steps = [steps[-1]]
@@ -1299,8 +1295,8 @@ class SPARC(FileIOCalculator):
         n_geometric = len(steps)
         with open(label + '.out', 'r') as f:
             s = f.read()
-        s = s.split('SPARC')[-1] # I think this makes searching faster
-        s = re.findall('^.*Total free energy.*$',s,re.MULTILINE)
+        s = s.split('SPARC')[-1]  # I think this makes searching faster
+        s = re.findall('^.*Total free energy.*$', s, re.MULTILINE)
         engs = s[-n_geometric:]
         engs = [float(a.split()[-2]) * Hartree for a in engs]
 
@@ -1313,18 +1309,18 @@ class SPARC(FileIOCalculator):
             positions = step.split(':')[4].strip().split('\n')
             forces = step.split(':')[6].strip().split('\n')
             frc = np.empty((len(forces), 3))
-            stress = np.empty((3,3))
+            stress = np.empty((3, 3))
             atoms = Atoms()
             for i, f in enumerate(forces):
-                frc[i,:] = [float(a) * Hartree / Bohr for a in f.split()]
+                frc[i, :] = [float(a) * Hartree / Bohr for a in f.split()]
                 atoms += Atom(chemical_symbols[i],
-                          [float(a) * Bohr for a in positions[i].split()])
+                              [float(a) * Bohr for a in positions[i].split()])
             stresses_found = False
             if 'STRESS' in step:
                 stresses_found = True
                 stress_index = colons.index('STRESS') + 1
                 for i, s in enumerate(colons[stress_index].strip().split('\n')):
-                    stress[i,:] = [float(a) * GPa for a in s.split()]
+                    stress[i, :] = [float(a) * GPa for a in s.split()]
                 # Convert of Voigt form
                 stress = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
                                    stress[1, 2], stress[0, 2], stress[0, 1]])
@@ -1335,7 +1331,7 @@ class SPARC(FileIOCalculator):
                     new_atoms[new_index].symbol = atoms[old_index].symbol
                     new_atoms[new_index].position = atoms[old_index].position
                 # reorder the constraints
-                #print(constraints)
+                # print(constraints)
                 if constraints is not None:
                     new_constraints = []
                     new_indices = []
@@ -1349,7 +1345,8 @@ class SPARC(FileIOCalculator):
                             for index in [constraint.a]:
                                 new_index = inds[index]
                                 cons = constraint.copy()
-                                cons.index_shuffle(new_atoms, (index, new_index))
+                                cons.index_shuffle(
+                                    new_atoms, (index, new_index))
                                 new_constraints.append(cons)
                         else:
                             warnings.warn('A constraint that is not of the types '
@@ -1363,12 +1360,12 @@ class SPARC(FileIOCalculator):
             atoms.set_pbc(pbc)
             atoms.cell = cell
             if stresses_found:
-                atoms.set_calculator(SinglePointCalculator(atoms, energy = engs[j],
+                atoms.set_calculator(SinglePointCalculator(atoms, energy=engs[j],
                                                            forces=frc, stress=stress))
             else:
-                atoms.set_calculator(SinglePointCalculator(atoms, energy = engs[j],
+                atoms.set_calculator(SinglePointCalculator(atoms, energy=engs[j],
                                                            forces=frc))
-            if write_traj ==True:
+            if write_traj == True:
                 traj.write(atoms)
         return atoms
 
@@ -1397,20 +1394,20 @@ class SPARC(FileIOCalculator):
         if text == '':
             return None
         # Parse out the steps
-        steps = text.split(':MDSTEP: 1')[-1] # get only the most recent run
+        steps = text.split(':MDSTEP: 1')[-1]  # get only the most recent run
         steps = steps.split(':MDSTEP:')
         if write_traj == False:
             steps = [steps[-1]]
         else:
-            traj = Trajectory(label + '.traj', mode = 'w')
+            traj = Trajectory(label + '.traj', mode='w')
 
         # Parse out the energies
         n_images = len(steps)
         with open(label + '.out', 'r') as f:
             s = f.read()
-        s = s.split('SPARC')[-1] # I think this makes searching faster
+        s = s.split('SPARC')[-1]  # I think this makes searching faster
         # regex to search for this line
-        s = re.findall('^.*Total free energy.*$',s,re.MULTILINE)
+        s = re.findall('^.*Total free energy.*$', s, re.MULTILINE)
         engs = s[-n_images:]
         engs = [float(a.split()[-2]) * Hartree for a in engs]
 
@@ -1420,30 +1417,30 @@ class SPARC(FileIOCalculator):
             colons = step.split(':')
             #pos_index = colons.index('R(Bohr)') + 1
             #frc_index = colons.index('F(Ha/Bohr)') + 1
-            #vel_index = colons.index('V(Bohr/atu)') + 1 
+            #vel_index = colons.index('V(Bohr/atu)') + 1
             pos_index = colons.index('R') + 1
             frc_index = colons.index('F') + 1
             vel_index = colons.index('V') + 1
             # Parse the text
-            positions = colons[pos_index].strip().split('\n')
-            forces = colons[frc_index].strip().split('\n')
-            velocities = colons[vel_index].strip().split('\n')
+            positions = colons[pos_index].strip().splitlines()
+            forces = colons[frc_index].strip().splitlines()
+            velocities = colons[vel_index].strip().splitlines()
             # Initialize the arrays
             frc = np.empty((len(forces), 3))
             vel = np.empty((len(velocities), 3))
             stress = np.zeros((3, 3))
             atoms = Atoms()
             for i, f, v in zip(range(len(forces)), forces, velocities):
-                frc[i,:] = [float(a) * Hartree / Bohr for a in f.split()]
-                vel[i,:] = [float(a) * Bohr / fs  for a in v.split()]
+                frc[i, :] = [float(a) * Hartree / Bohr for a in f.split()]
+                vel[i, :] = [float(a) * Bohr / fs for a in v.split()]
                 atoms += Atom(chemical_symbols[i],
-                          [float(a) * Bohr for a in positions[i].split()])
+                              [float(a) * Bohr for a in positions[i].split()])
             stresses_found = False
             if 'STRESS' in step:
                 stresses_found = True
                 stress_index = colons.index('STRESS_TOT(GPa)') + 1
                 for i, s in enumerate(colons[stress_index].strip().split('\n')):
-                    stress[i,:] = [float(a) * GPa for a in s.split()]
+                    stress[i, :] = [float(a) * GPa for a in s.split()]
                 # Convert of Voigt form
                 stress = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
                                    stress[1, 2], stress[0, 2], stress[0, 1]])
@@ -1462,13 +1459,15 @@ class SPARC(FileIOCalculator):
                             for index in constraint.index:
                                 new_index = inds.index(index)
                                 cons = constraint.copy()
-                                cons.index_shuffle(new_atoms, [index, new_index])
+                                cons.index_shuffle(
+                                    new_atoms, [index, new_index])
                                 new_constraints.append(cons)
                         elif type(constraint).__name__ in ['FixedLine', 'FixedPlan']:
                             for index in constraint.a:
                                 new_index = inds[index]
                                 cons = contraint.copy()
-                                cons.index_shuffle(new_atoms, (index, new_index))
+                                cons.index_shuffle(
+                                    new_atoms, (index, new_index))
                                 new_contraints.append(cons)
                         else:
                             warnings.warn('A constraint that is not of the types '
@@ -1477,7 +1476,6 @@ class SPARC(FileIOCalculator):
                                           ' and will be ignored.')
                     constraints = new_constraints
                 atoms = new_atoms
-                
 
             atoms.set_velocities(vel)
             atoms.set_pbc(pbc)
@@ -1486,15 +1484,17 @@ class SPARC(FileIOCalculator):
                 atoms.set_constraint(constraints)
             if stresses_found:
                 atoms.set_calculator(SinglePointCalculator(atoms,
-                                                           energy = engs[j] * len(atoms),
-                                                           stress = stress,
+                                                           energy=engs[j] *
+                                                           len(atoms),
+                                                           stress=stress,
                                                            forces=frc))
             else:
                 atoms.set_calculator(SinglePointCalculator(atoms,
-                                                           energy = engs[j] * len(atoms),
+                                                           energy=engs[j] *
+                                                           len(atoms),
                                                            forces=frc))
 
-            if write_traj ==True:
+            if write_traj == True:
                 traj.write(atoms)
         return atoms
 
@@ -1511,7 +1511,7 @@ class SPARC(FileIOCalculator):
             if '# index' in line:
                 inds.append(int(line.split('# index')[1]))
         return inds
-                
+
     @staticmethod
     def read(label):
         """
@@ -1521,15 +1521,15 @@ class SPARC(FileIOCalculator):
         calc = SPARC()
         #os.path.isfile(label + '.out')
         if os.path.isfile(label + '.out'):
-            atoms, input_dict, results = calc.parse_output(label = label,
-                                                           parse_traj = True,
-                                                           return_results = True)
+            atoms, input_dict, results = calc.parse_output(label=label,
+                                                           parse_traj=True,
+                                                           return_results=True)
             if not calc.scf_converged():
                 raise Exception('The SCF on this calculation did not converge')
         else:
             raise Exception('no .out file was found')
         # just reinitialize now
-        calc.__init__(atoms = atoms, **input_dict)
+        calc.__init__(atoms=atoms, **input_dict)
         calc.results = results
         return calc
 
@@ -1537,7 +1537,7 @@ class SPARC(FileIOCalculator):
         if (atoms != self.atoms):
             self.reset()
         self.atoms = atoms
- 
+
     def get_atoms(self):
         atoms = self.atoms.copy()
         atoms.set_calculator(self)
@@ -1550,7 +1550,7 @@ class SPARC(FileIOCalculator):
         grid = np.maximum(idiv, grid)
         return [int(a) for a in grid]
 
-    def todict(self, only_nondefaults = False, return_atoms = True):
+    def todict(self, only_nondefaults=False, return_atoms=True):
         """
         Coverts calculator object into a dictionary representation appropriate to be placed
         in a MongoDB. By default this returns only the settings that are not the default values.
@@ -1570,7 +1570,6 @@ class SPARC(FileIOCalculator):
         else:
             input_dict = dict(**self.parameters)
         dict_version.update(**input_dict)
-        
 
         # Check if SPARC terminated normally
         dict_version['SPARC-completed'] = self.terminated_normally()
@@ -1584,7 +1583,7 @@ class SPARC(FileIOCalculator):
         if f is not None:
             dict_version['fmax'] = max(np.abs(f.flatten()))
         #s = self.results.get('stress', None)
-        #if s is not None:
+        # if s is not None:
         #    dict_version['smax'] = max(np.abs(s.flatten()))
         time = self.get_runtime()
         if time is not None:
@@ -1602,7 +1601,7 @@ class SPARC(FileIOCalculator):
         # time of the most recent commit.
         c_dir = os.getcwd()
         try:
-            os.chdir(os.environ['ASE_SPARC_COMMAND'][:-5]) #  rewrite later
+            os.chdir(os.environ['ASE_SPARC_COMMAND'][:-5])  # rewrite later
             f = os.popen('git log | grep "Date"')
             recent_commit_date = f.readlines()[0]
             rc = recent_commit_date.split('Date:')[1]
@@ -1612,15 +1611,15 @@ class SPARC(FileIOCalculator):
         except:
             os.chdir(c_dir)
         # rewrite
-        for item in ['EXCHANGE_CORRELATION']: # These should always be in
+        for item in ['EXCHANGE_CORRELATION']:  # These should always be in
             try:
                 dict_version[item] = self.parameters[item]
             except:
                 pass
         for item in dict_version:
             if type(dict_version[item]) not in \
-            [dict, list, str, float, int, None, tuple] and \
-            dict_version[item] is not None:  # converting numpy arrays to lists
+                [dict, list, str, float, int, None, tuple] and \
+                    dict_version[item] is not None:  # converting numpy arrays to lists
                 try:
                     dict_version[item] = dict_version[item].tolist()
                 except:
@@ -1630,27 +1629,26 @@ class SPARC(FileIOCalculator):
             dict_version['atoms'] = self.atoms_dict(self.atoms)
         return dict_version
 
-
     def calc_to_mongo(self,
-                 host='localhost',
-                 port=27017,
-                 database='atoms',
-                 collection='atoms',
-                 user=None,
-                 password=None):
+                      host='localhost',
+                      port=27017,
+                      database='atoms',
+                      collection='atoms',
+                      user=None,
+                      password=None):
         """
         inserts a dictionary version of the calculator into a mongo database.
-        
+
         """
         from .mongo import MongoDatabase, mongo_doc
 
         db = MongoDatabase(
-                 host=host,
-                 port=port,
-                 database=database,
-                 collection=collection,
-                 user=user,
-                 password=password)
+            host=host,
+            port=port,
+            database=database,
+            collection=collection,
+            user=user,
+            password=password)
         d = mongo_doc(self.get_atoms())
         id_ = db.write(d)
         print('entry was added to db with id {}'.format(id_))
@@ -1658,29 +1656,29 @@ class SPARC(FileIOCalculator):
 
     def atoms_dict(self, atoms):
         d = OrderedDict(atoms=[{'symbol': atom.symbol,
-                            'position': json.loads(encode(atom.position)),
-                            'tag': atom.tag,
-                            'index': atom.index,
-                            'charge': atom.charge,
-                            'momentum': json.loads(encode(atom.momentum)),
-                            'magmom': atom.magmom}
-                           for atom in atoms],
-                    cell=atoms.cell,
-                    pbc=atoms.pbc,
-                    info=atoms.info,
-                    constraints=[c.todict() for c in atoms.constraints])
+                                'position': json.loads(encode(atom.position)),
+                                'tag': atom.tag,
+                                'index': atom.index,
+                                'charge': atom.charge,
+                                'momentum': json.loads(encode(atom.momentum)),
+                                'magmom': atom.magmom}
+                               for atom in atoms],
+                        cell=atoms.cell,
+                        pbc=atoms.pbc,
+                        info=atoms.info,
+                        constraints=[c.todict() for c in atoms.constraints])
         return d
 
     def dict_atoms(self, d):
         atoms = Atoms([Atom(atom['symbol'],
-                                atom['position'],
-                                tag=atom['tag'],
-                                momentum=atom['momentum'],
-                                magmom=atom['magmom'],
-                                charge=atom['charge'])
-                           for atom in d['atoms']],
-                          cell=d['cell'],
-                          pbc=d['pbc'],
-                          info=d['info'],
-                          constraint=[dict2constraint(c) for c in d['constraints']])
+                            atom['position'],
+                            tag=atom['tag'],
+                            momentum=atom['momentum'],
+                            magmom=atom['magmom'],
+                            charge=atom['charge'])
+                       for atom in d['atoms']],
+                      cell=d['cell'],
+                      pbc=d['pbc'],
+                      info=d['info'],
+                      constraint=[dict2constraint(c) for c in d['constraints']])
         return atoms
