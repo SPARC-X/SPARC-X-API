@@ -167,16 +167,6 @@ class SPARC(FileIOCalculator):
         self.prefix = self.label
         self.results = {}
 
-        # check that all arguements are legitimate arguements
-        for arg in kwargs.keys():
-            in_args = arg in default_parameters.keys()
-            upper_in_args = arg.upper() in default_parameters.keys()
-            equivalent_to_arg = arg in equivalencies.keys()
-            special_args = arg in special_inputs
-            
-            if not in_args and not upper_in_args and not equivalent_to_arg and not special_args:
-                raise InputError('the argument {} was not found in the list of '
-                                 'allowable arguments'.format(arg))
         FileIOCalculator.set(self, **kwargs)
         self.atoms = atoms
 
@@ -528,7 +518,7 @@ class SPARC(FileIOCalculator):
 
         if 'h' in kwargs:
             fd_grid = self.h2gpts(h=kwargs['h'], cell_cv=atoms.cell)
-        if 'FD_GRID' in kwargs:
+        elif 'FD_GRID' in kwargs:
             if type(kwargs['FD_GRID']) == str:
                 fd_grid = kwargs['FD_GRID'].split()
                 if len(fd_grid) != 3:
@@ -539,6 +529,9 @@ class SPARC(FileIOCalculator):
             if len(fd_grid) != 3:
                 raise InputError('if an iterable type is used for the FD_GRID flag, it'
                                  ' must be have dimension 3')
+        else:
+                raise InputError('one of the following must be specified:'
+                                 ' MESH_SPACING, h, or FD_GRID')
         return fd_grid
 
     def interpret_kpoint_input(self, atoms, **kwargs):
@@ -690,7 +683,7 @@ class SPARC(FileIOCalculator):
         """
         conversion_dict = {'MB':1e-6, 'GB':1e-9,'B':1, 'byte':1,
                            'KB':1e-3}
-        if kwargs is None:
+        if kwargs == {}:
             kwargs = self.parameters
         if atoms is None:
             atoms = self.atoms
@@ -789,17 +782,23 @@ class SPARC(FileIOCalculator):
         parse_traj = False
         # regenerate the capitalized version of the input parameters
         kwargs = self.parameters
-        for arg in list(kwargs):
-            if arg.upper() in default_parameters:
-                kwargs[arg.upper()] = kwargs.pop(arg)
+        #for arg in list(kwargs):
+        #    if arg.upper() in default_parameters:
+        #        kwargs[arg.upper()] = kwargs.pop(arg)
 
         # if it's MD or relaxation, we have to parse those files
         if 'MD_FLAG' in kwargs:
             if int(kwargs['MD_FLAG']) == 1:
                 parse_traj = True
+        elif 'md_flag' in kwargs:
+            if int('md_flag' in kwargs) == 1:
+                parse_traj = True
         if 'RELAX_FLAG' in kwargs:
-            if int(kwargs['RELAX_FLAG']) == 1:
-                parse_traj = True                
+            if int(kwargs['RELAX_FLAG']) in [1, 2, 3]:
+                parse_traj = True
+        if 'relax_flag' in kwargs:
+            if int(kwargs['relax_flag']) in [1, 2, 3]:
+                parse_traj = True
 
         bundle = self.parse_output(parse_traj = parse_traj)
         if parse_traj:
@@ -945,7 +944,7 @@ class SPARC(FileIOCalculator):
         """
         files = os.listdir(self.directory)
         files.sort()
-        for sufix in ['.out','.relax','.restart','.aimd','.geopt']:
+        for sufix in ['.out','.relax','.restart','.aimd','.geopt', '.static']:
             for item in files:
                 if item.startswith(self.label) and sufix in item and \
                 item != self.label + sufix:
@@ -988,7 +987,7 @@ class SPARC(FileIOCalculator):
         elif typ == str:
             return str(text.split(':')[1])
 
-    def parse_output(self, label=None, recover_input=False, parse_traj=False,
+    def parse_output(self, label=None, parse_traj=False,
                      return_results = False):
         """
         This function attempts to parse the output files of SPARC.
@@ -998,9 +997,6 @@ class SPARC(FileIOCalculator):
         the inputs
 
         Parameters:
-            recover_input (bool):
-                if set to True, the function will return the input
-                parameters from the run as a dictionary.
             parse_traj (bool):
                 if set to True, it will attempt to parse the .aimd
                 or .geopt files depening on if the .inpt file has
@@ -1042,12 +1038,12 @@ class SPARC(FileIOCalculator):
         stress = []
         
         for i, line in enumerate(initialization):
-            if 'oordinates of atoms' in line:
-                if 'Fractional' in line:
-                    Fractional = True
-                for j in range(i+1, i + n_atoms_of_type[-1] + 1):
-                    atom_coordinates.append(initialization[j].split())
-            elif 'Atom type' in line:
+            #if 'oordinates of atoms' in line:
+            #    if 'Fractional' in line:
+            #        Fractional = True
+            #    for j in range(i+1, i + n_atoms_of_type[-1] + 1):
+            #        atom_coordinates.append(initialization[j].split())
+            if 'Atom type' in line:
                 atom_types.append(line.split()[-2])
                 atom_valences.append(line.split()[-1])
             elif 'Pseudopotential' in line:
@@ -1093,68 +1089,102 @@ class SPARC(FileIOCalculator):
 
         # Recover the original input parameters set, 
         #only do this if it's needed
-        if recover_input:
-            input_parameters = text[2].splitlines()
-            input_dict = {}
-            in_lattice_block = False
-            for input_arg in input_parameters:
-            # once we find LATVEC, we analyze the next 3 lines differently
-                if 'LATVEC' in input_arg or in_lattice_block:
-                    if not 'block_line' in locals():
-                        input_dict['LATVEC'] = []
-                        in_lattice_block = True
-                        block_line = 1
-                        continue
-                    lat_vec = [float(a) for a in input_arg.strip().split()]
-                    input_dict['LATVEC'].append(lat_vec)
-                    if block_line == 3:
-                        in_lattice_block = False
-                        input_dict['LATVEC'] = np.array(input_dict['LATVEC'])
-                        continue
-                    else:
-                        block_line += 1
-                        continue
-
-                # This next conditional is just make sure this code doesn't 
-                # break if lines are added in the future that don't have colons
-                if ':' not in input_arg or input_arg[0] == '#':
+        input_parameters = text[2].splitlines()
+        input_dict = {}
+        in_lattice_block = False
+        for input_arg in input_parameters:
+        # once we find LATVEC, we analyze the next 3 lines differently
+            if 'LATVEC' in input_arg or in_lattice_block:
+                if not 'block_line' in locals():
+                    input_dict['LATVEC'] = []
+                    in_lattice_block = True
+                    block_line = 1
+                    continue
+                lat_vec = [float(a) for a in input_arg.strip().split()]
+                input_dict['LATVEC'].append(lat_vec)
+                if block_line == 3:
+                    in_lattice_block = False
+                    input_dict['LATVEC'] = np.array(input_dict['LATVEC'])
+                    continue
+                else:
+                    block_line += 1
                     continue
 
-                kw, arg = input_arg.split(':')
-                input_dict[kw.strip()] = arg.strip()
-                if len(arg.split()) > 1:  # Some arguments are lists
-                    input_dict[kw.strip()] = arg.split()
-            input_dict['label'] = input_dict['OUTPUT_FILE']
-            del input_dict['OUTPUT_FILE']
+            # This next conditional is just make sure this code doesn't 
+            # break if lines are added in the future that don't have colons
+            if ':' not in input_arg or input_arg[0] == '#':
+                continue
 
-            cell = [float(a) for a in input_dict['CELL']]
-            cell = np.eye(3) * cell * Bohr
-            # sort out the boundary conditions
-            # TODO: does this block of code actually do anything??
-            if 'BC' in input_dict:
-                pbc = []
-                for condition in input_dict['BC']:
-                    if condition == 'P':
-                        pbc.append(True)
-                    elif condition == 'D':
-                        pbc.append(False)
-                    elif condition not in ['P', 'D']:
-                        raise Exception('a non-allowed boundary condition'
-                                        ' was detected, please check your'
-                                        ' input file and ensure only \'P\''
-                                        ' or \'D\' were selected in the BC'
-                                        ' arugument')
+            kw, arg = input_arg.split(':')
+            input_dict[kw.strip()] = arg.strip()
+            if len(arg.split()) > 1:  # Some arguments are lists
+                input_dict[kw.strip()] = arg.split()
+        input_dict['label'] = input_dict['OUTPUT_FILE']
+        del input_dict['OUTPUT_FILE']
+
+        cell = [float(a) for a in input_dict['CELL']]
+        cell = np.eye(3) * cell * Bohr
+        # sort out the boundary conditions
+        # TODO: does this block of code actually do anything??
+        if 'BC' in input_dict:
+            pbc = []
+            for condition in input_dict['BC']:
+                if condition == 'P':
+                    pbc.append(True)
+                elif condition == 'D':
+                    pbc.append(False)
+                elif condition not in ['P', 'D']:
+                    raise Exception('a non-allowed boundary condition'
+                                    ' was detected, please check your'
+                                    ' input file and ensure only \'P\''
+                                    ' or \'D\' were selected in the BC'
+                                    ' arugument')
             # TODO: remove this if it is truly removed from SPARC
-            elif 'BOUNDARY_CONDITION' in input_dict:
-                if input_dict['BOUNDARY_CONDITION'] == '2':
-                    pbc = [True, True, True]
-                elif input_dict['BOUNDARY_CONDITION'] == '1':
-                    pbc = [False, False, False]
-                elif input_dict['BOUNDARY_CONDITION'] == '3':
-                    pbc = [True, True, False]
-                elif input_dict['BOUNDARY_CONDITION'] == '4':
-                    pbc = [True, False, False]
+        elif 'BOUNDARY_CONDITION' in input_dict:
+            if input_dict['BOUNDARY_CONDITION'] == '2':
+                pbc = [True, True, True]
+            elif input_dict['BOUNDARY_CONDITION'] == '1':
+                pbc = [False, False, False]
+            elif input_dict['BOUNDARY_CONDITION'] == '3':
+                pbc = [True, True, False]
+            elif input_dict['BOUNDARY_CONDITION'] == '4':
+                pbc = [True, False, False]
 
+        # parse the static file if it's an SCF calculation
+        if 'MD_FLAG' not in input_dict and 'RELAX_FLAG' not in input_dict:
+            with open(self.label + '.static') as f:
+                static = f.read()
+            static = static.split('*' * 75)[-1]
+            atom_positions, static = static.split('\nTotal free energy (Ha): ')
+
+            # TODO: think of a better way than this to split off the energy
+            static = static.splitlines()
+            total_energy = static[0]
+            static = '\n'.join(static[1:])
+            for line in atom_positions.splitlines()[1:]:
+                if 'oordinates of' in line:
+                    if 'Fractional' in line:
+                        Fractional = True
+                    continue
+                atom_coordinates.append(line.split())
+            if 'Atomic forces' in static:
+                _, forces = static.split('Atomic forces (Ha/Bohr):\n')
+                forces = forces.splitlines()[:len(atom_coordinates)]
+                forces = [a.split() for a in forces]
+                forces = np.array(forces, dtype = 'float64')
+                forces *= Hartree / Bohr
+                self.results['forces'] = forces
+
+            if 'Stress ' in static:
+                _, stress = static.split('Stress (GPa):')
+                stress = stress.splitlines()[1:4]
+                stress = np.array([a.split() for a in stress], dtype='float64')
+                stress *= GPa
+                assert np.shape(stress) == (3,3)
+                # convert to Voigt form
+                stress = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
+                                   stress[1, 2], stress[0, 2], stress[0, 1]])
+                self.results['stress'] = stress
         if parse_traj:
             read_atoms = read_ion(open(self.label + '.ion', 'r'),
                                   recover_indices = False)
@@ -1169,6 +1199,8 @@ class SPARC(FileIOCalculator):
                                       constraints=read_atoms.constraints,
                                       reorder=True)
                 self.results['forces'] = atoms.get_forces()
+                if 'stress' in atoms.calc.results:
+                    self.results['stress'] = atoms.get_stress()
             elif 'RELAX_FLAG: 1' in text[2] or 'RELAX_FLAG: 3' in text[2]:
                 # this function automatically unscrambles indices
                 atoms = self.parse_relax(label = self.label, write_traj = True,
@@ -1178,6 +1210,9 @@ class SPARC(FileIOCalculator):
                                          constraints=read_atoms.constraints,
                                          reorder=True)
                 self.results['forces'] = atoms.get_forces()
+                print(atoms.calc.results)
+                if 'stress' in atoms.calc.results:
+                    self.results['stress'] = atoms.get_stress()
             else:
                 # quickly unscramble
                 atoms = read_atoms
@@ -1193,23 +1228,27 @@ class SPARC(FileIOCalculator):
                         new_atoms.pbc = atoms.pbc
                         if 'forces' in self.results:
                             forces[new_index] = self.results['forces'][old_index]
+                    # make sure the atoms are correct
                     assert new_atoms.get_chemical_formula() == atoms.get_chemical_formula()
                     atoms = new_atoms
+                    with open(self.label + '.static') as f:
+                        static = f.read()
+                    static = static.split('*' * 75)[-1]
+                    
+                    
                     if 'forces' in self.results:
                         self.results['forces'] =  forces
                 else:
                     warnings.warn('The SPARC ASE calculator was unable to '
-                                        'reconstruct the atoms object from the input'
-                                        ' files, this likely means that the .ion file'
-                                        ' was modified during the run. Proceed with'
-                                        ' Caution') 
+                                    'reconstruct the atoms object from the input'
+                                    ' files, this likely means that the .ion file'
+                                    ' was modified during the run. Proceed with'
+                                    ' Caution') 
  
-            
         bundle = []
         if parse_traj:
             bundle.append(atoms)
-        if recover_input:
-            bundle.append(input_dict)
+        bundle.append(input_dict)
         if return_results:
             bundle.append(self.results)
         return tuple(bundle)
@@ -1270,14 +1309,25 @@ class SPARC(FileIOCalculator):
             # Sometimes if it fails, a final empty step will exist
             if len(step.splitlines()) == 1:
                 continue
-            positions = step.split(':')[2].strip().split('\n')
-            forces = step.split(':')[4].strip().split('\n')
+            colons = step.split(':')
+            positions = step.split(':')[4].strip().split('\n')
+            forces = step.split(':')[6].strip().split('\n')
             frc = np.empty((len(forces), 3))
+            stress = np.empty((3,3))
             atoms = Atoms()
             for i, f in enumerate(forces):
                 frc[i,:] = [float(a) * Hartree / Bohr for a in f.split()]
                 atoms += Atom(chemical_symbols[i],
                           [float(a) * Bohr for a in positions[i].split()])
+            stresses_found = False
+            if 'STRESS' in step:
+                stresses_found = True
+                stress_index = colons.index('STRESS') + 1
+                for i, s in enumerate(colons[stress_index].strip().split('\n')):
+                    stress[i,:] = [float(a) * GPa for a in s.split()]
+                # Convert of Voigt form
+                stress = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
+                                   stress[1, 2], stress[0, 2], stress[0, 1]])
             if reorder:
                 inds = self.recover_index_order_from_ion_file(self.label)
                 new_atoms = Atoms(['X'] * len(atoms))
@@ -1312,8 +1362,12 @@ class SPARC(FileIOCalculator):
                 atoms.set_constraint(constraints)
             atoms.set_pbc(pbc)
             atoms.cell = cell
-            atoms.set_calculator(SinglePointCalculator(atoms, energy = engs[j],
-                                                   forces=frc))
+            if stresses_found:
+                atoms.set_calculator(SinglePointCalculator(atoms, energy = engs[j],
+                                                           forces=frc, stress=stress))
+            else:
+                atoms.set_calculator(SinglePointCalculator(atoms, energy = engs[j],
+                                                           forces=frc))
             if write_traj ==True:
                 traj.write(atoms)
         return atoms
@@ -1384,10 +1438,16 @@ class SPARC(FileIOCalculator):
                 vel[i,:] = [float(a) * Bohr / fs  for a in v.split()]
                 atoms += Atom(chemical_symbols[i],
                           [float(a) * Bohr for a in positions[i].split()])
+            stresses_found = False
             if 'STRESS' in step:
+                stresses_found = True
                 stress_index = colons.index('STRESS_TOT(GPa)') + 1
                 for i, s in enumerate(colons[stress_index].strip().split('\n')):
                     stress[i,:] = [float(a) * GPa for a in s.split()]
+                # Convert of Voigt form
+                stress = np.array([stress[0, 0], stress[1, 1], stress[2, 2],
+                                   stress[1, 2], stress[0, 2], stress[0, 1]])
+
             if reorder:
                 inds = self.recover_index_order_from_ion_file(self.label)
                 new_atoms = Atoms(['X'] * len(atoms))
@@ -1424,10 +1484,16 @@ class SPARC(FileIOCalculator):
             atoms.cell = cell
             if constraints is not None:
                 atoms.set_constraint(constraints)
-            atoms.set_calculator(SinglePointCalculator(atoms,
-                                                       energy = engs[j] * len(atoms),
-                                                       stress = stress,
-                                                       forces=frc))
+            if stresses_found:
+                atoms.set_calculator(SinglePointCalculator(atoms,
+                                                           energy = engs[j] * len(atoms),
+                                                           stress = stress,
+                                                           forces=frc))
+            else:
+                atoms.set_calculator(SinglePointCalculator(atoms,
+                                                           energy = engs[j] * len(atoms),
+                                                           forces=frc))
+
             if write_traj ==True:
                 traj.write(atoms)
         return atoms
@@ -1456,7 +1522,6 @@ class SPARC(FileIOCalculator):
         #os.path.isfile(label + '.out')
         if os.path.isfile(label + '.out'):
             atoms, input_dict, results = calc.parse_output(label = label,
-                                                           recover_input = True,
                                                            parse_traj = True,
                                                            return_results = True)
             if not calc.scf_converged():
@@ -1500,32 +1565,12 @@ class SPARC(FileIOCalculator):
 
         dict_version = OrderedDict()
         if self.results != {}:
-            bundle = self.parse_output(recover_input = True, 
-                                       parse_traj = True)
+            bundle = self.parse_output(parse_traj=True)
             atoms, input_dict = bundle
         else:
             input_dict = dict(**self.parameters)
         dict_version.update(**input_dict)
         
-        """
-        for item in default_parameters:  # rewrite this section
-            if item in self.kwargs.keys():
-                if item == 'LATVEC':
-                    dict_version[item] = self.kwargs[item]
-                elif self.kwargs[item] == default_parameters[item] and\
-                   only_nondefaults == True:
-                    pass
-                elif type(self.kwargs[item]) == dict:
-                    dict_version[item] = OrderedDict(self.kwargs[item])
-                else:
-                    dict_version[item] = self.kwargs[item]
-
-            elif only_nondefaults == False:
-                dict_version[item] = default_parameters[item]
-        if hasattr(self,'converged'):
-            dict_version['SCF-converged'] = self.converged
-        f = os.popen('tail ' + self.label + '.out')
-        """
 
         # Check if SPARC terminated normally
         dict_version['SPARC-completed'] = self.terminated_normally()
