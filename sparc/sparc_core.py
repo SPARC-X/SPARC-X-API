@@ -179,7 +179,7 @@ class SPARC(FileIOCalculator):
                                  ' write an input file')
             atoms = self.atoms
         if kwargs == {}:
-            kwargs = self.parameters
+            kwargs = self.parameters.copy()
 
         FileIOCalculator.write_input(self, atoms)
 
@@ -218,33 +218,7 @@ class SPARC(FileIOCalculator):
 
         # deal with the finite differnce grid
         fd_grid = self.interpret_grid_input(atoms, **kwargs)
-        """
-        if 'h' in kwargs and 'FD_GRID' in kwargs:
-            if kwargs['FD_GRID'] is not None and kwargs['h'] is not None:
-                raise CalculatorSetupError('You cannot specify a grid'
-                                           ' spacing (h) and input the'
-                                           ' FD_GRID input argument'
-                                           ' at the same time')
-        if 'h' not in kwargs and 'FD_GRID' not in kwargs:
-            warnings.warn('neither a grid spacing (h) nor a finite difference '
-                          'grid (FD_GRID) has been specified, this is not ideal.'
-                          ' A default value of h = 0.15 angstrom has been inserted.')
-            kwargs['h'] = 0.15
-        
-        if 'h' in kwargs:
-            fd_grid = self.h2gpts(kwargs['h'], atoms.cell) 
-        if 'FD_GRID' in kwargs:
-            if type(kwargs['FD_GRID']) == str:
-                fd_grid = kwargs['FD_GRID'].split()
-                if len(fd_grid) != 3:
-                    raise InputError('If a string is passed in for the FD_GRID flag it'
-                                     ' must be able to split into a list of dimension 3'
-                                     ' with .split()')
-            fd_grid = list(kwargs['FD_GRID'])
-            if len(fd_grid) != 3:
-                raise InputError('if an iterable type is used for the FD_GRID flag, it'
-                                 ' must be have dimension 3')
-        """
+
         if fd_grid is not None:
             f.write('FD_GRID: {} {} {}\n'.format(*fd_grid))
 
@@ -372,30 +346,8 @@ class SPARC(FileIOCalculator):
                                                    'entered for boundary '
                                                    'conditions')
                 f.write('BC:{}\n'.format(pbc_str))
-        """
-        if 'KPOINT_GRID' in kwargs:
-            if kwargs['KPOINT_GRID'] is not None:
-                f.write('KPOINT_GRID: ')
-                if len(kwargs['KPOINT_GRID']) == 3:
-                    for kpoint in kwargs['KPOINT_GRID']:
-                        if type(kpoint) != int:
-                            raise InputError('when KPOINT_GRID is entered as an'
-                                             ' iterable, the values must be in the'
-                                             ' integer type (i.e. (4,4,4))')
-                        f.write(str(kpoint) + ' ')
-                elif type(kwargs['KPOINT_GRID']) == str:
-                    if len(kwargs['KPOINT_GRID'].split()) != 3:
-                        raise InputError('when KPOINT_GRID is entered as a string, it'
-                                        ' must have 3 elements separated by spaces '
-                                        '(i.e. \'4 4 4\')')
-                    f.write(kwargs['KPOINT_GRID'].strip())
-                elif len(kwargs['KPOINT_GRID']) != 3 or type(kwargs['KPOINT_GRID']) is not str:
-                    raise InputError('KPOINT_GRID must be either a length 3 object'
-                                     ' (i.e. (4,4,4)) or a string (i.e. \'4 4 4 \')')
-                f.write('\n')
-            else:
-                f.write('KPOINT_GRID: 1 1 1\n') # default to gamma point 
-        """
+
+        # convert input to usable format
         kpt_grid = self.interpret_kpoint_input(atoms, **kwargs)
         f.write('KPOINT_GRID: {} {} {}\n'.format(*kpt_grid))
 
@@ -404,9 +356,9 @@ class SPARC(FileIOCalculator):
             spin_warn = str('inital magentic moments were set on the'
                             ' provided atoms, bu the spin polarization '
                             'flag has not been set. To run spin polarized'
-                            ' pass in the flag `SPIN_TYP = 2`')
+                            ' pass in the flag `SPIN_TYP = 1`')
             if 'SPIN_TYP' in kwargs:
-                if int(kwargs['SPIN_TYP']) != 2:
+                if int(kwargs['SPIN_TYP']) != 1:
                     warnings.warn(spin_warn)
             else:
                 warnings.warn(spin_warn)
