@@ -1055,7 +1055,6 @@ class SPARC(FileIOCalculator):
         cell = [float(a) for a in input_dict['CELL']]
         cell = np.eye(3) * cell * Bohr
         # sort out the boundary conditions
-        # TODO: does this block of code actually do anything??
         if 'BC' in input_dict:
             pbc = []
             for condition in input_dict['BC']:
@@ -1069,7 +1068,7 @@ class SPARC(FileIOCalculator):
                                     ' input file and ensure only \'P\''
                                     ' or \'D\' were selected in the BC'
                                     ' arugument')
-            # TODO: remove this if it is truly removed from SPARC
+        # TODO: remove this when the arugument has been fully removed
         elif 'BOUNDARY_CONDITION' in input_dict:
             if input_dict['BOUNDARY_CONDITION'] == '2':
                 pbc = [True, True, True]
