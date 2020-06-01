@@ -12,8 +12,6 @@ atoms = bulk('NaCl', crystalstructure = 'rocksalt', a = 5) * (2,1,1)
 atoms.set_initial_magnetic_moments([1.1] * len(atoms))
 l = SPARC(atoms = atoms, h = 0.1, label = 'in1', xc = 'GGA', spin_typ = 2)
 l.write_input(atoms = atoms, h =0.1, spin_typ = 1)
-print(l.parameters)
-print(l.estimate_memory())
 
 print('input writing functional')
 # check reading and writing .ion files
@@ -21,12 +19,21 @@ atoms.set_constraint([FixAtoms([0]), FixedLine(1,[0,1,0]), FixedPlane(2,[1,0,0])
 write_ion(open('in1.ion','w'), atoms)
 recovered_atoms = read_ion(open('in1.ion','r'))
 assert compare_atoms(atoms, recovered_atoms) == []
+
+calc = SPARC(atoms=atoms)
+try: # check that `h` is required
+    calc.write_input()
+    raise Exception('test failed')
+except:
+    pass
+
 print('.ion reading test passed')
 #view(recovered_atoms)
 #view(atoms)
 
-
 calc = SPARC.read('sprc-calc')
+
+calc = SPARC.read('read_input') 
 
 print('reading test passed')
 

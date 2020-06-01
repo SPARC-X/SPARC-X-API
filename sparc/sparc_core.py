@@ -141,9 +141,6 @@ equivalencies = {
 
 
 class SPARC(FileIOCalculator):
-    """
-    TODO: implement reading from output
-    """
     implemented_properties = ['energy', 'forces', 'stress']
     all_changes = ['positions', 'numbers', 'cell', 'pbc',
                    'initial_charges', 'initial_magmoms']
@@ -155,7 +152,6 @@ class SPARC(FileIOCalculator):
                                   label=None, atoms=None, command=None, directory=directory, **kwargs)
 
         # setting up label
-        # TODO: figure out how to do this with ASE calculator default classes
         if self.directory != '.' and '/' in label:
             raise CalculatorSetupError('cannot set both directory and input `/`'
                                        ' in the label name')
@@ -449,24 +445,23 @@ class SPARC(FileIOCalculator):
         helper function to translate whatever the user put in into
         a grid that can be directly written to an input file
         """
-        if 'MESH_SPACING' in kwargs:
-            return None
         if 'H' in kwargs:
             kwargs['h'] = kwargs.pop('H')
-        if 'h' in kwargs and 'FD_GRID' in kwargs:
-            if kwargs['FD_GRID'] is not None and kwargs['h'] is not None:
-                raise CalculatorSetupError('You cannot specify a grid'
-                                           ' spacing (h) and input the'
-                                           ' FD_GRID input argument'
-                                           ' at the same time')
-        # if 'h' not in kwargs and 'FD_GRID' not in kwargs:
-        #    warnings.warn('neither a grid spacing (h) nor a finite difference '
-        #                  'grid (FD_GRID) has been specified, this is not ideal.'
-        #                  ' A default value of h = 0.15 angstrom has been inserted.')
-        #    kwargs['h'] = 0.15
+            return None
+        mesh_args = [kwargs.get(a) for a in ['MESH_SPARCING', 'h', 'FD_GRID']]
+        inputs_check = [a is not None for a in mesh_args]
+        if inputs_check.count(True) > 1:
+            raise CalculatorSetupError('You can only specify one of the '
+                                       'following: `h`, `FD_GRID`, `MESH_SPACING`')
 
-        if 'h' in kwargs:
-            fd_grid = self.h2gpts(h=kwargs['h'], cell_cv=atoms.cell)
+        if 'MESH_SPACING' in kwargs:
+            return None
+        elif 'h' in kwargs:
+            kwargs['MESH_SPACING'] = kwargs['h']
+            return None
+        #if 'h' in kwargs:
+        #    fd_grid = self.h2gpts(h=kwargs['h'], cell_cv=atoms.cell)
+        # read the FD_GRID argument
         elif 'FD_GRID' in kwargs:
             if type(kwargs['FD_GRID']) == str:
                 fd_grid = kwargs['FD_GRID'].split()
@@ -585,9 +580,6 @@ class SPARC(FileIOCalculator):
         just sets up the environment to have roughly optimal parallelization
         environment variables.
         """
-        # TODO: make this smarter to check the number of cores
-        # if 'PBS_NP' in os.environ:
-        #    if float(os.environ['PBS_NP']) > 1:
         os.environ['MV2_ENABLE_AFFINITY'] = '1'
         os.environ['MV2_CPU_BINDING_POLICY'] = 'bunch'
 
@@ -738,7 +730,6 @@ class SPARC(FileIOCalculator):
             if int(kwargs['MD_FLAG']) != 0 and kwargs['MD_FLAG'] is not None:
                 parse_traj = True
         elif 'md_flag' in kwargs:
-            print('here')
             if int('md_flag' in kwargs) != 0 and kwargs['md_flag'] is not None:
                 parse_traj = True
         if 'RELAX_FLAG' in kwargs:
@@ -1018,66 +1009,7 @@ class SPARC(FileIOCalculator):
                 #self.results['energy'] -= TS * 0.5
 
         # Recover the original input parameters set,
-        # only do this if it's needed
-        input_parameters = text[2].splitlines()
-        input_dict = {}
-        in_lattice_block = False
-        for input_arg in input_parameters:
-            # once we find LATVEC, we analyze the next 3 lines differently
-            if 'LATVEC' in input_arg or in_lattice_block:
-                if not 'block_line' in locals():
-                    input_dict['LATVEC'] = []
-                    in_lattice_block = True
-                    block_line = 1
-                    continue
-                lat_vec = [float(a) for a in input_arg.strip().split()]
-                input_dict['LATVEC'].append(lat_vec)
-                if block_line == 3:
-                    in_lattice_block = False
-                    input_dict['LATVEC'] = np.array(input_dict['LATVEC'])
-                    continue
-                else:
-                    block_line += 1
-                    continue
-
-            # This next conditional is just make sure this code doesn't
-            # break if lines are added in the future that don't have colons
-            if ':' not in input_arg or input_arg[0] == '#':
-                continue
-
-            kw, arg = input_arg.split(':')
-            input_dict[kw.strip()] = arg.strip()
-            if len(arg.split()) > 1:  # Some arguments are lists
-                input_dict[kw.strip()] = arg.split()
-        input_dict['label'] = input_dict['OUTPUT_FILE']
-        del input_dict['OUTPUT_FILE']
-
-        cell = [float(a) for a in input_dict['CELL']]
-        cell = np.eye(3) * cell * Bohr
-        # sort out the boundary conditions
-        if 'BC' in input_dict:
-            pbc = []
-            for condition in input_dict['BC']:
-                if condition == 'P':
-                    pbc.append(True)
-                elif condition == 'D':
-                    pbc.append(False)
-                elif condition not in ['P', 'D']:
-                    raise Exception('a non-allowed boundary condition'
-                                    ' was detected, please check your'
-                                    ' input file and ensure only \'P\''
-                                    ' or \'D\' were selected in the BC'
-                                    ' arugument')
-        # TODO: remove this when the arugument has been fully removed
-        elif 'BOUNDARY_CONDITION' in input_dict:
-            if input_dict['BOUNDARY_CONDITION'] == '2':
-                pbc = [True, True, True]
-            elif input_dict['BOUNDARY_CONDITION'] == '1':
-                pbc = [False, False, False]
-            elif input_dict['BOUNDARY_CONDITION'] == '3':
-                pbc = [True, True, False]
-            elif input_dict['BOUNDARY_CONDITION'] == '4':
-                pbc = [True, False, False]
+        input_dict = self.parse_input_args(text[2])
 
         # parse the static file if it's an SCF calculation
         if 'MD_FLAG' not in input_dict and 'RELAX_FLAG' not in input_dict:
@@ -1263,7 +1195,6 @@ class SPARC(FileIOCalculator):
                     new_atoms[new_index].symbol = atoms[old_index].symbol
                     new_atoms[new_index].position = atoms[old_index].position
                 # reorder the constraints
-                # print(constraints)
                 if constraints is not None:
                     new_constraints = []
                     new_indices = []
@@ -1430,6 +1361,69 @@ class SPARC(FileIOCalculator):
                 traj.write(atoms)
         return atoms
 
+    def parse_input_args(self, input_block):
+        input_parameters = input_block.splitlines()
+        input_dict = {}
+        in_lattice_block = False
+        for input_arg in input_parameters:
+            # once we find LATVEC, we analyze the next 3 lines differently
+            if 'LATVEC' in input_arg or in_lattice_block:
+                if not 'block_line' in locals():
+                    input_dict['LATVEC'] = []
+                    in_lattice_block = True
+                    block_line = 1
+                    continue
+                lat_vec = [float(a) for a in input_arg.strip().split()]
+                input_dict['LATVEC'].append(lat_vec)
+                if block_line == 3:
+                    in_lattice_block = False
+                    input_dict['LATVEC'] = np.array(input_dict['LATVEC'])
+                    continue
+                else:
+                    block_line += 1
+                    continue
+
+            # This next conditional is just make sure this code doesn't
+            # break if lines are added in the future that don't have colons
+            if ':' not in input_arg or input_arg[0] == '#':
+                continue
+
+            kw, arg = input_arg.split(':')
+            input_dict[kw.strip()] = arg.strip()
+            if len(arg.split()) > 1:  # Some arguments are lists
+                input_dict[kw.strip()] = arg.split()
+        if input_dict.get('OUTPUT_FILE'):
+            input_dict['label'] = input_dict['OUTPUT_FILE']
+            del input_dict['OUTPUT_FILE']
+
+        cell = [float(a) for a in input_dict['CELL']]
+        cell = np.eye(3) * cell * Bohr
+        # sort out the boundary conditions
+        if 'BC' in input_dict:
+            pbc = []
+            for condition in input_dict['BC']:
+                if condition == 'P':
+                    pbc.append(True)
+                elif condition == 'D':
+                    pbc.append(False)
+                elif condition not in ['P', 'D']:
+                    raise Exception('a non-allowed boundary condition'
+                                    ' was detected, please check your'
+                                    ' input file and ensure only \'P\''
+                                    ' or \'D\' were selected in the BC'
+                                    ' arugument')
+        # TODO: remove this when the arugument has been fully removed
+        elif 'BOUNDARY_CONDITION' in input_dict:
+            if input_dict['BOUNDARY_CONDITION'] == '2':
+                pbc = [True, True, True]
+            elif input_dict['BOUNDARY_CONDITION'] == '1':
+                pbc = [False, False, False]
+            elif input_dict['BOUNDARY_CONDITION'] == '3':
+                pbc = [True, True, False]
+            elif input_dict['BOUNDARY_CONDITION'] == '4':
+                pbc = [True, False, False]
+        return input_dict
+
     def recover_index_order_from_ion_file(self, label):
         """
         quickly parses the .ion file with the same label 
@@ -1448,7 +1442,7 @@ class SPARC(FileIOCalculator):
     def read(label):
         """
         Attempts to regenerate the SPARC calculator from a previous
-        set of output files
+        set of input/output files
         """
         calc = SPARC()
         #os.path.isfile(label + '.out')
@@ -1458,6 +1452,12 @@ class SPARC(FileIOCalculator):
                                                            return_results=True)
             if not calc.scf_converged():
                 raise Exception('The SCF on this calculation did not converge')
+        elif os.path.isfile(label + '.inpt') and os.path.isfile(label + '.ion'):
+            atoms = read_ion(open(label + '.ion', 'r'))
+            with open(label + '.inpt') as f:
+                inputs = f.read()
+            input_dict = calc.parse_input_args(inputs)
+            results = {}
         else:
             raise Exception('no .out file was found')
         # just reinitialize now

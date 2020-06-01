@@ -46,15 +46,46 @@ Once those environment varibles are in place, the SPARC ASE calculator works lik
 
 `SPARC_PSP_PATH` is a path that points to the location of your pseudopotential files. These must have the naming convention: `[element name].pot` to be detected. Currently SPARC only uses the psp8 format. Alternatively, rather than setting this environment variable you may pass the information in with the `pseudo_dir` argument.
 
+## Allowable Arguments
+
+The SPARC calculator behaves similarly to other ASE calculators, taking an atoms object to define the system being calculated and a `label` argument for the filename prefixes. The arguments used to control the SPARC software are identical to those of the SPARC software program. Docuymentation can be found at the link below:
+
+https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf
+
+# Mesh Spacing
+A mesh spacing or finite difference grid must be defined for the calculator to work. This can be done in one of three ways:
+1. by inputting the MESH_SPACING argument. This will use SPARC's internal mesh spacing to generate a grid
+2. by using the `h` argument, this  
+
+## Example
+
+
+# Single Point Calculation
 ~~~
 #get sparc calculator
-from sparc_core import SPARC
+from sparc.sparc_core import SPARC
 calc = SPARC(h=0.2) # a grid spacing grid must be entered.
 
 #make atoms
 from ase.build import bulk
-atoms = bulk('Si',cubic=True) #cell must be rectangular, This feature is under development
+atoms = bulk('Si',cubic=True)
+atoms.set_cell([True] * 3)
 atoms.set_calculator(calc)
 atoms.get_potential_energy()
 ~~~
 
+
+# Relaxation
+~~~
+from sparc.sparc_core import SPARC
+calc = SPARC(h=0.2, RELAX_FLAG=1) # a grid spacing grid must be entered.
+
+#make atoms
+from ase.build import molecule
+atoms = molecule('H2')
+atoms.set_cell([6,6,6])
+atoms.center()
+atoms.set_pbc([False] * 3 )
+atoms.set_calculator(calc)
+atoms.get_potential_energy()
+~~~
