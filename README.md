@@ -30,7 +30,7 @@ software:
 Currently installation is barebones, simply clone this repository (`git clone https://github.com/SPARC-X/sparc-dft-api.git`) and add the folder to your pythonpath (`export PYTHONPATH=[were you cloned the repository]:$PYTHONPATH`)
 
 
-## Usage
+# Usage
 
 To enable the SPARC calculator to work you need to tell it what command to use to run sparc and where your pseudopotentials are. These should be stored in the environment variables `$ASE_SPARC_COMMAND` and `$SPARC_PSP_PATH` respectively. e.g.:
 
@@ -52,7 +52,7 @@ The SPARC calculator behaves similarly to other ASE calculators, taking an atoms
 
 https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf
 
-# Mesh Spacing
+### Mesh Spacing
 A mesh spacing or finite difference grid must be defined for the calculator to work. This can be done in one of three ways:
 1. by inputting the MESH_SPACING argument. This will use SPARC's internal mesh spacing to generate a grid
 2. by using the `h` argument, this  
@@ -60,7 +60,7 @@ A mesh spacing or finite difference grid must be defined for the calculator to w
 ## Example
 
 
-# Single Point Calculation
+### Single Point Calculation
 ~~~
 #get sparc calculator
 from sparc.sparc_core import SPARC
@@ -75,7 +75,7 @@ atoms.get_potential_energy()
 ~~~
 
 
-# Relaxation
+### Relaxation
 ~~~
 from sparc.sparc_core import SPARC
 calc = SPARC(h=0.2, RELAX_FLAG=1) # a grid spacing grid must be entered.
