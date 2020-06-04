@@ -89,3 +89,19 @@ atoms.set_pbc([False] * 3 )
 atoms.set_calculator(calc)
 atoms.get_potential_energy()
 ~~~
+
+### Writing Input Files
+~~
+from sparc.sparc_core import SPARC
+calc = SPARC(h=0.2, RELAX_FLAG=1) # a grid spacing grid must be entered.
+
+#make atoms
+from ase.build import molecule
+atoms = molecule('H2')
+atoms.set_cell([6,6,6])
+atoms.center()
+atoms.set_pbc([False] * 3 )
+atoms.set_calculator(calc)
+calc.write_inputs()
+~~
+
