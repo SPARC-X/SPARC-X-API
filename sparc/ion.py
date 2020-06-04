@@ -433,8 +433,12 @@ def write_ion(fileobj, atoms, pseudo_dir=None, scaled=True,
                                       '{} ({}).'.format(element, str(filename))+' Using '+filename[0]+'.')
                     if copy_psp:
                         filename = filename[0]
-                        shutil.copyfile(os.path.join(pseudo_dir, filename),
-                                        os.path.join(directory, filename))
+                        full_psp_path = os.path.abspath(os.path.join(pseudo_dir, filename))
+                        full_dest_path = os.path.abspath(os.path.join(directory, filename))
+                        if full_psp_path != full_dest_path:
+                            #shutil.copyfile(os.path.join(pseudo_dir, filename),
+                            #                os.path.join(directory, filename))
+                            shutil.copyfile(full_psp_path, full_dest_path)
                     else:
                         filename = os.path.join(pseudo_dir, filename[0])
 
