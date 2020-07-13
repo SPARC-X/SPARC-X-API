@@ -107,6 +107,6 @@ atoms.set_cell([6,6,6])
 atoms.center()
 atoms.set_pbc([False] * 3 )
 atoms.set_calculator(calc)
-calc.write_inputs()
+calc.write_input()
 ~~~
 
