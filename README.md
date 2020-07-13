@@ -38,12 +38,14 @@ To enable the SPARC calculator to work you need to tell it what command to use t
 
 `export SPARC_PSP_PATH=[location of pseudopotentials]`
 
-The `ASE_SPARC_COMMAND` variable is somewhat tricky to set up. All the information about parallelization should be included where appropriate in the command (i.e. `mpirun -np X`.) SPARC takes in a flag `-name` followed by the prefix of the input file names. This wrapper deals with the prefixes completely internally, but the word `PREFIX` should be put in after the `-name` flag for SPARC. Here is an example command if the `sparc` executable is in your `$PATH` environment variable. Here is an example:
+The `ASE_SPARC_COMMAND` variable is somewhat tricky to set up. All the information about parallelization should be included where appropriate in the command (i.e. `mpirun -np X`.) SPARC takes in a flag `-name` followed by the prefix of the input file names. This wrapper deals with the prefixes completely internally, but the word `PREFIX` should be put in after the `-name` flag for SPARC. Here is an example command if the `sparc` executable is in your `$PATH` environment variable. Here are two examples:
 
 `export ASE_SPARC_COMMAND="mpirun -np $PBS_NP sparc -name PREFIX"`
+
+
 `export ASE_SPARC_COMMAND="mpirun -rmk pbs sparc -name PREFIX"`
 
-Once those environment varibles are in place, the SPARC ASE calculator works like any other ASE calculator. It must be imported, instantiated, and called here is some example code for calculating bulk Si:
+note that the exact word "PREFIX" should be contained in this command. Once those environment varibles are in place, the SPARC ASE calculator works like any other ASE calculator. It must be imported, instantiated, and called here is some example code for calculating bulk Si:
 
 `SPARC_PSP_PATH` is a path that points to the location of your pseudopotential files. These must have the naming convention: `[element name].pot` to be detected. Currently SPARC only uses the psp8 format. Alternatively, rather than setting this environment variable you may pass the information in with the `pseudo_dir` argument.
 
