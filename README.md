@@ -62,7 +62,7 @@ A mesh spacing or finite difference grid must be defined for the calculator to w
 1. by inputting the MESH_SPACING argument. This will use SPARC's internal mesh spacing to generate a grid
 2. by using the `h` argument, this  
 
-## Example
+## Examples
 
 
 ### Single Point Calculation
