@@ -45,9 +45,11 @@ The `ASE_SPARC_COMMAND` variable is somewhat tricky to set up. All the informati
 
 `export ASE_SPARC_COMMAND="mpirun -rmk pbs sparc -name PREFIX"`
 
-note that the exact word "PREFIX" should be contained in this command. Once those environment varibles are in place, the SPARC ASE calculator works like any other ASE calculator. It must be imported, instantiated, and called here is some example code for calculating bulk Si:
+note that the exact word "PREFIX" should be contained in this command.
 
 `SPARC_PSP_PATH` is a path that points to the location of your pseudopotential files. These must have the naming convention: `[element name].pot` to be detected. Currently SPARC only uses the psp8 format. Alternatively, rather than setting this environment variable you may pass the information in with the `pseudo_dir` argument.
+
+Once those environment varibles are in place, the SPARC ASE calculator works like any other ASE calculator. It must be imported, instantiated, and called. There are examples of common operations at the bottom of this README.
 
 ## Allowable Arguments
 
