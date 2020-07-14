@@ -221,6 +221,10 @@ class SPARC(FileIOCalculator):
         if inputs_check.count(True) > 1:
             raise CalculatorSetupError('You can only specify one of the '
                                        'following: `h`, `FD_GRID`, `MESH_SPACING`')
+        if inputs_check.count(True) == 0:
+            raise CalculatorSetupError('You must specify one of the '
+                                       'following: `h`, `FD_GRID`, `MESH_SPACING`')
+            
         if 'h' in kwargs:
             kwargs['MESH_SPACING'] = kwargs['h']
         elif 'FD_GRID' in kwargs:
@@ -464,6 +468,9 @@ class SPARC(FileIOCalculator):
         inputs_check = [a is not None for a in mesh_args]
         if inputs_check.count(True) > 1:
             raise CalculatorSetupError('You can only specify one of the '
+                                       'following: `h`, `FD_GRID`, `MESH_SPACING`')
+        elif inputs_check.count(True)  == 0:
+            raise CalculatorSetupError('You must specify one of the '
                                        'following: `h`, `FD_GRID`, `MESH_SPACING`')
 
         #if 'h' in kwargs:
