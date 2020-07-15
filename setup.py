@@ -4,7 +4,8 @@ from distutils.core import setup
 from setuptools import find_packages
 
 setup(name='sparc-dft-api',
-      version='0.2',
+      version='0.1',
+      python_requires='>3.6',
       description='Python Wrapper for the SPARC-X DFT Code',
       author='Ben Comer',
       author_email='ben.comer@gatech.edu',
