@@ -718,8 +718,13 @@ class SPARC(FileIOCalculator):
                 pass
             else:
                 path = os.path.abspath(self.directory)
-                raise CalculationFailed('{} in {} returned an error: {}'
-                                        .format(self.name, path, errorcode))
+                calc_failed_msg = '{} in {} returned an error: {}'
+                                  .format(self.name, path, errorcode)
+                if errorcode == 9:
+                    calc_failed_msg += ('. SPARC probably ran out of memory!'
+                                        ' Request more RAM'
+                                        ' (about 10GB per node)')
+                raise CalculationFailed(calc_failed_msg)
         self.read_results()
 
     def read_results(self):
