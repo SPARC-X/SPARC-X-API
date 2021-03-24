@@ -723,7 +723,8 @@ class SPARC(FileIOCalculator):
                 if errorcode == 9:
                     calc_failed_msg += ('. SPARC probably ran out of memory!'
                                         ' Request more RAM'
-                                        ' (about 10GB per node)')
+                                        ' (see .out file'
+                                        ' for estimated amount)')
                 raise CalculationFailed(calc_failed_msg)
         self.read_results()
 
