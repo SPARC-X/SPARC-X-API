@@ -293,7 +293,7 @@ def parse_MD(label, write_traj=False, pbc=False, cell=None, chemical_symbols=[])
 
 
 def geopt_and_out_to_poscar(label='sprc-calc', step=-1):
-"""
+    """
     Creates a POSCAR file using the information stored in a
     .geopt file and the corresponding .out file. Unlike the
     write_traj option on the parse_relax and parse_MD functions,
