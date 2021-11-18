@@ -27,7 +27,7 @@ from .ion import write_ion, read_ion
 special_inputs = ['PSEUDOPOTENTIAL_FILE',
                   'CELL', 'EXCHANGE_CORRELATION',
                   'FD_GRID', 'PSEUDOPOTENTIAL_LOCAL',
-                  'pseudo_dir', 'KPOINT_GRID', 'LATVEC',
+                  'pseudo_dir', 'KPOINT_GRID', 'KPOINT_SHIFT', 'LATVEC',
                   'copy_psp', 'BC']
 
 default_parameters = {
@@ -41,7 +41,7 @@ default_parameters = {
     'MESH_SPACING': 0.4,
     'KPOINT_GRID': (1, 1, 1),
     'KPOINT_SHIFT': None,
-    'MIXING_PARAMETER': 0.30,
+    'MIXING_PARAMETER': 0.3,
     'CHEN_DEGREE': 20,
     'NSTATES': None,
     'SMEARING': None,
@@ -362,6 +362,9 @@ class SPARC(FileIOCalculator):
         # convert input to usable format
         kpt_grid = self.interpret_kpoint_input(atoms, **kwargs)
         f.write('KPOINT_GRID: {} {} {}\n'.format(*kpt_grid))
+        
+        kpt_shift = self.interpret_kpoint_shift(atoms, **kwargs)
+        f.write('KPOINT_SHIFT: {} {} {}\n'.format(*kpt_shift))
 
         # check the spin situation
         if [float(a) for a in atoms.get_initial_magnetic_moments()] != [0] * len(atoms):
@@ -529,6 +532,32 @@ class SPARC(FileIOCalculator):
                     warnings.warn(spin_warn)
             else:
                 warnings.warn(spin_warn)
+
+    def interpret_kpoint_shift(self, atoms, **kwargs):
+        """
+        helper function to figure out what the kpoints shift input is and return
+        it as an iterable
+        """
+        if kwargs.get('KPOINT_SHIFT'):
+            if len(kwargs['KPOINT_SHIFT']) == 3:
+                for kshift in kwargs['KPOINT_SHIFT']:
+                    if type(kpoint) != int:
+                        raise InputError('when KPOINT_GRID is entered as an'
+                                         ' iterable, the values must be in the'
+                                         ' integer type (i.e. (4,4,4))')
+                kpt_shift = kwargs['KPOINT_SHIFT']
+            elif type(kwargs['KPOINT_SHIFT']) == str:
+                if len(kwargs['KPOINT_SHIFT'].split()) != 3:
+                    raise InputError('when KPOINT_SHIFT is entered as a string, it'
+                                     ' must have 3 elements separated by spaces '
+                                     '(i.e. \'4 4 4\')')
+                kpt_shift = [int(a) for a in kwargs['KPOINT_SHIFT'].split()]
+            elif len(kwargs['KPOINT_SHIFT']) != 3 or type(kwargs['KPOINT_SHIFT']) is not str:
+                raise InputError('KPOINT_SHIFT must be either a length 3 object'
+                                 ' (i.e. (4,4,4)) or a string (i.e. \'4 4 4 \')')
+        else:
+            kpt_shift = (0, 0, 0)
+        return kpt_shift
 
     def get_pseudopotential_directory(self, **kwargs):
         if 'pseudo_dir' in kwargs.keys():
