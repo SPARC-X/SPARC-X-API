@@ -761,7 +761,7 @@ class SPARC(FileIOCalculator):
                                     'was')
         if not self.scf_converged():
             #raise SCFError('The last SCF cycle of your run did not converge')
-            warnings.warn('The last SCF cycle did not converge. Please check your results, as they may be suspect')
+            warnings.warn('The last SCF cycle did not converge. Please check your results, as they may not be correct')
         parse_traj = False
         # regenerate the capitalized version of the input parameters
         kwargs = self.parameters
