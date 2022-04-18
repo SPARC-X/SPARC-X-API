@@ -28,7 +28,7 @@ special_inputs = ['PSEUDOPOTENTIAL_FILE',
                   'CELL', 'EXCHANGE_CORRELATION',
                   'FD_GRID', 'PSEUDOPOTENTIAL_LOCAL',
                   'pseudo_dir', 'KPOINT_GRID', 'LATVEC',
-                  'copy_psp', 'BC']
+                  'copy_psp', 'BC','EXX_DOWNSAMPLING']
 
 default_parameters = {
     # 'label': 'sprc-calc',
@@ -363,6 +363,10 @@ class SPARC(FileIOCalculator):
         kpt_grid = self.interpret_kpoint_input(atoms, **kwargs)
         f.write('KPOINT_GRID: {} {} {}\n'.format(*kpt_grid))
 
+        # convert input to usable format
+        downsampling_grid = self.interpret_downsampling_input(atoms, **kwargs)
+        f.write('EXX_DOWNSAMPLING: {} {} {}\n'.format(*downsampling_grid))
+
         # check the spin situation
         if [float(a) for a in atoms.get_initial_magnetic_moments()] != [0] * len(atoms):
             spin_warn = str('inital magentic moments were set on the'
@@ -513,6 +517,32 @@ class SPARC(FileIOCalculator):
                 kpt_grid = [int(a) for a in kwargs['KPOINT_GRID'].split()]
             elif len(kwargs['KPOINT_GRID']) != 3 or type(kwargs['KPOINT_GRID']) is not str:
                 raise InputError('KPOINT_GRID must be either a length 3 object'
+                                 ' (i.e. (4,4,4)) or a string (i.e. \'4 4 4 \')')
+        else:
+            kpt_grid = (1, 1, 1)
+        return kpt_grid
+
+    def interpret_downsampling_input(self, atoms, **kwargs):
+        """
+        helper function to figure out what the downsampling input is and return
+        it as an iterable
+        """
+        if kwargs.get('EXX_DOWNSAMPLING'):
+            if len(kwargs['EXX_DOWNSAMPLING']) == 3:
+                for kpoint in kwargs['EXX_DOWNSAMPLING']:
+                    if type(kpoint) != int:
+                        raise InputError('when EXX_DOWNSAMPLING is entered as an'
+                                         ' iterable, the values must be in the'
+                                         ' integer type (i.e. (4,4,4))')
+                kpt_grid = kwargs['EXX_DOWNSAMPLING']
+            elif type(kwargs['EXX_DOWNSAMPLING']) == str:
+                if len(kwargs['EXX_DOWNSAMPLING'].split()) != 3:
+                    raise InputError('when EXX_DOWNSAMPLING is entered as a string, it'
+                                     ' must have 3 elements separated by spaces '
+                                     '(i.e. \'4 4 4\')')
+                kpt_grid = [int(a) for a in kwargs['EXX_DOWNSAMPLING'].split()]
+            elif len(kwargs['EXX_DOWNSAMPLING']) != 3 or type(kwargs['EXX_DOWNSAMPLING']) is not str:
+                raise InputError('EXX_DOWNSAMPLING must be either a length 3 object'
                                  ' (i.e. (4,4,4)) or a string (i.e. \'4 4 4 \')')
         else:
             kpt_grid = (1, 1, 1)
