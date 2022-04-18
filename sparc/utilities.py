@@ -412,13 +412,23 @@ def Ecut2h(FDn, Ecut, tol=0.1):
     converted from MATLAB code provided by Qimen
     """
     w2 = np.zeros(FDn+1)
-    for i in range(FDn+1):
-        k = i+1
-        w2[i+1] = (2*(-1)**(k+1))*(factorial(FDn)**2) / \
-            (k*k*factorial(FDn-k)*factorial(FDn+k))
-        w2[0] = w2[0]-2*(1/(k*k))
+    for k in range(FDn):
+        w2[k+1] =  (2*(-1)**(k+1))*(np.math.factorial(FDn)**2) / ((k+1)*(k+1)*np.math.factorial(FDn-(k+1))*np.math.factorial(FDn+(k+1)))
+        w2[0] = w2[0]-2*(1/((k+1)*(k+1)))
     kk = np.linspace(0, np.pi, 1001)
-    y_cos = -w2[0] + (-2*w2[1:]) * np.cos(np.arange(1, FDn) * kk)
+    y_cos = -w2[0] - (-2*w2[1:]).reshape(1,-1) @ (np.cos(np.arange(1, FDn+1).reshape(-1,1) @ kk.reshape(1,-1)))
+    freq_err = abs(y_cos - kk**2)
+    kc = kk[np.argwhere(freq_err < epsilon).max()]
+    kc_by_pi = kc/np.pi
+    Ecut = (kc*kc)/(2*h*h)
+    return Ecut
+    #for i in range(FDn+1):
+    #    k = i+1
+    #    w2[i+1] = (2*(-1)**(k+1))*(factorial(FDn)**2) / \
+    #        (k*k*factorial(FDn-k)*factorial(FDn+k))
+    #    w2[0] = w2[0]-2*(1/(k*k))
+    #kk = np.linspace(0, np.pi, 1001)
+    #y_cos = -w2[0] + (-2*w2[1:]) * np.cos(np.arange(1, FDn) * kk)
     """
     % Find correlation bw/ Ecut (Ry) and mesh size h (Bohr)
     clear all; close all; clc;

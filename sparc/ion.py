@@ -325,7 +325,7 @@ def decipher_constraints(constraints):
 
 
 def write_ion(fileobj, atoms, pseudo_dir=None, scaled=True,
-              add_constraints=True, copy_psp=True, comment=''):
+              add_constraints=False, copy_psp=True, comment=''):
     """
     Standard ase io file for reading the sparc-x .ion format
 
@@ -406,8 +406,8 @@ def write_ion(fileobj, atoms, pseudo_dir=None, scaled=True,
             spin_string = 'SPIN:\n'
 
         # TODO: fix this psuedopotential finding code
-        if pseudo_dir is not None:
-            if not os.path.isdir(pseudo_dir):
+        if pseudo_dir is not None:#there is a pseudopotential directory provided
+            if not os.path.isdir(pseudo_dir):#if it is not a directory, then the SPARC_PSP_PATH is used
                 pseudo_dir = os.environ['SPARC_PSP_PATH']
                 warnings.warn('The path entered for `pseudo_dir` could '
                               'not be found. Using SPARC_PSP_PATH and generic pseudopotential '
@@ -416,10 +416,10 @@ def write_ion(fileobj, atoms, pseudo_dir=None, scaled=True,
                 fileobj.write('PSEUDO_POT: {}.pot\n'.format(element))
             else:
                 pseudos_in_dir = [a for a in os.listdir(pseudo_dir)
-                                  if a.endswith(element+'.pot')]
+                                  if a.endswith(element+'.pot') or a.endswith(element+'.psp8')]
 
                 filename = [a for a in os.listdir(pseudo_dir)
-                            if a.endswith(element+'.pot')]
+                            if a.endswith(element+'.pot') or a.endswith(element+'.psp8')]
 
                 if len(filename) == 0:
                     filename = element+'.pot'
