@@ -480,8 +480,8 @@ class SPARC(FileIOCalculator):
             raise CalculatorSetupError('You must specify one of the '
                                        'following: `h`, `FD_GRID`, `MESH_SPACING`')
 
-        #if 'h' in kwargs:
-        #    fd_grid = self.h2gpts(h=kwargs['h'], cell_cv=atoms.cell)
+        if 'h' in kwargs:
+            fd_grid = self.h2gpts(h=kwargs['h'], cell_cv=atoms.cell)
         # read the FD_GRID argument
         elif 'FD_GRID' in kwargs:
             if type(kwargs['FD_GRID']) == str:
@@ -837,7 +837,7 @@ class SPARC(FileIOCalculator):
         with open(self.label + '.out', 'r') as f:
             last_few_lines = f.readlines()[-10:]  # just to narrow the search
             for line in last_few_lines:
-                if 'Acknowledgements: U.S. DOE (DE-SC0019410)' in line:
+                if 'Phanish Suryanarayana' in line:
                     return True
         return False
 
@@ -987,7 +987,7 @@ class SPARC(FileIOCalculator):
         elif typ == str:
             return str(text.split(':')[1])
 
-    def parse_output(self, label=None, parse_traj=False,
+    def parse_output(self, label=None, parse_traj=True,
                      return_results=False):
         """
         This function attempts to parse the output files of SPARC.
@@ -1381,7 +1381,7 @@ class SPARC(FileIOCalculator):
             stresses_found = False
             if 'STRESS' in step:
                 stresses_found = True
-                stress_index = colons.index('STRESS_TOT(GPa)') + 1
+                stress_index = colons.index('STRESS') + 1
                 for i, s in enumerate(colons[stress_index].strip().split('\n')):
                     stress[i, :] = [float(a) * GPa for a in s.split()]
                 # Convert of Voigt form

@@ -254,6 +254,11 @@ def parse_MD(label, write_traj=False, pbc=False, cell=None, chemical_symbols=[])
     # build a traj file out of the steps
     for j, step in enumerate(steps):
         # Find Indicies
+        if 'CELL' in step:
+            var_cell = True
+        else:
+            _cell = cell
+            var_cell = False
         colons = step.split(':')
         #pos_index = colons.index('R(Bohr)') + 1
         #frc_index = colons.index('F(Ha/Bohr)') + 1
@@ -261,6 +266,14 @@ def parse_MD(label, write_traj=False, pbc=False, cell=None, chemical_symbols=[])
         pos_index = colons.index('R') + 1
         frc_index = colons.index('F') + 1
         vel_index = colons.index('V') + 1
+        if var_cell:
+            cell_index = colons.index('CELL') + 1
+            cell_out = colons[cell_index].strip().split()
+            _cell = []
+            for k, cell_vec in enumerate(cell):
+                lat_vec = cell_vec / np.linalg.norm(cell_vec) * float(cell_out[k]) * Bohr
+                _cell.append(lat_vec)
+            _cell = np.array(_cell)
         # Parse the text
         positions = colons[pos_index].strip().split('\n')
         forces = colons[frc_index].strip().split('\n')
@@ -276,12 +289,12 @@ def parse_MD(label, write_traj=False, pbc=False, cell=None, chemical_symbols=[])
             atoms += Atom(chemical_symbols[i],
                           [float(a) * Bohr for a in positions[i].split()])
         if 'STRESS' in step:
-            stress_index = colons.index('STRESS_TOT(GPa)') + 1
+            stress_index = colons.index('STRESS') + 1
             for i, s in enumerate(colons[stress_index].strip().split('\n')):
                 stress[i, :] = [float(a) * GPa for a in s.split()]
         atoms.set_velocities(vel)
         atoms.set_pbc(pbc)
-        atoms.cell = cell
+        atoms.cell = _cell
         atoms.set_calculator(SinglePointCalculator(atoms,
                                                    energy=engs[j] * len(atoms),
                                                    stress=stress,
