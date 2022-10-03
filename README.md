@@ -60,7 +60,8 @@ https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf
 ### Mesh Spacing
 A mesh spacing or finite difference grid must be defined for the calculator to work. This can be done in one of three ways:
 1. by inputting the MESH_SPACING argument. This will use SPARC's internal mesh spacing to generate a grid
-2. by using the `h` argument, this  
+2. by using the `h` argument, this  will default to converting to MESH_SPACING and utilizing this arguement in SPARC
+3. Inputting the `fd_grid` arugment which explicitly defines the finite difference grid. For example `fd_grid=[25,25,25]`
 
 ## Examples
 
@@ -74,7 +75,7 @@ calc = SPARC(h=0.2) # a grid spacing grid must be entered.
 #make atoms
 from ase.build import bulk
 atoms = bulk('Si',cubic=True)
-atoms.set_cell([True] * 3)
+atoms.set_pbc([True] * 3)
 atoms.set_calculator(calc)
 atoms.get_potential_energy()
 ~~~
