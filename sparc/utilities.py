@@ -152,6 +152,14 @@ def parse_output(label='sprc-calc', calc_type=None, write_traj=False):
     cell = np.eye(3) * cell * Bohr
     pbc = [a == 'P' for a in input_dict['BC']]
 
+    # this is wildly inefficient
+    #TODO change this
+    from .ion import read_ion
+    with open(label + '.ion') as f:
+        rd_atoms = read_ion(f, recover_indices=False,
+                            recover_constraints=True)
+    constraints = rd_atoms.constraints
+
     # Figure out how many 'types' of atoms there are
     s = os.popen('grep "Total number of atom types" ' + label + '.out')
     ntypes = int(s.readlines()[-1].split(':')[1].strip())
@@ -179,15 +187,18 @@ def parse_output(label='sprc-calc', calc_type=None, write_traj=False):
     if calc_type == 'relax':
         return parse_relax(label, write_traj=write_traj,
                            pbc=pbc, cell=cell,
-                           chemical_symbols=chemical_symbols), input_dict
+                           chemical_symbols=chemical_symbols,
+                           constraints=constraints), input_dict
     elif calc_type == 'MD':
         return parse_MD(label, write_traj=write_traj,
                         pbc=pbc, cell=cell,
-                        chemical_symbols=chemical_symbols), input_dict
+                        chemical_symbols=chemical_symbols,
+                        constraints=constraints), input_dict
 
 
 def parse_relax(label, write_traj=False,
-                pbc=False, cell=None, chemical_symbols=[]):
+                pbc=False, cell=None, chemical_symbols=[],
+                constraints=None):
     #f = open(label + '.relax')
     #f = open(label + '.restart')
     f = open(label + '.geopt')
@@ -232,7 +243,8 @@ def parse_relax(label, write_traj=False,
     #        print([float(a) * Bohr for a in positions[i].split()])
     #        atoms += Atom(chemical_symbols[i],
     #                      position=[float(a) * Bohr for a in positions[i].split()])
-
+        if constraints is not None:
+            atoms.set_constraint(constraints.copy())
         atoms.set_calculator(SinglePointCalculator(atoms, energy=engs[j],
                                                    forces=frc))
         atoms.set_pbc(pbc)
@@ -243,7 +255,8 @@ def parse_relax(label, write_traj=False,
     return atoms
 
 
-def parse_MD(label, write_traj=False, pbc=False, cell=None, chemical_symbols=[]):
+def parse_MD(label, write_traj=False, pbc=False, cell=None, chemical_symbols=[],
+            constraints=None):
     f = open(label + '.aimd')
     #f = open(label + '.restart')
     text = f.read()
@@ -311,6 +324,8 @@ def parse_MD(label, write_traj=False, pbc=False, cell=None, chemical_symbols=[])
                                                    energy=engs[j] * len(atoms),
                                                    stress=stress,
                                                    forces=frc))
+        if constraints is not None:
+            atoms.set_constraint(constraints.copy())
         if write_traj == True:
             traj.write(atoms)
     atoms.set_calculator()
