@@ -150,10 +150,7 @@ def parse_output(label='sprc-calc', calc_type=None, write_traj=False):
 
     cell = [float(a) for a in input_dict['CELL']]
     cell = np.eye(3) * cell * Bohr
-    if input_dict['BOUNDARY_CONDITION'] == '2':
-        pbc = [True, True, True]
-    else:
-        pbc = [False, False, False]
+    pbc = [a == 'P' for a in input_dict['BC']]
 
     # Figure out how many 'types' of atoms there are
     s = os.popen('grep "Total number of atom types" ' + label + '.out')
@@ -191,8 +188,9 @@ def parse_output(label='sprc-calc', calc_type=None, write_traj=False):
 
 def parse_relax(label, write_traj=False,
                 pbc=False, cell=None, chemical_symbols=[]):
-    f = open(label + '.relax')
+    #f = open(label + '.relax')
     #f = open(label + '.restart')
+    f = open(label + '.geopt')
     text = f.read()
     # Parse out the steps
     if text == '':
@@ -212,14 +210,28 @@ def parse_relax(label, write_traj=False,
 
     # build a traj file out of the steps
     for j, step in enumerate(steps):
-        positions = step.split(':')[2].strip().split('\n')
-        forces = step.split(':')[4].strip().split('\n')
-        frc = np.empty((len(forces), 3))
         atoms = Atoms()
-        for i, f in enumerate(forces):
+        colons = step.split(':')
+
+        pos_index = colons.index('R(Bohr)') + 1
+        frc_index = colons.index('F(Ha/Bohr)') + 1
+        positions = colons[pos_index].strip().split('\n')
+        forces = colons[frc_index].strip().split('\n')
+        frc = np.empty((len(forces), 3))
+        for i, f in zip(range(len(forces)), forces):
             frc[i, :] = [float(a) * Hartree / Bohr for a in f.split()]
             atoms += Atom(chemical_symbols[i],
                           [float(a) * Bohr for a in positions[i].split()])
+    #    frc = np.empty((len(forces), 3))
+    #    positions = colons[pos_index].strip().split('\n')
+    #    forces = colons[frc_index].strip().split('\n')
+    #    atoms = Atoms()
+    #    for i, f in enumerate(forces):
+            #f = fr.split()
+    #        forces[i, :] = [float(a) * Hartree / Bohr for a in f.split()]
+    #        print([float(a) * Bohr for a in positions[i].split()])
+    #        atoms += Atom(chemical_symbols[i],
+    #                      position=[float(a) * Bohr for a in positions[i].split()])
 
         atoms.set_calculator(SinglePointCalculator(atoms, energy=engs[j],
                                                    forces=frc))

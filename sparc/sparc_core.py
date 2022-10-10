@@ -461,7 +461,7 @@ class SPARC(FileIOCalculator):
             copy_psp = kwargs.get('copy_psp')
         write_ion(open(outpath + '.ion', 'w'),
                   atoms, pseudo_dir=kwargs['pseudo_dir'],
-                  scaled=scaled, copy_psp=copy_psp)
+                  scaled=scaled, copy_psp=copy_psp,add_constraints=True)
 
     def interpret_grid_input(self, atoms, **kwargs):
         """
