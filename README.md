@@ -1,6 +1,6 @@
 # sparc-dft-api
 
-sparc-dft-api is an ASE based python wrapper for the density functional theory (DFT) code SPARC. This wrapper requires <ins>Python3</ins>, and is currently in alpha, so it's performance is not guaranteed.
+sparc-dft-api is an ASE based python wrapper for the density functional theory (DFT) code SPARC. This wrapper requires <ins>Python3</ins>, and is *currently in active development and alpha testing*, so please use it with caution and report any errors in the "Issues" and/or submit pull requests with patches to fix issues as needed.
 
 ## Installation:
 The following command should install the package:
