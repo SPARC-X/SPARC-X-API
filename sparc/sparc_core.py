@@ -837,7 +837,7 @@ class SPARC(FileIOCalculator):
         with open(self.label + '.out', 'r') as f:
             last_few_lines = f.readlines()[-10:]  # just to narrow the search
             for line in last_few_lines:
-                if 'Acknowledgements: U.S. DOE (DE-SC0019410)' in line:
+                if 'Acknowledgements: U.S. DOE SC (DE-SC0019410)' in line:
                     return True
         return False
 
