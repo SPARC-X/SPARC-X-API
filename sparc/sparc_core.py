@@ -91,6 +91,7 @@ default_parameters = {
     'CHEB_DEGREE': 25,
     'CHEFSI_BOUND_FLAG': None,
     'FIX_RAND': None,
+    'ECUT': None,
 
     'SPIN_TYP': 1,
 
@@ -217,7 +218,7 @@ class SPARC(FileIOCalculator):
         if 'H' in kwargs:
             kwargs['h'] = kwargs.pop('H')
             #return None
-        mesh_args = [kwargs.get(a) for a in ['MESH_SPARCING', 'h', 'FD_GRID']]
+        mesh_args = [kwargs.get(a) for a in ['MESH_SPACING', 'h', 'FD_GRID']]
         inputs_check = [a is not None for a in mesh_args]
         if inputs_check.count(True) > 1:
             raise CalculatorSetupError('You can only specify one of the '
