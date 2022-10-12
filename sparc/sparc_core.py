@@ -61,6 +61,7 @@ default_parameters = {
     'TOL_PSEUDOCHARGE': 1.00E-08,
     'TOL_RELAX_CELL': None,
     'SCF_ENERGY_ACC': None,
+    'SCF_FORCE_ACC': None,
     'TWTIME': 999999999.000000,
     'MIXING_PARAMETER': 0.30,
     'MIXING_HISTORY': 7,
@@ -425,14 +426,19 @@ class SPARC(FileIOCalculator):
 
         # convert the Tols and such to eV and angstrom units
         hartree_inputs = ['SMEARING',
-                          # 'TOL_SCF',
-                          # 'TOL_POISSON',
-                          # 'TOL_LANCZOS','TOL_PSEUDOCHARGE',
+                          'TOL_SCF',
+                          'TOL_POISSON',
+                          'TOL_LANCZOS','TOL_PSEUDOCHARGE',
                           'SCF_ENERGY_ACC']
         bohr_inputs = ['MESH_SPACING']
+        hartree_per_bohr_inputs = ['TOL_RELAX',
+                                   'SCF_FORCE_ACC']
 
-        if 'TOL_RELAX' in kwargs:  # this is Ha/Bohr
-            kwargs['TOL_RELAX'] /= Hartree / Bohr
+        #if 'TOL_RELAX' in kwargs:  # this is Ha/Bohr
+        #    kwargs['TOL_RELAX'] /= Hartree / Bohr
+        for setting in hartree_per_bohr_inputs:
+            if setting in kwargs:
+                kwargs[setting] /= Hartree / Bohr
         for setting in hartree_inputs:
             if setting in kwargs:
                 kwargs[setting] /= Hartree
