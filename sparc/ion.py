@@ -330,10 +330,26 @@ def write_ion(fileobj, atoms, pseudo_dir=None, scaled=True,
     Standard ase io file for reading the sparc-x .ion format
 
     inputs:
+        fileobj (file object):
+            a file object to which the .ion data will be written
         atoms (ase atoms object):
             an ase atoms object of the system being written to a file
-        pseudos (list):
-            a list of the locations of the pseudopotential files to be used
+        pseudo_dir (str):
+            the location of the pseudopotentials you'd like to use
+        scaled (bool):
+            if the scaled positions of fractional positions are to be
+            used in the .ion file. Scaled positions represent positions
+            recorded in real length units.
+        add_constraints (bool):
+            if constraints are to be written or not
+        copy_psp (bool):
+            if the pseudopotential is to be copied to the current 
+            directory
+        comment (str)
+            a comment to be written into the header of the file
+
+    returns:
+        None
     """
 
     directory = os.path.dirname(fileobj.name)
