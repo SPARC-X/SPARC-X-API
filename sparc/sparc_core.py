@@ -218,14 +218,14 @@ class SPARC(FileIOCalculator):
         if 'H' in kwargs:
             kwargs['h'] = kwargs.pop('H')
             #return None
-        mesh_args = [kwargs.get(a) for a in ['MESH_SPACING', 'h', 'FD_GRID']]
+        mesh_args = [kwargs.get(a) for a in ['MESH_SPACING', 'h', 'FD_GRID', 'ECUT']]
         inputs_check = [a is not None for a in mesh_args]
         if inputs_check.count(True) > 1:
             raise CalculatorSetupError('You can only specify one of the '
-                                       'following: `h`, `FD_GRID`, `MESH_SPACING`')
+                                       'following: `h`, `FD_GRID`, `MESH_SPACING`, `ECUT`')
         if inputs_check.count(True) == 0:
             raise CalculatorSetupError('You must specify one of the '
-                                       'following: `h`, `FD_GRID`, `MESH_SPACING`')
+                                       'following: `h`, `FD_GRID`, `MESH_SPACING`, `ECUT`')
             
         if 'h' in kwargs:
             kwargs['MESH_SPACING'] = kwargs['h']
@@ -430,7 +430,7 @@ class SPARC(FileIOCalculator):
                           'TOL_SCF',
                           'TOL_POISSON',
                           'TOL_LANCZOS','TOL_PSEUDOCHARGE',
-                          'SCF_ENERGY_ACC']
+                          'SCF_ENERGY_ACC', 'ECUT']
         bohr_inputs = ['MESH_SPACING']
         hartree_per_bohr_inputs = ['TOL_RELAX',
                                    'SCF_FORCE_ACC']
