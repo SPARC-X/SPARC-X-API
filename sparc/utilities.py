@@ -204,6 +204,10 @@ def parse_output(label='sprc-calc', calc_type=None, write_traj=False):
 def parse_relax(label, write_traj=False,
                 pbc=False, cell=None, chemical_symbols=[],
                 constraints=None):
+    """
+    helper function to handle parsing .geopt files. Not indended to be
+    called outside of `parse_output` function
+    """
     #f = open(label + '.relax')
     #f = open(label + '.restart')
     f = open(label + '.geopt')
@@ -252,6 +256,10 @@ def parse_relax(label, write_traj=False,
 
 def parse_MD(label, write_traj=False, pbc=False, cell=None, chemical_symbols=[],
             constraints=None):
+    """
+    helper function to handle parsing .aimd files. Not indended to be
+    called outside of `parse_output` function
+    """
     f = open(label + '.aimd')
     #f = open(label + '.restart')
     text = f.read()
