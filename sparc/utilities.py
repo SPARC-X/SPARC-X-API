@@ -152,13 +152,6 @@ def parse_output(label='sprc-calc', calc_type=None, write_traj=False):
     cell = np.eye(3) * cell * Bohr
     pbc = [a == 'P' for a in input_dict['BC']]
 
-    # this is wildly inefficient
-    #TODO change this
-    from .ion import read_ion
-    with open(label + '.ion') as f:
-        rd_atoms = read_ion(f, recover_indices=False,
-                            recover_constraints=True)
-    constraints = rd_atoms.constraints
 
     # Figure out how many 'types' of atoms there are
     s = os.popen('grep "Total number of atom types" ' + label + '.out')
@@ -176,6 +169,18 @@ def parse_output(label='sprc-calc', calc_type=None, write_traj=False):
     num_elements = s.readlines()[-ntypes:]
     numbers = [int(a.split()[-1]) for a in num_elements]
     s.close()
+
+    # Grep out the constraints from the .ion file
+    from .ion import decipher_constraints
+    s = os.popen('grep -A ' +str(max(numbers)) +' "RELAX:" ' + label + '.ion')
+    rlx = [a.strip() for a in s.readlines()]
+    constraints = []
+    for i, nm in enumerate(numbers):
+        strt_loc = i*(max(numbers)+2)
+        con = rlx[strt_loc+1:strt_loc+nm+1]
+        con =[[int(b) for b in a.split()] for a in con]
+        constraints+= con
+    constraints = decipher_constraints(constraints)
 
     # Make a list containing the elements of each atom in order
     chemical_symbols = []
@@ -233,16 +238,6 @@ def parse_relax(label, write_traj=False,
             frc[i, :] = [float(a) * Hartree / Bohr for a in f.split()]
             atoms += Atom(chemical_symbols[i],
                           [float(a) * Bohr for a in positions[i].split()])
-    #    frc = np.empty((len(forces), 3))
-    #    positions = colons[pos_index].strip().split('\n')
-    #    forces = colons[frc_index].strip().split('\n')
-    #    atoms = Atoms()
-    #    for i, f in enumerate(forces):
-            #f = fr.split()
-    #        forces[i, :] = [float(a) * Hartree / Bohr for a in f.split()]
-    #        print([float(a) * Bohr for a in positions[i].split()])
-    #        atoms += Atom(chemical_symbols[i],
-    #                      position=[float(a) * Bohr for a in positions[i].split()])
         if constraints is not None:
             atoms.set_constraint(constraints.copy())
         atoms.set_calculator(SinglePointCalculator(atoms, energy=engs[j],
