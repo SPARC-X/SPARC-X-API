@@ -52,6 +52,8 @@ default_parameters = {
     'BETA': 1000,
     'TOL_PRECOND': None,
     'PRECOND_KERKER_KTF': None,
+    'PRECOND_KERKER_THRESH':0.1,
+    'PRECOND_KERKER_KTF_MAG':1.0,
     'ELEC_TEMP': None,
     'CALC_STRESS': None,
     'CALC_PRES': None,
@@ -71,7 +73,7 @@ default_parameters = {
     'PULAY_FREQUENCY': 1,
     'PULAY_RESTART': 0,
     'REFERENCE_CUTOFF': 0.50,
-    'RHO_TRIGGER': 3,
+    'RHO_TRIGGER': 4,
     'VERBOSITY': 1,
     'PRINT_FORCES': 0,
     'PRINT_ATOMS': 0,
@@ -92,6 +94,15 @@ default_parameters = {
     'CHEFSI_BOUND_FLAG': None,
     'FIX_RAND': None,
     'ECUT': None,
+
+    'D3_FLAG':0,
+    'D3_RTHR':1600,
+    'D3_CN_THR':625,
+    'VDWF_GEN_KERNNEL':1,
+
+    'EXX_RANGE_FOCK':0.1587,
+    'EXX_RANGE_PBE':0.1587,
+
 
     'SPIN_TYP': 1,
 
@@ -181,16 +192,31 @@ class SPARC(FileIOCalculator):
 
         FileIOCalculator.write_input(self, atoms)
 
-        # TODO: think about if this next conditional is a good idea
+        # TODO: clean this up
+        # this is needed b/c these args could be in self.parameters
+        # there's likely a better way to handle it
         if 'label' in kwargs:
             self.label = kwargs['label']
             del kwargs['label']
 
-        f = open(os.path.join(self.directory, self.label + '.inpt'), 'w')
+        if 'pseudo_dir' in kwargs:
+            pseudo_dir = kwargs['pseudo_dir']
+            del kwargs['pseudo_dir']
+        else:
+            pseudo_dir = None
 
-        # this finds it's way into the kwargs and isn't needed
+        if 'copy_psp' in kwargs:
+            copy_psp = kwargs['copy_psp']
+            del kwargs['copy_psp']
+        else:
+            copy_psp = True
+
         if 'directory' in kwargs:
+            directory = kwargs['directory']
             del kwargs['directory']
+            self.directory = directory
+
+        f = open(os.path.join(self.directory, self.label + '.inpt'), 'w')
 
         # deal with the equivalent arguments, this gets complicated
         args = list(kwargs.copy())
@@ -208,7 +234,6 @@ class SPARC(FileIOCalculator):
 
         # make all kwargs upper case
         for arg in list(kwargs):
-            #if arg.upper() in default_parameters:
             kwargs[arg.upper()] = kwargs.pop(arg)
 
         ############## Begin writing the file ####################
@@ -458,16 +483,12 @@ class SPARC(FileIOCalculator):
         f.close()
 
         # make the atomic inputs (.ion) file
-        kwargs['pseudo_dir'] = self.get_pseudopotential_directory(
-            xc=xc, **kwargs)
+        pseudo_dir = self.get_pseudopotential_directory(
+            pseudo_dir, xc=xc, **kwargs)
 
         outpath = os.path.join(self.directory, self.label)
-        if kwargs.get('copy_psp') is None:
-            copy_psp = True
-        else:
-            copy_psp = kwargs.get('copy_psp')
         write_ion(open(outpath + '.ion', 'w'),
-                  atoms, pseudo_dir=kwargs['pseudo_dir'],
+                  atoms, pseudo_dir=pseudo_dir,
                   scaled=scaled, copy_psp=copy_psp,add_constraints=True)
 
     def interpret_grid_input(self, atoms, **kwargs):
@@ -596,7 +617,8 @@ class SPARC(FileIOCalculator):
             kpt_shift = (0, 0, 0)
         return kpt_shift
 
-    def get_pseudopotential_directory(self, **kwargs):
+    def get_pseudopotential_directory(self,pseudo_dir=None,
+                                      **kwargs):
         if 'pseudo_dir' in kwargs.keys():
             return kwargs['pseudo_dir']
         elif 'pseudo_dir' not in kwargs.keys() and 'SPARC_PSP_PATH' in os.environ:
@@ -921,7 +943,7 @@ class SPARC(FileIOCalculator):
             num_steps (int):
                 The number of geometric steps
         """
-        inc = include_uncompleted_last_step  # because pep8
+        inc = include_uncompleted_last_step
         steps = self.get_scf_steps(include_uncompleted_last_step=inc)
         num_steps = len(steps)
         return num_steps

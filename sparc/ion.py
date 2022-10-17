@@ -300,7 +300,7 @@ def decipher_constraints(constraints):
 
     Parameters:
         constraints (list):
-            a list for lists, either empty or in the form [x,y,z]
+            a list of lists, either empty or in the form [x,y,z]
             i.e. [[],[0,0,1],[1,1,1]]
 
     returns:
