@@ -150,10 +150,8 @@ def parse_output(label='sprc-calc', calc_type=None, write_traj=False):
 
     cell = [float(a) for a in input_dict['CELL']]
     cell = np.eye(3) * cell * Bohr
-    if input_dict['BOUNDARY_CONDITION'] == '2':
-        pbc = [True, True, True]
-    else:
-        pbc = [False, False, False]
+    pbc = [a == 'P' for a in input_dict['BC']]
+
 
     # Figure out how many 'types' of atoms there are
     s = os.popen('grep "Total number of atom types" ' + label + '.out')
@@ -172,6 +170,18 @@ def parse_output(label='sprc-calc', calc_type=None, write_traj=False):
     numbers = [int(a.split()[-1]) for a in num_elements]
     s.close()
 
+    # Grep out the constraints from the .ion file
+    from .ion import decipher_constraints
+    s = os.popen('grep -A ' +str(max(numbers)) +' "RELAX:" ' + label + '.ion')
+    rlx = [a.strip() for a in s.readlines()]
+    constraints = []
+    for i, nm in enumerate(numbers):
+        strt_loc = i*(max(numbers)+2)
+        con = rlx[strt_loc+1:strt_loc+nm+1]
+        con =[[int(b) for b in a.split()] for a in con]
+        constraints+= con
+    constraints = decipher_constraints(constraints)
+
     # Make a list containing the elements of each atom in order
     chemical_symbols = []
     for sym, num in zip(elements, numbers):
@@ -182,17 +192,25 @@ def parse_output(label='sprc-calc', calc_type=None, write_traj=False):
     if calc_type == 'relax':
         return parse_relax(label, write_traj=write_traj,
                            pbc=pbc, cell=cell,
-                           chemical_symbols=chemical_symbols), input_dict
+                           chemical_symbols=chemical_symbols,
+                           constraints=constraints), input_dict
     elif calc_type == 'MD':
         return parse_MD(label, write_traj=write_traj,
                         pbc=pbc, cell=cell,
-                        chemical_symbols=chemical_symbols), input_dict
+                        chemical_symbols=chemical_symbols,
+                        constraints=constraints), input_dict
 
 
 def parse_relax(label, write_traj=False,
-                pbc=False, cell=None, chemical_symbols=[]):
-    f = open(label + '.relax')
+                pbc=False, cell=None, chemical_symbols=[],
+                constraints=None):
+    """
+    helper function to handle parsing .geopt files. Not indended to be
+    called outside of `parse_output` function
+    """
+    #f = open(label + '.relax')
     #f = open(label + '.restart')
+    f = open(label + '.geopt')
     text = f.read()
     # Parse out the steps
     if text == '':
@@ -212,15 +230,20 @@ def parse_relax(label, write_traj=False,
 
     # build a traj file out of the steps
     for j, step in enumerate(steps):
-        positions = step.split(':')[2].strip().split('\n')
-        forces = step.split(':')[4].strip().split('\n')
-        frc = np.empty((len(forces), 3))
         atoms = Atoms()
-        for i, f in enumerate(forces):
+        colons = step.split(':')
+
+        pos_index = colons.index('R(Bohr)') + 1
+        frc_index = colons.index('F(Ha/Bohr)') + 1
+        positions = colons[pos_index].strip().split('\n')
+        forces = colons[frc_index].strip().split('\n')
+        frc = np.empty((len(forces), 3))
+        for i, f in zip(range(len(forces)), forces):
             frc[i, :] = [float(a) * Hartree / Bohr for a in f.split()]
             atoms += Atom(chemical_symbols[i],
                           [float(a) * Bohr for a in positions[i].split()])
-
+        if constraints is not None:
+            atoms.set_constraint(constraints.copy())
         atoms.set_calculator(SinglePointCalculator(atoms, energy=engs[j],
                                                    forces=frc))
         atoms.set_pbc(pbc)
@@ -231,7 +254,12 @@ def parse_relax(label, write_traj=False,
     return atoms
 
 
-def parse_MD(label, write_traj=False, pbc=False, cell=None, chemical_symbols=[]):
+def parse_MD(label, write_traj=False, pbc=False, cell=None, chemical_symbols=[],
+            constraints=None):
+    """
+    helper function to handle parsing .aimd files. Not indended to be
+    called outside of `parse_output` function
+    """
     f = open(label + '.aimd')
     #f = open(label + '.restart')
     text = f.read()
@@ -254,6 +282,11 @@ def parse_MD(label, write_traj=False, pbc=False, cell=None, chemical_symbols=[])
     # build a traj file out of the steps
     for j, step in enumerate(steps):
         # Find Indicies
+        if 'CELL' in step:
+            var_cell = True
+        else:
+            _cell = cell
+            var_cell = False
         colons = step.split(':')
         #pos_index = colons.index('R(Bohr)') + 1
         #frc_index = colons.index('F(Ha/Bohr)') + 1
@@ -261,6 +294,14 @@ def parse_MD(label, write_traj=False, pbc=False, cell=None, chemical_symbols=[])
         pos_index = colons.index('R') + 1
         frc_index = colons.index('F') + 1
         vel_index = colons.index('V') + 1
+        if var_cell:
+            cell_index = colons.index('CELL') + 1
+            cell_out = colons[cell_index].strip().split()
+            _cell = []
+            for k, cell_vec in enumerate(cell):
+                lat_vec = cell_vec / np.linalg.norm(cell_vec) * float(cell_out[k]) * Bohr
+                _cell.append(lat_vec)
+            _cell = np.array(_cell)
         # Parse the text
         positions = colons[pos_index].strip().split('\n')
         forces = colons[frc_index].strip().split('\n')
@@ -276,16 +317,18 @@ def parse_MD(label, write_traj=False, pbc=False, cell=None, chemical_symbols=[])
             atoms += Atom(chemical_symbols[i],
                           [float(a) * Bohr for a in positions[i].split()])
         if 'STRESS' in step:
-            stress_index = colons.index('STRESS_TOT(GPa)') + 1
+            stress_index = colons.index('STRESS') + 1
             for i, s in enumerate(colons[stress_index].strip().split('\n')):
                 stress[i, :] = [float(a) * GPa for a in s.split()]
         atoms.set_velocities(vel)
         atoms.set_pbc(pbc)
-        atoms.cell = cell
+        atoms.cell = _cell
         atoms.set_calculator(SinglePointCalculator(atoms,
                                                    energy=engs[j] * len(atoms),
                                                    stress=stress,
                                                    forces=frc))
+        if constraints is not None:
+            atoms.set_constraint(constraints.copy())
         if write_traj == True:
             traj.write(atoms)
     atoms.set_calculator()
