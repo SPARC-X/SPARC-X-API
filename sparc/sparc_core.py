@@ -251,7 +251,12 @@ class SPARC(FileIOCalculator):
         if inputs_check.count(True) == 0:
             raise CalculatorSetupError('You must specify one of the '
                                        'following: `h`, `FD_GRID`, `MESH_SPACING`, `ECUT`')
-            
+        
+        if 'ECUT' in kwargs:
+            warnings.warn('ECUT has been specified The conversion to mesh spacing is only '
+                          'approximate  and an FD code will tend to be less accurate than '
+                          'a PW code at low PW cutoffs')
+
         if 'h' in kwargs:
             kwargs['MESH_SPACING'] = kwargs['h']
         elif 'FD_GRID' in kwargs:
@@ -452,16 +457,12 @@ class SPARC(FileIOCalculator):
 
         # convert the Tols and such to eV and angstrom units
         hartree_inputs = ['SMEARING',
-                          'TOL_SCF',
-                          'TOL_POISSON',
-                          'TOL_LANCZOS','TOL_PSEUDOCHARGE',
                           'SCF_ENERGY_ACC', 'ECUT']
         bohr_inputs = ['MESH_SPACING']
         hartree_per_bohr_inputs = ['TOL_RELAX',
                                    'SCF_FORCE_ACC']
 
-        #if 'TOL_RELAX' in kwargs:  # this is Ha/Bohr
-        #    kwargs['TOL_RELAX'] /= Hartree / Bohr
+        # convert all eV and Angstrom units to Ha and Bohr
         for setting in hartree_per_bohr_inputs:
             if setting in kwargs:
                 kwargs[setting] /= Hartree / Bohr
