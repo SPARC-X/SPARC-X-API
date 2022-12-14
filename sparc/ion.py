@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Oct 18 14:16:21 2018
+
+Ben Comer (Georgia Tech)
+"""
 import shutil
 import os
 from typing import List
