@@ -19,7 +19,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: 3.6
+        python-version: "3.10"
         mamba-version: "*"
         channels: conda-forge,alchem0x2a,defaults
         channel-priority: true
@@ -30,6 +30,8 @@ jobs:
         mamba install -c alchem0x2a sparc
     - name: Lint with flake8
       run: |
+        echo $CONDA_PREFIX
+        conda info
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Install package
