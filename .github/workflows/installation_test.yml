@@ -1,0 +1,40 @@
+name: Test python api installation 
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        python-version: 3.6
+        mamba-version: "*"
+        channels: conda-forge,alchem0x2a,defaults
+        channel-priority: true
+        activate-environment: sparc-api-test
+    - name: Install dependencies
+      run: |
+        mamba install -c conda-forge ase>=3.22 pymatgen flake8 pytest
+        mamba install -c alchem0x2a sparc
+    - name: Lint with flake8
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Install package
+      run: |
+        pip install -e .
+    - name: Test with pytest
+      run: |
+        pytest
