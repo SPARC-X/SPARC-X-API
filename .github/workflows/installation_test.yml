@@ -31,15 +31,16 @@ jobs:
       run: |
         mamba install -c conda-forge ase>=3.22 pymatgen flake8 pytest
         mamba install -c alchem0x2a sparc
+    - name: Install package
+      run: |
+        pip install -e .
+    - name: Test with pytest
+      run: |
+        cd tests
+        python test.py
     - name: Lint with flake8
       run: |
         echo $CONDA_PREFIX
         conda info
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Install package
-      run: |
-        pip install -e .
-    - name: Test with pytest
-      run: |
-        pytest
