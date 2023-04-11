@@ -12,6 +12,8 @@ import os
 import json
 from pathlib import Path
 from warnings import warn
+import numpy as np
+from copy import copy
 
 
 class SPARCDocParser(object):
@@ -91,12 +93,17 @@ class SPARCDocParser(object):
         param_dict = {"symbol": symbol, "label": label}
         # TODO: add more type definition
         for key, content in matches:
+            key = key.lower()
             content = content.strip()
             # Do not parse commented-out values
-            if (key.lower() == "type") and (content.startswith("%")):
+            
+            if (key == "type") and (content.startswith("%")):
                 warn(f"Parameter {symbol} is disabled in the doc, ignore!")
                 return {}
-            param_dict[key.lower()] = content
+            if key in ("example",):
+                content = convert_tex_example(content)
+            param_dict[key] = content
+        param_dict = sanitize_type(param_dict)
         return param_dict
 
     def __parse_frames_from_text(self, text):
@@ -181,17 +188,104 @@ def convert_tex_parameter(text):
     """
     return text.strip().replace("\_", "_")
 
+def convert_tex_example(text):
+    """Convert TeX codes of examples as much as possible
+    The examples follow the format
+    SYMBOL: values (may contain new lines)
+    """
+    mapper = {"\\texttt{": "", "\_": "_", "}": "", "\\": "\n"}
+    new_text = copy(text)
+    for m, r in mapper.items():
+        new_text = new_text.replace(m, r)
+
+    symbol, values = new_text.split(":")
+    symbol = symbol.strip()
+    values = re.sub('\n+', '\n', values.strip())
+    new_text = f"{symbol}: {values}"
+    return new_text
+
+def is_array(text):
+    """Simply try to convert a string into a numpy array and compare if length is larger than 1
+    it is only used to compare a float / int value
+    """
+    val = np.fromstring(text, sep=" ")
+    if len(val) == 1:
+        return False
+    else:
+        return True
+
+
+def contain_only_bool(text):
+    """Check if a string only contains 0 1 or spaces
+    """
+    if any([c in text for c in (".", "+", "-", "e", "E")]):
+        return False
+    digits = re.findall(r"[-+e\d]+", text, re.DOTALL)
+    for d in digits:
+        val = int(d)
+        if val not in (0, 1):
+            return False
+    return True
+    
+
 def sanitize_type(param_dict):
     """Sanitize the param dict so that the type are more consistent
 
     For example, if type is Double / Integer, but parameter is a vector, make a double vector or integer vector
     """
     sanitized_dict = param_dict.copy()
+    symbol = param_dict["symbol"]
     origin_type = param_dict.get("type", None)
     if origin_type is None:
         print(f"Dict does not have type!")
         return sanitized_dict
     origin_type = origin_type.lower()
+
+    sanitized_type = None
+    # import pdb; pdb.set_trace()
+    # First pass, remove all singular types
+    if origin_type == "0 or 1":
+        origin_type = "integer"
+    elif "permutation" in origin_type:
+        sanitized_type = "integer"
+    elif origin_type in ("string", "character"):
+        sanitized_type = "string"
+    elif "array" in origin_type:
+        sanitized_type = origin_type
+
+    # Pass 2, test if int values are arrays
+    if (origin_type in ["int", "integer", "double"]) and (sanitized_type is None):
+        if "int" in origin_type:
+            origin_type = "integer"
+        # Test if the value from example is a single value or array
+        try:
+            example_value = param_dict["example"].split(":")[1]
+            print("Example", param_dict["example"], example_value)
+            # print()
+            _array_test = is_array(example_value)
+            _bool_test = contain_only_bool(example_value)
+            print(_array_test)
+        except Exception:
+            raise
+            _array_test = False # Retain
+            
+        if _array_test is True:
+            sanitized_type = f"{origin_type} array"
+        else:
+            sanitized_type = origin_type
+
+        # Pass 3: int to boolean test. Do not convert double!
+        if _bool_test and ("integer" in sanitized_type):
+            sanitized_type = sanitized_type.replace("integer", "bool")
+
+    if sanitized_type is None:
+         # Currently there is only one NPT_NH_QMASS has this type
+        # TODO: think of a way to format a mixed array?
+        warn(f"Type of {symbol} if not standard digit or array, mark as others.")
+        sanitized_type = "other"
+        # TODO: how about provide a true / false type?
+    sanitized_dict["type"] = sanitized_type
+    return sanitized_dict
     
 
     
