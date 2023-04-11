@@ -78,12 +78,20 @@ class SPARCDocParser(object):
         type: Double | Integer | String | Character | Double array
         unit: specified in the doc
         """
+        pattern_label = r"\\texttt\{(.*?)\}.*?\\label\{(.*?)\}"
         pattern_block = r"\\begin\{block\}\{(.*?)\}([\s\S]*?)\\end\{block\}"
+        match_label = re.findall(pattern_label, frame, re.DOTALL | re.MULTILINE)
+        if len(match_label) != 1:
+            # warn("Provided a non-structured frame for parsing, skip.")
+            return {}
+        print(match_label)
+        symbol, label = convert_tex_parameter(match_label[0][0].strip()), match_label[0][1].strip()
         # Every match contains the (name, content) pair of the blocks
-        matches = re.findall(pattern_block, frame, re.DOTALL)
-        param_dict = {}
+        matches = re.findall(pattern_block, frame, re.DOTALL | re.MULTILINE)
+        param_dict = {"symbol": symbol, "label": label}
+        # TODO: add more type definition
         for key, content in matches:
-            param_dict[key.lower()] = content
+            param_dict[key.lower()] = content.strip()
         return param_dict
 
     def __parse_frames_from_text(self, text):
@@ -92,8 +100,8 @@ class SPARCDocParser(object):
         Arguments:
         `text`: LaTeX text
         """
-        pattern_frame = r"\\begin\{frame\}(?:\[(.*?))\])?\{(.*?)\}\\end\{frame\}"
-        matches = re.findall(pattern_frame, text, re.DOTALL)
+        pattern_frame = r"\\begin\{frame\}(.*?)\\end\{frame\}"
+        matches = re.findall(pattern_frame, text, re.DOTALL | re.MULTILINE)
         return matches
     
     def __parse_intro_file(self):
@@ -132,6 +140,21 @@ class SPARCDocParser(object):
                     print(link, symbol)
                     parameter_dict[cat].append((link, symbol))
         return parameter_categories, parameter_dict
+
+    def __parse_all_included_files(self):
+        """Pop up all known parameters from included files,
+        """
+        all_params = {}
+        for f in self.include_files:
+            print("Parsing", f)
+            text = open(f, "r", encoding="utf8").read()
+            frames = self.__parse_frames_from_text(text)
+            # print(frames)
+            for frame in frames:
+                dic = self.__parse_parameter_from_frame(frame)
+                print(frame)
+                print(dic)
+        
 
     
     def parse_parameters(self):
