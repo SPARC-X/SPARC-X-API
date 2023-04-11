@@ -20,7 +20,7 @@ class SPARCDocParser(object):
     """Use regex to parse LaTeX doc to python API
     """
 
-    def __init__(self, doc_root=".",
+    def __init__(self, directory=".",
                  main_file="Manual.tex",
                  intro_file="Introduction.tex",
                  params_from_intro=True,
@@ -42,7 +42,7 @@ class SPARCDocParser(object):
         `params_from_intro`: only contain the parameters that can be parsed in `intro_file`
         `parse_date`: get the SPARC version by date
         """
-        self.root = Path(doc_root)
+        self.root = Path(directory)
         self.main_file = self.root / main_file
         if not self.main_file.is_file():
             raise FileNotFoundError(f"Main file {main_file} is missing!")
@@ -230,6 +230,25 @@ class SPARCDocParser(object):
             self.other_parameters[symbol] = param_details
 
         return
+
+    def to_json(self, indent=False):
+        """Output a json string from current document parser
+
+        Arguments:
+        `indent`: whether to make the json string pretty
+        """
+        doc = {}
+        doc["sparc_version"] = self.version
+        doc["categories"] = self.parameter_categories
+        doc["parameters"] = sorted(self.parameters.items())
+        doc["other_parameters"] = sorted(self.other_parameters.items())
+        doc["data_types"] = list(set([p["type"] for p in self.parameters.values()]))
+        json_string = json.dumps(doc, indent=indent)
+        return json_string
+
+    @classmethod
+    def from_directory(cls, directory=".", **kwargs):
+        return cls(directory=directory, **kwargs)
         
         
 
@@ -347,7 +366,12 @@ if __name__ == "__main__":
     argp.add_argument("-o", "--output", default="parameters.json", help="Output file name (json-formatted)")
     argp.add_argument("root", help="Root directory of the latex files")  # root directory of the LaTeX files
     args = argp.parse_args()
-    parser = SPARCDocParser(Path(args.root))
-    print("The following files are included in the introduction:")
-    for file in parser.include_files:
-        print(file, file.exists())
+    output = Path(args.output).with_suffix(".json")
+    parser = SPARCDocParser(directory=Path(args.root))
+    json_string = parser.to_json(indent=True)
+    with open(output, "w", encoding="utf8")as fd:
+        fd.write(json_string)
+    print(f"SPARC parameter specifications written to {output}!")
+    print("If you need to fintune the definitions, please edit them manually.")
+    
+    
