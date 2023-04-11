@@ -14,7 +14,7 @@ from pathlib import Path
 from warnings import warn
 import numpy as np
 from copy import copy
-
+from datetime import datetime
 
 class SPARCDocParser(object):
     """Use regex to parse LaTeX doc to python API
@@ -23,7 +23,9 @@ class SPARCDocParser(object):
     def __init__(self, doc_root=".",
                  main_file="Manual.tex",
                  intro_file="Introduction.tex",
-                 params_from_intro=True):
+                 params_from_intro=True,
+                 parse_version=True,
+                 ):
         """Create the doc parser pointing to the root of the doc file of SPARC
 
         The SPARC doc is organized as follows:
@@ -38,6 +40,7 @@ class SPARCDocParser(object):
         `main_file`: main LaTeX file for the manual
         `intro_file`: LaTeX file for the introduction
         `params_from_intro`: only contain the parameters that can be parsed in `intro_file`
+        `parse_date`: get the SPARC version by date
         """
         self.root = Path(doc_root)
         self.main_file = self.root / main_file
@@ -48,7 +51,8 @@ class SPARCDocParser(object):
             raise FileNotFoundError(f"Introduction file {intro_file} is missing!")
         self.include_files = self.get_include_files()
         self.params_from_intro = params_from_intro
-        self.param_dict = self.parse_parameters()
+        self.parse_version(parse_version)
+        self.parse_parameters()
 
     def get_include_files(self):
         """Get a list of included LaTeX files from Manual.tex
@@ -68,6 +72,32 @@ class SPARCDocParser(object):
                 warn((f"TeX file {tex_file} is missing! It may be a typo in the document, "
                       "ignore parameters from this file."))
         return include_files
+
+    def parse_version(self, parse=True):
+        """Get the version (format "YYYY.MM.DD" of SPARC) from C-source file, if possible
+        """
+        if parse is False:
+            self.version = None
+            return
+        init_c = self.root.parents[1] / "src" / "initialization.c"
+        if not init_c.is_file():
+            warn("Cannot find the c source file \"initialization.c\", skip version parsing!")
+            self.version = None
+            return
+        text = open(init_c, "r", encoding="utf8").read()
+        pattern_version = r"SPARC\s+\(\s*?version(.*?)\)"
+        match = re.findall(pattern_version, text)
+        if len(match) != 1:
+            warn("Parsing c source file \"initialization.c\" for version is unsuccessful!")
+            self.version = None
+            return
+        date_str = match[0].strip().replace(",", " ")
+        date_version = datetime.strptime(date_str, "%b %d %Y").strftime("%Y.%m.%d")
+        self.version = date_version
+        return
+        
+        
+        
 
     def __parse_parameter_from_frame(self, frame):
         """Parse the parameters from a single LaTeX frame
@@ -134,7 +164,7 @@ class SPARCDocParser(object):
         parameter_dict = {}
         for match in re.findall(pattern_block, text_params):
             cat = match[0].lower()
-            print(cat)
+            # print(cat)
             if cat in parameter_categories:
                 raise ValueError(f"Key {cat} already exists! You might have a wrong LaTeX doc file!")
             parameter_categories.append(cat)
@@ -149,8 +179,8 @@ class SPARCDocParser(object):
                 # In most cases the link and symbol should be the same
                 for match in matches:
                     label, symbol = match[0].strip(), convert_tex_parameter(match[1].strip())
-                    print(label, symbol)
-                    parameter_dict[cat].append((label, symbol))
+                    # print(label, symbol)
+                    parameter_dict[cat].append({"label": label, "symbol": symbol})
         return parameter_categories, parameter_dict
 
     def __parse_all_included_files(self):
@@ -161,7 +191,7 @@ class SPARCDocParser(object):
             # Do not parse intro file since it's waste of time
             if f.resolve() == self.intro_file.resolve():
                 continue
-            print("Parsing", f)
+            # print("Parsing", f)
             text = open(f, "r", encoding="utf8").read()
             frames = self.__parse_frames_from_text(text)
             # print(frames)
@@ -181,6 +211,26 @@ class SPARCDocParser(object):
         """
         parameter_categories, parameter_dict = self.__parse_intro_file()
         all_params = self.__parse_all_included_files()
+        self.parameter_categories = parameter_categories
+        # parameters contain only the "valid" ones that are shown in the intro
+        # all others are clustered in "other_parameters"
+        self.parameters = {}
+        for cat, params in parameter_dict.items():
+            for p in params:
+                label = p["label"]
+                symbol = p["symbol"]
+                param_details = all_params.pop(label, {})
+                if param_details != {}:
+                    param_details["category"] = cat
+                    self.parameters[symbol] = param_details
+        
+        self.other_parameters = {}
+        for param_details in all_params.values():
+            symbol = param_details["symbol"]
+            self.other_parameters[symbol] = param_details
+
+        return
+        
         
 
 def convert_tex_parameter(text):
@@ -260,11 +310,11 @@ def sanitize_type(param_dict):
         # Test if the value from example is a single value or array
         try:
             example_value = param_dict["example"].split(":")[1]
-            print("Example", param_dict["example"], example_value)
+            # print("Example", param_dict["example"], example_value)
             # print()
             _array_test = is_array(example_value)
             _bool_test = contain_only_bool(example_value)
-            print(_array_test)
+            # print(_array_test)
         except Exception:
             raise
             _array_test = False # Retain
