@@ -105,25 +105,45 @@ class SPARCDocParser(object):
         `parameter_categories`: list of categories
         """
         text_intro = open(self.intro_file, "r", encoding="utf8").read()
-        pattern_params = r"^\\begin\{frame}.*?\{Input file options\}.*?$(.*?)\\end\{frame\}"
-        text_params = re.findall(pattern_params, text_intro, re.DOTALL)[0]
+        # import pdb; pdb.set_trace()
+        pattern_params = r"^\\begin\{frame\}.*?\{Input file options\}.*?$(.*?)\\end\{frame\}"
         pattern_block =  r"\\begin\{block\}\{(.*?)\}([\s\S]*?)\\end\{block\}"
+        pattern_line = r"\\hyperlink\{(.*?)\}{\\texttt\{(.*?)\}\}"
+        text_params = re.findall(pattern_params, text_intro, re.DOTALL | re.MULTILINE)[0]
         parameter_categories = []
         parameter_dict = {}
         for match in re.findall(pattern_block, text_params):
             cat = match[0].lower()
+            print(cat)
             if cat in parameter_categories:
                 raise ValueError(f"Key {cat} already exists! You might have a wrong LaTeX doc file!")
             parameter_categories.append(cat)
+            parameter_dict[cat] = []
             param_lines = match[1].split("\n")
-
-        
+            for line in param_lines:
+                matches = re.findall(pattern_line, line)
+                if len(matches) == 0:
+                    continue
+                # Each match should contain 2 items, the "Link" that matches a reference in included-tex files
+                # symbol is the actual symbol name (in text-format)
+                # In most cases the link and symbol should be the same
+                for match in matches:
+                    link, symbol = match[0].strip(), convert_tex_parameter(match[1].strip())
+                    print(link, symbol)
+                    parameter_dict[cat].append((link, symbol))
+        return parameter_categories, parameter_dict
 
     
     def parse_parameters(self):
+        """The actual thing for parsing parameters
         """
-        """
-        pass
+        parameter_categories, parameter_dict = self.__parse_intro_file()
+        
+
+def convert_tex_parameter(text):
+    """Conver a TeX string to non-escaped name (for parameter only)
+    """
+    return text.strip().replace("\_", "_")
 
 if __name__ == "__main__":
     # Run the module as independent script to extract a json-formatted parameter list
