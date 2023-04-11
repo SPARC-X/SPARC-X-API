@@ -119,12 +119,16 @@ def write_ion(
         # loop-else runs if loop doesn't break
         pseudo_dir = ""
         warnings.warn(
-            "no valid value given for pseudo_dir. Explicitly set the argument or define the environment variable $SPARC_PSP_PATH to ensure your output references valid pseudopotential files")
+            "no valid value given for pseudo_dir. Explicitly set the argument or define the environment variable $SPARC_PSP_PATH to ensure your output references valid pseudopotential files"
+        )
 
-    relax = relax_from_all_constraints(
-        atoms.constraints, len(atoms)) if add_constraints else []
+    relax = (
+        relax_from_all_constraints(atoms.constraints, len(atoms))
+        if add_constraints
+        else []
+    )
 
-    grouped_atoms = {} # group by atom type
+    grouped_atoms = {}  # group by atom type
     for atom in atoms:
         grouped_atoms.setdefault(atom.symbol, []).append(atom)
 
@@ -148,13 +152,12 @@ def write_ion(
             pseudo_path = element + ".pot"
             warnings.warn(
                 "No pseudopotential detected for " + element + ". "
-                "Using generic filename ("
-                + pseudo_path
-                + "). The pseudopotential "
+                "Using generic filename (" + pseudo_path + "). The pseudopotential "
                 " must be added manually for SPARC to execute successfully."
             )
-        block_string = format_atom_block(block_atoms, relax=relax,
-                                         scaled=scaled, pseudo_path=pseudo_path)
+        block_string = format_atom_block(
+            block_atoms, relax=relax, scaled=scaled, pseudo_path=pseudo_path
+        )
         fileobj.write(f"{block_string}\n\n\n")
 
 
@@ -254,12 +257,12 @@ def process_atom_blocks(blocks, cell) -> NativeData:
 
 
 def bisect_and_strip(text, delimiter):
-    '''split string in 2 at first occurence of a character and remove whitespace
+    """split string in 2 at first occurence of a character and remove whitespace
     useful for separating comments from data, keys from values, etc.
-    '''
+    """
     # wrap around to len(text) if not found (-1)
     index = text.find(delimiter) % (len(text) + 1)
-    return text[:index].strip(), text[index + len(delimiter):].strip()
+    return text[:index].strip(), text[index + len(delimiter) :].strip()
 
 
 def read_lat_array(lines):
@@ -281,7 +284,7 @@ def read_inpt_cell(path):
         if "CELL" in line:
             cell = np.array([float(a) for a in line.split()[1:]])
         elif "LATVEC" in line:
-            lat_array = read_lat_array(lines[i + 1:])
+            lat_array = read_lat_array(lines[i + 1 :])
 
     if len(cell) == 0:
         raise Exception(f"no cell found in {path}")
@@ -354,6 +357,7 @@ def format_latvec(cell):
     def format_row(comp):
         comp_n = [format_float(c) for c in comp / np.linalg.norm(comp)]
         return " ".join(["#"] + comp_n)
+
     key = "#LATVEC"
     rows = [format_row(r) for r in cell]
     return "\n".join([key] + rows)
@@ -365,7 +369,7 @@ def format_pbc(pbc):
 
 
 def relax_from_constraint(constraint):
-    ''' returns dict of {atom_index: relax_dimensions} for the given constraint'''
+    """returns dict of {atom_index: relax_dimensions} for the given constraint"""
     if isinstance(constraint, FixAtoms):
         dimensions = [0] * 3
         expected_free = 0
@@ -383,16 +387,18 @@ def relax_from_constraint(constraint):
         )
         return {}
     if dimensions.count(1) != expected_free:
-        warnings.warn("The .ion filetype can only support freezing entire "
-                      f"dimensions (x,y,z). The {type(constraint).__name__} "
-                      "constraint on this atoms Object is being converted to "
-                      "allow movement in any directions in which the atom had "
-                      "some freedom to move")
+        warnings.warn(
+            "The .ion filetype can only support freezing entire "
+            f"dimensions (x,y,z). The {type(constraint).__name__} "
+            "constraint on this atoms Object is being converted to "
+            "allow movement in any directions in which the atom had "
+            "some freedom to move"
+        )
     return {i: dimensions for i in constraint.get_indices()}  # atom indices
 
 
 def relax_from_all_constraints(constraints, natoms):
-    '''converts ASE atom constraints to SPARC relaxed dimensions for the atoms'''
+    """converts ASE atom constraints to SPARC relaxed dimensions for the atoms"""
     relax = [[1] * 3] * natoms  # assume relaxed in all dimensions for all atoms
     for c in constraints:
         for atom_index, rdims in relax_from_constraint(c).items():
@@ -414,10 +420,11 @@ def format_atom_block(atoms: List[Atom], pseudo_path: str, relax=[], scaled=True
 
     def coord_row(coord, index) -> str:
         nums = [format_float(x) for x in coord]
-        coord_string = '    '.join(nums)
+        coord_string = "    ".join(nums)
         return f"    {coord_string}   # index {index}"
 
-    def relax_row(i): return " ".join(str(a) for a in relax[i])
+    def relax_row(i):
+        return " ".join(str(a) for a in relax[i])
 
     if scaled:
         # for some reason atom.scaled_position are rounded differently from
@@ -449,8 +456,10 @@ def find_pseudo_path(element: str, pseudo_dir):
 
     filename = filenames[0]
     if len(filenames) > 1:
-        warnings.warn("Multiple psudopotentials detected for "
-                      f"{element} ({filenames}). Using {filename}.")
+        warnings.warn(
+            "Multiple psudopotentials detected for "
+            f"{element} ({filenames}). Using {filename}."
+        )
     return os.path.join(pseudo_dir, filename)
 
 

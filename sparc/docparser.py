@@ -16,22 +16,24 @@ import numpy as np
 from copy import copy
 from datetime import datetime
 
-class SPARCDocParser(object):
-    """Use regex to parse LaTeX doc to python API
-    """
 
-    def __init__(self, directory=".",
-                 main_file="Manual.tex",
-                 intro_file="Introduction.tex",
-                 params_from_intro=True,
-                 parse_version=True,
-                 ):
+class SPARCDocParser(object):
+    """Use regex to parse LaTeX doc to python API"""
+
+    def __init__(
+        self,
+        directory=".",
+        main_file="Manual.tex",
+        intro_file="Introduction.tex",
+        params_from_intro=True,
+        parse_version=True,
+    ):
         """Create the doc parser pointing to the root of the doc file of SPARC
 
         The SPARC doc is organized as follows:
         SPARC/doc/.LaTeX/
             |---- Manual.tex
-                  |---- Introduction.tex  
+                  |---- Introduction.tex
                         |---- {Section}.tex
         TODO: include the parameters for SQ / HT calculations
 
@@ -55,8 +57,7 @@ class SPARCDocParser(object):
         self.parse_parameters()
 
     def get_include_files(self):
-        """Get a list of included LaTeX files from Manual.tex
-        """
+        """Get a list of included LaTeX files from Manual.tex"""
         pattern = r"\\begin\{document\}(.*?)\\end\{document\}"
         text = open(self.main_file, "r", encoding="utf8").read()
         # Only the first begin/end document will be matched
@@ -69,42 +70,46 @@ class SPARCDocParser(object):
             if tex_file.is_file():
                 include_files.append(tex_file)
             else:
-                warn((f"TeX file {tex_file} is missing! It may be a typo in the document, "
-                      "ignore parameters from this file."))
+                warn(
+                    (
+                        f"TeX file {tex_file} is missing! It may be a typo in the document, "
+                        "ignore parameters from this file."
+                    )
+                )
         return include_files
 
     def parse_version(self, parse=True):
-        """Get the version (format "YYYY.MM.DD" of SPARC) from C-source file, if possible
-        """
+        """Get the version (format "YYYY.MM.DD" of SPARC) from C-source file, if possible"""
         if parse is False:
             self.version = None
             return
         init_c = self.root.parents[1] / "src" / "initialization.c"
         if not init_c.is_file():
-            warn("Cannot find the c source file \"initialization.c\", skip version parsing!")
+            warn(
+                'Cannot find the c source file "initialization.c", skip version parsing!'
+            )
             self.version = None
             return
         text = open(init_c, "r", encoding="utf8").read()
         pattern_version = r"SPARC\s+\(\s*?version(.*?)\)"
         match = re.findall(pattern_version, text)
         if len(match) != 1:
-            warn("Parsing c source file \"initialization.c\" for version is unsuccessful!")
+            warn(
+                'Parsing c source file "initialization.c" for version is unsuccessful!'
+            )
             self.version = None
             return
         date_str = match[0].strip().replace(",", " ")
         date_version = datetime.strptime(date_str, "%b %d %Y").strftime("%Y.%m.%d")
         self.version = date_version
         return
-        
-        
-        
 
     def __parse_parameter_from_frame(self, frame):
         """Parse the parameters from a single LaTeX frame
 
         Arguments:
         `frame`: a string containing the LaTeX frame (e.g. \begin{frame} ... \end{frame})
-                 
+
         fields are:
         name: TOL_POISSON
         type: Double | Integer | String | Character | Double array
@@ -117,7 +122,10 @@ class SPARCDocParser(object):
             # warn("Provided a non-structured frame for parsing, skip.")
             return {}
         # print(match_label)
-        symbol, label = convert_tex_parameter(match_label[0][0].strip()), match_label[0][1].strip()
+        symbol, label = (
+            convert_tex_parameter(match_label[0][0].strip()),
+            match_label[0][1].strip(),
+        )
         # Every match contains the (name, content) pair of the blocks
         matches = re.findall(pattern_block, frame, re.DOTALL | re.MULTILINE)
         param_dict = {"symbol": symbol, "label": label}
@@ -126,7 +134,7 @@ class SPARCDocParser(object):
             key = key.lower()
             content = content.strip()
             # Do not parse commented-out values
-            
+
             if (key == "type") and (content.startswith("%")):
                 warn(f"Parameter {symbol} is disabled in the doc, ignore!")
                 return {}
@@ -145,28 +153,34 @@ class SPARCDocParser(object):
         pattern_frame = r"\\begin\{frame\}(.*?)\\end\{frame\}"
         matches = re.findall(pattern_frame, text, re.DOTALL | re.MULTILINE)
         return matches
-    
+
     def __parse_intro_file(self):
         """Parse the introduction file
 
         Returns:
-        `parameter_dict`: dictionary using the parameter category as the main key 
+        `parameter_dict`: dictionary using the parameter category as the main key
                           (following order in Introduction.tex)
         `parameter_categories`: list of categories
         """
         text_intro = open(self.intro_file, "r", encoding="utf8").read()
         # import pdb; pdb.set_trace()
-        pattern_params = r"^\\begin\{frame\}.*?\{Input file options\}.*?$(.*?)\\end\{frame\}"
-        pattern_block =  r"\\begin\{block\}\{(.*?)\}([\s\S]*?)\\end\{block\}"
+        pattern_params = (
+            r"^\\begin\{frame\}.*?\{Input file options\}.*?$(.*?)\\end\{frame\}"
+        )
+        pattern_block = r"\\begin\{block\}\{(.*?)\}([\s\S]*?)\\end\{block\}"
         pattern_line = r"\\hyperlink\{(.*?)\}{\\texttt\{(.*?)\}\}"
-        text_params = re.findall(pattern_params, text_intro, re.DOTALL | re.MULTILINE)[0]
+        text_params = re.findall(pattern_params, text_intro, re.DOTALL | re.MULTILINE)[
+            0
+        ]
         parameter_categories = []
         parameter_dict = {}
         for match in re.findall(pattern_block, text_params):
             cat = match[0].lower()
             # print(cat)
             if cat in parameter_categories:
-                raise ValueError(f"Key {cat} already exists! You might have a wrong LaTeX doc file!")
+                raise ValueError(
+                    f"Key {cat} already exists! You might have a wrong LaTeX doc file!"
+                )
             parameter_categories.append(cat)
             parameter_dict[cat] = []
             param_lines = match[1].split("\n")
@@ -178,14 +192,15 @@ class SPARCDocParser(object):
                 # symbol is the actual symbol name (in text-format)
                 # In most cases the link and symbol should be the same
                 for match in matches:
-                    label, symbol = match[0].strip(), convert_tex_parameter(match[1].strip())
+                    label, symbol = match[0].strip(), convert_tex_parameter(
+                        match[1].strip()
+                    )
                     # print(label, symbol)
                     parameter_dict[cat].append({"label": label, "symbol": symbol})
         return parameter_categories, parameter_dict
 
     def __parse_all_included_files(self):
-        """Pop up all known parameters from included files,
-        """
+        """Pop up all known parameters from included files,"""
         all_params = {}
         for f in self.include_files:
             # Do not parse intro file since it's waste of time
@@ -202,13 +217,10 @@ class SPARCDocParser(object):
                     label = dic["label"]
                     all_params[label] = dic
         return all_params
-                # print(dic)
-        
+        # print(dic)
 
-    
     def parse_parameters(self):
-        """The actual thing for parsing parameters
-        """
+        """The actual thing for parsing parameters"""
         parameter_categories, parameter_dict = self.__parse_intro_file()
         all_params = self.__parse_all_included_files()
         self.parameter_categories = parameter_categories
@@ -223,7 +235,7 @@ class SPARCDocParser(object):
                 if param_details != {}:
                     param_details["category"] = cat
                     self.parameters[symbol] = param_details
-        
+
         self.other_parameters = {}
         for param_details in all_params.values():
             symbol = param_details["symbol"]
@@ -249,13 +261,12 @@ class SPARCDocParser(object):
     @classmethod
     def from_directory(cls, directory=".", **kwargs):
         return cls(directory=directory, **kwargs)
-        
-        
+
 
 def convert_tex_parameter(text):
-    """Conver a TeX string to non-escaped name (for parameter only)
-    """
+    """Conver a TeX string to non-escaped name (for parameter only)"""
     return text.strip().replace("\_", "_")
+
 
 def convert_tex_example(text):
     """Convert TeX codes of examples as much as possible
@@ -269,9 +280,10 @@ def convert_tex_example(text):
 
     symbol, values = new_text.split(":")
     symbol = symbol.strip()
-    values = re.sub('\n+', '\n', values.strip())
+    values = re.sub("\n+", "\n", values.strip())
     new_text = f"{symbol}: {values}"
     return new_text
+
 
 def is_array(text):
     """Simply try to convert a string into a numpy array and compare if length is larger than 1
@@ -285,8 +297,7 @@ def is_array(text):
 
 
 def contain_only_bool(text):
-    """Check if a string only contains 0 1 or spaces
-    """
+    """Check if a string only contains 0 1 or spaces"""
     if any([c in text for c in (".", "+", "-", "e", "E")]):
         return False
     digits = re.findall(r"[-+e\d]+", text, re.DOTALL)
@@ -295,7 +306,7 @@ def contain_only_bool(text):
         if val not in (0, 1):
             return False
     return True
-    
+
 
 def sanitize_type(param_dict):
     """Sanitize the param dict so that the type are more consistent
@@ -336,8 +347,8 @@ def sanitize_type(param_dict):
             # print(_array_test)
         except Exception:
             raise
-            _array_test = False # Retain
-            
+            _array_test = False  # Retain
+
         if _array_test is True:
             sanitized_type = f"{origin_type} array"
         else:
@@ -348,30 +359,34 @@ def sanitize_type(param_dict):
             sanitized_type = sanitized_type.replace("integer", "bool")
 
     if sanitized_type is None:
-         # Currently there is only one NPT_NH_QMASS has this type
+        # Currently there is only one NPT_NH_QMASS has this type
         # TODO: think of a way to format a mixed array?
         warn(f"Type of {symbol} if not standard digit or array, mark as others.")
         sanitized_type = "other"
         # TODO: how about provide a true / false type?
     sanitized_dict["type"] = sanitized_type
     return sanitized_dict
-    
 
-    
 
 if __name__ == "__main__":
     # Run the module as independent script to extract a json-formatted parameter list
     from argparse import ArgumentParser
+
     argp = ArgumentParser(description="Parse the LaTeX doc to json")
-    argp.add_argument("-o", "--output", default="parameters.json", help="Output file name (json-formatted)")
-    argp.add_argument("root", help="Root directory of the latex files")  # root directory of the LaTeX files
+    argp.add_argument(
+        "-o",
+        "--output",
+        default="parameters.json",
+        help="Output file name (json-formatted)",
+    )
+    argp.add_argument(
+        "root", help="Root directory of the latex files"
+    )  # root directory of the LaTeX files
     args = argp.parse_args()
     output = Path(args.output).with_suffix(".json")
     parser = SPARCDocParser(directory=Path(args.root))
     json_string = parser.to_json(indent=True)
-    with open(output, "w", encoding="utf8")as fd:
+    with open(output, "w", encoding="utf8") as fd:
         fd.write(json_string)
     print(f"SPARC parameter specifications written to {output}!")
     print("If you need to fintune the definitions, please edit them manually.")
-    
-    
