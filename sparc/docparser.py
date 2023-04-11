@@ -84,14 +84,19 @@ class SPARCDocParser(object):
         if len(match_label) != 1:
             # warn("Provided a non-structured frame for parsing, skip.")
             return {}
-        print(match_label)
+        # print(match_label)
         symbol, label = convert_tex_parameter(match_label[0][0].strip()), match_label[0][1].strip()
         # Every match contains the (name, content) pair of the blocks
         matches = re.findall(pattern_block, frame, re.DOTALL | re.MULTILINE)
         param_dict = {"symbol": symbol, "label": label}
         # TODO: add more type definition
         for key, content in matches:
-            param_dict[key.lower()] = content.strip()
+            content = content.strip()
+            # Do not parse commented-out values
+            if (key.lower() == "type") and (content.startswith("%")):
+                warn(f"Parameter {symbol} is disabled in the doc, ignore!")
+                return {}
+            param_dict[key.lower()] = content
         return param_dict
 
     def __parse_frames_from_text(self, text):
@@ -136,9 +141,9 @@ class SPARCDocParser(object):
                 # symbol is the actual symbol name (in text-format)
                 # In most cases the link and symbol should be the same
                 for match in matches:
-                    link, symbol = match[0].strip(), convert_tex_parameter(match[1].strip())
-                    print(link, symbol)
-                    parameter_dict[cat].append((link, symbol))
+                    label, symbol = match[0].strip(), convert_tex_parameter(match[1].strip())
+                    print(label, symbol)
+                    parameter_dict[cat].append((label, symbol))
         return parameter_categories, parameter_dict
 
     def __parse_all_included_files(self):
@@ -146,14 +151,21 @@ class SPARCDocParser(object):
         """
         all_params = {}
         for f in self.include_files:
+            # Do not parse intro file since it's waste of time
+            if f.resolve() == self.intro_file.resolve():
+                continue
             print("Parsing", f)
             text = open(f, "r", encoding="utf8").read()
             frames = self.__parse_frames_from_text(text)
             # print(frames)
             for frame in frames:
                 dic = self.__parse_parameter_from_frame(frame)
-                print(frame)
-                print(dic)
+                # print(frame)
+                if len(dic) > 0:
+                    label = dic["label"]
+                    all_params[label] = dic
+        return all_params
+                # print(dic)
         
 
     
@@ -161,12 +173,28 @@ class SPARCDocParser(object):
         """The actual thing for parsing parameters
         """
         parameter_categories, parameter_dict = self.__parse_intro_file()
+        all_params = self.__parse_all_included_files()
         
 
 def convert_tex_parameter(text):
     """Conver a TeX string to non-escaped name (for parameter only)
     """
     return text.strip().replace("\_", "_")
+
+def sanitize_type(param_dict):
+    """Sanitize the param dict so that the type are more consistent
+
+    For example, if type is Double / Integer, but parameter is a vector, make a double vector or integer vector
+    """
+    sanitized_dict = param_dict.copy()
+    origin_type = param_dict.get("type", None)
+    if origin_type is None:
+        print(f"Dict does not have type!")
+        return sanitized_dict
+    origin_type = origin_type.lower()
+    
+
+    
 
 if __name__ == "__main__":
     # Run the module as independent script to extract a json-formatted parameter list
