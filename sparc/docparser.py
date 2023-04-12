@@ -147,7 +147,7 @@ class SPARCDocParser(object):
         param_dict = sanitize_default(param_dict)
         # Sanitize 3: Remove TeX components in description and remark
         param_dict = sanitize_description(param_dict)
-        
+
         return param_dict
 
     def __parse_frames_from_text(self, text):
@@ -288,9 +288,12 @@ def convert_tex_example(text):
     symbol = symbol.strip()
     values = re.sub("\n+", "\n", values.strip())
     # Remove all comment lines
-    values = "\n".join([l for l in values.splitlines() if not l.lstrip().startswith("%")])
+    values = "\n".join(
+        [l for l in values.splitlines() if not l.lstrip().startswith("%")]
+    )
     new_text = f"{symbol}: {values}"
     return new_text
+
 
 def convert_tex_default(text, desired_type=None):
     """Convert default values as much as possible.
@@ -300,13 +303,17 @@ def convert_tex_default(text, desired_type=None):
     Currently supported conversions
     1. Remove all surrounding text modifiers (texttt)
     2. Remove all symbol wrappers $
-    3. Convert value to single or array 
+    3. Convert value to single or array
     """
-    mapper = {"\\texttt{": "", "}": "",
-              "{": "", "\\_": "_",
-              "\_": "_",
-              "\\\\": "\n",
-              "$": ""}
+    mapper = {
+        "\\texttt{": "",
+        "}": "",
+        "{": "",
+        "\\_": "_",
+        "\_": "_",
+        "\\\\": "\n",
+        "$": "",
+    }
     text = text.strip()
     text = re.sub(r"\\hyperlink\{.*?\}", "", text)
     text = re.sub(r"\\times", "x", text)
@@ -315,7 +322,7 @@ def convert_tex_default(text, desired_type=None):
     text = re.sub(r"\n+", "\n", text)
     # Remove all comment lines
     text = "\n".join([l for l in text.splitlines() if not l.lstrip().startswith("%")])
-    
+
     # print(text)
     converted = None
     if "none" in text.lower():
@@ -334,15 +341,20 @@ def convert_tex_default(text, desired_type=None):
             converted = text2value(text, desired_type)
     return converted
 
+
 def convert_comment(text):
     """Used to remove TeX-specific commands in description and remarks
     as much as possible
     """
-    mapper = {"\\texttt{": "", "}": "",
-              "{": "", "\\_": "_",
-              "\_": "_",
-              "\\\\": "\n",
-              "$": ""}
+    mapper = {
+        "\\texttt{": "",
+        "}": "",
+        "{": "",
+        "\\_": "_",
+        "\_": "_",
+        "\\\\": "\n",
+        "$": "",
+    }
     text = text.strip()
     text = re.sub(r"\\hyperlink\{.*?\}", "", text)
     text = re.sub(r"\\href\{.*?\}", "", text)
@@ -365,7 +377,6 @@ def text2value(text, desired_type):
     except Exception as e:
         raise e
         arr = None
-        
 
     if arr is None:
         return None
@@ -376,6 +387,7 @@ def text2value(text, desired_type):
 
     converted = None
     from contextlib import suppress
+
     # Ignore all failures and make conversion None
     with suppress(Exception):
         if desired_type == "integer":
@@ -393,7 +405,6 @@ def text2value(text, desired_type):
         elif desired_type == "string":
             converted = text
     return converted
-        
 
 
 def is_array(text):
@@ -418,20 +429,21 @@ def contain_only_bool(text):
             return False
     return True
 
+
 def sanitize_description(param_dict):
-    """Sanitize the description and remark field
-    """
+    """Sanitize the description and remark field"""
     sanitized_dict = param_dict.copy()
 
     original_desc = sanitized_dict["description"]
     sanitized_dict["description_raw"] = original_desc
-    
+
     original_remark = sanitized_dict.get("remark", "")
     sanitized_dict["remark_raw"] = original_remark
-    
+
     sanitized_dict["description"] = convert_comment(original_desc)
     sanitized_dict["remark"] = convert_comment(original_remark)
     return sanitized_dict
+
 
 def sanitize_default(param_dict):
     """Sanitize the default field
