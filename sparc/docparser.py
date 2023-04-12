@@ -145,6 +145,8 @@ class SPARCDocParser(object):
         param_dict = sanitize_type(param_dict)
         # Sanitize 2: Convert default values
         param_dict = sanitize_default(param_dict)
+        # Sanitize 3: Remove TeX components in description and remark
+        param_dict = sanitize_description(param_dict)
         
         return param_dict
 
@@ -285,6 +287,8 @@ def convert_tex_example(text):
     symbol, values = new_text.split(":")
     symbol = symbol.strip()
     values = re.sub("\n+", "\n", values.strip())
+    # Remove all comment lines
+    values = "\n".join([l for l in values.splitlines() if not l.lstrip().startswith("%")])
     new_text = f"{symbol}: {values}"
     return new_text
 
@@ -304,10 +308,14 @@ def convert_tex_default(text, desired_type=None):
               "\\\\": "\n",
               "$": ""}
     text = text.strip()
+    text = re.sub(r"\\hyperlink\{.*?\}", "", text)
+    text = re.sub(r"\\times", "x", text)
     for m, r in mapper.items():
         text = text.replace(m, r)
-    text = re.sub(r"\\hyperlink\{.*?\}", "", text)
     text = re.sub(r"\n+", "\n", text)
+    # Remove all comment lines
+    text = "\n".join([l for l in text.splitlines() if not l.lstrip().startswith("%")])
+    
     # print(text)
     converted = None
     if "none" in text.lower():
@@ -325,7 +333,26 @@ def convert_tex_default(text, desired_type=None):
         else:
             converted = text2value(text, desired_type)
     return converted
-        
+
+def convert_comment(text):
+    """Used to remove TeX-specific commands in description and remarks
+    as much as possible
+    """
+    mapper = {"\\texttt{": "", "}": "",
+              "{": "", "\\_": "_",
+              "\_": "_",
+              "\\\\": "\n",
+              "$": ""}
+    text = text.strip()
+    text = re.sub(r"\\hyperlink\{.*?\}", "", text)
+    text = re.sub(r"\\href\{.*?\}", "", text)
+    text = re.sub(r"\\times", "x", text)
+    for m, r in mapper.items():
+        text = text.replace(m, r)
+    text = re.sub(r"\n+", "\n", text)
+    # Remove all comment lines
+    text = "\n".join([l for l in text.splitlines() if not l.lstrip().startswith("%")])
+    return text
 
 
 def text2value(text, desired_type):
@@ -390,6 +417,21 @@ def contain_only_bool(text):
         if val not in (0, 1):
             return False
     return True
+
+def sanitize_description(param_dict):
+    """Sanitize the description and remark field
+    """
+    sanitized_dict = param_dict.copy()
+
+    original_desc = sanitized_dict["description"]
+    sanitized_dict["description_raw"] = original_desc
+    
+    original_remark = sanitized_dict.get("remark", "")
+    sanitized_dict["remark_raw"] = original_remark
+    
+    sanitized_dict["description"] = convert_comment(original_desc)
+    sanitized_dict["remark"] = convert_comment(original_remark)
+    return sanitized_dict
 
 def sanitize_default(param_dict):
     """Sanitize the default field
