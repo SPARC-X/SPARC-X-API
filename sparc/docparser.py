@@ -141,7 +141,11 @@ class SPARCDocParser(object):
             if key in ("example",):
                 content = convert_tex_example(content)
             param_dict[key] = content
+        # Sanitize 1: Convert types
         param_dict = sanitize_type(param_dict)
+        # Sanitize 2: Convert default values
+        param_dict = sanitize_default(param_dict)
+        
         return param_dict
 
     def __parse_frames_from_text(self, text):
@@ -284,6 +288,86 @@ def convert_tex_example(text):
     new_text = f"{symbol}: {values}"
     return new_text
 
+def convert_tex_default(text, desired_type=None):
+    """Convert default values as much as possible.
+    The desire type will convert the default values
+    to the closest format
+
+    Currently supported conversions
+    1. Remove all surrounding text modifiers (texttt)
+    2. Remove all symbol wrappers $
+    3. Convert value to single or array 
+    """
+    mapper = {"\\texttt{": "", "}": "",
+              "{": "", "\\_": "_",
+              "\_": "_",
+              "\\\\": "\n",
+              "$": ""}
+    text = text.strip()
+    for m, r in mapper.items():
+        text = text.replace(m, r)
+    text = re.sub(r"\\hyperlink\{.*?\}", "", text)
+    text = re.sub(r"\n+", "\n", text)
+    # print(text)
+    converted = None
+    if "none" in text.lower():
+        converted = None
+    elif "no default" in text.lower():
+        converted = None
+    elif "automat" in text.lower():
+        converted = "auto"
+    else:
+        # try type conversion
+        if desired_type is None:
+            converted = text
+        elif desired_type == "string":
+            converted = text
+        else:
+            converted = text2value(text, desired_type)
+    return converted
+        
+
+
+def text2value(text, desired_type):
+    if desired_type is None:
+        return text
+    desired_type = desired_type.lower()
+
+    try:
+        arr = np.genfromtxt(text.splitlines(), delimiter=" ", dtype=float)
+    except Exception as e:
+        raise e
+        arr = None
+        
+
+    if arr is None:
+        return None
+
+    # Upshape ndarray to at least 1D
+    if arr.shape == ():
+        arr = np.reshape(arr, [1])
+
+    converted = None
+    from contextlib import suppress
+    # Ignore all failures and make conversion None
+    with suppress(Exception):
+        if desired_type == "integer":
+            converted = int(arr[0])
+        elif desired_type == "bool":
+            converted = bool(arr[0])
+        elif desired_type == "double":
+            converted = float(arr[0])
+        elif desired_type == "integer array":
+            converted = np.ndarray.tolist(arr.astype(int))
+        elif desired_type == "bool array":
+            converted = np.ndarray.tolist(arr.astype(bool))
+        elif desired_type == "double array":
+            converted = np.ndarray.tolist(arr.astype(float))
+        elif desired_type == "string":
+            converted = text
+    return converted
+        
+
 
 def is_array(text):
     """Simply try to convert a string into a numpy array and compare if length is larger than 1
@@ -307,6 +391,20 @@ def contain_only_bool(text):
             return False
     return True
 
+def sanitize_default(param_dict):
+    """Sanitize the default field
+    1. Create an extra field `default_remark` that copies original default
+    2. Use `convert_tex_default` to convert values as much as possible
+
+    This function should be called after sanitize_type
+    """
+    sanitized_dict = param_dict.copy()
+    original_default = sanitized_dict["default"]
+    sanitized_dict["default_remark"] = original_default
+    converted_default = convert_tex_default(original_default, param_dict["type"])
+    sanitized_dict["default"] = converted_default
+    return sanitized_dict
+
 
 def sanitize_type(param_dict):
     """Sanitize the param dict so that the type are more consistent
@@ -322,6 +420,7 @@ def sanitize_type(param_dict):
     origin_type = origin_type.lower()
 
     sanitized_type = None
+    sanitized_dict["allow_bool_input"] = False
     # import pdb; pdb.set_trace()
     # First pass, remove all singular types
     if origin_type == "0 or 1":
@@ -340,10 +439,11 @@ def sanitize_type(param_dict):
         # Test if the value from example is a single value or array
         try:
             example_value = param_dict["example"].split(":")[1]
+            default = param_dict["default"]
             # print("Example", param_dict["example"], example_value)
             # print()
             _array_test = is_array(example_value)
-            _bool_test = contain_only_bool(example_value)
+            _bool_test = contain_only_bool(example_value) and contain_only_bool(default)
             # print(_array_test)
         except Exception:
             raise
@@ -354,9 +454,10 @@ def sanitize_type(param_dict):
         else:
             sanitized_type = origin_type
 
-        # Pass 3: int to boolean test. Do not convert double!
+        # Pass 3: int to boolean test. This should be done very tight
         if _bool_test and ("integer" in sanitized_type):
-            sanitized_type = sanitized_type.replace("integer", "bool")
+            sanitized_dict["allow_bool_input"] = True
+            # sanitized_type = sanitized_type.replace("integer", "bool")
 
     if sanitized_type is None:
         # Currently there is only one NPT_NH_QMASS has this type
