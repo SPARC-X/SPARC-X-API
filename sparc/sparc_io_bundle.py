@@ -18,14 +18,14 @@ from ase.io import ParseError
 from pathlib import Path
 
 
-@reader
-def read_sparc(filename):
+# @reader
+def read_sparc(filename, *args, **kwargs):
     # raise NotImplementedError
     pass
 
 
-@writer
-def write_sparc(filename, atoms, label=None, sort=None, copy_psp=True):
+# @writer
+def write_sparc(filename, atoms, label=None, sort=None, copy_psp=True, **kwargs):
     # raise NotImplementedError
     pass
 
@@ -89,7 +89,7 @@ def register_ase_io_sparc(name="sparc"):
     F(
         name,
         desc=desc,
-        code="+F",
+        code="1S",
         ext="sparc",
     )
 
@@ -102,6 +102,13 @@ def register_ase_io_sparc(name="sparc"):
             )
         )
         return
+    # Monkey patch the read and write functions!
+    f = ioformats[name]
+    # f_r, f_w = f.read, f.write
+    # f.read = read_sparc
+    # f.write = write_sparc
+    # f.old_read = f_r
+    # f.old_write = f_w
 
     # TODO: remove print options as it may be redundant
     print("Successfully registered sparc format with ase.io!")
