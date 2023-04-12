@@ -13,4 +13,9 @@ setup(
     url="https://github.com/SPARC-X/sparc-dft-api",
     packages=find_packages(),
     install_requires=["spglib", "numpy", "ase", "scipy"],
+    entry_points={
+        "ase.io": [
+            "sparc = sparc.sparc_io_bundle",
+        ],
+    },
 )
