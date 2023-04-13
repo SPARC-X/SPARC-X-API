@@ -1,5 +1,6 @@
 from warnings import warn
 
+
 def get_label(fileobj, ext):
     """Return the label of file by stripping the extension (e.g. .ion)"""
     return fileobj.name.rsplit(ext, 1)[0]
@@ -26,9 +27,9 @@ def bisect_and_strip(text, delimiter):
     index = text.find(delimiter) % (len(text) + 1)
     return text[:index].strip(), text[index + len(delimiter) :].strip()
 
+
 def read_block_input(block, validator=None):
-    """Read blocks of inputs from ion or inpt file and convert with validator
-    """
+    """Read blocks of inputs from ion or inpt file and convert with validator"""
     block_dict = {}
     multiline_key = ""
     use_validator = True if validator else False
@@ -52,7 +53,9 @@ def read_block_input(block, validator=None):
         _use_validator_this_key = use_validator
         if _use_validator_this_key:
             if key not in validator.parameters.keys():
-                warn(f"Key {key} not in validator's parameter list, ignore value conversion!")
+                warn(
+                    f"Key {key} not in validator's parameter list, ignore value conversion!"
+                )
                 _use_validator_this_key = False
         if _use_validator_this_key:
             val = validator.convert_string_to_value(key, val)
