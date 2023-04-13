@@ -1,176 +1,217 @@
-# -*- coding: utf-8 -*-
 """
 Created on Thu Oct 18 14:16:21 2018
 
 Ben Comer (Georgia Tech)
+
+This file has been heavily modified since SPARC 0.1
+
+TODO: more descriptions about this file io parser
 """
 import shutil
 import os
 from typing import List
 from collections import namedtuple
 import warnings
+from warnings import warn
 
 import numpy as np
 from ase import Atoms, Atom
 from ase.units import Bohr
 from ase.constraints import FixAtoms, FixedLine, FixedPlane
 
+# Safe wrappers for both string and fd
+from ase.utils import reader, writer
 
-def read_ion(fileobj, recover_indices=True, recover_constraints=True):
+from .utils import get_label, strip_comments, bisect_and_strip, read_block_input
+
+from ..inputs import SparcInputs
+
+defaultAPI = SparcInputs()
+
+@reader
+def _read_ion(fileobj):
     """
+    Read information from the .ion file. Note, this method does not return an atoms object,
+    but rather return a dict. Thus the label option is not necessary to keep
+
+
     Reads an ion file. Because some of the information necessary to create
     an atoms object is found in the .inpt file, this function also attemtps to read
     that as a source of data. If the file is not found or the information is invalid,
     it will look for it in the comments of the ion file, as written.
     """
     contents = fileobj.read()
-    label = fileobj.name.rsplit(".ion", 1)[0]
-    stripped, comments = strip_comments(contents)
-
-    try:
-        comment_data = read_comments(comments)
-    except Exception as e:
-        warnings.warn(f"failed to read comment data: {e}")
-        comment_data = CommentData(cell=[], indices=[], pbc_list=[])
-
-    try:
-        cell = read_inpt_cell(label + ".inpt")
-    except Exception as e:
-        warnings.warn(f"Failed to read inpt file: {e}")
-        cell = comment_data.cell
-
-    if len(cell) == 0:
-        cell = np.zeros((3, 3))
-        warnings.warn(
-            "No lattice vectors were found in either the .inpt"
-            " file or in the comments of the .ion file. Thus no"
-            " unit cell was set for the resulting atoms object. "
-            "Use the output atoms at your own risk"
-        )
-
+    # label = get_label(fileobj, ".ion")
+    data, comments = strip_comments(contents)
+    # We do not read the cell at this time!
+    
     # find the index for all atom type lines. They should be at the top of their block
-    atom_type_bounds = [i for i, x in enumerate(stripped) if "ATOM_TYPE" in x]
-    # add end of list to bound last block
-    atom_type_bounds.append(len(stripped))
-
-    # iterates over tuples (i_0, i_1), (i_1, i_2), ...
+    atom_type_bounds = [i for i, x in enumerate(data) if "ATOM_TYPE" in x] + [len(data)]
     atom_blocks = [
-        read_atom_block(stripped[start:end])
+        read_block_input(data[start:end], validator=defaultAPI)
         for start, end in zip(atom_type_bounds[:-1], atom_type_bounds[1:])
     ]
+    
+    return {"ion_atom_blocks": atom_blocks, "ion_comments": comments}
+    
+    # try:
+    #     comment_data = read_comments(comments)
+    # except Exception as e:
+    #     warnings.warn(f"failed to read comment data: {e}")
+    #     comment_data = CommentData(cell=[], indices=[], pbc_list=[])
+    # print(comment_data)
 
-    raw_atoms, relax, spins = process_atom_blocks(atom_blocks, cell)
+    # try:
+    #     cell = read_inpt_cell(label + ".inpt")
+    # except Exception as e:
+    #     warnings.warn(f"Failed to read inpt file: {e}")
+    #     cell = comment_data.cell
+
+    # if len(cell) == 0:
+    #     cell = np.zeros((3, 3))
+    #     warnings.warn(
+    #         "No lattice vectors were found in either the .inpt"
+    #         " file or in the comments of the .ion file. Thus no"
+    #         " unit cell was set for the resulting atoms object. "
+    #         "Use the output atoms at your own risk"
+    #     )
+
+    # # add end of list to bound last block
+    # atom_type_bounds.append(len(stripped))
+
+    # # iterates over tuples (i_0, i_1), (i_1, i_2), ...
+
+    # raw_atoms, relax, spins = process_atom_blocks(atom_blocks, cell)
+    # print(raw_atoms, relax, spins)
 
     # check if we can reorganize the indices
-    if recover_indices and len(comment_data.indices) == len(raw_atoms):
-        raw_atoms = reorder(raw_atoms, comment_data.indices)
-        relax = reorder(relax, comment_data.indices)
-        spins = reorder(spins, comment_data.indices)
+    # if recover_indices and len(comment_data.indices) == len(raw_atoms):
+    #     raw_atoms = reorder(raw_atoms, comment_data.indices)
+    #     relax = reorder(relax, comment_data.indices)
+    #     spins = reorder(spins, comment_data.indices)
 
-    atoms = Atoms()
-    atoms.cell = cell
-    if len(comment_data.pbc_list):
-        atoms.set_pbc(comment_data.pbc_list)
+    # atoms = Atoms()
+    # atoms.cell = cell
+    # if len(comment_data.pbc_list):
+    #     atoms.set_pbc(comment_data.pbc_list)
 
-    for atom in raw_atoms:
-        atoms.append(atom)
+    # for atom in raw_atoms:
+    #     atoms.append(atom)
 
-    atoms.set_initial_magnetic_moments(spins)
-    if recover_constraints:
-        constraints = constraints_from_relax(relax)
-        atoms.set_constraint(constraints)
-    return atoms
+    # atoms.set_initial_magnetic_moments(spins)
+    # if recover_constraints:
+    #     constraints = constraints_from_relax(relax)
+    #     atoms.set_constraint(constraints)
+    # return atoms
 
-
-def write_ion(
-    fileobj,
-    atoms: Atoms,
-    pseudo_dir=None,
-    scaled=True,
-    add_constraints=False,
-    copy_psp=True,
-    comment="",
+@writer
+def _write_ion(
+        fileobj,
+        data_dict,
 ):
     """
-    Writes an atoms object to an ion file. Cell, latvec, and PBC information is
-    written to comments in the header, since this information is not recorded
-    natively in the ion file format.
+    Writes the ion file content from the atom_dict
 
-    pseudo_dir specifies the pseudopotential directory. It will fall back to the
-    environment variable $SPARC_PSP_PATH if none is specified.
+    Please note this is not a Atoms-compatible function!
 
-    scaled controls whether the atoms' positions are written in COORD or
-    COORD_FRAC blocks
+    The data_dict takes similar format as _read_ion
 
-    add_constraints controlls whether relax constraints are written to the file
-
-    copy_psp controls whether pseudopotential files are copied from the
-    pseudopotential directory to the cwd, or saved in the ion file as a path
-
-    comment allows an arbitrary comment to be written at the end of the header
-
+    Basically, we want to ensure
+    data_dict = _read_ion("some.ion")
+    _write_ion("some.ion", data_dict)
+    shows the same format
     """
-    env_pseudo = os.environ.get("SPARC_PSP_PATH", "")
-    for val in [pseudo_dir, env_pseudo]:
-        if val and os.path.isdir(val):
-            pseudo_dir = val
-            break
-    else:
-        # loop-else runs if loop doesn't break
-        pseudo_dir = ""
-        warnings.warn(
-            "no valid value given for pseudo_dir. Explicitly set the argument or define the environment variable $SPARC_PSP_PATH to ensure your output references valid pseudopotential files"
-        )
+    if "ion_atom_blocks" not in data_dict:
+        raise ValueError("Must provide a data-section in the data_dict (blocks of atomic information)")
 
-    relax = (
-        relax_from_all_constraints(atoms.constraints, len(atoms))
-        if add_constraints
-        else []
-    )
+    comments = data_dict.get("ion_comments", "")
+    banner = "Ion File Generated By SPARC ASE Calculator"
+    if len(comments) == 0:
+        comments = ["Input File Generated By SPARC ASE Calculator"]
+    elif "ASE" not in comments[0]:
+        comments = [banner] + comments
+    
+    for line in comments:
+        fileobj.write(f"# {line}\n")
+    fileobj.write("\n")
+    blocks = data_dict["ion_atom_blocks"]
+    for block in blocks:
+        for key in ["ATOM_TYPE", "N_TYPE_ATOM", "PSEUDO_POT", "COORD_FRAC", "COORD", "RELAX"]:
+            val = block.get(key, None)
+            print(key, val)
+            if (key not in ["RELAX", "COORD", "COORD_FRAC"]) and (val is None):
+                raise ValueError(f"Key {key} is not provided! Abort writing ion file")
+            # TODO: change the API version
+            if val is None:
+                continue
+            
+            val_string = defaultAPI.convert_value_to_string(key, val)
+            # print(val_string)
+            # TODO: make sure 1 line is accepted
+            # TODO: write pads to vector lines
+            if (val_string.count("\n") > 0) or (key in ["COORD_FRAC", "COORD", "RELAX"]):
+                output = f"{key}:\n{val_string}\n"
+            else:
+                output = f"{key}: {val_string}\n"
+            fileobj.write(output)
+            # TODO: check extra keys
+            # TODO: how to handle multiple psp files?
+        # Write a split line
+        # TODO: do we need to distinguish the last line?
+        fileobj.write("\n")
+    return
+    
 
-    grouped_atoms = {}  # group by atom type
-    for atom in atoms:
-        grouped_atoms.setdefault(atom.symbol, []).append(atom)
+    
+    # env_pseudo = os.environ.get("SPARC_PSP_PATH", "")
+    # for val in [pseudo_dir, env_pseudo]:
+    #     if val and os.path.isdir(val):
+    #         pseudo_dir = val
+    #         break
+    # else:
+    #     # loop-else runs if loop doesn't break
+    #     pseudo_dir = ""
+    #     warnings.warn(
+    #         "no valid value given for pseudo_dir. Explicitly set the argument or define the environment variable $SPARC_PSP_PATH to ensure your output references valid pseudopotential files"
+    #     )
 
-    # header
-    fileobj.write("# Input File Generated By SPARC ASE Calculator #\n")
-    fileobj.write(format_cell(atoms.cell) + "\n")
-    fileobj.write(format_latvec(atoms.cell) + "\n")
-    if atoms.pbc is not None:
-        fileobj.write(format_pbc(atoms.pbc) + " \n")
-    fileobj.write("# " + comment + "\n\n\n")
+    # relax = (
+    #     relax_from_all_constraints(atoms.constraints, len(atoms))
+    #     if add_constraints
+    #     else []
+    # )
 
-    # body
-    directory = os.path.dirname(fileobj.name)
-    for element, block_atoms in sorted(grouped_atoms.items()):
-        try:
-            pseudo_path = find_pseudo_path(element, pseudo_dir)
-            if copy_psp:
-                copy_psp(pseudo_path, directory)
-                pseudo_path = os.path.basename(pseudo_path)
-        except:
-            pseudo_path = element + ".pot"
-            warnings.warn(
-                "No pseudopotential detected for " + element + ". "
-                "Using generic filename (" + pseudo_path + "). The pseudopotential "
-                " must be added manually for SPARC to execute successfully."
-            )
-        block_string = format_atom_block(
-            block_atoms, relax=relax, scaled=scaled, pseudo_path=pseudo_path
-        )
-        fileobj.write(f"{block_string}\n\n\n")
+    # grouped_atoms = {}  # group by atom type
+    # for atom in atoms:
+    #     grouped_atoms.setdefault(atom.symbol, []).append(atom)
 
+    # # header
+    # fileobj.write("# Input File Generated By SPARC ASE Calculator #\n")
+    # fileobj.write(format_cell(atoms.cell) + "\n")
+    # fileobj.write(format_latvec(atoms.cell) + "\n")
+    # if atoms.pbc is not None:
+    #     fileobj.write(format_pbc(atoms.pbc) + " \n")
+    # fileobj.write("# " + comment + "\n\n\n")
 
-def strip_comments(rawtext):
-    stripped = []
-    comments = []
-    for line in rawtext.splitlines():
-        data, comment = bisect_and_strip(line, "#")
-        if data:
-            stripped.append(data)
-        if comment:
-            comments.append(comment)
-    return stripped, comments
+    # # body
+    # directory = os.path.dirname(fileobj.name)
+    # for element, block_atoms in sorted(grouped_atoms.items()):
+    #     try:
+    #         pseudo_path = find_pseudo_path(element, pseudo_dir)
+    #         if copy_psp:
+    #             copy_psp(pseudo_path, directory)
+    #             pseudo_path = os.path.basename(pseudo_path)
+    #     except:
+    #         pseudo_path = element + ".pot"
+    #         warnings.warn(
+    #             "No pseudopotential detected for " + element + ". "
+    #             "Using generic filename (" + pseudo_path + "). The pseudopotential "
+    #             " must be added manually for SPARC to execute successfully."
+    #         )
+    #     block_string = format_atom_block(
+    #         block_atoms, relax=relax, scaled=scaled, pseudo_path=pseudo_path
+    #     )
+    #     fileobj.write(f"{block_string}\n\n\n")
 
 
 CommentData = namedtuple("CommentData", "cell indices pbc_list")
@@ -200,25 +241,6 @@ def read_comments(comments) -> CommentData:
 
     return CommentData(cell=cell, indices=indices, pbc_list=pbc_list)
 
-
-def read_atom_block(block):
-    block_dict = {}
-    multiline_key = ""
-    for line in block:
-        if ":" not in line:
-            # no key, assume multiline value
-            block_dict[multiline_key].append(line.strip())
-            continue
-        key, value = bisect_and_strip(line, ":")
-        if key and value:
-            block_dict[key] = value
-        elif key:
-            # no value, assume that this key has a list of values
-            # in the following lines
-            block_dict[key] = []
-            multiline_key = key
-    validate_atom_block(block_dict)
-    return block_dict
 
 
 NativeData = namedtuple("NativeData", "atoms relax spins")
@@ -256,13 +278,7 @@ def process_atom_blocks(blocks, cell) -> NativeData:
     return NativeData(atoms=atoms, relax=relax, spins=spins)
 
 
-def bisect_and_strip(text, delimiter):
-    """split string in 2 at first occurence of a character and remove whitespace
-    useful for separating comments from data, keys from values, etc.
-    """
-    # wrap around to len(text) if not found (-1)
-    index = text.find(delimiter) % (len(text) + 1)
-    return text[:index].strip(), text[index + len(delimiter) :].strip()
+
 
 
 def read_lat_array(lines):
