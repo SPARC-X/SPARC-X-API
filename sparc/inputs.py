@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from warnings import warn
 import numpy as np
+from io import StringIO
 
 curdir = Path(__file__).parent
 # TODO: must clean the api directory
@@ -101,7 +102,7 @@ class SparcInputs:
             else:
                 try:
                     arr = np.asarray(input)
-                    if (arr.dtype != int) and ("integer" in dtype):
+                    if (arr.dtype not in (int, bool)) and ("integer" in dtype):
                         warn(
                             (
                                 f"Input {input} for parameter {parameter} it not strictly intr. "
@@ -116,6 +117,11 @@ class SparcInputs:
 
     def convert_string_to_value(self, parameter, string):
         """Convert a string input into valie parameter type"""
+
+        is_input_string = isinstance(string, str)
+        if not is_input_string:
+            raise TypeError("Please give a string input!")
+
         if not self.validate_input(parameter, string):
             raise ValueError(f"{string} is not a valid input for {parameter}")
 
@@ -142,3 +148,47 @@ class SparcInputs:
             raise ValueError(f"Unsupported type {dtype}")
 
         return value
+
+    def convert_value_to_string(self, parameter, value):
+        """Convert a valid value for the paramter to string for writing"""
+
+        is_input_string = isinstance(value, str)
+        if not self.validate_input(parameter, value):
+            raise ValueError(f"{value} is not a valid input for {parameter}")
+
+        # Do not conver, just return the non-padded string
+        if is_input_string:
+            return value.strip()
+
+        pdict = self.get_parameter_dict(parameter)
+        dtype = pdict["type"]
+        allow_bool_input = pdict.get("allow_bool_input", False)
+
+        if dtype == "string":
+            string = str(value).strip()
+        elif dtype == "integer":
+            # Be aware of bool values!
+            string = str(int(value))
+        elif dtype == "double":
+            string = "{:g}".format(float(value))
+        elif dtype in ("integer array", "double array"):
+            string = _array_to_string(value, dtype)
+        else:
+            # should not happen since validate_input has gatekeeping
+            raise ValueError(f"Unsupported type {dtype}")
+
+        return string
+
+
+def _array_to_string(arr, format):
+    arr = np.array(arr)
+    if arr.ndim == 1:
+        arr = arr.reshape(1, -1)
+    buf = StringIO()
+    if format in ("integer array", "integer"):
+        fmt = "%d"
+    elif format in ("double array", "double"):
+        fmt = "%g"
+    np.savetxt(buf, arr, delimiter=" ", fmt=fmt, header="", footer="", newline="\n")
+    # Return the string output of the buffer with leading/trailing whitespaces removed
+    return buf.getvalue().strip()

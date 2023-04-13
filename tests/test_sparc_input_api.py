@@ -83,3 +83,28 @@ def test_api_convert_string():
     latvec = sis.convert_string_to_value("LATVEC", "1.0 0 0\n0 1.0 0\n0 0 1.0")
     print("LATVEC", latvec)
     assert np.isclose(latvec, np.eye(3)).all()
+
+
+def test_api_write_string():
+    """Test if writing string from value makes sense"""
+    from sparc.inputs import SparcInputs
+    import numpy as np
+
+    sis = SparcInputs()
+    # Integer
+    ref_s = "0"
+    assert sis.convert_value_to_string("CALC_PRES", 0) == ref_s
+    assert sis.convert_value_to_string("CALC_PRES", "0 ") == ref_s
+    assert sis.convert_value_to_string("CALC_PRES", False) == ref_s
+    # Double
+    assert float(sis.convert_value_to_string("ELEC_TEMP", 200)) == 200
+    assert float(sis.convert_value_to_string("ELEC_TEMP", 200.0)) == 200
+    assert float(sis.convert_value_to_string("ELEC_TEMP", -200.0)) == -200
+    # Integer array
+    ref_s = "0 0 0"
+    assert sis.convert_value_to_string("RELAX", [0, 0, 0]) == ref_s
+    assert sis.convert_value_to_string("RELAX", [False, False, False]) == ref_s
+    # TODO: exceptions for cases where int cannot be presented as bool!
+    # Double array
+    latvec_s = sis.convert_value_to_string("LATVEC", np.eye(3))
+    assert latvec_s.count("\n") == 2
