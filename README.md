@@ -6,8 +6,47 @@ sparc-dft-api is an ASE based python wrapper for the density functional theory (
 
 The current sparc python API is under heavy re-construction. The below are the on-going API changes
 
+## A bundled file format
 
-# Allowable Arguments
+Since all the SPARC in- / output files exist in a directory, the new API treats the directory as a bundle format `.sparc`. Installing `sparc` and import will allow ase to discover this file format
+
+```python
+import sparc
+from ase.io.sparc import read_sparc, write_sparc
+```
+
+The format will be automatically discovered via `ase.io.read` and `ase.io.write` methods.
+```python
+import sparc
+from ase.io import read, write
+
+atoms = read("test.sparc", format="sparc")
+```
+
+Currently the read of single `.ion` and `.inpt` files are implemented.
+
+## Behind the bundle file format
+
+Instead of parsing individual .ion and .inpt files, 
+the bundle format will gather information from all files and check if atomic information can be
+retrieved.
+
+New file-specific parsers will exist in `sparc.sparc_parsers.<format>` files. 
+Each `_read_<format>` method will return the structured dictionary of the files.
+
+Similarly, `_write_<format>` takes the structured dictionary as input and write the file
+using only relevant data.
+
+Implementations:
+- [x] ion
+- [x] inpt
+- [ ] output
+- [ ] geopt
+- [ ] aimd
+- [ ] multiple occurance
+- [ ] Other files? Eigen? Grid results? 
+  
+## Allowable Arguments
 
 `sparc` Python-API are directly parsed from the `SPARC` c-code's documentation LaTeX files. 
 We provide a document parser to extract the allowed parameters in the current version of `SPARC`.
