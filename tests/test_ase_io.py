@@ -35,11 +35,14 @@ def test_sparc_fake_write(monkeypatch):
     """
 
     def fake_write_sparc(atoms, filename, **kwargs):
+        print("I'm the fake writer")
         pass
 
     import sparc
+    from ase.io import sparc as _sparc
 
     monkeypatch.setattr(sparc, "write_sparc", fake_write_sparc)
+    monkeypatch.setattr(_sparc, "write_sparc", fake_write_sparc)
     from ase.build import bulk
 
     al = bulk("Al")
@@ -51,15 +54,20 @@ def test_sparc_fake_read(monkeypatch, fs):
     to makesure the ase.io register works
     """
     import sparc
+    from ase.io import sparc as _sparc
 
     def fake_read_sparc(filename, *args, **kwargs):
+        print("I'm the fake reader")
         from ase.build import bulk
 
         return bulk("Al")
 
     monkeypatch.setattr(sparc, "read_sparc", fake_read_sparc)
+    monkeypatch.setattr(_sparc, "read_sparc", fake_read_sparc)
     from ase.io import read
 
     fs.create_dir("test.sparc")
+    # With current ase version it is not possible to omit the "sparc" part
+    # as it always detects the directory method to bundletrajectory
     atoms = read("test.sparc", format="sparc")
-    # assert atoms.get_chemical_formula() == "Al"
+    assert atoms.get_chemical_formula() == "Al"

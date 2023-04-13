@@ -21,12 +21,14 @@ from pathlib import Path
 # @reader
 def read_sparc(filename, *args, **kwargs):
     # raise NotImplementedError
+    print("I'm the real writer")
     pass
 
 
 # @writer
 def write_sparc(filename, atoms, label=None, sort=None, copy_psp=True, **kwargs):
     # raise NotImplementedError
+    print("I'm the real writer")
     pass
 
 
@@ -66,7 +68,7 @@ def register_ase_io_sparc(name="sparc"):
         return
     desc = "Bundled calculation directory for SPARC " "quantum chemistry code"
 
-    # Step 2: dynamically load io
+    # Step 1: patch the ase.io.sparc module
     try:
         entry_points = next(
             ep for ep in pkg_resources.iter_entry_points("ase.io") if ep.name == "sparc"
@@ -82,14 +84,13 @@ def register_ase_io_sparc(name="sparc"):
         )
         return
 
-    # Step 3: patch system modules
     sys.modules[f"ase.io.{name}"] = _monkey_mod
 
-    # Step 1: define a new format
+    # Step 2: define a new format
     F(
         name,
         desc=desc,
-        code="1S",
+        code="1S",  # Currently make only 1 image
         ext="sparc",
     )
 
@@ -102,13 +103,6 @@ def register_ase_io_sparc(name="sparc"):
             )
         )
         return
-    # Monkey patch the read and write functions!
-    f = ioformats[name]
-    # f_r, f_w = f.read, f.write
-    # f.read = read_sparc
-    # f.write = write_sparc
-    # f.old_read = f_r
-    # f.old_write = f_w
 
     # TODO: remove print options as it may be redundant
     print("Successfully registered sparc format with ase.io!")
