@@ -19,16 +19,18 @@ from ..inputs import SparcInputs
 
 defaultAPI = SparcInputs()
 
+
 @reader
 def _read_inpt(fileobj):
     contents = fileobj.read()
     # label = get_label(fileobj, ".ion")
     data, comments = strip_comments(contents)
     # We do not read the cell at this time!
-    
+
     # find the index for all atom type lines. They should be at the top of their block
     inpt_blocks = read_block_input(data, validator=defaultAPI)
     return {"inpt_blocks": inpt_blocks, "inpt_comments": comments}
+
 
 @writer
 def _write_inpt(fileobj, data_dict):
@@ -48,10 +50,42 @@ def _write_inpt(fileobj, data_dict):
     for key, val in blocks.items():
         # TODO: can we add a multiline argument?
         val_string = defaultAPI.convert_value_to_string(key, val)
-        if (val_string.count("\n") > 0) or (key in ["LATVEC", ]):
+        if (val_string.count("\n") > 0) or (
+            key
+            in [
+                "LATVEC",
+            ]
+        ):
             output = f"{key}:\n{val_string}\n"
         else:
             output = f"{key}: {val_string}\n"
         fileobj.write(output)
     return
-    
+
+
+def _inpt_cell_to_ase_cell(inpt_blocks):
+    """Convert the inpt cell convention to a real cell (in ASE Angstrom unit)
+
+    Arguments:
+    inpt_blocks: an already validated inpt file blocks dict
+                 (i.e. parsed by _read_inpt)
+    """
+    if ("CELL" in inpt_blocks) and ("LATVEC_SCALE" in inpt_blocks):
+        # TODO: customize the exception class
+        # TODO: how do we convert the rule from doc?
+        raise ValueError("LATVEC_SCALE and CELL cannot be specified simultaneously!")
+
+    if "CELL" in inpt_blocks:
+        cell = np.eye(inpt_blocks["CELL"]) * Bohr
+    elif "LATVEC" in inpt_blocks:
+        lat_array = np.array(inpt_blocks["LATVEC"]) * Bohr
+        if "LATVEC_SCALE" in inpt_blocks:
+            scale = inpt_blocks["LATVEC_SCALE"]
+            # TODO: Is this correct?
+            cell = (lat_array.T * scale).T
+        else:
+            cell = lat_array
+    else:
+        # TODO: customize exception
+        raise KeyError("The inpt file does not have a definition for cell!")
+    return cell

@@ -122,7 +122,7 @@ class SparcInputs:
         if isinstance(string, list):
             string = [s.strip() for s in string]
             string = "\n".join(string)
-        
+
         is_input_string = isinstance(string, str)
         if not is_input_string:
             raise TypeError("Please give a string input!")
