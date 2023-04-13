@@ -55,6 +55,7 @@ def _read_ion(fileobj):
 
     return {"ion_atom_blocks": atom_blocks, "ion_comments": comments}
 
+
 @writer
 def _write_ion(
     fileobj,
@@ -130,8 +131,8 @@ def _ion_coord_to_ase_pos(ion_blocks, cell=None):
     cell: a unit cell in ASE-unit (i.e. parsed from inpt._inpt_cell_to_ase_cell)
     """
     treated_blocks = []
-    can_have_coord_frac = (cell is not None)
-        
+    can_have_coord_frac = cell is not None
+
     for block in ion_blocks:
         dup_block = block.copy()
         if ("COORD" in block.keys()) and ("COORD_FRAC" in block.keys()):
@@ -148,7 +149,6 @@ def _ion_coord_to_ase_pos(ion_blocks, cell=None):
         dup_block["_ase_positions"] = coord
         treated_blocks.append(dup_block)
     return treated_blocks
-        
 
 
 # def read_lat_array(lines):
@@ -189,6 +189,7 @@ def _ion_coord_to_ase_pos(ion_blocks, cell=None):
 #         assert key not in block or natoms == len(block[key])
 
 #########TO be implememted######################
+
 
 def reorder(original, order):
     res = original.copy()
