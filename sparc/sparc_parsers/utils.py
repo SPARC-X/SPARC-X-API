@@ -14,3 +14,12 @@ def strip_comments(rawtext):
         if comment:
             comments.append(comment)
     return stripped, comments
+
+
+def bisect_and_strip(text, delimiter):
+    """split string in 2 at first occurence of a character and remove whitespace
+    useful for separating comments from data, keys from values, etc.
+    """
+    # wrap around to len(text) if not found (-1)
+    index = text.find(delimiter) % (len(text) + 1)
+    return text[:index].strip(), text[index + len(delimiter) :].strip()

@@ -35,7 +35,12 @@ def test_api_validate():
     assert sis.validate_input("ELEC_TEMP", np.float64(200.0))
     # Integer array
     assert sis.validate_input("RELAX", "0 0 0")
+    assert sis.validate_input("RELAX", "   0 0 0\n   0   0   0   ")
     assert sis.validate_input("RELAX", [0, 0, 0])
+    # TODO: make sure this case doesn't throw warning
+    assert sis.validate_input("RELAX", ["0 0 0", "0 0 0"])
+    # Non-padded
+    assert sis.validate_input("RELAX", [" 0    0  0", " 0 0   0 "])
     assert sis.validate_input("RELAX", np.array([0, 0, 0]))
     assert sis.validate_input("RELAX", np.array([True, False, True]))
     # TODO: exceptions for cases where int cannot be presented as bool!
@@ -78,6 +83,8 @@ def test_api_convert_string():
     print("relax,", relax_arr)
     assert len(relax_arr) == 3
     assert all([not p for p in relax_arr])
+    relax_arr2 = sis.convert_string_to_value("RELAX", ["0 0 0", "0 0 0"])
+    assert relax_arr2.ndim == 2
     # TODO: exceptions for cases where int cannot be presented as bool!
     # Double array
     latvec = sis.convert_string_to_value("LATVEC", "1.0 0 0\n0 1.0 0\n0 0 1.0")

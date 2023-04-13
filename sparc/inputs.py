@@ -96,7 +96,7 @@ class SparcInputs:
                         )
                     )
                 try:
-                    arr = np.genfromtxt(input.splitlines(), delimiter=" ")
+                    arr = np.genfromtxt(input.splitlines(), dtype=float)
                 except Exception:
                     arr = np.array(0.0)
             else:
@@ -118,6 +118,11 @@ class SparcInputs:
     def convert_string_to_value(self, parameter, string):
         """Convert a string input into valie parameter type"""
 
+        # Special case, the string may be a multiline string-array!
+        if isinstance(string, list):
+            string = [s.strip() for s in string]
+            string = "\n".join(string)
+        
         is_input_string = isinstance(string, str)
         if not is_input_string:
             raise TypeError("Please give a string input!")
@@ -138,11 +143,11 @@ class SparcInputs:
         elif dtype == "double":
             value = float(string)
         elif dtype == "integer array":
-            value = np.genfromtxt(string.splitlines(), delimiter=" ", dtype=int)
+            value = np.genfromtxt(string.splitlines(), dtype=int)
             if allow_bool_input:
                 value = value.astype(bool)
         elif dtype == "double array":
-            value = np.genfromtxt(string.splitlines(), delimiter=" ", dtype=float)
+            value = np.genfromtxt(string.splitlines(), dtype=float)
         else:
             # should not happen since validate_input has gatekeeping
             raise ValueError(f"Unsupported type {dtype}")
