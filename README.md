@@ -2,6 +2,88 @@
 
 sparc-dft-api is an ASE based python wrapper for the density functional theory (DFT) code SPARC. This wrapper requires <ins>Python3</ins>, and is *currently in active development and alpha testing*, so please use it with caution and report any errors in the "Issues" and/or submit pull requests with patches to fix issues as needed.
 
+# Work-in-progress
+
+The current sparc python API is under heavy re-construction. The below are the on-going API changes
+
+
+# Allowable Arguments
+
+`sparc` Python-API are directly parsed from the `SPARC` c-code's documentation LaTeX files. 
+We provide a document parser to extract the allowed parameters in the current version of `SPARC`.
+
+```
+python -m sparc.docparser <root-to-sparc-cpde>/doc/.LaTeX
+```
+
+which generates a json file `parameters.json` for the current API. 
+We also keep track of the latest API under `sparc/sparc_json_api/parameters.json`.
+
+We provide a API object `sparc.inputs.SparcInputs` for loading and validating parameters.
+
+Use it like this:
+1. Load the latest SPARC api
+```python
+from sparc.inputs import SparcInputs
+sis = SparcInputs()
+print(sis.sparc_version)
+```
+
+Output `2023.04.11`
+
+2. Check if a variable is available
+```python
+from sparc.inputs import SparcInputs
+sis = SparcInputs()
+# A typo in 
+assert "CALC_PRESSURE" not in sis.parameters
+```
+
+3. Convert string --> value and vice versa
+```python
+from sparc.inputs import SparcInputs
+sis = SparcInputs()
+# A typo in 
+latvec = sis.convert_string_to_value("LATVEC", "1.0 0 0\n 0 1.0 0\n 0 0 1.0")
+latvec_string = sis.convert_value_to_string("LATVEC", latvec)
+print(latvec)
+print(latvec_string)
+```
+
+4. Provide help info for a given parameter
+```python
+from sparc.inputs import SparcInputs
+sis = SparcInputs()
+print(sis.help_info("LATVEC"))
+```
+
+Output:
+```
+symbol: LATVEC
+category: system
+type: double array
+unit: No unit
+default: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+example: LATVEC: 0.5 0.5 0.0
+0.0 0.5 0.5
+0.5 0.0 0.5
+description: A set of three vectors in row major order specifying the lattice vectors of the simulation domain (CELL).
+remark: 
+allow_bool_input: False
+```
+
+- [ ] Track the SPARC api for different versions 
+- [ ] Allow `SparcInputs` loading different versions
+- [ ] Allow calculator match the API version when loading the sparc binary
+ 
+
+
+
+# OLD API
+
+The old api specifications are from Ben Comer @GaTech.
+
+
 ## Installation:
 The following command should install the package:
 
