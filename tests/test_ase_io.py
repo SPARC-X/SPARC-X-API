@@ -28,6 +28,7 @@ def test_import_order2():
     assert hasattr(sparc, "read_sparc")
     assert hasattr(sparc, "write_sparc")
 
+
 def test_sparc_fake_write_exp(monkeypatch):
     """Baseline test. Make a fake write_sparc method
     to makesure the sparc.write_sparc works
@@ -99,9 +100,6 @@ def test_sparc_fake_read_exp(monkeypatch, fs):
     atoms = read_sparc(Path("test.sparc"), format="sparc")
     assert atoms.get_chemical_formula() == "Al"
 
-    
-
-
 
 def test_sparc_fake_read(monkeypatch, fs):
     """Baseline test. Make a fake read_sparc method
@@ -129,5 +127,3 @@ def test_sparc_fake_read(monkeypatch, fs):
 
     atoms = read(Path("test.sparc"), format="sparc")
     assert atoms.get_chemical_formula() == "Al"
-
-    

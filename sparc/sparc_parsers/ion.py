@@ -4,6 +4,8 @@ Created on Thu Oct 18 14:16:21 2018
 
 Ben Comer (Georgia Tech)
 
+This file has been heavily modified since SPARC 0.1
+
 TODO: more descriptions about this file io parser
 """
 import shutil
@@ -17,41 +19,54 @@ from ase import Atoms, Atom
 from ase.units import Bohr
 from ase.constraints import FixAtoms, FixedLine, FixedPlane
 
+# Safe wrappers for both string and fd
+from ase.utils import reader, writer
 
-def read_ion(fileobj, recover_indices=True, recover_constraints=True):
+from .utils import get_label
+
+
+@reader
+def _read_ion(fileobj, recover_indices=True, recover_constraints=True):
     """
+    Read information from the .ion file. Note, this method does not return an atoms object,
+    but rather return a dict. Thus the label option is not necessary to keep
+
+
     Reads an ion file. Because some of the information necessary to create
     an atoms object is found in the .inpt file, this function also attemtps to read
     that as a source of data. If the file is not found or the information is invalid,
     it will look for it in the comments of the ion file, as written.
     """
     contents = fileobj.read()
-    label = fileobj.name.rsplit(".ion", 1)[0]
+    label = get_label(fileobj, ".ion")
     stripped, comments = strip_comments(contents)
+    print(stripped, comments)
 
     try:
         comment_data = read_comments(comments)
     except Exception as e:
         warnings.warn(f"failed to read comment data: {e}")
         comment_data = CommentData(cell=[], indices=[], pbc_list=[])
+    print(comment_data)
 
-    try:
-        cell = read_inpt_cell(label + ".inpt")
-    except Exception as e:
-        warnings.warn(f"Failed to read inpt file: {e}")
-        cell = comment_data.cell
+    # try:
+    #     cell = read_inpt_cell(label + ".inpt")
+    # except Exception as e:
+    #     warnings.warn(f"Failed to read inpt file: {e}")
+    #     cell = comment_data.cell
 
-    if len(cell) == 0:
-        cell = np.zeros((3, 3))
-        warnings.warn(
-            "No lattice vectors were found in either the .inpt"
-            " file or in the comments of the .ion file. Thus no"
-            " unit cell was set for the resulting atoms object. "
-            "Use the output atoms at your own risk"
-        )
+    # if len(cell) == 0:
+    #     cell = np.zeros((3, 3))
+    #     warnings.warn(
+    #         "No lattice vectors were found in either the .inpt"
+    #         " file or in the comments of the .ion file. Thus no"
+    #         " unit cell was set for the resulting atoms object. "
+    #         "Use the output atoms at your own risk"
+    #     )
 
     # find the index for all atom type lines. They should be at the top of their block
     atom_type_bounds = [i for i, x in enumerate(stripped) if "ATOM_TYPE" in x]
+    print(atom_type_bounds)
     # add end of list to bound last block
     atom_type_bounds.append(len(stripped))
 
@@ -60,27 +75,29 @@ def read_ion(fileobj, recover_indices=True, recover_constraints=True):
         read_atom_block(stripped[start:end])
         for start, end in zip(atom_type_bounds[:-1], atom_type_bounds[1:])
     ]
+    print(atom_blocks)
 
-    raw_atoms, relax, spins = process_atom_blocks(atom_blocks, cell)
+    # raw_atoms, relax, spins = process_atom_blocks(atom_blocks, cell)
+    # print(raw_atoms, relax, spins)
 
     # check if we can reorganize the indices
-    if recover_indices and len(comment_data.indices) == len(raw_atoms):
-        raw_atoms = reorder(raw_atoms, comment_data.indices)
-        relax = reorder(relax, comment_data.indices)
-        spins = reorder(spins, comment_data.indices)
+    # if recover_indices and len(comment_data.indices) == len(raw_atoms):
+    #     raw_atoms = reorder(raw_atoms, comment_data.indices)
+    #     relax = reorder(relax, comment_data.indices)
+    #     spins = reorder(spins, comment_data.indices)
 
-    atoms = Atoms()
-    atoms.cell = cell
-    if len(comment_data.pbc_list):
-        atoms.set_pbc(comment_data.pbc_list)
+    # atoms = Atoms()
+    # atoms.cell = cell
+    # if len(comment_data.pbc_list):
+    #     atoms.set_pbc(comment_data.pbc_list)
 
-    for atom in raw_atoms:
-        atoms.append(atom)
+    # for atom in raw_atoms:
+    #     atoms.append(atom)
 
-    atoms.set_initial_magnetic_moments(spins)
-    if recover_constraints:
-        constraints = constraints_from_relax(relax)
-        atoms.set_constraint(constraints)
+    # atoms.set_initial_magnetic_moments(spins)
+    # if recover_constraints:
+    #     constraints = constraints_from_relax(relax)
+    #     atoms.set_constraint(constraints)
     return atoms
 
 
@@ -161,18 +178,6 @@ def write_ion(
             block_atoms, relax=relax, scaled=scaled, pseudo_path=pseudo_path
         )
         fileobj.write(f"{block_string}\n\n\n")
-
-
-def strip_comments(rawtext):
-    stripped = []
-    comments = []
-    for line in rawtext.splitlines():
-        data, comment = bisect_and_strip(line, "#")
-        if data:
-            stripped.append(data)
-        if comment:
-            comments.append(comment)
-    return stripped, comments
 
 
 CommentData = namedtuple("CommentData", "cell indices pbc_list")

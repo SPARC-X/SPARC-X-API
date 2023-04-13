@@ -258,8 +258,10 @@ class SPARCDocParser(object):
         doc = {}
         doc["sparc_version"] = self.version
         doc["categories"] = self.parameter_categories
-        doc["parameters"] = sorted(self.parameters.items())
-        doc["other_parameters"] = sorted(self.other_parameters.items())
+        doc["parameters"] = {k: v for k, v in sorted(self.parameters.items())}
+        doc["other_parameters"] = {
+            k: v for k, v in sorted(self.other_parameters.items())
+        }
         doc["data_types"] = list(set([p["type"] for p in self.parameters.values()]))
         json_string = json.dumps(doc, indent=indent)
         return json_string
