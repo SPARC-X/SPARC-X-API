@@ -31,13 +31,14 @@ jobs:
       run: |
         mamba install -c conda-forge ase>=3.22 pymatgen flake8 pytest
         mamba install -c alchem0x2a sparc
+        pip install pyfakefs
     - name: Install package
       run: |
         pip install -e .
     - name: Test with pytest
       run: |
         cd tests
-        python test.py
+        python -m pytest -svv ./
     - name: Lint with flake8
       run: |
         echo $CONDA_PREFIX
