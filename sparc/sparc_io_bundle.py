@@ -27,7 +27,7 @@ import tarfile
 
 from .sparc_parsers.ion import _read_ion, _write_ion, _ion_coord_to_ase_pos
 from .sparc_parsers.inpt import _read_inpt, _write_inpt, _inpt_cell_to_ase_cell
-
+from .inputs import SparcInputs
 
 class SparcBundle:
     """Provide access to a calculation folder of SPARC as a simple bundle
@@ -88,6 +88,24 @@ class SparcBundle:
         atoms.pbc = True
         return atoms
 
+    def _write_ion_and_inpt(self, atoms=None, label=None, direct=False, sort=None, ignore_constraints=False, wrap=False,
+                            # Below are the parameters from v1
+                            # scaled -> direct, ignore_constraints --> not add_constraints
+                             scaled=False, add_constraints=True, copy_psp=True, comment="", input_parameters={}):
+        """Write the ion and inpt files to a bundle. This method only supports writing 1 image.
+        If input_parameters are empty, there will only be .ion writing the positions and .inpt writing a minimal cell information
+
+        """
+        atoms = self.atoms.copy() if atoms is None else atoms.copy()
+        
+
+    # def _determine_state(self):
+    #     """Determine the state of files inside the bundle according to the existence of files
+
+    #     1. .ion / .inpt only --> initial structure (no calc)
+    #     2. existing output file --> reading output has higher priority 
+    #     """
+
 
 def read_sparc(filename, *args, **kwargs):
     """Very simple PoC now"""
@@ -96,8 +114,10 @@ def read_sparc(filename, *args, **kwargs):
     return atoms
 
 
-def write_sparc(filename, atoms, label=None, sort=None, copy_psp=True, **kwargs):
-    pass
+def write_sparc(filename, atoms, **kwargs):
+    sb = SparcBundle(directory=filename)
+    sb._write_ion_and_inpt(atoms, **kwargs)
+    return
 
 
 def register_ase_io_sparc(name="sparc"):
