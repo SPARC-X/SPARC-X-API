@@ -1800,8 +1800,8 @@
   "TOL_POISSON": {
    "symbol": "TOL_POISSON",
    "label": "TOL_POISSON",
-   "type": "integer",
-   "default": null,
+   "type": "double",
+   "default": 0.00001,
    "unit": "No unit",
    "example": "TOL_POISSON: 1e-6",
    "description": "The tolerance on the norm of the relative residual for the Poisson equation.",

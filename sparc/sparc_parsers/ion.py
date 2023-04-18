@@ -151,6 +151,8 @@ def _ion_coord_to_ase_pos(ion_blocks, cell=None):
     return treated_blocks
 
 
+
+
 # def read_lat_array(lines):
 #     lat_array = []
 #     for lat_vec in lines[:3]:  # lattice vectors in next 3 lines

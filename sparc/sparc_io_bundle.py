@@ -82,8 +82,15 @@ class SparcBundle:
             positions = block["_ase_positions"]
             if positions.ndim == 1:
                 positions = positions.reshape(1, -1)
-            for pos in positions:
-                atoms.append(Atom(symbol=element, position=pos))
+            # Consider moving spins to another function
+            spins = block.get("SPIN", None)
+            if spins is None:
+                spins = np.zeros_like(positions)
+            for pos, spin in zip(positions, spins):
+                # TODO: What about charge?
+                atoms.append(Atom(symbol=element, position=pos, magmom=spin))
+        
+            
         # TODO: set pbc and relax
         atoms.pbc = True
         return atoms
