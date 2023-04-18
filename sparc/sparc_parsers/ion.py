@@ -22,7 +22,7 @@ from ase.constraints import FixAtoms, FixedLine, FixedPlane
 # Safe wrappers for both string and fd
 from ase.utils import reader, writer
 
-from .utils import get_label, strip_comments, bisect_and_strip, read_block_input
+from .utils import get_label, strip_comments, bisect_and_strip, read_block_input, make_reverse_mapping
 
 from ..inputs import SparcInputs
 
@@ -45,6 +45,7 @@ def _read_ion(fileobj):
     # label = get_label(fileobj, ".ion")
     data, comments = strip_comments(contents)
     # We do not read the cell at this time!
+    sort, resort = _read_sort_comment(comments)
 
     # find the index for all atom type lines. They should be at the top of their block
     atom_type_bounds = [i for i, x in enumerate(data) if "ATOM_TYPE" in x] + [len(data)]
@@ -53,7 +54,7 @@ def _read_ion(fileobj):
         for start, end in zip(atom_type_bounds[:-1], atom_type_bounds[1:])
     ]
 
-    return {"ion_atom_blocks": atom_blocks, "ion_comments": comments}
+    return {"ion_atom_blocks": atom_blocks, "ion_comments": comments, "sorting": {"sort": sort, "resort": resort}}
 
 
 @writer
@@ -151,7 +152,36 @@ def _ion_coord_to_ase_pos(ion_blocks, cell=None):
     return treated_blocks
 
 
+def _read_sort_comment(lines):
+    """Parse the atom sorting info from the comment lines
+    Format
 
+    ASE-SORT:
+    r_i r_j r_k ....
+    END ASE-SORT
+    where r_i etc are the indices in the original ASE atoms object
+    """
+    i = 0
+    resort = []
+    record = False
+    while i < len(lines):
+        line = lines[i]
+        key, value = bisect_and_strip(line, ":")
+        i += 1
+        if key == "ASE-SORT":
+            record = True
+        elif key == "END ASE-SORT":
+            record = False
+            break
+        elif record is True:
+            resort += list(map(int, line.strip().split(" ")))
+    if record:
+        warn("ASE atoms resort comment block is not properly formatted, this may cause data loss!")
+    sort = make_reverse_mapping(resort)
+    assert set(sort) == set(resort), "Sort and resort info are of different length!"
+    return sort, resort
+    
+    
 
 # def read_lat_array(lines):
 #     lat_array = []

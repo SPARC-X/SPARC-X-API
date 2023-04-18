@@ -61,3 +61,15 @@ def read_block_input(block, validator=None):
             val = validator.convert_string_to_value(key, val)
         block_dict[key] = val
     return block_dict
+
+def make_reverse_mapping(mapping):
+    """ Given a list of mapping, get its reverse mapping
+
+    For example:
+    mapping = [0, 2, 3, 1, 5, 4]
+    reverse = [0, 3, 1, 2, 5, 4]
+    """
+    reverse = [0] * len(mapping)
+    for i, j in enumerate(mapping):
+        reverse[j] = i
+    return reverse

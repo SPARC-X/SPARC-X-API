@@ -9,6 +9,10 @@
 # RELAX:
 # <xrelax> <yrelax> <zrelax>
 # ...
+# ASE-SORT:
+# 3 2
+# 1 0
+# END ASE-SORT
 
 ATOM_TYPE: Cu                 # atom type
 ATOMIC_MASS: 63.546           # atomic mass (amu)

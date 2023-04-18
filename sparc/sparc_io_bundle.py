@@ -27,6 +27,7 @@ import tarfile
 
 from .sparc_parsers.ion import _read_ion, _write_ion, _ion_coord_to_ase_pos
 from .sparc_parsers.inpt import _read_inpt, _write_inpt, _inpt_cell_to_ase_cell
+from .sparc_parsers.atoms import dict_to_atoms, atoms_to_dict
 from .inputs import SparcInputs
 
 class SparcBundle:
@@ -72,28 +73,8 @@ class SparcBundle:
         f_ion, f_inpt = self._indir(".ion"), self._indir(".inpt")
         ion_data = _read_ion(f_ion)
         inpt_data = _read_inpt(f_inpt)
-        ase_cell = _inpt_cell_to_ase_cell(inpt_data["inpt_blocks"])
-        new_atom_blocks = _ion_coord_to_ase_pos(ion_data["ion_atom_blocks"], ase_cell)
-        # Now the real thing to construct an atom object
-        atoms = Atoms()
-        atoms.cell = ase_cell
-        for block in new_atom_blocks:
-            element = block["ATOM_TYPE"]
-            positions = block["_ase_positions"]
-            if positions.ndim == 1:
-                positions = positions.reshape(1, -1)
-            # Consider moving spins to another function
-            spins = block.get("SPIN", None)
-            if spins is None:
-                spins = np.zeros_like(positions)
-            for pos, spin in zip(positions, spins):
-                # TODO: What about charge?
-                atoms.append(Atom(symbol=element, position=pos, magmom=spin))
-        
-            
-        # TODO: set pbc and relax
-        atoms.pbc = True
-        return atoms
+        merged_data = {**ion_data, **inpt_data}
+        return dict_to_atoms(merged_data)
 
     def _write_ion_and_inpt(self, atoms=None, label=None, direct=False, sort=None, ignore_constraints=False, wrap=False,
                             # Below are the parameters from v1
@@ -104,6 +85,7 @@ class SparcBundle:
 
         """
         atoms = self.atoms.copy() if atoms is None else atoms.copy()
+        
         
 
     # def _determine_state(self):
