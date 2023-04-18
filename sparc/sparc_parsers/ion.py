@@ -25,6 +25,7 @@ from ase.utils import reader, writer
 from .utils import get_label, strip_comments, bisect_and_strip, read_block_input, make_reverse_mapping
 
 from ..inputs import SparcInputs
+import textwrap
 
 defaultAPI = SparcInputs()
 
@@ -86,8 +87,23 @@ def _write_ion(
     elif "ASE" not in comments[0]:
         comments = [banner] + comments
 
+    # Handle the sorting mapping
+    # the line wrap is 80 words
+    if "sorting" in data_dict:
+        print(data_dict["sorting"])
+        resort = data_dict["sorting"].get("resort", [])
+        # Write resort information only when it's actually useful
+        if len(resort) > 0:
+            comments.append("ASE-SORT:")
+            index_lines = textwrap.wrap(" ".join(map(str, resort)), width=80)
+            comments.extend(index_lines)
+            comments.append("END ASE-SORT")
+            
+
     for line in comments:
         fileobj.write(f"# {line}\n")
+
+    
     fileobj.write("\n")
     blocks = data_dict["ion_atom_blocks"]
     for block in blocks:

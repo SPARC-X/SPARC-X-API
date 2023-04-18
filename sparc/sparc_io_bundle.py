@@ -8,6 +8,7 @@ ase.io.trajectory
 
 """
 import re
+import os
 
 import numpy as np
 
@@ -76,24 +77,28 @@ class SparcBundle:
         merged_data = {**ion_data, **inpt_data}
         return dict_to_atoms(merged_data)
 
-    def _write_ion_and_inpt(self, atoms=None, label=None, direct=False, sort=None, ignore_constraints=False, wrap=False,
+    def _write_ion_and_inpt(self, atoms=None, label=None, direct=False, sort=True, ignore_constraints=False, wrap=False,
                             # Below are the parameters from v1
                             # scaled -> direct, ignore_constraints --> not add_constraints
-                             scaled=False, add_constraints=True, copy_psp=True, comment="", input_parameters={}):
+                             scaled=False, add_constraints=True, copy_psp=True, comment="", input_parameters={}, **kwargs):
         """Write the ion and inpt files to a bundle. This method only supports writing 1 image.
         If input_parameters are empty, there will only be .ion writing the positions and .inpt writing a minimal cell information
 
         """
+        if self.mode != "w":
+            raise ValueError("Cannot write input files while sparc bundle is opened in read-only mode!")
+        os.makedirs(self.directory, exist_ok=True)
         atoms = self.atoms.copy() if atoms is None else atoms.copy()
-        
-        
-
-    # def _determine_state(self):
-    #     """Determine the state of files inside the bundle according to the existence of files
-
-    #     1. .ion / .inpt only --> initial structure (no calc)
-    #     2. existing output file --> reading output has higher priority 
-    #     """
+        # TODO: make the parameter more explicit
+        data_dict = atoms_to_dict(atoms, direct=direct, sort=sort, ignore_constraints=ignore_constraints)
+        merged_inputs = input_parameters.copy()
+        merged_inputs.update(kwargs)
+        # TODO: special input param handling
+        data_dict["inpt_blocks"].update(merged_inputs)
+        # TODO: label
+        _write_ion(self._indir(".ion"), data_dict)
+        _write_inpt(self._indir(".inpt"), data_dict)
+        return
 
 
 def read_sparc(filename, *args, **kwargs):
