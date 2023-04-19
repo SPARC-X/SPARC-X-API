@@ -57,7 +57,7 @@ jobs:
         anybadge --value=$COVPERCENT --file=badges/coverage.svg coverage
         # A version badge
         PIPVER=`pip show sparc-dft-api | grep Version | cut -d ' ' -f2`
-        anybadge --value=$PIPVER --file=badges/package.svg sparc-dft-api
+        anybadge --value=$PIPVER --file=badges/package.svg -l sparc-dft-api
     - name: Push badges into the badges branch
       uses: EndBug/add-and-commit@v9
       with:
