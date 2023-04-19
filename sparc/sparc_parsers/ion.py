@@ -246,35 +246,7 @@ def reorder(original, order):
     return res
 
 
-def constraints_from_relax(constraints):
-    """
-    This is just a helper function to translate from a list of
-    constraints from SPARC to a set of ASE constraints
 
-    Parameters:
-        constraints (list):
-            a list for lists, either empty or in the form [x,y,z]
-            i.e. [[],[0,0,1],[1,1,1]]
-
-    returns:
-        cons_list (list)
-            a list of ase contraint classes
-    """
-    cons_list = []
-    fix_atoms = []
-    for i, constraint in enumerate(constraints):
-        if constraint.count(1) == 3 or constraint == []:
-            continue
-        elif constraint.count(1) == 0:
-            fix_atoms.append(i)
-        elif constraint.count(1) == 1:
-            cons_list.append(FixedLine(i, constraint))
-        elif constraint.count(1) == 2:
-            tmp = [int(not a) for a in constraint]  # flip ones and zeros
-            cons_list.append(FixedPlane(i, tmp))
-    if len(fix_atoms) != 0:
-        cons_list.append(FixAtoms(fix_atoms))
-    return cons_list
 
 
 def find_pseudo_path(element: str, pseudo_dir):
