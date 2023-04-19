@@ -3,14 +3,7 @@
 from distutils.core import setup
 from setuptools import find_packages
 
-test_requires = [
-    "pytest",
-    "pyfakefs",
-    "pytest-cov",
-    "black",
-    "flake8",
-    "anybadge"
-]
+test_requires = ["pytest", "pyfakefs", "pytest-cov", "black", "flake8", "anybadge"]
 
 setup(
     name="sparc-dft-api",
@@ -21,16 +14,13 @@ setup(
     author_email="ben.comer@gatech.edu",
     url="https://github.com/SPARC-X/sparc-dft-api",
     packages=find_packages(),
-    install_requires=["spglib",
-                      "numpy>=1.20",
-                      "ase>=3.22.0",
-                      "scipy"],
+    install_requires=["spglib", "numpy>=1.20", "ase>=3.22.0", "scipy"],
     entry_points={
         "ase.io": [
             "sparc = sparc.sparc_io_bundle",
         ],
     },
     extras_require={
-        'test': test_requires,
+        "test": test_requires,
     },
 )

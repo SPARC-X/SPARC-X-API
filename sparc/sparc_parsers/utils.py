@@ -6,12 +6,12 @@ def get_label(fileobj, ext):
     return fileobj.name.rsplit(ext, 1)[0]
 
 
-def strip_comments(rawtext):
-    """ """
+def strip_comments(rawtext, symbol="#"):
+    """Strip comments from the text, including trailing comments"""
     stripped = []
     comments = []
     for line in rawtext.splitlines():
-        data, comment = bisect_and_strip(line, "#")
+        data, comment = bisect_and_strip(line, symbol)
         if data:
             stripped.append(data)
         if comment:
