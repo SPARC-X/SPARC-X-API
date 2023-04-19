@@ -61,10 +61,11 @@ jobs:
     - name: Manually add git badges
       run: |
         # Assuming a badges branch already exists!
+        rm -rf /tmp/*.svg && cp badges/*.svg /tmp/
         git fetch
         git switch badges || { echo "Could not check out badges branch. Have you created it on remote?"; exit 1; }
         git pull
-        git add -f badges/*.svg
+        cp /tmp/*.svg badges/ && git add -f badges/*.svg && rm -rf /tmp/*.svg
         git config --global user.email "alchem0x2a@gmail.com"
         git config --global user.name "Github Action Bot (badges only)"
         git commit -m "Update badges from run ${RID}" || true
