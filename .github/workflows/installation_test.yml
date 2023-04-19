@@ -64,11 +64,11 @@ jobs:
         git fetch
         git switch badges || { echo "Could not check out badges branch. Have you created it on remote?"; exit 1; }
         git pull
-        git add badges/*.svg
+        git add -f badges/*.svg
         git config --global user.email "alchem0x2a@gmail.com"
         git config --global user.name "Github Action Bot (badges only)"
-        git commit -m "Update badges from run ${RID}"
-        git push -u origin badges
+        git commit -m "Update badges from run ${RID}" || true
+        git push -u origin badges || true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         RID: ${{ github.run_id }}
