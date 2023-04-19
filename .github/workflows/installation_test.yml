@@ -58,12 +58,18 @@ jobs:
         # A version badge
         PIPVER=`pip show sparc-dft-api | grep Version | cut -d ' ' -f2`
         anybadge --value=$PIPVER --file=badges/package.svg -l sparc-dft-api
-    - name: Push badges into the badges branch
-      uses: EndBug/add-and-commit@v9
-      with:
-        add: "badges/*.svg"
-        author_name: Github Action Bot (badges only)
-        author_email: alchem0x2a@gmail.com
-        fetch: true
-        new_branch: badges
-        push: true
+    - name: Manually add git badges
+      run: |
+        # Assuming a badges branch already exists!
+        git fetch
+        git switch badges || { echo "Could not check out badges branch. Have you created it on remote?"; exit 1; }
+        git pull
+        git add badges/*.svg
+        git config --global user.email "alchem0x2a@gmail.com"
+        git config --global user.name "Github Action Bot (badges only)"
+        git commit -m "Update badges from run ${RID}"
+        git push -u origin badges
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        RID: ${{ github.run_id }}
+    
