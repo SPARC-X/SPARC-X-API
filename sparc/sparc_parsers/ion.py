@@ -22,7 +22,13 @@ from ase.constraints import FixAtoms, FixedLine, FixedPlane
 # Safe wrappers for both string and fd
 from ase.utils import reader, writer
 
-from .utils import get_label, strip_comments, bisect_and_strip, read_block_input, make_reverse_mapping
+from .utils import (
+    get_label,
+    strip_comments,
+    bisect_and_strip,
+    read_block_input,
+    make_reverse_mapping,
+)
 
 from ..inputs import SparcInputs
 import textwrap
@@ -55,7 +61,11 @@ def _read_ion(fileobj):
         for start, end in zip(atom_type_bounds[:-1], atom_type_bounds[1:])
     ]
 
-    return {"ion_atom_blocks": atom_blocks, "ion_comments": comments, "sorting": {"sort": sort, "resort": resort}}
+    return {
+        "ion_atom_blocks": atom_blocks,
+        "ion_comments": comments,
+        "sorting": {"sort": sort, "resort": resort},
+    }
 
 
 @writer
@@ -98,12 +108,10 @@ def _write_ion(
             index_lines = textwrap.wrap(" ".join(map(str, resort)), width=80)
             comments.extend(index_lines)
             comments.append("END ASE-SORT")
-            
 
     for line in comments:
         fileobj.write(f"# {line}\n")
 
-    
     fileobj.write("\n")
     blocks = data_dict["ion_atom_blocks"]
     for block in blocks:
@@ -192,12 +200,13 @@ def _read_sort_comment(lines):
         elif record is True:
             resort += list(map(int, line.strip().split(" ")))
     if record:
-        warn("ASE atoms resort comment block is not properly formatted, this may cause data loss!")
+        warn(
+            "ASE atoms resort comment block is not properly formatted, this may cause data loss!"
+        )
     sort = make_reverse_mapping(resort)
     assert set(sort) == set(resort), "Sort and resort info are of different length!"
     return sort, resort
-    
-    
+
 
 # def read_lat_array(lines):
 #     lat_array = []
@@ -244,9 +253,6 @@ def reorder(original, order):
     for oldi, newi in enumerate(order):
         res[newi] = original[oldi]
     return res
-
-
-
 
 
 def find_pseudo_path(element: str, pseudo_dir):

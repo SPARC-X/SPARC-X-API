@@ -29,11 +29,16 @@ from ase.constraints import FixAtoms, FixedLine, FixedPlane, FixScaled
 from warnings import warn
 
 
-
-def atoms_to_dict(atoms, sort=True, direct=False, wrap=False,
-                  ignore_constraints=False, psp_dir=None, comments=""):
-    """Given an ASE Atoms object, convert to SPARC ion and inpt data dict
-    """
+def atoms_to_dict(
+    atoms,
+    sort=True,
+    direct=False,
+    wrap=False,
+    ignore_constraints=False,
+    psp_dir=None,
+    comments="",
+):
+    """Given an ASE Atoms object, convert to SPARC ion and inpt data dict"""
     # Step 1: if we should sort the atoms?
     origin_atoms = atoms.copy()
     if sort:
@@ -50,13 +55,16 @@ def atoms_to_dict(atoms, sort=True, direct=False, wrap=False,
     write_spin = np.any(atoms.get_initial_magnetic_moments() != 0)
     has_charge = np.any(atoms.get_initial_charges() != 0)
     if has_charge:
-        warn(("SPARC currently doesn't support changing total number of electrons! "
-              "via nomimal charges. The initial charges in the structure will be ignored."
-              ))
+        warn(
+            (
+                "SPARC currently doesn't support changing total number of electrons! "
+                "via nomimal charges. The initial charges in the structure will be ignored."
+            )
+        )
 
     relax_mask = relax_from_all_constraints(atoms.constraints, len(atoms))
     write_relax = (len(relax_mask) > 0) and (not ignore_constraints)
-        
+
     atom_blocks = []
     # Step 3: write each block
     for symbol, start, end in symbol_counts:
@@ -66,7 +74,7 @@ def atoms_to_dict(atoms, sort=True, direct=False, wrap=False,
         # TODO: make pseudo finding work
         block_dict["PSEUDO_POT"] = f"{symbol}.psp8"
         # TODO: atomic mass?
-        p_atoms = atoms[start: end]
+        p_atoms = atoms[start:end]
         if direct:
             pos = p_atoms.get_scaled_positions(wrap=wrap)
             block_dict["COORD_FRAC"] = pos
@@ -78,7 +86,7 @@ def atoms_to_dict(atoms, sort=True, direct=False, wrap=False,
             # TODO: should we process atoms with already calculated magmoms?
             block_dict["SPIN"] = p_atoms.get_initial_magnetic_moments()
         if write_relax:
-            relax_this_block = relax_mask[start: end]
+            relax_this_block = relax_mask[start:end]
             block_dict["RELAX"] = relax_this_block
         # TODO: get write_relax
         atom_blocks.append(block_dict)
@@ -86,11 +94,14 @@ def atoms_to_dict(atoms, sort=True, direct=False, wrap=False,
     # Step 4: inpt part
     # TODO: what if atoms does not have cell?
     cell_au = atoms.cell / Bohr
-    inpt_blocks = {"LATVEC": cell_au, "LATVEC_SCALE": [1., 1., 1.]}
+    inpt_blocks = {"LATVEC": cell_au, "LATVEC_SCALE": [1.0, 1.0, 1.0]}
 
     comments = comments.split("\n")
-    ion_data = {"ion_atom_blocks": atom_blocks, "ion_comments": comments,
-                "sorting": {"sort": sort_, "resort": resort_}}
+    ion_data = {
+        "ion_atom_blocks": atom_blocks,
+        "ion_comments": comments,
+        "sorting": {"sort": sort_, "resort": resort_},
+    }
     inpt_data = {"inpt_blocks": inpt_blocks, "inpt_comments": []}
     return {**ion_data, **inpt_data}
 
@@ -124,7 +135,7 @@ def dict_to_atoms(data_dict):
         for i, r in enumerate(relax, start=atoms_count):
             relax_dict[i] = r
         atoms_count += len(positions)
-        
+
     if "sorting" in data_dict:
         resort = data_dict["sorting"]["resort"]
     else:
@@ -132,18 +143,20 @@ def dict_to_atoms(data_dict):
 
     if len(resort) != len(atoms):
         # TODO: new exception
-        raise ValueError("Length of resort mapping is different from the number of atoms!")
+        raise ValueError(
+            "Length of resort mapping is different from the number of atoms!"
+        )
     # TODO: check if this mapping is correct
     resorted_relax_dict = {resort[i]: r for i, r in relax_dict.items()}
     # Now we do a sort on the atom indices. The atom positions read from
     # .ion correspond to the `sort` and we use `resort` to transform
 
     # TODO: should we store the sorting information in SparcBundle?
-    
+
     atoms = atoms[resort]
     constraints = constraints_from_relax(resorted_relax_dict)
     atoms.constraints = constraints
-    
+
     # TODO: set pbc and relax
     atoms.pbc = True
     return atoms
@@ -151,7 +164,7 @@ def dict_to_atoms(data_dict):
 
 def count_symbols(symbols):
     """Count the number of consecutive elements.
-    Output tuple is: element, start, end 
+    Output tuple is: element, start, end
     For example, "CHCHHO" --> [('C', 0, 1), ('H', 1, 2), ('C', 2, 3), ('H', 3, 5), ('O', 5, 6)]
     """
     counts = []
@@ -185,19 +198,19 @@ def constraints_from_relax(relax_dict):
     """
     if len(relax_dict) == 0:
         return []
-    
+
     cons_list = []
     # gathered_indices is an intermediate dict that contains
     # key: relax mask if not all True
     # indices: indices that share the same mask
-    # 
+    #
     gathered_indices = {}
 
     for i, r in relax_dict.items():
         r = tuple(np.ndarray.tolist(r.astype(bool)))
         if np.all(r):
             continue
-        
+
         if r not in gathered_indices:
             gathered_indices[r] = [i]
         else:
@@ -205,21 +218,20 @@ def constraints_from_relax(relax_dict):
 
     for relax_type, indices in gathered_indices.items():
         degree_freedom = 3 - relax_type.count(True)
-        
+
         if degree_freedom == 0:
             cons_list.append(FixAtoms(indices=indices))
         elif degree_freedom == 1:
             for ind in indices:
-                cons_list.append(FixedLine(ind,
-                                           np.array(relax_type).astype(int)))
+                cons_list.append(FixedLine(ind, np.array(relax_type).astype(int)))
         elif degree_freedom == 2:
             for ind in indices:
-                cons_list.append(FixedPlane(ind,
-                                           (~np.array(relax_type)).astype(int)))
+                cons_list.append(FixedPlane(ind, (~np.array(relax_type)).astype(int)))
     return cons_list
 
+
 def relax_from_constraint(constraint):
-    ''' returns dict of {atom_index: relax_dimensions} for the given constraint'''
+    """returns dict of {atom_index: relax_dimensions} for the given constraint"""
     type_name = constraint.todict()["name"]
     if isinstance(constraint, FixAtoms):
         dimensions = [False] * 3
@@ -239,17 +251,21 @@ def relax_from_constraint(constraint):
         )
         return {}
     if dimensions.count(True) != expected_free:
-        warn("SPARC's .ion filetype can only support freezing entire "
-             f"dimensions (x,y,z). The {type_name} constraint will be ignored")
+        warn(
+            "SPARC's .ion filetype can only support freezing entire "
+            f"dimensions (x,y,z). The {type_name} constraint will be ignored"
+        )
     return {i: dimensions for i in constraint.get_indices()}  # atom indices
 
 
 def relax_from_all_constraints(constraints, natoms):
-    '''converts ASE atom constraints to SPARC relaxed dimensions for the atoms'''
+    """converts ASE atom constraints to SPARC relaxed dimensions for the atoms"""
     if len(constraints) == 0:
         return []
-    
-    relax = [[True, True, True], ] * natoms  # assume relaxed in all dimensions for all atoms
+
+    relax = [
+        [True, True, True],
+    ] * natoms  # assume relaxed in all dimensions for all atoms
     for c in constraints:
         for atom_index, rdims in relax_from_constraint(c).items():
             # There might be multiple constraints applied on one index,

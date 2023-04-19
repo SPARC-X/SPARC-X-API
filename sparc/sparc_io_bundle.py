@@ -31,6 +31,7 @@ from .sparc_parsers.inpt import _read_inpt, _write_inpt, _inpt_cell_to_ase_cell
 from .sparc_parsers.atoms import dict_to_atoms, atoms_to_dict
 from .inputs import SparcInputs
 
+
 class SparcBundle:
     """Provide access to a calculation folder of SPARC as a simple bundle
 
@@ -77,20 +78,37 @@ class SparcBundle:
         merged_data = {**ion_data, **inpt_data}
         return dict_to_atoms(merged_data)
 
-    def _write_ion_and_inpt(self, atoms=None, label=None, direct=False, sort=True, ignore_constraints=False, wrap=False,
-                            # Below are the parameters from v1
-                            # scaled -> direct, ignore_constraints --> not add_constraints
-                             scaled=False, add_constraints=True, copy_psp=True, comment="", input_parameters={}, **kwargs):
+    def _write_ion_and_inpt(
+        self,
+        atoms=None,
+        label=None,
+        direct=False,
+        sort=True,
+        ignore_constraints=False,
+        wrap=False,
+        # Below are the parameters from v1
+        # scaled -> direct, ignore_constraints --> not add_constraints
+        scaled=False,
+        add_constraints=True,
+        copy_psp=True,
+        comment="",
+        input_parameters={},
+        **kwargs,
+    ):
         """Write the ion and inpt files to a bundle. This method only supports writing 1 image.
         If input_parameters are empty, there will only be .ion writing the positions and .inpt writing a minimal cell information
 
         """
         if self.mode != "w":
-            raise ValueError("Cannot write input files while sparc bundle is opened in read-only mode!")
+            raise ValueError(
+                "Cannot write input files while sparc bundle is opened in read-only mode!"
+            )
         os.makedirs(self.directory, exist_ok=True)
         atoms = self.atoms.copy() if atoms is None else atoms.copy()
         # TODO: make the parameter more explicit
-        data_dict = atoms_to_dict(atoms, direct=direct, sort=sort, ignore_constraints=ignore_constraints)
+        data_dict = atoms_to_dict(
+            atoms, direct=direct, sort=sort, ignore_constraints=ignore_constraints
+        )
         merged_inputs = input_parameters.copy()
         merged_inputs.update(kwargs)
         # TODO: special input param handling

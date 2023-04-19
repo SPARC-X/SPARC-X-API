@@ -62,8 +62,9 @@ def read_block_input(block, validator=None):
         block_dict[key] = val
     return block_dict
 
+
 def make_reverse_mapping(mapping):
-    """ Given a list of mapping, get its reverse mapping
+    """Given a list of mapping, get its reverse mapping
 
     For example:
     mapping = [0, 2, 3, 1, 5, 4]
