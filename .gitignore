@@ -760,3 +760,4 @@ cython_debug/
 parameters.json
 *.lcov
 coverage.json
+/badges/
