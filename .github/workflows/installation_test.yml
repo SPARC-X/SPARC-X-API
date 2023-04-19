@@ -50,3 +50,20 @@ jobs:
         conda info
         flake8 sparc/ --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 sparc/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Create badges
+      run: |
+        mkdir -p badges/
+        # A coverage test badge
+        anybadge --value=$COVPERCENT --file=badges/coverage.svg coverage
+        # A version badge
+        PIPVER=`pip show sparc-dft-api | grep Version | cut -d ' ' -f2`
+        anybadge --value=$PIPVER --file=badges/package.svg sparc-dft-api
+    - name: Push badges into the badges branch
+      uses: EndBug/add-and-commit@v9
+      with:
+        add: "badges/*.svg"
+        author_name: Github Action Bot (badges only)
+        author_email: alchem0x2a@gmail.com
+        fetch: true
+        new_branch: badges
+        push: true
