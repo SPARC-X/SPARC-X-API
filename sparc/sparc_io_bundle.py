@@ -26,9 +26,12 @@ from pathlib import Path
 import shutil
 import tarfile
 
+from warnings import warn
+
 from .sparc_parsers.ion import _read_ion, _write_ion, _ion_coord_to_ase_pos
 from .sparc_parsers.inpt import _read_inpt, _write_inpt, _inpt_cell_to_ase_cell
 from .sparc_parsers.atoms import dict_to_atoms, atoms_to_dict
+from .sparc_parsers.pseudopotential import find_pseudo_path, copy_psp_file
 from .inputs import SparcInputs
 
 
@@ -48,7 +51,7 @@ class SparcBundle:
 
     """
 
-    def __init__(self, directory, mode="r", atoms=None, label=None):
+    def __init__(self, directory, mode="r", atoms=None, label=None, psp_dir=None):
         self.directory = Path(directory)
         # TODO: more sensible naming for name?
         self.name = self.directory.with_suffix("").name
@@ -57,6 +60,24 @@ class SparcBundle:
         self.sparc_file = None  # name of the main sparc file
         self.mode = mode.lower()
         self.atoms = atoms
+        # TODO: non-existing PSP warning
+        self.psp_dir = self.__find_psp_dir(psp_dir)
+        # self.psp_dir = Path(psp_dir) if psp_dir else Path(os.environ.get("SPARC_PSP_PATH"))
+
+    def __find_psp_dir(self, psp_dir=None):
+        if psp_dir is not None:
+            return Path(psp_dir)
+        else:
+            env_psp_dir = os.environ.get("SPARC_PSP_PATH", None)
+            if env_psp_dir:
+                return Path(env_psp_dir)
+            else:
+                if self.mode == "w":
+                    warn(
+                        "Neither Pseudopotential searching path nor $SPARC_PSP_PATH environmental variable is provided! \n"
+                        "You must explicitly provide `pseudopotentials` parameter when writing the sparc bundle"
+                    )
+                return None
 
     def _indir(self, ext, label=None):
         """Find the file with {label}.{ext} under current dir
@@ -106,14 +127,30 @@ class SparcBundle:
         os.makedirs(self.directory, exist_ok=True)
         atoms = self.atoms.copy() if atoms is None else atoms.copy()
         # TODO: make the parameter more explicit
+        pseudopotentials = kwargs.pop("pseudopotentials", {})
         data_dict = atoms_to_dict(
-            atoms, direct=direct, sort=sort, ignore_constraints=ignore_constraints
+            atoms,
+            direct=direct,
+            sort=sort,
+            ignore_constraints=ignore_constraints,
+            psp_dir=self.psp_dir,
+            pseudopotentials=pseudopotentials,
         )
         merged_inputs = input_parameters.copy()
         merged_inputs.update(kwargs)
         # TODO: special input param handling
         data_dict["inpt_blocks"].update(merged_inputs)
         # TODO: label
+
+        # If copy_psp, change the PSEUDO_POT field and copy the files
+        if copy_psp:
+            for block in data_dict["ion_atom_blocks"]:
+                if "PSEUDO_POT" in block:
+                    origin_psp = block["PSEUDO_POT"]
+                    target_dir = self.directory
+                    target_fname = copy_psp_file(origin_psp, target_dir)
+                    block["PSEUDO_POT"] = target_fname
+
         _write_ion(self._indir(".ion"), data_dict)
         _write_inpt(self._indir(".inpt"), data_dict)
         return
