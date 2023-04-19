@@ -1,4 +1,4 @@
-name: Test python api installation 
+name: unit tests
 
 on:
   push:
