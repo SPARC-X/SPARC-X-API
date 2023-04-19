@@ -39,7 +39,8 @@ jobs:
       run: |
         # python -m pytest -svv tests/ --cov=sparc --cov-report=json --cov-report=html
         coverage run -a -m pytest -svv tests/
-        coverage json --omit="tests/*"
+        coverage json --omit="tests/*.py"
+        coverage html --omit="tests/*.py"
         COVERAGE=`cat coverage.json | jq .totals.percent_covered | xargs printf '%.*f' 0`
         echo "Current coverage is $COVERAGE"
         echo "COVPERCENT=$COVERAGE" >> $GITHUB_ENV
