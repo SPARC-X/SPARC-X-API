@@ -6,13 +6,15 @@ from setuptools import find_packages
 test_requires = [
     "pytest",
     "pyfakefs",
-    "pytest-cov"
+    "pytest-cov",
+    "black",
+    "flake8"
 ]
 
 setup(
     name="sparc-dft-api",
-    version="0.1",
-    python_requires=">3.5",
+    version="0.2",
+    python_requires=">=3.8",
     description="Python Wrapper for the SPARC-X DFT Code",
     author="Ben Comer",
     author_email="ben.comer@gatech.edu",

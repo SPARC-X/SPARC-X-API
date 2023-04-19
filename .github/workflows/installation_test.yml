@@ -29,19 +29,23 @@ jobs:
         activate-environment: sparc-api-test
     - name: Install dependencies
       run: |
-        mamba install -c conda-forge ase>=3.22 pymatgen flake8 pytest
+        # mamba install -c conda-forge ase>=3.22 pymatgen flake8 pytest
         mamba install -c alchem0x2a sparc
-        pip install pyfakefs
+        # pip install pyfakefs
     - name: Install package
       run: |
-        pip install -e .
+        pip install -e ".[test]"
     - name: Test with pytest
       run: |
-        cd tests
-        python -m pytest -svv ./
+        # python -m pytest -svv tests/ --cov=sparc --cov-report=json --cov-report=html
+        coverage run -a -m pytest -svv tests/
+        coverage json --omit="tests/*"
+        COVERAGE=`cat coverage.json | jq .totals.percent_covered | xargs printf '%.*f' 0`
+        echo "Current coverage is $COVERAGE"
+        echo "COVPERCENT=$COVERAGE" >> $GITHUB_ENV
     - name: Lint with flake8
       run: |
         echo $CONDA_PREFIX
         conda info
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        flake8 sparc/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 sparc/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics

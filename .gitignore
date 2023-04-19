@@ -758,3 +758,5 @@ cython_debug/
 #.idea/
 
 parameters.json
+*.lcov
+coverage.json
