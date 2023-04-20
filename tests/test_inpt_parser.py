@@ -84,11 +84,14 @@ def test_cell_conversion():
     # 0. invalid
     # 1. invalid
     data_dict = {
-        "inpt": {"params": {"CELL": [1.5, 1.5, 1.5],}}
+        "inpt": {
+            "params": {
+                "CELL": [1.5, 1.5, 1.5],
+            }
+        }
     }
     with pytest.raises(KeyError):
         _inpt_cell_to_ase_cell(data_dict)
-    
 
     # 1. invalid
     data_dict = {
