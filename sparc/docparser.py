@@ -373,11 +373,20 @@ def text2value(text, desired_type):
     if desired_type is None:
         return text
     desired_type = desired_type.lower()
+    if desired_type == "string":
+        return text.strip()
 
     try:
         arr = np.genfromtxt(text.splitlines(), delimiter=" ", dtype=float)
+        if np.isnan(arr).any():
+            warn(
+                f"Some fields in {text} cannot converted to a numerical array, will skip conversion."
+            )
+            arr = None
     except Exception as e:
-        raise e
+        warn(
+            f"Cannot transform {text} to array, skip converting. Error message is:\n {e}"
+        )
         arr = None
 
     if arr is None:
@@ -404,8 +413,8 @@ def text2value(text, desired_type):
             converted = np.ndarray.tolist(arr.astype(bool))
         elif desired_type == "double array":
             converted = np.ndarray.tolist(arr.astype(float))
-        elif desired_type == "string":
-            converted = text
+        # elif desired_type == "string":
+        # converted = text
     return converted
 
 
@@ -501,8 +510,8 @@ def sanitize_type(param_dict):
             _array_test = is_array(example_value)
             _bool_test = contain_only_bool(example_value) and contain_only_bool(default)
             # print(_array_test)
-        except Exception:
-            raise
+        except Exception as e:
+            warn(f"Array conversion failed for {example_value}, ignore.")
             _array_test = False  # Retain
 
         if _array_test is True:
