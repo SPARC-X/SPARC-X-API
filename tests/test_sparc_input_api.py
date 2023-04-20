@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 
 
 def test_sparc_api():
@@ -13,6 +14,24 @@ def test_sparc_api():
     assert hasattr(sis, "parameters")
     assert isinstance(sis.parameters, dict)
     assert hasattr(sis, "other_parameters")
+
+    # Provide a path
+    sis = SparcInputs(default_json_api)
+
+
+def test_help():
+    from sparc.inputs import SparcInputs
+
+    sis = SparcInputs()
+    help_info = sis.help_info("LATVEC")
+
+
+def test_other_data():
+    from sparc.inputs import SparcInputs
+
+    sis = SparcInputs()
+    assert sis.validate_input("NPT_NH_QMASS", "2\n 700.0\n 700.0")
+    assert sis.validate_input("NPT_NH_QMASS", [2, 1.0, 1.0])
 
 
 def test_api_validate():

@@ -119,9 +119,8 @@ class SPARCDocParser(object):
         pattern_block = r"\\begin\{block\}\{(.*?)\}([\s\S]*?)\\end\{block\}"
         match_label = re.findall(pattern_label, frame, re.DOTALL | re.MULTILINE)
         if len(match_label) != 1:
-            # warn("Provided a non-structured frame for parsing, skip.")
+            warn("Provided a non-structured frame for parsing, skip.")
             return {}
-        # print(match_label)
         symbol, label = (
             convert_tex_parameter(match_label[0][0].strip()),
             match_label[0][1].strip(),
@@ -169,7 +168,6 @@ class SPARCDocParser(object):
         `parameter_categories`: list of categories
         """
         text_intro = open(self.intro_file, "r", encoding="utf8").read()
-        # import pdb; pdb.set_trace()
         pattern_params = (
             r"^\\begin\{frame\}.*?\{Input file options\}.*?$(.*?)\\end\{frame\}"
         )
@@ -201,7 +199,6 @@ class SPARCDocParser(object):
                     label, symbol = match[0].strip(), convert_tex_parameter(
                         match[1].strip()
                     )
-                    # print(label, symbol)
                     parameter_dict[cat].append({"label": label, "symbol": symbol})
         return parameter_categories, parameter_dict
 
@@ -212,18 +209,14 @@ class SPARCDocParser(object):
             # Do not parse intro file since it's waste of time
             if f.resolve() == self.intro_file.resolve():
                 continue
-            # print("Parsing", f)
             text = open(f, "r", encoding="utf8").read()
             frames = self.__parse_frames_from_text(text)
-            # print(frames)
             for frame in frames:
                 dic = self.__parse_parameter_from_frame(frame)
-                # print(frame)
                 if len(dic) > 0:
                     label = dic["label"]
                     all_params[label] = dic
         return all_params
-        # print(dic)
 
     def parse_parameters(self):
         """The actual thing for parsing parameters"""
@@ -413,8 +406,6 @@ def text2value(text, desired_type):
             converted = np.ndarray.tolist(arr.astype(bool))
         elif desired_type == "double array":
             converted = np.ndarray.tolist(arr.astype(float))
-        # elif desired_type == "string":
-        # converted = text
     return converted
 
 
@@ -486,7 +477,6 @@ def sanitize_type(param_dict):
 
     sanitized_type = None
     sanitized_dict["allow_bool_input"] = False
-    # import pdb; pdb.set_trace()
     # First pass, remove all singular types
     if origin_type == "0 or 1":
         origin_type = "integer"
@@ -505,11 +495,8 @@ def sanitize_type(param_dict):
         try:
             example_value = param_dict["example"].split(":")[1]
             default = param_dict["default"]
-            # print("Example", param_dict["example"], example_value)
-            # print()
             _array_test = is_array(example_value)
             _bool_test = contain_only_bool(example_value) and contain_only_bool(default)
-            # print(_array_test)
         except Exception as e:
             warn(f"Array conversion failed for {example_value}, ignore.")
             _array_test = False  # Retain
@@ -522,7 +509,6 @@ def sanitize_type(param_dict):
         # Pass 3: int to boolean test. This should be done very tight
         if _bool_test and ("integer" in sanitized_type):
             sanitized_dict["allow_bool_input"] = True
-            # sanitized_type = sanitized_type.replace("integer", "bool")
 
     if sanitized_type is None:
         # Currently there is only one NPT_NH_QMASS has this type
