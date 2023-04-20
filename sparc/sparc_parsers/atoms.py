@@ -114,12 +114,12 @@ def atoms_to_dict(
 
     comments = comments.split("\n")
     ion_data = {
-        "ion_atom_blocks": atom_blocks,
-        "ion_comments": comments,
+        "atom_blocks": atom_blocks,
+        "comments": comments,
         "sorting": {"sort": sort_, "resort": resort_},
     }
-    inpt_data = {"inpt_blocks": inpt_blocks, "inpt_comments": []}
-    return {**ion_data, **inpt_data}
+    inpt_data = {"param_blocks": inpt_blocks, "comments": []}
+    return {"ion": ion_data, "inpt": inpt_data}
 
 
 def dict_to_atoms(data_dict):
@@ -127,8 +127,10 @@ def dict_to_atoms(data_dict):
 
     Note: this method supports only 1 Atoms at a time
     """
-    ase_cell = _inpt_cell_to_ase_cell(data_dict["inpt_blocks"])
-    new_atom_blocks = _ion_coord_to_ase_pos(data_dict["ion_atom_blocks"], ase_cell)
+    ase_cell = _inpt_cell_to_ase_cell(data_dict["inpt"]["param_blocks"])
+    new_atom_blocks = _ion_coord_to_ase_pos(
+        data_dict["ion"]["ion_atom_blocks"], ase_cell
+    )
     # Now the real thing to construct an atom object
     atoms = Atoms()
     atoms.cell = ase_cell
