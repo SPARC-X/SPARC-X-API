@@ -97,6 +97,9 @@ class SparcInputs:
                     )
                 try:
                     arr = np.genfromtxt(input.splitlines(), dtype=float)
+                    # In valid input with nan
+                    if np.isnan(arr).any():
+                        arr = np.array(0.0)
                 except Exception:
                     arr = np.array(0.0)
             else:

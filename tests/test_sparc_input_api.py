@@ -71,6 +71,16 @@ def test_api_validate():
     assert sis.validate_input("LATVEC", np.eye(3))
     # TODO: extra user cases for character !
 
+    # Wrong tests
+    assert sis.validate_input("CALC_PRES", "z") is False
+    assert sis.validate_input("ELEC_TEMP", "z") is False
+    with pytest.warns(UserWarning):
+        assert sis.validate_input("RELAX", "0.0 0.0 0.0") is True
+
+    assert sis.validate_input("RELAX", "z z 0.0") is False
+    assert sis.validate_input("RELAX", "z z 0") is False
+    assert sis.validate_input("RELAX", "z z z") is False
+
 
 def test_api_validate_all_defaults():
     """All defaults given in the examples should be valid!"""
@@ -91,6 +101,20 @@ def test_api_convert_string():
 
     sis = SparcInputs()
     # Integer
+    with pytest.raises(TypeError):
+        sis.convert_string_to_value("CALC_PRES", 0)
+
+    with pytest.raises(ValueError):
+        sis.convert_string_to_value("CALC_PRES", "z")
+
+    with pytest.raises(ValueError):
+        sis.convert_string_to_value("ELEC_TEMP", "low")
+
+    with pytest.raises(ValueError):
+        sis.convert_string_to_value("RELAX", "0 0 z")
+
+    assert sis.convert_string_to_value("ATOM_TYPE", " Ag \n") == "Ag"
+
     assert sis.convert_string_to_value("CALC_PRES", "0") is False
     assert sis.convert_string_to_value("CALC_PRES", "0 ") == 0
     assert sis.convert_string_to_value("CALC_PRES", "1") is True
@@ -119,6 +143,14 @@ def test_api_write_string():
     sis = SparcInputs()
     # Integer
     ref_s = "0"
+    with pytest.raises(ValueError):
+        sis.convert_value_to_string("CALC_PRES", [1, 2])
+
+    with pytest.raises(ValueError):
+        sis.convert_value_to_string("ELEC_TEMP", "low")
+
+    assert sis.convert_value_to_string("ATOM_TYPE", " Ag \n") == "Ag"
+
     assert sis.convert_value_to_string("CALC_PRES", 0) == ref_s
     assert sis.convert_value_to_string("CALC_PRES", "0 ") == ref_s
     assert sis.convert_value_to_string("CALC_PRES", False) == ref_s
