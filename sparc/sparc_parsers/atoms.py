@@ -28,6 +28,7 @@ from ..inputs import SparcInputs
 from ase.constraints import FixAtoms, FixedLine, FixedPlane, FixScaled
 
 from warnings import warn
+from copy import deepcopy
 
 
 def atoms_to_dict(
@@ -87,8 +88,21 @@ def atoms_to_dict(
         block_dict["ATOM_TYPE"] = symbol
         block_dict["N_TYPE_ATOM"] = end - start
         # TODO: make pseudo finding work
-        psp_file = find_pseudo_path(symbol, psp_dir, pseudopotentials)
-        block_dict["PSEUDO_POT"] = psp_file.resolve().as_posix()
+        # TODO: write comment that psp file may not exist
+        try:
+            psp_file = find_pseudo_path(symbol, psp_dir, pseudopotentials)
+            # TODO: add option to determine if psp file exists!
+            block_dict["PSEUDO_POT"] = psp_file.resolve().as_posix()
+
+        except Exception:
+            warn(
+                (
+                    f"Failed to find pseudo potential file for symbol {symbol}. I will use a dummy file name"
+                )
+            )
+            block_dict[
+                "PSEUDO_POT"
+            ] = f"{symbol}-dummy.psp8        # Please replace with real psp file name!"
         # TODO: atomic mass?
         p_atoms = atoms[start:end]
         if direct:
@@ -112,14 +126,15 @@ def atoms_to_dict(
     cell_au = atoms.cell / Bohr
     inpt_blocks = {"LATVEC": cell_au, "LATVEC_SCALE": [1.0, 1.0, 1.0]}
 
-    comments = comments.split("\n")
+    if not isinstance(comments, list):
+        comments = comments.split("\n")
     ion_data = {
-        "ion_atom_blocks": atom_blocks,
-        "ion_comments": comments,
+        "atom_blocks": atom_blocks,
+        "comments": comments,
         "sorting": {"sort": sort_, "resort": resort_},
     }
-    inpt_data = {"inpt_blocks": inpt_blocks, "inpt_comments": []}
-    return {**ion_data, **inpt_data}
+    inpt_data = {"params": inpt_blocks, "comments": []}
+    return {"ion": ion_data, "inpt": inpt_data}
 
 
 def dict_to_atoms(data_dict):
@@ -127,15 +142,17 @@ def dict_to_atoms(data_dict):
 
     Note: this method supports only 1 Atoms at a time
     """
-    ase_cell = _inpt_cell_to_ase_cell(data_dict["inpt_blocks"])
-    new_atom_blocks = _ion_coord_to_ase_pos(data_dict["ion_atom_blocks"], ase_cell)
+    ase_cell = _inpt_cell_to_ase_cell(data_dict)
+    new_data_dict = deepcopy(data_dict)
+    _ion_coord_to_ase_pos(new_data_dict, ase_cell)
     # Now the real thing to construct an atom object
     atoms = Atoms()
     atoms.cell = ase_cell
     relax_dict = {}
 
     atoms_count = 0
-    for block in new_atom_blocks:
+    atom_blocks = new_data_dict["ion"]["atom_blocks"]
+    for block in atom_blocks:
         element = block["ATOM_TYPE"]
         positions = block["_ase_positions"]
         if positions.ndim == 1:
@@ -152,8 +169,8 @@ def dict_to_atoms(data_dict):
             relax_dict[i] = r
         atoms_count += len(positions)
 
-    if "sorting" in data_dict:
-        resort = data_dict["sorting"]["resort"]
+    if "sorting" in data_dict["ion"]:
+        resort = data_dict["ion"]["sorting"].get("resort", np.arange(len(atoms)))
     else:
         resort = np.arange(len(atoms))
 
@@ -163,6 +180,7 @@ def dict_to_atoms(data_dict):
             "Length of resort mapping is different from the number of atoms!"
         )
     # TODO: check if this mapping is correct
+    print("RELAX DICT:", relax_dict)
     resorted_relax_dict = {resort[i]: r for i, r in relax_dict.items()}
     # Now we do a sort on the atom indices. The atom positions read from
     # .ion correspond to the `sort` and we use `resort` to transform
@@ -171,6 +189,7 @@ def dict_to_atoms(data_dict):
 
     atoms = atoms[resort]
     constraints = constraints_from_relax(resorted_relax_dict)
+    print("CONSTRAINTS: ", constraints)
     atoms.constraints = constraints
 
     # TODO: set pbc and relax
@@ -193,8 +212,8 @@ def count_symbols(symbols):
             counts.append((current_symbol, i - current_count, i))
             current_count = 1
             current_symbol = symbol
-    i += 1
-    counts.append((current_symbol, i - current_count, i))
+    end = len(symbols)
+    counts.append((current_symbol, end - current_count, end))
     return counts
 
 
@@ -222,7 +241,9 @@ def constraints_from_relax(relax_dict):
     #
     gathered_indices = {}
 
+    # breakpoint()
     for i, r in relax_dict.items():
+        r = np.array(r)
         r = tuple(np.ndarray.tolist(r.astype(bool)))
         if np.all(r):
             continue
@@ -233,13 +254,16 @@ def constraints_from_relax(relax_dict):
             gathered_indices[r].append(i)
 
     for relax_type, indices in gathered_indices.items():
-        degree_freedom = 3 - relax_type.count(True)
+        degree_freedom = 3 - relax_type.count(False)
 
+        # DegreeF == 0 --> fix atom
         if degree_freedom == 0:
             cons_list.append(FixAtoms(indices=indices))
+        # DegreeF == 1 --> move along line, fix line
         elif degree_freedom == 1:
             for ind in indices:
                 cons_list.append(FixedLine(ind, np.array(relax_type).astype(int)))
+        # DegreeF == 1 --> move along line, fix plane
         elif degree_freedom == 2:
             for ind in indices:
                 cons_list.append(FixedPlane(ind, (~np.array(relax_type)).astype(int)))
@@ -271,6 +295,7 @@ def relax_from_constraint(constraint):
             "SPARC's .ion filetype can only support freezing entire "
             f"dimensions (x,y,z). The {type_name} constraint will be ignored"
         )
+        return {}
     return {i: dimensions for i in constraint.get_indices()}  # atom indices
 
 
@@ -284,7 +309,14 @@ def relax_from_all_constraints(constraints, natoms):
     ] * natoms  # assume relaxed in all dimensions for all atoms
     for c in constraints:
         for atom_index, rdims in relax_from_constraint(c).items():
+            if atom_index >= natoms:
+                raise ValueError(
+                    (
+                        "Number of total atoms smaller than the constraint indices!\n"
+                        "Please check your input"
+                    )
+                )
             # There might be multiple constraints applied on one index,
             # always make it more constrained
-            relax[atom_index] = np.bitwise_and(relax[atom_index], rdims)
+            relax[atom_index] = list(np.bitwise_and(relax[atom_index], rdims))
     return relax
