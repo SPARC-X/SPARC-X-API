@@ -92,7 +92,7 @@ class SparcInputs:
                     warn(
                         (
                             f"Input {input} for parameter {parameter} it not strictly integer. "
-                            "I can still perform the conversion but be aware of data loss"
+                            "I may still perform the conversion but be aware of data loss"
                         )
                     )
                 try:
