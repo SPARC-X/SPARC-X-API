@@ -171,6 +171,9 @@ def dict_to_atoms(data_dict):
 
     if "sorting" in data_dict["ion"]:
         resort = data_dict["ion"]["sorting"].get("resort", np.arange(len(atoms)))
+        # Resort may be None
+        if len(resort) == 0:
+            resort = np.arange(len(atoms))
     else:
         resort = np.arange(len(atoms))
 
@@ -180,7 +183,6 @@ def dict_to_atoms(data_dict):
             "Length of resort mapping is different from the number of atoms!"
         )
     # TODO: check if this mapping is correct
-    print("RELAX DICT:", relax_dict)
     resorted_relax_dict = {resort[i]: r for i, r in relax_dict.items()}
     # Now we do a sort on the atom indices. The atom positions read from
     # .ion correspond to the `sort` and we use `resort` to transform
@@ -189,7 +191,6 @@ def dict_to_atoms(data_dict):
 
     atoms = atoms[resort]
     constraints = constraints_from_relax(resorted_relax_dict)
-    print("CONSTRAINTS: ", constraints)
     atoms.constraints = constraints
 
     # TODO: set pbc and relax

@@ -51,33 +51,60 @@ class SparcBundle:
 
     """
 
+    psp_env = ["SPARC_PSP_PATH", "SPARC_PP_PATH"]
+
     def __init__(self, directory, mode="r", atoms=None, label=None, psp_dir=None):
         self.directory = Path(directory)
         # TODO: more sensible naming for name?
         self.name = self.directory.with_suffix("").name
-        self.label = label if label is not None else self.name
+        self.label = self.__make_label(label)  # name of the main sparc file
+
         self.file_list = []  # list of file names in the directory
-        self.sparc_file = None  # name of the main sparc file
         self.mode = mode.lower()
+        assert self.mode in (
+            "r",
+            "w",
+            "a",
+        ), f"Invalid mode {self.mode}! Must one of 'r', 'w' or 'a'"
         self.atoms = atoms
-        # TODO: non-existing PSP warning
         self.psp_dir = self.__find_psp_dir(psp_dir)
-        # self.psp_dir = Path(psp_dir) if psp_dir else Path(os.environ.get("SPARC_PSP_PATH"))
+
+    def __make_label(self, label=None):
+        illegal_chars = '\\/:*?"<>|'
+        label_ = label if label is not None else self.name
+        if any([c in label_ for c in illegal_chars]):
+            warn(
+                f"Label name {label_} contains illegal characters! I'll make it 'SPARC'"
+            )
+            label_ = "SPARC"
+        return label_
 
     def __find_psp_dir(self, psp_dir=None):
+        """Use environmental variable to find the directory for SPARC pseudopotentials
+
+        Searching priority:
+        1. User defined psp_dir
+        2. $SPARC_PSP_PATH
+        3. $SPARC_PP_PATH
+        4. TOOD: psp bundled with sparc-api
+        """
         if psp_dir is not None:
             return Path(psp_dir)
         else:
-            env_psp_dir = os.environ.get("SPARC_PSP_PATH", None)
-            if env_psp_dir:
-                return Path(env_psp_dir)
-            else:
-                if self.mode == "w":
-                    warn(
-                        "Neither Pseudopotential searching path nor $SPARC_PSP_PATH environmental variable is provided! \n"
-                        "You must explicitly provide `pseudopotentials` parameter when writing the sparc bundle"
+            for var in self.psp_env:
+                env_psp_dir = os.environ.get(var, None)
+                if env_psp_dir:
+                    return Path(env_psp_dir)
+            # Not found
+            if self.mode == "w":
+                warn(
+                    (
+                        "No pseudopotential searching path was set and "
+                        "neither of $SPARC_PSP_PATH nor $SPARC_PP_PATH is set.\n"
+                        "Please explicitly provide the pseudopotentials parameter when writing the sparc bundle."
                     )
-                return None
+                )
+            return None
 
     def _indir(self, ext, label=None):
         """Find the file with {label}.{ext} under current dir
@@ -111,7 +138,7 @@ class SparcBundle:
         # scaled -> direct, ignore_constraints --> not add_constraints
         scaled=False,
         add_constraints=True,
-        copy_psp=True,
+        copy_psp=False,
         comment="",
         input_parameters={},
         **kwargs,
@@ -122,7 +149,7 @@ class SparcBundle:
         """
         if self.mode != "w":
             raise ValueError(
-                "Cannot write input files while sparc bundle is opened in read-only mode!"
+                "Cannot write input files while sparc bundle is opened in read or append mode!"
             )
         os.makedirs(self.directory, exist_ok=True)
         atoms = self.atoms.copy() if atoms is None else atoms.copy()
@@ -139,12 +166,12 @@ class SparcBundle:
         merged_inputs = input_parameters.copy()
         merged_inputs.update(kwargs)
         # TODO: special input param handling
-        data_dict["inpt_blocks"].update(merged_inputs)
+        data_dict["inpt"]["params"].update(merged_inputs)
         # TODO: label
 
         # If copy_psp, change the PSEUDO_POT field and copy the files
         if copy_psp:
-            for block in data_dict["ion_atom_blocks"]:
+            for block in data_dict["ion"]["atom_blocks"]:
                 if "PSEUDO_POT" in block:
                     origin_psp = block["PSEUDO_POT"]
                     target_dir = self.directory

@@ -1,4 +1,9 @@
 import pytest
+from pathlib import Path
+
+curdir = Path(__file__).parent
+test_psp_dir = curdir / "psps"
+test_output_dir = curdir / "outputs"
 
 
 def test_import_order1():
