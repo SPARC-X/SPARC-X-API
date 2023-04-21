@@ -761,3 +761,6 @@ parameters.json
 *.lcov
 coverage.json
 /badges/
+/psp/*.psp8
+/psp/*.psp
+/psp/*.pot
