@@ -6,11 +6,29 @@ from setuptools import find_packages
 from warnings import warn
 
 
-from sparc.download_data import download_psp
-try:
-    download_psp()
-except Exception:
-    warn("Downloading external data to sparc-dft-api failed. Buidling wheel with them.")
+# from sparc.download_data import download_psp
+# try:
+#     download_psp()
+# except Exception:
+# #     warn("Downloading external data to sparc-dft-api failed. Buidling wheel with them.")
+
+from setuptools.command.install import install
+from warnings import warn
+
+
+# class PostInstallCommand(install):
+#     def run(self):
+#         install.run(self)
+
+#         try:
+#             from sparc.download_data import download_psp
+#         except ImportError as e:
+#             raise ImportError("Cannot load sparc, is the installation correct?") from e
+        
+#         try:
+#             download_psp()
+#         except Exception:
+#             warn("Downloading external data to sparc-dft-api failed. Building wheel with them.")
     
 
 
@@ -36,4 +54,5 @@ setup(
     },
     package_data={"sparc": ["psp/*"]},
     include_package_data=True,
+    # cmdclass={"install": PostInstallCommand},
 )

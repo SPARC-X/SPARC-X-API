@@ -35,6 +35,8 @@ jobs:
     - name: Install package
       run: |
         pip install -e ".[test]"
+        # Download the external psp data
+        python -m sparc.download_data
     - name: Test with pytest
       run: |
         # python -m pytest -svv tests/ --cov=sparc --cov-report=json --cov-report=html
