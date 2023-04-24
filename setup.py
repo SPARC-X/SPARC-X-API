@@ -24,12 +24,11 @@ from warnings import warn
 #             from sparc.download_data import download_psp
 #         except ImportError as e:
 #             raise ImportError("Cannot load sparc, is the installation correct?") from e
-        
+
 #         try:
 #             download_psp()
 #         except Exception:
 #             warn("Downloading external data to sparc-dft-api failed. Building wheel with them.")
-    
 
 
 test_requires = ["pytest", "pyfakefs", "pytest-cov", "black", "flake8", "anybadge"]

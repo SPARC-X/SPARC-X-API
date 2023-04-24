@@ -8,6 +8,7 @@ python -m sparc.download_data
 import os
 from pathlib import Path
 import tempfile
+
 # import urllib.request
 from urllib.request import urlopen
 import zipfile
@@ -24,8 +25,7 @@ all_psp8_checksum = "5ef42c4a81733a90b0e080b771c5a73a"
 
 
 def download_psp(sparc_tag=sparc_tag, psp_dir=psp_dir):
-    """Download the external PSPs into the sparc/psp folder
-    """
+    """Download the external PSPs into the sparc/psp folder"""
     if is_psp_download_complete():
         print("PSPs have been successfully downloaded!")
         return True
@@ -52,14 +52,13 @@ def download_psp(sparc_tag=sparc_tag, psp_dir=psp_dir):
 
 
 def checksum_all(psp_dir=psp_dir, extension="*.psp8"):
-    """Checksum all the files under the psp_dir
-    """
+    """Checksum all the files under the psp_dir"""
     checker = hashlib.md5()
     psp_dir = Path(psp_dir)
     # Use sorted to make sure file order is correct
     for filename in sorted(psp_dir.glob(extension)):
-    # Open the file in binary mode and update the group checksum
-        with open(filename, 'r') as f:
+        # Open the file in binary mode and update the group checksum
+        with open(filename, "r") as f:
             f_checker = hashlib.md5()
             content = f.read().encode("utf8")
             f_checker.update(content)
@@ -67,10 +66,11 @@ def checksum_all(psp_dir=psp_dir, extension="*.psp8"):
     final_checksum = checker.hexdigest()
     return final_checksum
 
+
 def is_psp_download_complete(psp_dir=psp_dir):
     return checksum_all(psp_dir) == all_psp8_checksum
+
 
 if __name__ == "__main__":
     print("Running command-line psp downloader")
     download_psp()
-    

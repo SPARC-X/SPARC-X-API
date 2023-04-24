@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from pathlib import Path
 import os
+import tempfile
 
 curdir = Path(__file__).parent
 test_psp_dir = curdir / "psps"
@@ -13,10 +14,10 @@ def test_bundle_psp(monkeypatch):
 
     # Disable the default psp searching mechanism
     from sparc import sparc_io_bundle
+
     monkeypatch.setattr(sparc_io_bundle, "default_psp_dir", "/tmp")
-    
+
     from sparc.sparc_io_bundle import SparcBundle
-    
 
     os.environ.pop("SPARC_PP_PATH", None)
     os.environ.pop("SPARC_PSP_PATH", None)
@@ -38,6 +39,7 @@ def test_bundle_psp(monkeypatch):
     sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc", psp_dir="./")
     assert sb.psp_dir.resolve() == Path(".").resolve()
 
+
 def test_default_psp(monkeypatch):
     """Test if default location of psp are correct"""
     from sparc import sparc_io_bundle
@@ -45,17 +47,16 @@ def test_default_psp(monkeypatch):
     # Make the psp downloader check always true
     def _fake_psp_check(directory):
         return True
+
     monkeypatch.setattr(sparc_io_bundle, "is_psp_download_complete", _fake_psp_check)
-    
+
     from sparc.sparc_io_bundle import SparcBundle
     from sparc.common import psp_dir as default_psp_dir
-    
 
     os.environ.pop("SPARC_PP_PATH", None)
     os.environ.pop("SPARC_PSP_PATH", None)
     sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc")
     assert Path(sb.psp_dir).resolve() == Path(default_psp_dir).resolve()
-    
 
 
 def test_bundle_label():
@@ -204,3 +205,24 @@ def test_write_ion_inpt(fs):
 
     sp = SparcBundle(directory="test.sparc", mode="w")
     sp._write_ion_and_inpt(atoms, direct=True, copy_psp=False)
+    # Copy psp should have the psps available
+
+
+def test_write_ion_inpt_real():
+    """Same example as in test_parse_atoms but try writing inpt and atoms"""
+    from sparc.sparc_io_bundle import SparcBundle
+    from ase.units import Bohr, Angstrom
+    from ase.build import bulk
+
+    # Even without SPARC_PP_PATH, the psp files should exist
+    os.environ.pop("SPARC_PP_PATH", None)
+    os.environ.pop("SPARC_PSP_PATH", None)
+
+    atoms = bulk("Cu") * [4, 4, 4]
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        workdir = tmpdir / "test.sparc"
+        sp = SparcBundle(directory=workdir, mode="w")
+        sp._write_ion_and_inpt(atoms, direct=True, copy_psp=True)
+        # Copy psp should have the psps available
+        assert len(list(Path(workdir).glob("*.psp8"))) == 1

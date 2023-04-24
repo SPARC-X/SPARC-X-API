@@ -101,8 +101,12 @@ class SparcBundle:
             if is_psp_download_complete(default_psp_dir):
                 return default_psp_dir
             else:
-                warn(("PSP directory bundled with sparc-dft-api is broken! Please use `sparc.download_data` to re-download them!"))
-            
+                warn(
+                    (
+                        "PSP directory bundled with sparc-dft-api is broken! Please use `sparc.download_data` to re-download them!"
+                    )
+                )
+
             # Not found
             if self.mode == "w":
                 warn(
