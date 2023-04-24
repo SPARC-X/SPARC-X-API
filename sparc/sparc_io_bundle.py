@@ -33,6 +33,8 @@ from .sparc_parsers.inpt import _read_inpt, _write_inpt, _inpt_cell_to_ase_cell
 from .sparc_parsers.atoms import dict_to_atoms, atoms_to_dict
 from .sparc_parsers.pseudopotential import find_pseudo_path, copy_psp_file
 from .inputs import SparcInputs
+from .common import psp_dir as default_psp_dir
+from .download_data import is_psp_download_complete
 
 
 class SparcBundle:
@@ -86,7 +88,7 @@ class SparcBundle:
         1. User defined psp_dir
         2. $SPARC_PSP_PATH
         3. $SPARC_PP_PATH
-        4. TOOD: psp bundled with sparc-api
+        4. psp bundled with sparc-api
         """
         if psp_dir is not None:
             return Path(psp_dir)
@@ -95,6 +97,16 @@ class SparcBundle:
                 env_psp_dir = os.environ.get(var, None)
                 if env_psp_dir:
                     return Path(env_psp_dir)
+            # At this point, we try to use the psp files bundled with sparc
+            if is_psp_download_complete(default_psp_dir):
+                return default_psp_dir
+            else:
+                warn(
+                    (
+                        "PSP directory bundled with sparc-dft-api is broken! Please use `sparc.download_data` to re-download them!"
+                    )
+                )
+
             # Not found
             if self.mode == "w":
                 warn(

@@ -9,6 +9,15 @@ sparc-dft-api is an ASE based python wrapper for the density functional theory (
 
 The current sparc python API is under heavy re-construction. The below are the on-going API changes
 
+Installation
+
+```bash
+pip install git+https://github.com/SPARC-X/sparc-dft-api
+python -m sparc.download_data
+```
+
+*TODO*: if the pypi distribution is released, there should be no necessary for `download_data`.
+
 ## A bundled file format
 
 Since all the SPARC in- / output files exist in a directory, the new API treats the directory as a bundle format `.sparc`. Installing `sparc` and import will allow ase to discover this file format
