@@ -8,15 +8,21 @@ test_psp_dir = curdir / "psps"
 test_output_dir = curdir / "outputs"
 
 
-def test_bundle_psp():
+def test_bundle_psp(monkeypatch):
     """Test PSP settings"""
+
+    # Disable the default psp searching mechanism
+    from sparc import sparc_io_bundle
+    monkeypatch.setattr(sparc_io_bundle, "default_psp_dir", "/tmp")
+    
     from sparc.sparc_io_bundle import SparcBundle
+    
 
     os.environ.pop("SPARC_PP_PATH", None)
     os.environ.pop("SPARC_PSP_PATH", None)
     sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc")
 
-    with pytest.warns(UserWarning, match="No pseudopotential"):
+    with pytest.warns(UserWarning, match="re-download"):
         sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc", mode="w")
     assert sb.psp_dir is None
 
@@ -31,6 +37,25 @@ def test_bundle_psp():
 
     sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc", psp_dir="./")
     assert sb.psp_dir.resolve() == Path(".").resolve()
+
+def test_default_psp(monkeypatch):
+    """Test if default location of psp are correct"""
+    from sparc import sparc_io_bundle
+
+    # Make the psp downloader check always true
+    def _fake_psp_check(directory):
+        return True
+    monkeypatch.setattr(sparc_io_bundle, "is_psp_download_complete", _fake_psp_check)
+    
+    from sparc.sparc_io_bundle import SparcBundle
+    from sparc.common import psp_dir as default_psp_dir
+    
+
+    os.environ.pop("SPARC_PP_PATH", None)
+    os.environ.pop("SPARC_PSP_PATH", None)
+    sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc")
+    assert Path(sb.psp_dir).resolve() == Path(default_psp_dir).resolve()
+    
 
 
 def test_bundle_label():

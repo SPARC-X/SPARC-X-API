@@ -34,9 +34,6 @@ setup(
     extras_require={
         "test": test_requires,
     },
-    # cmdclass={
-    #     "download_sparc_psps": DownloadPSPs,
-    # },
     package_data={"sparc": ["psp/*"]},
     include_package_data=True,
 )

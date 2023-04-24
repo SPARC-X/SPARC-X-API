@@ -1,4 +1,5 @@
 import pkg_resources
+from pathlib import Path
 
-repo_dir = pkg_resources.resource_filename("sparc", ".")
-psp_dir = pkg_resources.resource_filename("sparc", 'psp')
+repo_dir = Path(pkg_resources.resource_filename("sparc", "."))
+psp_dir = Path(pkg_resources.resource_filename("sparc", 'psp'))
