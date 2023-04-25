@@ -37,7 +37,6 @@ import textwrap
 defaultAPI = SparcInputs()
 
 
-
 @reader
 def _read_aimd(fileobj):
     """
@@ -77,5 +76,4 @@ def _write_aimd(
     fileobj,
     data_dict,
 ):
-   raise NotImplementedError("Writing aimd file from python-api not supported!")
-    
+    raise NotImplementedError("Writing aimd file from python-api not supported!")

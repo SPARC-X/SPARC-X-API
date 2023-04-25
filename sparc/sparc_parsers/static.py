@@ -51,8 +51,7 @@ def _read_static(fileobj):
     block_bounds = [i for i, x in enumerate(data) if ":" in x] + [len(data)]
     # blocks = [read_static_block(data[start:end]) for start, end in zip(block_bounds[:-1], block_bounds[1:])]
     raw_blocks = [
-        data[start:end]
-        for start, end in zip(block_bounds[:-1], block_bounds[1:])
+        data[start:end] for start, end in zip(block_bounds[:-1], block_bounds[1:])
     ]
     static_dict = read_static_blocks(raw_blocks)
     return {"static": static_dict}
@@ -73,8 +72,12 @@ def _read_static_block(raw_block):
     try:
         value = np.genfromtxt(body, dtype=float)
         if np.isnan(value).any():
-            warn((f"Field contains data that are not parsable by numpy!\n"
-                  f"Contents are: {body}"))
+            warn(
+                (
+                    f"Field contains data that are not parsable by numpy!\n"
+                    f"Contents are: {body}"
+                )
+            )
     except Exception:
         value = body
 
@@ -98,8 +101,7 @@ def _read_static_block(raw_block):
 
 
 def read_static_blocks(raw_blocks):
-    """Read all blocks from the static file and compose a dict
-    """
+    """Read all blocks from the static file and compose a dict"""
     block_dict = {}
     coord_dict = {}
     block_contents = [_read_static_block(block) for block in raw_blocks]
@@ -111,18 +113,22 @@ def read_static_blocks(raw_blocks):
             symbol, coord_f = raw_value["symbol"], raw_value["value"]
             pos_count = len(coord_f)
             if coord_dict == {}:
-                coord_dict.update({
-                    "symbols": [
-                        symbol,
-                    ] * pos_count,
-                    "coord_frac": coord_f
-                })
+                coord_dict.update(
+                    {
+                        "symbols": [
+                            symbol,
+                        ]
+                        * pos_count,
+                        "coord_frac": coord_f,
+                    }
+                )
             else:
                 coord_dict["symbols"] += [
                     symbol,
                 ] * pos_count
                 coord_dict["coord_frac"] += np.vstack(
-                    [coord_dict["coord_frac"], coord_f])
+                    [coord_dict["coord_frac"], coord_f]
+                )
 
         elif name == "free energy":
             value = raw_value * Hartree
@@ -132,14 +138,19 @@ def read_static_blocks(raw_blocks):
             # Stress is in eV/Ang^3, may need to convert to Virial later when cell is known
             stress_ev_a3 = raw_value * GPa
             if stress_ev_a3.shape != (3, 3):
-                raise ValueError(
-                    "Stress from static file is not a 3x3 matrix!")
+                raise ValueError("Stress from static file is not a 3x3 matrix!")
             # make the stress in voigt notation
             # TODO: check the order!
-            value = np.array([
-                stress_ev_a3[0, 0], stress_ev_a3[1, 1], stress_ev_a3[2, 2],
-                stress_ev_a3[1, 2], stress_ev_a3[0, 2], stress_ev_a3[0, 1]
-            ])
+            value = np.array(
+                [
+                    stress_ev_a3[0, 0],
+                    stress_ev_a3[1, 1],
+                    stress_ev_a3[2, 2],
+                    stress_ev_a3[1, 2],
+                    stress_ev_a3[0, 2],
+                    stress_ev_a3[0, 1],
+                ]
+            )
 
         # Non-frac coord
         if value is not None:
@@ -156,7 +167,7 @@ def _add_cell_info(static_dict, cell=None):
     """When cell information is available, convert
 
     The cell should already be in angstrom
-    
+
     1) the cell position from fractional to cartesian
     2) Anything else?
     """
@@ -166,7 +177,7 @@ def _add_cell_info(static_dict, cell=None):
         return new_dict
     coord_frac = block_dict["atoms"]["coord_frac"]
     coord_cart = np.dot(coord_frac, cell)
-    new_dict["atoms"]["coord"] = coord_cart
+    new_dict["static"]["atoms"]["coord"] = coord_cart
     return new_dict
 
 
@@ -175,5 +186,4 @@ def _write_static(
     fileobj,
     data_dict,
 ):
-    raise NotImplementedError(
-        "Writing static file from python-api not supported!")
+    raise NotImplementedError("Writing static file from python-api not supported!")

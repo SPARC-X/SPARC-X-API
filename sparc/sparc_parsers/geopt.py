@@ -37,7 +37,6 @@ import textwrap
 defaultAPI = SparcInputs()
 
 
-
 @reader
 def _read_geopt(fileobj):
     """
@@ -77,5 +76,4 @@ def _write_geopt(
     fileobj,
     data_dict,
 ):
-   raise NotImplementedError("Writing geopt file from python-api not supported!")
-    
+    raise NotImplementedError("Writing geopt file from python-api not supported!")

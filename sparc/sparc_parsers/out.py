@@ -37,7 +37,6 @@ import textwrap
 defaultAPI = SparcInputs()
 
 
-
 @reader
 def _read_out(fileobj):
     """
@@ -77,5 +76,6 @@ def _write_out(
     fileobj,
     data_dict,
 ):
-   raise NotImplementedError("Writing sparc output file from python-api not supported!")
-    
+    raise NotImplementedError(
+        "Writing sparc output file from python-api not supported!"
+    )
