@@ -16,8 +16,9 @@ from warnings import warn
 
 import numpy as np
 from ase import Atoms, Atom
-from ase.units import Bohr
+from ase.units import Bohr, Hartree, eV, GPa
 from ase.constraints import FixAtoms, FixedLine, FixedPlane
+
 
 # Safe wrappers for both string and fd
 from ase.utils import reader, writer
@@ -26,12 +27,13 @@ from .utils import (
     get_label,
     strip_comments,
     bisect_and_strip,
-    read_block_input,
     make_reverse_mapping,
 )
 
 from ..inputs import SparcInputs
 import textwrap
+import re
+from datetime import datetime
 
 # TODO: should allow user to select the api
 defaultAPI = SparcInputs()
@@ -40,42 +42,41 @@ defaultAPI = SparcInputs()
 @reader
 def _read_out(fileobj):
     """
-    Read information from the .ion file. Note, this method does not return an atoms object,
-    but rather return a dict. Thus the label option is not necessary to keep
+    Read the .out file content
 
+    The output file is just a formatted stdout, so there are many chances that 
 
-    Reads an ion file. Because some of the information necessary to create
-    an atoms object is found in the .inpt file, this function also attemtps to read
-    that as a source of data. If the file is not found or the information is invalid,
-    it will look for it in the comments of the ion file, as written.
+    Each .static file should only host 1 image (as least per now), but the output may vary
+    a lot depending on the flags (e.g. PRINT_ATOMS, PRINT_FORCES etc)
     """
     contents = fileobj.read()
-    # label = get_label(fileobj, ".ion")
-    data, comments = strip_comments(contents)
-    # We do not read the cell at this time!
-    sort, resort, new_comments = _read_sort_comment(comments)
+    sparc_version = _read_sparc_version(contents[:4096])
+    print(sparc_version)
 
-    # find the index for all atom type lines. They should be at the top of their block
-    atom_type_bounds = [i for i, x in enumerate(data) if "ATOM_TYPE" in x] + [len(data)]
-    atom_blocks = [
-        read_block_input(data[start:end], validator=defaultAPI)
-        for start, end in zip(atom_type_bounds[:-1], atom_type_bounds[1:])
-    ]
 
-    return {
-        "ion": {
-            "atom_blocks": atom_blocks,
-            "comments": new_comments,
-            "sorting": {"sort": sort, "resort": resort},
-        }
-    }
+def _read_sparc_version(header):
+    """Read the sparc version from the output file header.
 
+    This function should live outside the _read_output since some other functions may use it
+
+    TODO: combine it with the version from initialization.c
+    """
+    pattern_version = r"SPARC\s+\(\s*?version(.*?)\)"
+    match = re.findall(pattern_version, header)
+    if len(match) != 1:
+        warn(
+            "Header does not contain SPARC version information!"
+        )
+        return None
+    date_str = match[0].strip().replace(",", " ")
+    date_version = datetime.strptime(date_str, "%b %d %Y").strftime("%Y.%m.%d")
+    return date_version
+    
+    
 
 @writer
 def _write_out(
     fileobj,
     data_dict,
 ):
-    raise NotImplementedError(
-        "Writing sparc output file from python-api not supported!"
-    )
+    raise NotImplementedError("Writing output file from python-api not supported!")
