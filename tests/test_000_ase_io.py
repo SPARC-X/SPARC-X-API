@@ -1,9 +1,26 @@
+"""This test file has to be run in the beginning of all other unit tests,
+or otherwise the test_import_orderX may fail.
+
+It is recommended that the file name of this test not to be changed, or run this test separatedly.
+"""
 import pytest
 from pathlib import Path
 
 curdir = Path(__file__).parent
 test_psp_dir = curdir / "psps"
 test_output_dir = curdir / "outputs"
+
+# @pytest.fixture(scope="function")
+# def unload_modules():
+#     import importlib
+#     import sys
+#     modules_before = set(sys.modules)
+#     yield
+#     modules_after = set(sys.modules)
+
+#     for module_name in modules_after - modules_before:
+#         if module_name in sys.modules:
+#             importlib.reload(sys.modules[module_name])
 
 
 def test_import_order1():

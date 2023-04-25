@@ -50,7 +50,6 @@ def _read_aimd(fileobj):
     stripped, comments = strip_comments(contents)
     # Do not include the description lines
     data = [line for line in stripped if ":Desc" not in line]
-    
 
     # find the index for all atom type lines. They should be at the top of their block
     step_bounds = [i for i, x in enumerate(data) if ":MDSTEP:" in x] + [len(data)]
@@ -59,9 +58,8 @@ def _read_aimd(fileobj):
     ]
     aimd_steps = [_read_aimd_step(step) for step in raw_aimd_blocks]
 
-    return {
-        "aimd": aimd_steps
-    }
+    return {"aimd": aimd_steps}
+
 
 def _read_aimd_step(raw_aimd_text):
     """Parse a geopt step and compose the data dict
@@ -82,9 +80,7 @@ def _read_aimd_step(raw_aimd_text):
     step = int(header.split(":MDSTEP:")[-1]) - 1
     print("Step ", step)
     bounds = [i for i, x in enumerate(body) if ":" in x] + [len(body)]
-    blocks = [
-        body[start:end] for start, end in zip(bounds[:-1], bounds[1:])
-    ]
+    blocks = [body[start:end] for start, end in zip(bounds[:-1], bounds[1:])]
     data = {}
     for block in blocks:
         header_block, body_block = block[0], block[1:]
@@ -97,72 +93,72 @@ def _read_aimd_step(raw_aimd_text):
         # import pdb; pdb.set_trace()
         raw_value = np.genfromtxt(block_raw_data, dtype=float)
         # The type definitions from MD may be treated from API again?
-        if header_name == "R" :
+        if header_name == "R":
             name = "positions"
             value = raw_value.reshape((-1, 3)) * Bohr
-        elif  header_name == "V":
+        elif header_name == "V":
             name = "velocities"
             value = raw_value.reshape((-1, 3)) * Bohr / AUT / (Angstrom / fs)
-        elif  header_name == "F":
+        elif header_name == "F":
             name = "forces"
             value = raw_value.reshape((-1, 3)) * Hartree / Bohr
-        elif  header_name == "MDTM":
+        elif header_name == "MDTM":
             # This is not the md integration time!
             name = "md_walltime"
             value = float(raw_value)
-        elif  header_name == "TEL":
+        elif header_name == "TEL":
             name = "electron temp"
             value = float(raw_value)
-        elif  header_name == "TIO":
+        elif header_name == "TIO":
             name = "ion temp"
             value = float(raw_value)
-        elif  header_name == "TEN":
+        elif header_name == "TEN":
             # Note it's the total energy per atom!
             # TODO: shall we convert to ase fashion?
             name = "total energy per atom"
             value = float(raw_value) * Hartree
-        elif  header_name == "KEN":
+        elif header_name == "KEN":
             # Note it's the total energy per atom!
             # TODO: shall we convert to ase fashion?
             name = "kinetic energy per atom"
             value = float(raw_value) * Hartree
-        elif  header_name == "KENIG":
+        elif header_name == "KENIG":
             # Note it's the total energy per atom!
             # TODO: shall we convert to ase fashion?
             name = "kinetic energy (ideal gas) per atom"
             value = float(raw_value) * Hartree
-        elif  header_name == "FEN":
+        elif header_name == "FEN":
             # Note it's the total energy per atom!
             # TODO: shall we convert to ase fashion?
             name = "free energy per atom"
             value = float(raw_value) * Hartree
-        elif  header_name == "UEN":
+        elif header_name == "UEN":
             # Note it's the total energy per atom!
             # TODO: shall we convert to ase fashion?
             name = "internal energy per atom"
             value = float(raw_value) * Hartree
-        elif  header_name == "TSEN":
+        elif header_name == "TSEN":
             # Note it's the total energy per atom!
             # TODO: shall we convert to ase fashion?
             name = "entropy*T per atom"
             value = float(raw_value) * Hartree
-        elif  header_name == "STRESS":
+        elif header_name == "STRESS":
             # Don't do the volume conversion now
             name = "stress"
             value = raw_value * GPa
-        elif  header_name == "STRIO":
+        elif header_name == "STRIO":
             # Don't do the volume conversion now
             name = "stress (ion-kinetic)"
             value = raw_value * GPa
-        elif  header_name == "PRES":
+        elif header_name == "PRES":
             # Don't do the volume conversion now
             name = "pressure"
             value = raw_value * GPa
-        elif  header_name == "PRESIO":
+        elif header_name == "PRESIO":
             # Don't do the volume conversion now
             name = "pressure (ion-kinetic)"
             value = raw_value * GPa
-        elif  header_name == "PRESIG":
+        elif header_name == "PRESIG":
             # Don't do the volume conversion now
             name = "pressure (ideal gas)"
             value = raw_value * GPa
@@ -176,7 +172,7 @@ def _read_aimd_step(raw_aimd_text):
             data[name] = value
     data["step"] = step
     return data
-        
+
 
 @writer
 def _write_aimd(

@@ -56,9 +56,8 @@ def _read_geopt(fileobj):
     ]
     geopt_steps = [_read_geopt_step(step) for step in raw_geopt_blocks]
 
-    return {
-        "geopt": geopt_steps
-    }
+    return {"geopt": geopt_steps}
+
 
 def _read_geopt_step(raw_step_text):
     """Parse a geopt step and compose the data dict
@@ -73,9 +72,7 @@ def _read_geopt_step(raw_step_text):
     step = int(header.split(":RELAXSTEP:")[-1]) - 1
     print("Step ", step)
     bounds = [i for i, x in enumerate(body) if ":" in x] + [len(body)]
-    blocks = [
-        body[start:end] for start, end in zip(bounds[:-1], bounds[1:])
-    ]
+    blocks = [body[start:end] for start, end in zip(bounds[:-1], bounds[1:])]
     data = {}
     for block in blocks:
         header_block, body_block = block[0], block[1:]
@@ -101,7 +98,7 @@ def _read_geopt_step(raw_step_text):
             value = raw_value * Bohr
         elif "VOLUME" in header_name:
             name = "volume"
-            value = raw_value * Bohr ** 3
+            value = raw_value * Bohr**3
         elif "LATVEC" in header_name:
             # TODO: the LATVEC is ambiguous. Are the results a unit cell, or full cell?
             name = "latvec"
@@ -125,7 +122,9 @@ def _read_geopt_step(raw_step_text):
                 ]
             )
         else:
-            warn(f"Field {header_name} is not known to geopt! I'll use the results as is.")
+            warn(
+                f"Field {header_name} is not known to geopt! I'll use the results as is."
+            )
             name = header_name
             value = raw_value
         data[name] = value
@@ -138,7 +137,7 @@ def _read_geopt_step(raw_step_text):
         data["ase_cell"] = cell
     data["step"] = step
     return data
-        
+
 
 @writer
 def _write_geopt(

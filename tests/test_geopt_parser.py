@@ -12,7 +12,11 @@ def test_geopt_parser():
     from sparc.common import repo_dir
     from sparc.sparc_parsers.geopt import _read_geopt
 
-    data_dict = _read_geopt(test_output_dir / "AlSi_primitive_quick_relax.sparc" / "AlSi_primitive_quick_relax.geopt")
+    data_dict = _read_geopt(
+        test_output_dir
+        / "AlSi_primitive_quick_relax.sparc"
+        / "AlSi_primitive_quick_relax.geopt"
+    )
     assert "geopt" in data_dict
     geopt_steps = data_dict["geopt"]
     for i, step in enumerate(geopt_steps):
@@ -32,4 +36,4 @@ def test_geopt_parser():
         assert np.isclose(vol_ase, step["volume"])
 
     max_final_f = np.max(np.abs(step["forces"]))
-    assert max_final_f < 1.e-3 * Hartree / Bohr
+    assert max_final_f < 1.0e-3 * Hartree / Bohr
