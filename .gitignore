@@ -765,3 +765,8 @@ coverage.json
 **/psp/*.psp
 **/psp/*.pot
 /sparc_core.py
+/archive/
+/badge.svg
+/coverage.svg
+/pylint.svg
+Untitled*

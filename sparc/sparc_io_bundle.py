@@ -44,6 +44,14 @@ class SparcBundle:
     4) Relaxation: read from .geopt and .out (supporting chaining)
     5) AIMD: read from .aimd and .out (support chaining)
 
+
+    Currently, the bundle object is intended to be used for one-time read / write
+
+    TODO: multiple occurance support
+    TODO: archive support
+
+
+    
     """
 
     psp_env = ["SPARC_PSP_PATH", "SPARC_PP_PATH"]
@@ -53,16 +61,23 @@ class SparcBundle:
         # TODO: more sensible naming for name?
         self.name = self.directory.with_suffix("").name
         self.label = self.__make_label(label)  # name of the main sparc file
-
-        self.file_list = []  # list of file names in the directory
         self.mode = mode.lower()
         assert self.mode in (
             "r",
             "w",
             "a",
         ), f"Invalid mode {self.mode}! Must one of 'r', 'w' or 'a'"
+        # TODO: assigning atoms here is probably not useful!
         self.atoms = atoms
         self.psp_dir = self.__find_psp_dir(psp_dir)
+        # Sorting should be consistent across the whole bundle!
+        self.sorting = None
+
+
+    def _find_files(self):
+        """Find all files matching '{label}.*'
+        """
+        return list(self.directory.glob(f"{self.label}.*"))
 
     def __make_label(self, label=None):
         illegal_chars = '\\/:*?"<>|'
@@ -187,6 +202,41 @@ class SparcBundle:
         _write_ion(self._indir(".ion"), data_dict)
         _write_inpt(self._indir(".inpt"), data_dict)
         return
+
+    def read_results(self):
+        """Parse all files using the given self.label.
+        The results are merged dict from all file formats
+
+        For now, we just read the FIRST appearing files to confirm it's working
+
+        TODO: support multi occurance
+        """
+        results_dict = {}
+        for ext in ("ion", "inpt", "geopt", "static", "aimd", "out"):
+            # TODO: maybe a hack for adding multiple occruance here
+            f = self._indir(ext)
+            if f.is_file():
+                data_dict = globals()[f"_read_{ext}"](f)
+                results_dict.update(data_dict)
+
+        # Must have files: ion, inpt
+        # TODO: make another function to check sanity
+        if ("ion" not in results_dict) or ("inpt" not in results_dict):
+            raise RuntimeError("Either ion or inpt files are missing from the bundle! "
+                               "Your SPARC calculation may be corrupted.")
+
+        # Copy the sorting information, if not existing
+        sorting = results_dict["ion"].get("sorting", None)
+        if sorting is not None:
+            if self.sorting is None:
+                self.sorting = sorting
+            else:
+                # Compare stored sorting
+                assert ((tuple(self.sorting["sort"]) == tuple(sorting["sort"])) \
+                        and \
+                        (tuple(self.sorting["resort"]) == tuple(sorting["resort"]))),\
+                        "Sorting information changed!"
+        return results_dict
 
 
 def read_sparc(filename, *args, **kwargs):
