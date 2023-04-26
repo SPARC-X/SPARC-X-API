@@ -27,6 +27,7 @@ from .utils import (
     get_label,
     strip_comments,
     bisect_and_strip,
+    read_block_input,
     make_reverse_mapping,
 )
 
@@ -38,20 +39,30 @@ from datetime import datetime
 # TODO: should allow user to select the api
 defaultAPI = SparcInputs()
 
-
 @reader
 def _read_out(fileobj):
     """
     Read the .out file content
 
-    The output file is just a formatted stdout, so there are many chances that 
-
-    Each .static file should only host 1 image (as least per now), but the output may vary
-    a lot depending on the flags (e.g. PRINT_ATOMS, PRINT_FORCES etc)
+    The output file is just stdout. The blocks are read using re-patterns rather than the way .static / .geopt or .aimd are parsed
     """
     contents = fileobj.read()
     sparc_version = _read_sparc_version(contents[:4096])
     print(sparc_version)
+    # TODO: use the sparc version to construct the API
+    output_dict = {"sparc_version": sparc_version}
+    # Combine the input parameters and parallelization sections
+    output_dict["parameters"] = _read_input_params(contents)
+
+    # Parse the Initialization and timing info, and if calculation
+    # successfully finished
+    # Note: not all information are converted!
+    output_dict["run_info"] = _read_run_info(contents)
+    # List of scf information,
+    # including scf convergence, energy etc
+    output_dict["ionic_steps"] = _read_scfs(contents)
+    return {"out": output_dict}
+
 
 
 def _read_sparc_version(header):
@@ -71,6 +82,119 @@ def _read_sparc_version(header):
     date_str = match[0].strip().replace(",", " ")
     date_version = datetime.strptime(date_str, "%b %d %Y").strftime("%Y.%m.%d")
     return date_version
+
+def  _read_input_params(contents, validator=defaultAPI):
+    """Parse the Input parameters and Paral
+    """
+    lines = "\n".join(_get_block_text(contents,
+                                      "Input parameters")
+                      + _get_block_text(contents,
+                                        "Parallelization")).split("\n")
+    print(lines)
+    params = read_block_input(lines, validator=validator)
+    return params
+
+def _read_run_info(contents):
+    """Parse the run info sections
+    Note due to the complexity of the run info,
+    the types are not directly converted
+    """
+    lines = "\n".join(_get_block_text(contents,
+                                      "Timing info")
+                      + _get_block_text(contents,
+                                        "Initialization")).split("\n")
+    block_dict = {"raw_info": lines}
+    # Select key fields to store
+    for line in lines:
+        if ":" not in line:
+            continue
+        key, value = bisect_and_strip(line, ":")
+        key = key.lower()
+        if key in block_dict:
+            warn(f"Key {key} from run information appears multiple times in your outputfile!")
+        block_dict[key] = value
+    return block_dict
+
+
+def _read_scfs(contents):
+    """Parse the ionic steps
+
+    Return:
+    List of ionic steps information
+
+    
+    """
+    convergence_info = _get_block_text(contents, r"Self Consistent Field \(SCF.*?\)")
+    results_info = _get_block_text(contents, "Energy and force calculation")
+
+    if len(convergence_info) != len(results_info):
+        # TODO: change to another exception name
+        raise ValueError("Error, length of convergence information and energy calculation are different!")
+    n_steps = len(convergence_info)
+    steps = []
+    for i, step in enumerate(zip(convergence_info, results_info)):
+        current_step = {"scf_step": i}
+        conv, res = step
+        # TODO: add support for convergence fields
+        conv_lines = conv.splitlines()
+        conv_header = conv_lines[0]
+        # omit the last line which is just a checker
+        conv_array = np.genfromtxt(conv_lines[1:-1], dtype=float)
+        # TODO: the meaning of the header should me split to the width
+        current_step["convergence"] = {"header": conv_header,
+                                       "values": conv_array}
+        
+        res = res.splitlines()
+        for line in res:
+            if ":" not in line:
+                continue
+            key, value = bisect_and_strip(line, ":")
+            key = key.lower()
+            if key in current_step:
+                warn(f"Key {key} appears multiples in one energy / force calculation, your output file may be incorrect.")
+            # Conversion of values are relatively easy
+            pattern_value = r"([+\-\d.Ee]+)\s+\((.*?)\)"
+            match = re.findall(pattern_value, value)
+            print(value)
+            print(match)
+            raw_value, unit = float(match[0][0]), match[0][1]
+            if unit == "Ha":
+                converted_value = raw_value * Hartree
+                converted_unit = "eV"
+            elif unit == "Ha/atom":
+                converted_value = raw_value * Hartree
+                converted_unit = "eV/atom"
+            elif unit == "Ha/Bohr":
+                converted_value = raw_value * Hartree / Bohr
+                converted_unit = "eV/Angstrom"
+            elif unit == "GPa":
+                converted_value = raw_value * GPa
+                converted_unit = "eV/Angstrom^3"
+            elif unit == "sec":
+                converted_value = raw_value * 1
+                converted_unit = "sec"
+            else:
+                warn(f"Conversion for unit {unit} unknown! Treat as unit")
+                converted_value = raw_value
+                converted_unit = unit
+            current_step[key] = {"value": converted_value, "unit": converted_unit}
+        steps.append(current_step)
+    return steps
+    
+    
+
+def _get_block_text(text, block_name):
+    """Get an output 'block' with a specific block name
+
+    the outputs are not line-split
+    """
+    pattern_block = r"[\*=]{50,}\s*?\n\s*?BLOCK_NAME\s*?\n[\*=]{50,}\s*\n(.*?)[\*=]{50,}" 
+    pattern = pattern_block.replace("BLOCK_NAME", block_name)
+    match = re.findall(pattern, text, re.DOTALL | re.MULTILINE)
+    if len(match) == 0:
+        warn(f"Block {block_name} cannot be parsed from current text!")
+    return match
+    
     
     
 
