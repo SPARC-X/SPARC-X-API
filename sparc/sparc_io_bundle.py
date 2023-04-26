@@ -16,8 +16,14 @@ from pathlib import Path
 
 from warnings import warn
 
+# various io formatters
 from .sparc_parsers.ion import _read_ion, _write_ion
 from .sparc_parsers.inpt import _read_inpt, _write_inpt
+from .sparc_parsers.static import _read_static
+from .sparc_parsers.geopt import _read_geopt
+from .sparc_parsers.aimd import _read_aimd
+from .sparc_parsers.out import _read_out
+
 from .sparc_parsers.atoms import dict_to_atoms, atoms_to_dict
 from .sparc_parsers.pseudopotential import copy_psp_file
 from .common import psp_dir as default_psp_dir

@@ -764,3 +764,4 @@ coverage.json
 **/psp/*.psp8
 **/psp/*.psp
 **/psp/*.pot
+/sparc_core.py
