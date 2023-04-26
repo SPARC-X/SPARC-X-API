@@ -8,7 +8,6 @@ Created on Wed Mar  1 15:32:31 EST 2023
 Tian Tian (alchem0x2a@gmail.com)
 """
 import re
-import os
 import json
 from pathlib import Path
 from warnings import warn

@@ -7,23 +7,15 @@ This file has been heavily modified since SPARC 0.1
 
 TODO: more descriptions about this file io parser
 """
-import shutil
-import os
-from typing import List
-from collections import namedtuple
-import warnings
 from warnings import warn
 
 import numpy as np
-from ase import Atoms, Atom
 from ase.units import Bohr
-from ase.constraints import FixAtoms, FixedLine, FixedPlane
 
 # Safe wrappers for both string and fd
 from ase.utils import reader, writer
 
 from .utils import (
-    get_label,
     strip_comments,
     bisect_and_strip,
     read_block_input,

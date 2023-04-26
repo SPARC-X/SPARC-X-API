@@ -51,7 +51,7 @@ setup(
     extras_require={
         "test": test_requires,
     },
-    package_data={"sparc": ["psp/*"]},
+    package_data={"sparc": ["psp/*", "sparc_json_api/*.json"]},
     include_package_data=True,
     # cmdclass={"install": PostInstallCommand},
 )

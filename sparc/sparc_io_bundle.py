@@ -7,32 +7,19 @@ ase.io.vasp
 ase.io.trajectory
 
 """
-import re
 import os
 
-import numpy as np
-
-from ase import Atoms, Atom
-from ase.utils import reader, writer
-from ase.io.utils import ImageIterator
-from ase.io import ParseError
 from pathlib import Path
 
 # from .sparc_parsers.ion import read_ion, write_ion
 
-from ase import io
-import numpy as np
-from pathlib import Path
-import shutil
-import tarfile
 
 from warnings import warn
 
-from .sparc_parsers.ion import _read_ion, _write_ion, _ion_coord_to_ase_pos
-from .sparc_parsers.inpt import _read_inpt, _write_inpt, _inpt_cell_to_ase_cell
+from .sparc_parsers.ion import _read_ion, _write_ion
+from .sparc_parsers.inpt import _read_inpt, _write_inpt
 from .sparc_parsers.atoms import dict_to_atoms, atoms_to_dict
-from .sparc_parsers.pseudopotential import find_pseudo_path, copy_psp_file
-from .inputs import SparcInputs
+from .sparc_parsers.pseudopotential import copy_psp_file
 from .common import psp_dir as default_psp_dir
 from .download_data import is_psp_download_complete
 
@@ -82,7 +69,8 @@ class SparcBundle:
         return label_
 
     def __find_psp_dir(self, psp_dir=None):
-        """Use environmental variable to find the directory for SPARC pseudopotentials
+        """Use environmental variable to find the directory for SPARC
+        pseudopotentials
 
         Searching priority:
         1. User defined psp_dir
