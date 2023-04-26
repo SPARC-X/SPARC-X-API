@@ -30,7 +30,7 @@ class SparcInputs:
         parameter = parameter.upper()
         if parameter not in self.parameters.keys():
             raise KeyError(
-                f"Parameter {parameter} is not known to SPARC {self.sparc_version}!"
+                f"Parameter {parameter} is not known to " f"SPARC {self.sparc_version}!"
             )
         return self.parameters[parameter]
 
@@ -68,10 +68,13 @@ class SparcInputs:
         if dtype == "string":
             return is_input_string
         elif dtype == "other":
-            # Do nother for the "other" types but simply reply on the str() method
+            # Do nother for the "other" types but simply
+            # reply on the str() method
             if not is_input_string:
                 warn(
-                    f"Parameter {parameter} has 'other' data type and your input is not a string. I hope you know what you're doing!"
+                    f"Parameter {parameter} has 'other' data type "
+                    "and your input is not a string. "
+                    "I hope you know what you're doing!"
                 )
             return True
         elif dtype == "integer":
@@ -108,8 +111,10 @@ class SparcInputs:
                     if (arr.dtype not in (int, bool)) and ("integer" in dtype):
                         warn(
                             (
-                                f"Input {input} for parameter {parameter} it not strictly intr. "
-                                "I can still perform the conversion but be aware of data loss"
+                                f"Input {input} for parameter {parameter} is"
+                                " not strictly integer. "
+                                "I can still perform the conversion but "
+                                "be aware of data loss"
                             )
                         )
                 except Exception:
@@ -170,7 +175,7 @@ class SparcInputs:
 
         pdict = self.get_parameter_dict(parameter)
         dtype = pdict["type"]
-        allow_bool_input = pdict.get("allow_bool_input", False)
+        # allow_bool_input = pdict.get("allow_bool_input", False)
 
         if dtype == "string":
             string = str(value).strip()
@@ -198,5 +203,6 @@ def _array_to_string(arr, format):
     elif format in ("double array", "double"):
         fmt = "%g"
     np.savetxt(buf, arr, delimiter=" ", fmt=fmt, header="", footer="", newline="\n")
-    # Return the string output of the buffer with leading/trailing whitespaces removed
+    # Return the string output of the buffer with
+    # whitespaces removed
     return buf.getvalue().strip()

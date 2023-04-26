@@ -7,30 +7,19 @@ This file has been heavily modified since SPARC 0.1
 
 TODO: more descriptions about this file io parser
 """
-import shutil
-import os
-from typing import List
-from collections import namedtuple
-import warnings
 from warnings import warn
 
 import numpy as np
-from ase import Atoms, Atom
 from ase.units import Bohr, Hartree, GPa, fs, AUT, Angstrom
-from ase.constraints import FixAtoms, FixedLine, FixedPlane
 
 # Safe wrappers for both string and fd
 from ase.utils import reader, writer
 
 from .utils import (
-    get_label,
     strip_comments,
-    bisect_and_strip,
-    make_reverse_mapping,
 )
 
 from ..inputs import SparcInputs
-import textwrap
 
 # TODO: should allow user to select the api
 defaultAPI = SparcInputs()
@@ -166,7 +155,7 @@ def _read_aimd_step(raw_aimd_text):
             warn(f"MD output keyword {header_name} will not be parsed.")
             value = None
         else:
-            warn(f"MD output keyword {header_name} not known to SPARC. Ignore.")
+            warn(f"MD output keyword {header_name} not known to SPARC. " "Ignore.")
             value = None
         if value is not None:
             data[name] = value
@@ -179,4 +168,4 @@ def _write_aimd(
     fileobj,
     data_dict,
 ):
-    raise NotImplementedError("Writing aimd file from python-api not supported!")
+    raise NotImplementedError("Writing aimd file from python-api " "not supported!")

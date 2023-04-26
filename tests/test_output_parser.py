@@ -13,8 +13,9 @@ def test_output_parser():
     from sparc.sparc_parsers.out import _read_out
 
     data_dict = _read_out(
-        test_output_dir / "AlSi_primitive_quick_relax.sparc" /
-        "AlSi_primitive_quick_relax.out"
+        test_output_dir
+        / "AlSi_primitive_quick_relax.sparc"
+        / "AlSi_primitive_quick_relax.out"
     )
     assert "out" in data_dict
     out_dict = data_dict["out"]
@@ -28,3 +29,11 @@ def test_output_parser():
     for step in ionic_steps:
         assert "convergence" in step
         assert "total free energy" in step
+
+
+def test_output_parser_all():
+    from sparc.common import repo_dir
+    from sparc.sparc_parsers.out import _read_out
+
+    for f_out in test_output_dir.glob("**/*.out"):
+        data_dict = _read_out(f_out)

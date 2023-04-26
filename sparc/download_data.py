@@ -5,7 +5,6 @@ Run:
 python -m sparc.download_data
 """
 
-import os
 from pathlib import Path
 import tempfile
 
@@ -16,7 +15,7 @@ from io import BytesIO
 import shutil
 import hashlib
 
-from .common import psp_dir, repo_dir
+from .common import psp_dir
 
 sparc_tag = "b702c1061400a2d23c0e223e32182609d7958156"
 sparc_source_url = "https://github.com/SPARC-X/SPARC/archive/{sparc_tag}.zip"

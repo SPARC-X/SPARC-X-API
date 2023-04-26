@@ -1,31 +1,19 @@
 """Convert ase atoms to structured dict following SPARC format
 and vice versa
 """
-import re
 
 import numpy as np
 
 from ase import Atoms, Atom
-from ase.utils import reader, writer
-from ase.io.utils import ImageIterator
-from ase.io import ParseError
 from ase.units import Bohr
-from pathlib import Path
 
 # from .sparc_parsers.ion import read_ion, write_ion
 
-from ase import io
-import numpy as np
-from pathlib import Path
-import shutil
-import tarfile
-
-from .ion import _read_ion, _write_ion, _ion_coord_to_ase_pos
-from .inpt import _read_inpt, _write_inpt, _inpt_cell_to_ase_cell
+from .ion import _ion_coord_to_ase_pos
+from .inpt import _inpt_cell_to_ase_cell
 from .pseudopotential import find_pseudo_path
 from .utils import make_reverse_mapping
-from ..inputs import SparcInputs
-from ase.constraints import FixAtoms, FixedLine, FixedPlane, FixScaled
+from ase.constraints import FixAtoms, FixedLine, FixedPlane
 
 from warnings import warn
 from copy import deepcopy
@@ -56,7 +44,7 @@ def atoms_to_dict(
 
     """
     # Step 1: if we should sort the atoms?
-    origin_atoms = atoms.copy()
+    # origin_atoms = atoms.copy()
     if sort:
         sort_ = np.argsort(atoms.get_chemical_symbols())
         resort_ = make_reverse_mapping(sort_)

@@ -7,31 +7,19 @@ This file has been heavily modified since SPARC 0.1
 
 TODO: more descriptions about this file io parser
 """
-import shutil
-import os
-from typing import List
-from collections import namedtuple
-import warnings
 from warnings import warn
 
 import numpy as np
-from ase import Atoms, Atom
-from ase.units import Bohr, Hartree, eV, GPa
-from ase.constraints import FixAtoms, FixedLine, FixedPlane
+from ase.units import Bohr, Hartree, GPa
 
 # Safe wrappers for both string and fd
 from ase.utils import reader, writer
 
 from .utils import (
-    get_label,
     strip_comments,
-    bisect_and_strip,
-    make_reverse_mapping,
 )
 
 from ..inputs import SparcInputs
-import textwrap
-import re
 
 # TODO: should allow user to select the api
 defaultAPI = SparcInputs()
