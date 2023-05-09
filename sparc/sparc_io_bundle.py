@@ -51,7 +51,7 @@ class SparcBundle:
     TODO: archive support
 
 
-    
+
     """
 
     psp_env = ["SPARC_PSP_PATH", "SPARC_PP_PATH"]
@@ -59,7 +59,7 @@ class SparcBundle:
     def __init__(self, directory, mode="r", atoms=None, label=None, psp_dir=None):
         self.directory = Path(directory)
         # TODO: more sensible naming for name?
-        self.name = self.directory.with_suffix("").name
+        self.prefix = self.directory.resolve().with_suffix("").name
         self.label = self.__make_label(label)  # name of the main sparc file
         self.mode = mode.lower()
         assert self.mode in (
@@ -73,15 +73,13 @@ class SparcBundle:
         # Sorting should be consistent across the whole bundle!
         self.sorting = None
 
-
     def _find_files(self):
-        """Find all files matching '{label}.*'
-        """
+        """Find all files matching '{label}.*'"""
         return list(self.directory.glob(f"{self.label}.*"))
 
     def __make_label(self, label=None):
         illegal_chars = '\\/:*?"<>|'
-        label_ = label if label is not None else self.name
+        label_ = label if label is not None else self.prefix
         if any([c in label_ for c in illegal_chars]):
             warn(
                 f"Label name {label_} contains illegal characters! I'll make it 'SPARC'"
@@ -222,8 +220,10 @@ class SparcBundle:
         # Must have files: ion, inpt
         # TODO: make another function to check sanity
         if ("ion" not in results_dict) or ("inpt" not in results_dict):
-            raise RuntimeError("Either ion or inpt files are missing from the bundle! "
-                               "Your SPARC calculation may be corrupted.")
+            raise RuntimeError(
+                "Either ion or inpt files are missing from the bundle! "
+                "Your SPARC calculation may be corrupted."
+            )
 
         # Copy the sorting information, if not existing
         sorting = results_dict["ion"].get("sorting", None)
@@ -232,10 +232,9 @@ class SparcBundle:
                 self.sorting = sorting
             else:
                 # Compare stored sorting
-                assert ((tuple(self.sorting["sort"]) == tuple(sorting["sort"])) \
-                        and \
-                        (tuple(self.sorting["resort"]) == tuple(sorting["resort"]))),\
-                        "Sorting information changed!"
+                assert (tuple(self.sorting["sort"]) == tuple(sorting["sort"])) and (
+                    tuple(self.sorting["resort"]) == tuple(sorting["resort"])
+                ), "Sorting information changed!"
         return results_dict
 
 
