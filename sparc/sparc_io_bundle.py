@@ -72,6 +72,7 @@ class SparcBundle:
         self.psp_dir = self.__find_psp_dir(psp_dir)
         # Sorting should be consistent across the whole bundle!
         self.sorting = None
+        self.last_image = -1
 
     def _find_files(self):
         """Find all files matching '{label}.*'"""
@@ -125,7 +126,7 @@ class SparcBundle:
                 )
             return None
 
-    def _indir(self, ext, label=None):
+    def _indir(self, ext, label=None, occur=0, d_format="{:02d}"):
         """Find the file with {label}.{ext} under current dir
 
         if label is None, use the default
@@ -134,7 +135,10 @@ class SparcBundle:
         label = self.label if label is None else label
         if not ext.startswith("."):
             ext = "." + ext
-        target = self.directory / f"{label}{ext}"
+        if occur == 0:
+            target = self.directory / f"{label}{ext}"
+        else:
+            target = self.directory / f"{label}{ext}_{d_format.format(occur)}"
         return target
 
     def _read_ion_and_inpt(self):
@@ -201,18 +205,36 @@ class SparcBundle:
         _write_inpt(self._indir(".inpt"), data_dict)
         return
 
-    def read_results(self):
+    def read_results(self, image=-1):
         """Parse all files using the given self.label.
         The results are merged dict from all file formats
 
         For now, we just read the FIRST appearing files to confirm it's working
 
         TODO: support multi occurance
+        
         """
         results_dict = {}
-        for ext in ("ion", "inpt", "geopt", "static", "aimd", "out"):
+        # Find the max output index
+        # TODO: move this into another function
+        last_out = sorted(self.directory.glob(f"{self.label}.out*"), reverse=True)[0]
+        print("Last output file: ", last_out)
+        suffix = last_out.suffix
+        if suffix == ".out":
+            self.last_image = 0
+        else:
+            self.last_image = int(suffix.split("_")[1])
+        current_image = range(self.last_image + 1)[image]
+        
+        print("Current image to read: ", current_image)
+        for ext in ("ion", "inpt"):
             # TODO: maybe a hack for adding multiple occruance here
-            f = self._indir(ext)
+            f = self._indir(ext, occur=0)
+            if f.is_file():
+                data_dict = globals()[f"_read_{ext}"](f)
+                results_dict.update(data_dict)
+        for ext in ("geopt", "static", "aimd", "out"):
+            f = self._indir(ext, occur=current_image)
             if f.is_file():
                 data_dict = globals()[f"_read_{ext}"](f)
                 results_dict.update(data_dict)
