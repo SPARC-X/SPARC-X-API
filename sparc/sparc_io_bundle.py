@@ -29,6 +29,8 @@ from .sparc_parsers.pseudopotential import copy_psp_file
 from .common import psp_dir as default_psp_dir
 from .download_data import is_psp_download_complete
 
+from ase.calculators.singlepoint import SinglePointDFTCalculator
+
 
 class SparcBundle:
     """Provide access to a calculation folder of SPARC as a simple bundle
@@ -142,7 +144,10 @@ class SparcBundle:
         return target
 
     def _read_ion_and_inpt(self):
-        """Read the ion and inpt files together"""
+        """Read the ion and inpt files together
+        
+        This method should be rarely used
+        """
         f_ion, f_inpt = self._indir(".ion"), self._indir(".inpt")
         ion_data = _read_ion(f_ion)
         inpt_data = _read_inpt(f_inpt)
@@ -205,36 +210,46 @@ class SparcBundle:
         _write_inpt(self._indir(".inpt"), data_dict)
         return
 
-    def read_results(self, image=-1):
+    def read_raw_results(self, include_all_files=False):
         """Parse all files using the given self.label.
         The results are merged dict from all file formats
 
-        For now, we just read the FIRST appearing files to confirm it's working
-
-        TODO: support multi occurance
-
+        Argument
+        all_files: True --> include all files (out, out_01, out_02, etc)
+                   when all files are included, output is a list of dicts; otherwise a single dict
         """
-        results_dict = {}
         # Find the max output index
         # TODO: move this into another function
         last_out = sorted(self.directory.glob(f"{self.label}.out*"), reverse=True)[0]
-        print("Last output file: ", last_out)
+        # print("Last output file: ", last_out)
         suffix = last_out.suffix
         if suffix == ".out":
             self.last_image = 0
         else:
             self.last_image = int(suffix.split("_")[1])
-        current_image = range(self.last_image + 1)[image]
+        self.num_calculations = self.last_image + 1
+        
+        print(self.last_image, self.num_calculations)
+        
+        if include_all_files:
+            results = [self._read_results_from_index(index) for index in range(self.num_calculations)]
+        else:
+            results = self._read_results_from_index(self.last_image)
+        return results
+        
 
-        print("Current image to read: ", current_image)
+    def _read_results_from_index(self, index, d_format="{:02d}"):
+        """Read the results from one calculation index, and return a single raw result dict
+        """
+        results_dict = {}
+        
         for ext in ("ion", "inpt"):
-            # TODO: maybe a hack for adding multiple occruance here
             f = self._indir(ext, occur=0)
             if f.is_file():
                 data_dict = globals()[f"_read_{ext}"](f)
                 results_dict.update(data_dict)
         for ext in ("geopt", "static", "aimd", "out"):
-            f = self._indir(ext, occur=current_image)
+            f = self._indir(ext, occur=index, d_format=d_format)
             if f.is_file():
                 data_dict = globals()[f"_read_{ext}"](f)
                 results_dict.update(data_dict)
@@ -258,10 +273,144 @@ class SparcBundle:
                     tuple(self.sorting["resort"]) == tuple(sorting["resort"])
                 ), "Sorting information changed!"
         return results_dict
+    
+    def _results_to_calc(self, raw_results):
+        """Create single point calculators
+        """
+        raw_results = raw_results
+        if "static" in raw_results:
+            cal_results = _extract_static_results(raw_results)
+        elif "geopt" in self.raw_results:
+            cal_results = _extract_geopt_results(raw_results)
+        elif "aimd" in self.raw_results:
+            # TODO: make sure we always know the atoms!
+            cal_results = self._extract_aimd_results(self.atoms)
+        else:
+            # No calculation presented or error
+            
+        # Result of the output results, currently only E-fermi
+        # self._extract_out_results()
+
+    def _extract_static_results(self, raw_results):
+        """Extract energy / forces from static results
+        should only be 1 dict for static
+        """
+        static_results = raw_results.get("static", {})
+        calc_results = {}
+        if "free energy" in static_results:
+            calc_results["energy"] = static_results["free energy"]
+            # TODO: shall we distinguish?
+            calc_results["free energy"] = static_results["free energy"]
+
+        if "forces" in static_results:
+            # The forces are already re-sorted!
+            calc_results["forces"] = static_results["forces"]
+
+        if "stress" in static_results:
+            calc_results["stress"] = static_results["stress"]
+        return calc_results
+
+    def _extract_geopt_results(self, raw_results, images=":"):
+        """Extract energy / forces / stress from geopt results
+
+        
+        """
+        geopt_results = raw_results.get("geopt", [])
+        calc_results = []
+        if len(geopt_results) == 0:
+            raise ValueError("Cannot read geopt file or it's empty!")
+
+        if isinstance(images, int):
+            _images = [geopt_results[images]]
+        elif isinstance(images, str):
+            if images == ":":
+                _images = geopt_results
+            else:
+                raise NotImplemented("Not implemented indices!")
+        for result in _images:
+            partial_result = {}
+            if "energy" in result:
+                partial_result["energy"] = result["energy"]
+                # TODO: shall we distinguish?
+                partial_result["free energy"] = result["energy"]
+
+            if "forces" in result:
+                # The forces are already re-sorted!
+                partial_result["forces"] = result["forces"]
+
+            if "stress" in result:
+                partial_result["stress"] = result["stress"]
+            calc_results.append(partial_result)
+        return calc_results
+
+    def _extract_aimd_results(self, raw_results, atoms, images=":"):
+        """Extract energy / forces from aimd results
+
+        For calculator, we only need the last image
+
+        We probably want more information for the AIMD calculations,
+        but I'll keep them for now
+        """
+        aimd_results = raw_results.get("aimd", [])
+        calc_results = []
+        if len(aimd_results) == 0:
+            raise CalculationFailed("Cannot read aimd file or it's empty!")
+
+        if isinstance(images, int):
+            _images = [aimd_results[images]]
+        elif isinstance(images, str):
+            if images == ":":
+                _images = aimd_results
+            else:
+                raise NotImplemented("Not implemented indices!")
+                
+        for result in _images:
+            partial_result = {}
+            if "total energy per atom" in result:
+                partial_result["energy"] = result["total energy per atom"] * len(atoms)
+            if "free energy per atom" in result:
+                partial_result["free energy"] = result["free energy per atom"] * len(atoms)
+
+            if "forces" in result:
+                # The forces are already re-sorted!
+                partial_result["forces"] = result["forces"]
+
+            # TODO: do we change velocities in results or atoms?
+            if "velocities" in result:
+                partial_result["velocities"] = result["velocities"]
+            calc_results.append(partial_result)
+        return calc_results
 
 
-def read_sparc(filename, *args, **kwargs):
-    """Very simple PoC now"""
+    def get_ionic_steps(self, raw_results):
+        """Get last ionic step dict from raw results"""
+        out_results = raw_results.get("out", {})
+        ionic_steps = out_results.get("ionic_steps", [])
+        return ionic_steps
+
+    def _extract_output_results(self, raw_results):
+        """Extract extra information from results"""
+        last_step = get_ionic_step(raw_results)[-1]
+        if "fermi level" in last_step:
+            value = last_step["fermi level"]["value"]
+            unit = last_step["fermi level"]["unit"]
+            if unit.lower() == "ev":
+                self.results["fermi"] = value
+            # Should rarely happen, but keep it here!
+            elif unit.lower() == "hartree":
+                self.results["fermi"] = value * Hartree
+            else:
+                raise ValueError("Wrong unit in Fermi!")
+        return
+            
+            
+
+def read_sparc(filename, include_all_files=False, index=-1, **kwargs):
+    """Parse a SPARC bundle, return an Atoms object or list of Atoms (image)
+    with embedded calculator result.
+    
+    Ar
+    """
     sb = SparcBundle(directory=filename)
     atoms = sb._read_ion_and_inpt()
     return atoms
