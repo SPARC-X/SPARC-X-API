@@ -24,7 +24,7 @@ def _find_default_sparc():
         return sparc_exe, mpi_exe, num_cores
 
     mpi_exe = shutil.which("srun")
-    if mpi_executable is not None:
+    if mpi_exe is not None:
         # If srun is available, get the number of cores from the environment
         num_cores = int(os.environ.get("SLURM_JOB_CPUS_PER_NODE", 1))
         return sparc_exe, mpi_exe, num_cores

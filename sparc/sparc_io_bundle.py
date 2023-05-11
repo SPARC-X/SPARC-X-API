@@ -212,7 +212,7 @@ class SparcBundle:
         For now, we just read the FIRST appearing files to confirm it's working
 
         TODO: support multi occurance
-        
+
         """
         results_dict = {}
         # Find the max output index
@@ -225,7 +225,7 @@ class SparcBundle:
         else:
             self.last_image = int(suffix.split("_")[1])
         current_image = range(self.last_image + 1)[image]
-        
+
         print("Current image to read: ", current_image)
         for ext in ("ion", "inpt"):
             # TODO: maybe a hack for adding multiple occruance here
