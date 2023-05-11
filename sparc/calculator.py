@@ -257,6 +257,59 @@ class SPARC(SparcBundle, FileIOCalculator):
         
         return
     
+    def _extract_geopt_results(self):
+        """Extract energy / forces from geopt results
+        
+        For calculator, we only need the last image
+        """
+        geopt_results = self.raw_results.get("geopt", [])
+        if len(geopt_results) == 0:
+            raise CalculationFailed("Cannot read geopt file or it's empty!")
+        
+        result = geopt_results[-1]
+        if "energy" in result:
+            self.results["energy"] = result["energy"]
+            # TODO: shall we distinguish?
+            self.results["free energy"] = result["energy"]
+        
+        if "forces" in result:
+            # The forces are already re-sorted!
+            self.results["forces"] = result["forces"]
+            
+        if "stress" in result:
+            self.results["stress"] = result["stress"]
+            
+    def _extract_aimd_results(self, atoms):
+        """Extract energy / forces from aimd results
+        
+        For calculator, we only need the last image
+        
+        We probably want more information for the AIMD calculations, 
+        but I'll keep them for now
+        """
+        aimd_results = self.raw_results.get("aimd", [])
+        if len(aimd_results) == 0:
+            raise CalculationFailed("Cannot read aimd file or it's empty!")
+        
+        result = aimd_results[-1]
+        if "total energy per atom" in result:
+            self.results["energy"] = result["total energy per atom"] * len(atoms)
+        if "free energy per atom" in result:
+            self.results["free energy"] = result["free energy per atom"] * len(atoms)
+        
+        if "forces" in result:
+            # The forces are already re-sorted!
+            self.results["forces"] = result["forces"]
+        
+        # TODO: do we change velocities in results or atoms?
+        if "velocities" in result:
+            self.results["velocities"] = result["velocities"]
+            
+        # TODO: must fix the stress format !
+#         if "stress" in result:
+#             self.results["stress"] = result["stress"]
+        
+    
     def get_last_ionic_step(self):
         """Get last ionic step dict from raw results
         """
@@ -283,6 +336,8 @@ class SPARC(SparcBundle, FileIOCalculator):
             else:
                 raise ValueError("Wrong unit in Fermi!")
         return
+    
+    
     
     def get_fermi_level(self):
         """Extra get-method for Fermi level, if calculated

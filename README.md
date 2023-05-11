@@ -3,9 +3,71 @@
 [![Coverage](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)
 [![Unit tests](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml/badge.svg)](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml)
 
-sparc-dft-api is an ASE based python wrapper for the density functional theory (DFT) code SPARC. This wrapper requires <ins>Python3</ins>, and is *currently in active development and alpha testing*, so please use it with caution and report any errors in the "Issues" and/or submit pull requests with patches to fix issues as needed.
+`sparc-dft-api` is an ASE-compatible python API for the density functional theory (DFT) code [SPARC]. It provides the following functionalities:
 
-# Work-in-progress
+1. ASE-compatible format for SPARC in- / output files
+2. JSON API associated with SPARC C-code for parameter validation and conversion
+3. Fully functional calculator interface for SPARC
+
+<!-- *TODO*:
+- [ ] More advanced interface
+- [ ] 
+ -->
+## Installation:
+Choose one of the following ways to install `sparc-dft-api`. The minimal system requirements are 
+a Python >= 3.7 environment on Linux platform.
+
+1) Via `conda` (recommended)
+```bash
+conda install -c alchem0x2a sparc-dft-api sparc
+```
+
+This will install the SPARC executable (`openblas` + `scalapack` version), the SPMS pseudopotential and 
+the python-api all in one step.
+
+<!-- *TODO*:
+- [ ] Push the conda-package to channel
+- [ ] Make sure the SPARC_PP_PATH env variables are automatically set
+- [ ] Mantain a conda-forge release?
+ -->
+ 
+2) Via `pip`
+```bash
+pip install git+https://github.com/SPARC-X/sparc-dft-api
+```
+
+To also download the latest SPMS pseudopotentials associated with SPARC, run the following after installation
+```bash
+python -m sparc.download_data
+```
+
+Please following SPARC's [manual] for compile and installation of the SPARC quantum chemistry code itself in this case.
+
+<!-- *TODO*
+- [ ] Make Pypi
+- [ ] Make wheel available
+ -->
+
+## Post-installation check
+
+We recomment the users to run a simple check after installation:
+```bash
+python -m sparc.quicktest
+```
+
+An `ALL PASS` output indicates your SPARC executable, pseudopotential files, and python api are ready for work.
+If you encounter any issues, please refer to the [Trouble Shooting] section
+
+<!-- *TODO*
+- [ ] Test ase io format support
+- [ ] Test calculator command
+- [ ] Test API version
+- [ ] Complete trouble shooting
+ -->
+
+
+
+<!-- # Work-in-progress
 
 The current sparc python API is under heavy re-construction. The below are the on-going API changes
 
@@ -17,7 +79,7 @@ python -m sparc.download_data
 ```
 
 *TODO*: if the pypi distribution is released, there should be no necessary for `download_data`.
-
+ -->
 ## A bundled file format
 
 Since all the SPARC in- / output files exist in a directory, the new API treats the directory as a bundle format `.sparc`. Installing `sparc` and import will allow ase to discover this file format
