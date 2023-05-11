@@ -11,7 +11,7 @@ from ase.atoms import Atoms
 import subprocess
 
 from .sparc_io_bundle import SparcBundle
-from .utils import _find_default_sparc
+from .utils import _find_default_sparc, h2gpts
 from warnings import warn
 
 # Below are a list of ASE-compatible calculator input parameters that are
@@ -112,6 +112,12 @@ class SPARC(SparcBundle, FileIOCalculator):
         """Create input files via SparcBundle"""
         # import pdb; pdb.set_trace()
         FileIOCalculator.write_input(self, atoms, properties, system_changes)
+
+        converted_params = self._convert_special_params(atoms=atoms)
+        input_parameters = converted_params.copy()
+        input_parameters.update(self.valid_params)
+        # TODO: detect if minimal values are set
+
         self.sparc_bundle._write_ion_and_inpt(
             atoms=atoms,
             label=self.label,
@@ -126,7 +132,7 @@ class SPARC(SparcBundle, FileIOCalculator):
             add_constraints=True,
             copy_psp=True,
             comment="",
-            input_parameters=self.valid_params,
+            input_parameters=input_parameters,
         )
 
     def execute(self):
@@ -183,3 +189,66 @@ class SPARC(SparcBundle, FileIOCalculator):
                     # TODO: helper information
                     warn(f"Input parameter {key} does not have a valid value!")
         return valid_params, special_params
+
+    def _convert_special_params(self, atoms=None):
+        """Convert ASE-compatible parameters to SPARC compatible ones
+        parameters like `h`, `nbands` may need atoms information
+        """
+        converted_sparc_params = {}
+        validator = defaultAPI
+        params = self.special_params.copy()
+
+        # xc --> EXCHANGE_CORRELATION
+        if "xc" in params:
+            xc = params.pop("xc")
+            if xc.lower() == "pbe":
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "GGA_PBE"
+            elif xc.lower() == "lda":
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "LDA_PW"
+
+        # h --> gpts
+        if "h" in params:
+            if "gpts" in params:
+                raise KeyError(
+                    "h and gpts cannot be provided together in SPARC calculator!"
+                )
+            h = params.pop("h")
+            if atoms is None:
+                raise ValueError(
+                    "Must have an active atoms object to convert h --> gpts!"
+                )
+            # TODO: is there any limitation for parallelization?
+            gpts = h2gpts(h, atoms.cell)
+            params["gpts"] = gpts
+
+        # gpts --> FD_GRID
+        if "gpts" in params:
+            gpts = params.pop("gpts")
+            if validator.validate_input("FD_GRID", gpts):
+                converted_sparc_params["FD_GRID"] = gpts
+            else:
+                # TODO: customize error
+                raise ValueError(f"Input parameter gpts has invalid value {gpts}")
+
+        # kpts
+        if "kpts" in params:
+            # TODO: how about accepting ASE's kpts setting?
+            kpts = params.pop("kpts")
+            if validator.validate_input("KPOINT_GRID", kpts):
+                converted_sparc_params["KPOINT_GRID"] = kpts
+            else:
+                # TODO: customize error
+                raise ValueError(f"Input parameter kpts has invalid value {kpts}")
+
+        # nbands
+        if "nbands" in params:
+            # TODO: Check if the nbands are correct in current system
+            # TODO: default $N_e/2 \\times 1.2 + 5$
+            nbands = params.pop("nbands")
+            if validator.validate_input("NSTATES", nbands):
+                converted_sparc_params["NSTATES"] = nbands
+            else:
+                # TODO: customize error
+                raise ValueError(f"Input parameter nbands has invalid value {nbands}")
+
+        return converted_sparc_params
