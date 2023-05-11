@@ -231,8 +231,9 @@ class SPARC(SparcBundle, FileIOCalculator):
             self._extract_static_results()
         elif "geopt" in self.raw_results:
             self._extract_geopt_results()
-        elif "aimd" in self.raw_results():
-            self._extract_aimd_results()
+        elif "aimd" in self.raw_results:
+            # TODO: make sure we always know the atoms!
+            self._extract_aimd_results(self.atoms)
         else:
             # TODO: should be another error instead?
             raise CalculationFailed("Cannot read SPARC output!")
