@@ -1,7 +1,7 @@
 import numpy as np
 import os
 from pathlib import Path
-from ase.calculators.calculator import FileIOCalculator, all_changes
+from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
 from ase.units import Bohr, Hartree, fs, GPa
 from ase.calculators.calculator import CalculatorError, CalculatorSetupError
 from ase.calculators.calculator import CalculationFailed, SCFError, ReadError
@@ -47,13 +47,6 @@ class SPARC(SparcBundle, FileIOCalculator):
         )
 
         self.directory = Path(directory)
-
-        # SparcBundle.__init__(        #                        directory=directory,
-        #                        mode="w",
-        #                        atoms=atoms,
-        #                        label=label,
-        #                        psp_dir=psp_dir)
-
         # TODO: change label?
         self.label = label if label is not None else "SPARC"
         self.sparc_bundle = SparcBundle(
@@ -68,6 +61,21 @@ class SPARC(SparcBundle, FileIOCalculator):
         # Sanitize the kwargs by converting lower -- > upper
         # and perform type check
         self.valid_params, self.special_params = self._sanitize_kwargs(kwargs)
+        self.raw_results = {}
+        
+    @property
+    def sort(self):
+        """Like Vasp calculator
+        ASE atoms --> sort --> SPARC
+        """
+        return self.sparc_bundle.sorting["sort"]
+    
+    @property
+    def resort(self):
+        """Like Vasp calculator
+        SPARC --> resort --> ASE atoms
+        """
+        return self.sparc_bundle.sorting["resort"]
 
     def _make_command(self, extras=""):
         """Use $ASE_SPARC_COMMAND or self.command to determine the command
@@ -159,8 +167,72 @@ class SPARC(SparcBundle, FileIOCalculator):
 
     def read_results(self):
         """Parse from the SparcBundle"""
-        pass
-
+        raw_result_dict = self.sparc_bundle.read_results()
+        self.raw_results = raw_result_dict
+        # TODO: result result function should actually planted back to SparcBundle
+        if "static" in self.raw_results:
+            self._extract_static_results()
+        elif "geopt" in self.raw_results:
+            self._extract_geopt_results()
+        elif "aimd" in self.raw_results():
+            self._extract_aimd_results()
+        else:
+            # TODO: should be another error instead?
+            raise CalculationFailed("Cannot read SPARC output!")
+        # Result of the output results, currently only E-fermi
+        self._extract_out_results()
+        
+    def _extract_static_results(self):
+        """Extract energy / forces from static results
+        """
+        static_results = self.raw_results.get("static", {})
+        if "free energy" in static_results:
+            self.results["energy"] = static_results["free energy"]
+            # TODO: shall we distinguish?
+            self.results["free energy"] = static_results["free energy"]
+        
+        if "forces" in static_results:
+            # The forces are already re-sorted!
+            self.results["forces"] = static_results["forces"]
+            
+        if "stress" in static_results:
+            self.results["stress"] = static_results["stress"]
+        
+        return
+    
+    def get_last_ionic_step(self):
+        """Get last ionic step dict from raw results
+        """
+        out_results = self.raw_results.get("out", {})
+        ionic_steps = out_results.get("ionic_steps", [])
+        if len(ionic_steps) > 0:
+            return ionic_steps[-1]
+        else:
+            return {}
+        
+    
+    def _extract_out_results(self):
+        """Extract extra information from results
+        """
+        last_step = self.get_last_ionic_step()
+        if "fermi level" in last_step:
+            value = last_step["fermi level"]["value"]
+            unit = last_step["fermi level"]["unit"]
+            if unit.lower() == "ev":
+                self.results["fermi"] = value
+            # Should rarely happen, but keep it here!
+            elif unit.lower() == "hartree":
+                self.results["fermi"] = value * Hartree
+            else:
+                raise ValueError("Wrong unit in Fermi!")
+        return
+    
+    def get_fermi_level(self):
+        """Extra get-method for Fermi level, if calculated
+        """
+        return self.results.get("fermi", None)
+        
+        
     def _detect_sparc_version(self):
         """Run a short sparc test to determine which sparc is used"""
         # TODO: complete the implementation
