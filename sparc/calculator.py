@@ -155,20 +155,33 @@ class SPARC(SparcBundle, FileIOCalculator):
         return f"{self.command} {extras}"
 
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
+        """Perform a calculation step
+        """
         Calculator.calculate(self, atoms, properties, system_changes)
         self.write_input(self.atoms, properties, system_changes)
         self.execute()
         self.read_results()
 
-    def write_input(self, atoms, properties=None, system_changes=None):
+    def write_input(self, atoms, properties=[], system_changes=[]):
         """Create input files via SparcBundle"""
         # import pdb; pdb.set_trace()
+        print("Calling the properties: ", properties)
         FileIOCalculator.write_input(self, atoms, properties, system_changes)
 
         converted_params = self._convert_special_params(atoms=atoms)
         input_parameters = converted_params.copy()
         input_parameters.update(self.valid_params)
+        
+        # Make sure desired properties are always ensured, but we don't modify the user inputs
+        if "forces" in properties:
+            input_parameters["print_forces"] = True
+        
+        if "stress" in properties:
+            input_parameters["calc_stress"] = True
+        
         # TODO: detect if minimal values are set
+        
+        # TODO: system_changes ?
 
         self.sparc_bundle._write_ion_and_inpt(
             atoms=atoms,
