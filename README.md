@@ -3,9 +3,9 @@
 [![Coverage](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)
 [![Unit tests](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml/badge.svg)](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml)
 
-`sparc-dft-api` is an ASE-compatible python API for the density functional theory (DFT) code [SPARC]. It provides the following functionalities:
+`sparc-dft-api` is an [ASE]()-compatible python API for the density functional theory (DFT) code [SPARC](). It provides the following functionalities:
 
-1. ASE-compatible format for SPARC in- / output files
+1. ASE-compatible I/O format for SPARC files
 2. JSON API associated with SPARC C-code for parameter validation and conversion
 3. Fully functional calculator interface for SPARC
 
@@ -15,9 +15,9 @@
  -->
 ## Installation:
 Choose one of the following ways to install `sparc-dft-api`. The minimal system requirements are 
-a Python >= 3.7 environment on Linux platform.
+a python >= 3.7 environment on Linux platform. `sparc-dft-api` itself depends on `ase>=3.22`
 
-1) Via `conda` (recommended)
+### 1. Via `conda` (recommended)
 ```bash
 conda install -c alchem0x2a sparc-dft-api sparc
 ```
@@ -31,17 +31,25 @@ the python-api all in one step.
 - [ ] Mantain a conda-forge release?
  -->
  
-2) Via `pip`
+### 2. Install stable version from [PyPI]()
+```bash
+pip instal sparc-dft-api>=2.0
+```
+
+<!-- WIP
+- [ ] Push to pypi? -->
+
+### 3. Install latest version from GitHub
+
 ```bash
 pip install git+https://github.com/SPARC-X/sparc-dft-api
 ```
-
-To also download the latest SPMS pseudopotentials associated with SPARC, run the following after installation
+Download the latest SPMS pseudopotentials after installation (optional):
 ```bash
 python -m sparc.download_data
 ```
 
-Please following SPARC's [manual] for compile and installation of the SPARC quantum chemistry code itself in this case.
+Please following SPARC's [manual]() for compilation and installation of the SPARC DFT code itself in this case.
 
 <!-- *TODO*
 - [ ] Make Pypi
@@ -50,12 +58,12 @@ Please following SPARC's [manual] for compile and installation of the SPARC quan
 
 ### Post-installation check
 
-We recomment the users to run a simple check after installation:
+We recommend the users to run a simple check after installation:
 ```bash
 python -m sparc.quicktest
 ```
 
-An `ALL PASS` output indicates your SPARC executable, pseudopotential files, and python api are ready for work.
+An `ALL PASS` output indicates your SPARC executable, pseudopotential files, and python api are ready to work.
 If you encounter any issues, please refer to the [Trouble Shooting] section.
 
 <!-- *TODO*
@@ -69,9 +77,9 @@ If you encounter any issues, please refer to the [Trouble Shooting] section.
 ## `sparc-dft-api`: Basic usages
 ### 1. Read / write SPARC files
 
-Unlike other quantum chemical codes where the I/O format is associated with a single file in ASE,
-`sparc-dft-api` provides I/O support for a whole SPARC calculation directory, a.k.a "SPARC bundle".
-Installing `sparc` and import will allow ASE to discover this file format (`sparc`).
+Unlike other DFT codes where the ASE format corresponds to a single file,
+`sparc-dft-api` provides I/O support for the whole calculation directory, a.k.a "SPARC bundle".``
+`sparc-dft-api` allows automatic discovery of this file format (`sparc-bundle`) in ASE:
 
 - Read from a sparc bundle
 
