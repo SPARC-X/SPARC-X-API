@@ -3,39 +3,184 @@
 [![Coverage](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)
 [![Unit tests](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml/badge.svg)](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml)
 
-sparc-dft-api is an ASE based python wrapper for the density functional theory (DFT) code SPARC. This wrapper requires <ins>Python3</ins>, and is *currently in active development and alpha testing*, so please use it with caution and report any errors in the "Issues" and/or submit pull requests with patches to fix issues as needed.
+`sparc-dft-api` is an ASE-compatible python API for the density functional theory (DFT) code [SPARC]. It provides the following functionalities:
 
-# Work-in-progress
+1. ASE-compatible format for SPARC in- / output files
+2. JSON API associated with SPARC C-code for parameter validation and conversion
+3. Fully functional calculator interface for SPARC
 
-The current sparc python API is under heavy re-construction. The below are the on-going API changes
+<!-- *TODO*:
+- [ ] More advanced interface
+- [ ] 
+ -->
+## Installation:
+Choose one of the following ways to install `sparc-dft-api`. The minimal system requirements are 
+a Python >= 3.7 environment on Linux platform.
 
-Installation
+1) Via `conda` (recommended)
+```bash
+conda install -c alchem0x2a sparc-dft-api sparc
+```
 
+This will install the SPARC executable (`openblas` + `scalapack` version), the SPMS pseudopotential and 
+the python-api all in one step.
+
+<!-- *TODO*:
+- [ ] Push the conda-package to channel
+- [ ] Make sure the SPARC_PP_PATH env variables are automatically set
+- [ ] Mantain a conda-forge release?
+ -->
+ 
+2) Via `pip`
 ```bash
 pip install git+https://github.com/SPARC-X/sparc-dft-api
+```
+
+To also download the latest SPMS pseudopotentials associated with SPARC, run the following after installation
+```bash
 python -m sparc.download_data
 ```
 
-*TODO*: if the pypi distribution is released, there should be no necessary for `download_data`.
+Please following SPARC's [manual] for compile and installation of the SPARC quantum chemistry code itself in this case.
 
-## A bundled file format
+<!-- *TODO*
+- [ ] Make Pypi
+- [ ] Make wheel available
+ -->
 
-Since all the SPARC in- / output files exist in a directory, the new API treats the directory as a bundle format `.sparc`. Installing `sparc` and import will allow ase to discover this file format
+### Post-installation check
 
-```python
-import sparc
-from ase.io.sparc import read_sparc, write_sparc
+We recomment the users to run a simple check after installation:
+```bash
+python -m sparc.quicktest
 ```
 
-The format will be automatically discovered via `ase.io.read` and `ase.io.write` methods.
+An `ALL PASS` output indicates your SPARC executable, pseudopotential files, and python api are ready for work.
+If you encounter any issues, please refer to the [Trouble Shooting] section.
+
+<!-- *TODO*
+- [ ] Test ase io format support
+- [ ] Test calculator command
+- [ ] Test API version
+- [ ] Complete trouble shooting
+ -->
+
+
+## `sparc-dft-api`: Basic usages
+### 1. Read / write SPARC files
+
+Unlike other quantum chemical codes where the I/O format is associated with a single file in ASE,
+`sparc-dft-api` provides I/O support for a whole SPARC calculation directory, a.k.a "SPARC bundle".
+Installing `sparc` and import will allow ASE to discover this file format (`sparc`).
+
+- Read from a sparc bundle
+
 ```python
 import sparc
 from ase.io import read, write
 
-atoms = read("test.sparc", format="sparc")
+atoms = read("test.sparc", format="sparc", image=-1)
 ```
 
-Currently the read of single `.ion` and `.inpt` files are implemented.
+- Write a minimal sparc bundle from atoms / images
+
+```python
+import sparc
+from ase.io import read, write
+from ase.build import Bulk
+atoms = Bulk("Al") * [4, 4, 4]
+atoms.write("test.sparc", format="sparc")
+```
+
+For more details about the bundle IO format, please see [Behind the scene] section
+
+### 2. JSON API for SPARC calculator
+
+A common problem in quantum mechanical codes is that the low-level codes (written in Fortran/C/C++) may 
+introduce changes from version to version, while the upper-level API (ASE calculator interface) 
+are often out-dated regarding the parameter sets, default values etc.
+
+DFT parameters in `sparc-dft-api` are *first-world members*, by using a JSON API translated from the LaTeX
+documentation of SPARC. Each release of `sparc-dft-api` will have the default parameter set linked with the same 
+version of SPARC executable, while providing compatibility with other versions.
+
+We provide a API object `sparc.inputs.SparcInputs` for loading and validating parameters, as well as generating 
+user-friendly help information. Most most 
+users, the API validation / conversion is done automatically. 
+If you want more control over the JSON API, please refer to the [JSON API] section.
+
+### 3. Calculator interface
+
+`sparc-dft-api` provides a calculator interface that should be familiar for users with experience on any other 
+ASE calculators (`Vasp`, `QuantumEspresso`, `GPAW` etc), as shown in the following examples:
+
+1. Single point calculation
+```python
+from sparc.calculator import SPARC
+from ase.build import molecule
+atoms = molecule("H2", cell=(10, 10, 10), pbc=True, directory="run_sp")
+atoms.calc = SPARC(h=0.25)
+atoms.get_potential_energy()
+atoms.get_forces()
+```
+
+This example sets up a calculation for H2 atoms in a 10 x 10 x 10 Å$^3$ PBC cell with PBE 
+exchange correlation function, and a grid spacing (`h`) of 0.25 Å. Note by calling `atoms.get_forces`,
+the calculator will automatically sets the flags for printing the forces.
+
+2. Geometric optimization (using SPARC's internal routines)
+```python
+from sparc.calculator import SPARC
+from ase.build import bulk
+atoms = bulk("Al")
+atoms.rattle()
+atoms.calc = SPARC(h=0.25, kpts=(3, 3, 3), relax_flag=True, directory="run_opt")
+atoms.get_potential_energy()
+atoms.get_forces()
+```
+
+This example sets up a calculation for a rattled Aluminum primitive unit cell, calculate with PBE 
+functional, grid spacing of 0.25 Å, and 3 x 3 x 3 K-point grid. Optimization of ionic positions 
+is handled with SPARC's internal LBFGS routine.
+
+3. AIMD in SPARC
+*WIP*
+
+```python
+from sparc.calculator import SPARC
+from ase.build import bulk
+md_params = dict(md_flag=True, ion_temp=800, md_method="NVE", md_timestep=0.6, md_nstep=5)
+atoms = bulk("Al") * (3, 3, 3)
+atoms.rattle()
+atoms.calc = SPARC(h=0.25, kpts=(1, 1, 1), directory="run_aimd", **md_params)             
+atoms.get_potential_energy()
+```
+
+This example runs a short NVE MD simulation (5 steps) at 800 K for 27 Al atoms.
+
+
+## Major changes from `sparc-dft-api` [v1.0]
+
+The python API has been heavily re-formatted v2.0. If you're using legacy python codes
+that are written under v1.0 API, there are a few major changes that require your attention:
+
+1. v2.0 API no longer provides a single I/O format for SPARC `.ion` file due to the reason explained in 
+   [I/O] section. The lattice information in `.ion` files generated by legacy API will remain
+   harmless but not parsed.
+2. v2.0 API uses a different mapping scheme for the sorting of ASE atoms objects (similar to `Vasp`).
+3. v2.0 API keeps all SPARC internal parameters (i.e. those can be **CAPITALIZED**) in atomic units, will all other
+   ASE-specific units are in Å / eV / fs. *TODO: discuss with group for opinion*
+4. v2.0 API is more flexible treating the `ASE_SPARC_COMMAND` environmental variable. While the same command v1.0 uses
+   should still work, there is no need to specify `-name PREFIX` in the command.
+
+
+
+<!-- ###### *Behind the scene*
+
+`import sparc` will creates hooks in ASE's `ioformat` for `sparc.sparc_io_bundle.read_sparc` 
+and `sparc.sparc_io_bundle.write_sparc` methods, allowing automatic format discovery.
+
+
 
 ## Behind the bundle file format
 
@@ -70,7 +215,7 @@ python -m sparc.docparser <root-to-sparc-cpde>/doc/.LaTeX
 which generates a json file `parameters.json` for the current API. 
 We also keep track of the latest API under `sparc/sparc_json_api/parameters.json`.
 
-We provide a API object `sparc.inputs.SparcInputs` for loading and validating parameters.
+
 
 Use it like this:
 1. Load the latest SPARC api
@@ -242,5 +387,5 @@ atoms.center()
 atoms.set_pbc([False] * 3 )
 atoms.set_calculator(calc)
 calc.write_input()
-~~~
+~~~ -->
 
