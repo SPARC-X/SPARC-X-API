@@ -60,7 +60,7 @@ class SparcBundle:
         self.directory = Path(directory)
         # TODO: more sensible naming for name?
         self.prefix = self.directory.resolve().with_suffix("").name
-        self.label = self.__make_label(label)  # name of the main sparc file
+        self.label = self._make_label(label)  # name of the main sparc file
         self.mode = mode.lower()
         assert self.mode in (
             "r",
@@ -77,7 +77,7 @@ class SparcBundle:
         """Find all files matching '{label}.*'"""
         return list(self.directory.glob(f"{self.label}.*"))
 
-    def __make_label(self, label=None):
+    def _make_label(self, label=None):
         illegal_chars = '\\/:*?"<>|'
         label_ = label if label is not None else self.prefix
         if any([c in label_ for c in illegal_chars]):

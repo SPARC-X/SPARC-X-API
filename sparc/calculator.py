@@ -30,6 +30,14 @@ class SPARC(SparcBundle, FileIOCalculator):
     name = "sparc"
     ase_objtype = "sparc_calculator"  # For JSON storage
     special_inputs = sparc_python_inputs
+    
+    # A "minimal" set of parameters that user can call plug-and-use
+    # like atoms.calc = SPARC()
+    default_params = {
+        "xc": "pbe",
+        "kpts": (1, 1, 1),
+        "h": 0.25,   # Angstrom
+    }
 
     def __init__(
         self,
@@ -43,25 +51,61 @@ class SPARC(SparcBundle, FileIOCalculator):
         **kwargs,
     ):
         FileIOCalculator.__init__(
-            self, restart=restart, label=label, atoms=atoms, command=command, **kwargs
+            self, restart=restart, label=label, atoms=atoms, command=command, directory=directory, **kwargs
         )
-
-        self.directory = Path(directory)
         # TODO: change label?
         self.label = label if label is not None else "SPARC"
         self.sparc_bundle = SparcBundle(
-            directory=self.directory,
+            directory=Path(directory),
             mode="w",
             atoms=atoms,
             label=self.label,
             psp_dir=psp_dir,
         )
+        print(self.directory)
+        print(self.sparc_bundle.directory)
         # Run a short test to return version of SPARC's binary
         self.sparc_version = self._detect_sparc_version()
         # Sanitize the kwargs by converting lower -- > upper
         # and perform type check
         self.valid_params, self.special_params = self._sanitize_kwargs(kwargs)
         self.raw_results = {}
+    
+    @property
+    def directory(self):
+        if hasattr(self, "sparc_bundle"):
+            return Path(self.sparc_bundle.directory)
+        else:
+            return Path(self._directory)
+    @directory.setter
+    def directory(self, directory):
+        if hasattr(self, "sparc_bundle"):
+            self.sparc_bundle.directory = Path(directory)
+        else:
+            self._directory = Path(directory)
+        return
+    
+    @property
+    def label(self):
+        """Rewrite the label from Calculator class, since we don't want to contain pathsep
+        """
+        if hasattr(self, "sparc_bundle"):
+            return self.sparc_bundle.label
+        else:
+            return getattr(self, "_label", None)
+        
+    @label.setter
+    def label(self, label):
+        """Rewrite the label from Calculator class, since we don't want to contain pathsep
+        """
+        label = str(label)
+        if hasattr(self, "sparc_bundle"):
+            self.sparc_bundle.label = sparc_bundle._make_label(label)
+        else:
+            self._label = label
+        
+    
+        
         
     @property
     def sort(self):
@@ -244,7 +288,8 @@ class SPARC(SparcBundle, FileIOCalculator):
         # TODO: versioned validator
         validator = defaultAPI
         valid_params = {}
-        special_params = {}
+        special_params = self.default_params.copy()
+        # TODO: how about overwriting the default parameters?
         # SPARC API is case insensitive
         for key, value in kwargs.items():
             if key in self.special_inputs:
