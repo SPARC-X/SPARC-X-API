@@ -10,7 +10,7 @@ from ase.calculators.calculator import compare_atoms
 from ase.atoms import Atoms
 import subprocess
 
-from .sparc_io_bundle import SparcBundle
+from .io import SparcBundle
 from .utils import _find_default_sparc, h2gpts
 from warnings import warn
 
@@ -24,7 +24,7 @@ from .inputs import SparcInputs
 defaultAPI = SparcInputs()
 
 
-class SPARC(SparcBundle, FileIOCalculator):
+class SPARC(FileIOCalculator):
     # TODO: magmom should be a possible input
     implemented_properties = ["energy", "forces", "fermi", "stress"]
     name = "sparc"

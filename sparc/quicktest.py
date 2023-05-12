@@ -3,8 +3,7 @@
 
 
 def main():
-    from .calculator import SPARC
-    from .sparc_io_bundle import SparcBundle
+    from sparc import SPARC
 
     calc = SPARC()
     calc._make_command()
