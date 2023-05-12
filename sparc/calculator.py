@@ -241,8 +241,6 @@ class SPARC(SparcBundle, FileIOCalculator):
         # Result of the output results, currently only E-fermi
         self._extract_out_results()
 
-    
-
     def get_fermi_level(self):
         """Extra get-method for Fermi level, if calculated"""
         return self.results.get("fermi", None)

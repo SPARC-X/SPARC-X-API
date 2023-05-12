@@ -70,7 +70,8 @@ class SparcBundle:
             "a",
         ), f"Invalid mode {self.mode}! Must one of 'r', 'w' or 'a'"
         # TODO: assigning atoms here is probably not useful!
-        self.atoms = atoms
+        self.init_atoms = atoms.copy() if atoms is not None else None
+        self.raw_results = None
         self.psp_dir = self.__find_psp_dir(psp_dir)
         # Sorting should be consistent across the whole bundle!
         self.sorting = None
@@ -145,7 +146,7 @@ class SparcBundle:
 
     def _read_ion_and_inpt(self):
         """Read the ion and inpt files together
-        
+
         This method should be rarely used
         """
         f_ion, f_inpt = self._indir(".ion"), self._indir(".inpt")
@@ -228,21 +229,25 @@ class SparcBundle:
         else:
             self.last_image = int(suffix.split("_")[1])
         self.num_calculations = self.last_image + 1
-        
+
         print(self.last_image, self.num_calculations)
-        
+
         if include_all_files:
-            results = [self._read_results_from_index(index) for index in range(self.num_calculations)]
+            results = [
+                self._read_results_from_index(index)
+                for index in range(self.num_calculations)
+            ]
         else:
             results = self._read_results_from_index(self.last_image)
-        return results
-        
+
+        self.raw_results = results
+        self.init_atoms = dict_to_atoms(self.raw_results)
+        return self.raw_results
 
     def _read_results_from_index(self, index, d_format="{:02d}"):
-        """Read the results from one calculation index, and return a single raw result dict
-        """
+        """Read the results from one calculation index, and return a single raw result dict"""
         results_dict = {}
-        
+
         for ext in ("ion", "inpt"):
             f = self._indir(ext, occur=0)
             if f.is_file():
@@ -273,33 +278,69 @@ class SparcBundle:
                     tuple(self.sorting["resort"]) == tuple(sorting["resort"])
                 ), "Sorting information changed!"
         return results_dict
-    
-    def _results_to_calc(self, raw_results):
-        """Create single point calculators
-        """
-        raw_results = raw_results
-        if "static" in raw_results:
-            cal_results = _extract_static_results(raw_results)
-        elif "geopt" in self.raw_results:
-            cal_results = _extract_geopt_results(raw_results)
-        elif "aimd" in self.raw_results:
-            # TODO: make sure we always know the atoms!
-            cal_results = self._extract_aimd_results(self.atoms)
-        else:
-            # No calculation presented or error
-            
-        # Result of the output results, currently only E-fermi
-        # self._extract_out_results()
 
-    def _extract_static_results(self, raw_results):
-        """Extract energy / forces from static results
-        should only be 1 dict for static
+    def convert_to_ase(self, indices=-1):
+        """Read the raw results from the bundle and create atoms with single point calculators
+
+        TODO: what to do about the indices?
         """
-        static_results = raw_results.get("static", {})
+        raw_results = self.read_raw_results()
+        if "static" in raw_results:
+            calc_results, images = self._extract_static_results(indices)
+        elif "geopt" in raw_results:
+            calc_results, images = self._extract_geopt_results(indices)
+        elif "aimd" in raw_results:
+            calc_results, images = self._extract_aimd_results(indices)
+        else:
+            calc_results, images = None, [self.init_atoms.copy()]
+
+        if calc_results is not None:
+            images = self._make_singlepoint(calc_results, images)
+
+        if isinstance(indices, int):
+            if len(images) != 1:
+                raise RuntimeError("Int indices should return a single atoms object!")
+            return images[-1]
+        else:
+            return images
+
+    def _make_singlepoint(self, calc_results, images):
+        """Convert a calculator dict and images of Atoms to list of SinglePointDFTCalculators
+
+        The calculator also takes parameters from ion, inpt that exist in self.raw_results
+        """
+        converted_images = []
+        for res, _atoms in zip(calc_results, images):
+            atoms = _atoms.copy()
+            sp = SinglePointDFTCalculator(atoms)
+            # Simply copy the results?
+            sp.results.update(res)
+            sp.name = "sparc"
+            sp.kpts = (
+                self.raw_results["inpt"].get("parameters", {}).get("KPOINT_GRID", None)
+            )
+            # There may be a better way handling the parameters...
+            sp.parameters = self.raw_results["inpt"].get("parameters", {})
+            sp.raw_parameters = {
+                "ion": self.raw_results["ion"],
+                "inpt": self.raw_results["inpt"],
+            }
+            atoms.calc = sp
+            converted_images.append(atoms)
+        return converted_images
+
+    def _extract_static_results(self, indices=":"):
+        """Extract the static calculation results and atomic structure(s)
+        Returns:
+        calc_results: dict with at least energy value
+        atoms: ASE atoms object
+        The priority is to parse position from static file first, then fallback from ion + inpt
+        """
+        # TODO: what about embed raw_results to the bundle?
+        static_results = self.raw_results.get("static", {})
         calc_results = {}
         if "free energy" in static_results:
             calc_results["energy"] = static_results["free energy"]
-            # TODO: shall we distinguish?
             calc_results["free energy"] = static_results["free energy"]
 
         if "forces" in static_results:
@@ -308,14 +349,26 @@ class SparcBundle:
 
         if "stress" in static_results:
             calc_results["stress"] = static_results["stress"]
-        return calc_results
 
-    def _extract_geopt_results(self, raw_results, images=":"):
-        """Extract energy / forces / stress from geopt results
+        atoms = self.init_atoms.copy()
+        if "atoms" in static_results:
+            atoms_dict = static_results["atoms"]
+            # TODO: detect change in atomic symbols!
+            # TODO: Check naming, is it coord_frac or scaled_positions?
+            if "coord_frac" in atoms_dict:
+                atoms.set_scaled_positions(atoms_dict["coord_frac"])
+            elif "coord" in atoms_dict:
+                atoms.set_positions(atoms_dict["coord"])
+        return [calc_results], [atoms]
 
-        
+    def _extract_geopt_results(self, images=":"):
+        """Extract the static calculation results and atomic structure(s)
+        Returns:
+        calc_results: dict with at least energy value
+        atoms: ASE atoms object
+        The priority is to parse position from static file first, then fallback from ion + inpt
         """
-        geopt_results = raw_results.get("geopt", [])
+        geopt_results = self.raw_results.get("geopt", [])
         calc_results = []
         if len(geopt_results) == 0:
             raise ValueError("Cannot read geopt file or it's empty!")
@@ -327,7 +380,10 @@ class SparcBundle:
                 _images = geopt_results
             else:
                 raise NotImplemented("Not implemented indices!")
+
+        ase_images = []
         for result in _images:
+            atoms = self.init_atoms.copy()
             partial_result = {}
             if "energy" in result:
                 partial_result["energy"] = result["energy"]
@@ -340,10 +396,19 @@ class SparcBundle:
 
             if "stress" in result:
                 partial_result["stress"] = result["stress"]
-            calc_results.append(partial_result)
-        return calc_results
 
-    def _extract_aimd_results(self, raw_results, atoms, images=":"):
+            # Modify the atoms copy
+            if "positions" not in result:
+                raise ValueError("Cannot have geopt without positions information!")
+            atoms.set_positions(result["positions"])
+            if "ase_cell" in result:
+                atoms.set_cell(result["ase_cell"])
+            calc_results.append(partial_result)
+            ase_images.append(atoms)
+
+        return calc_results, ase_images
+
+    def _extract_aimd_results(self, images=":"):
         """Extract energy / forces from aimd results
 
         For calculator, we only need the last image
@@ -351,7 +416,7 @@ class SparcBundle:
         We probably want more information for the AIMD calculations,
         but I'll keep them for now
         """
-        aimd_results = raw_results.get("aimd", [])
+        aimd_results = self.raw_results.get("aimd", [])
         calc_results = []
         if len(aimd_results) == 0:
             raise CalculationFailed("Cannot read aimd file or it's empty!")
@@ -363,24 +428,37 @@ class SparcBundle:
                 _images = aimd_results
             else:
                 raise NotImplemented("Not implemented indices!")
-                
+
+        ase_images = []
         for result in _images:
             partial_result = {}
+            atoms = self.init_atoms.copy()
             if "total energy per atom" in result:
                 partial_result["energy"] = result["total energy per atom"] * len(atoms)
             if "free energy per atom" in result:
-                partial_result["free energy"] = result["free energy per atom"] * len(atoms)
+                partial_result["free energy"] = result["free energy per atom"] * len(
+                    atoms
+                )
 
             if "forces" in result:
                 # The forces are already re-sorted!
                 partial_result["forces"] = result["forces"]
 
-            # TODO: do we change velocities in results or atoms?
-            if "velocities" in result:
-                partial_result["velocities"] = result["velocities"]
-            calc_results.append(partial_result)
-        return calc_results
+            # Modify the atoms in-place
+            if "positions" not in result:
+                raise ValueError("Cannot have aimd without positions information!")
 
+            atoms.set_positions(result["positions"])
+
+            # TODO: need to get an example for NPT MD to set Cell
+            # TODO: need to set stress information
+
+            if "velocities" in result:
+                atoms.set_velocities(result["velocities"])
+
+            ase_images.append(atoms)
+            calc_results.append(partial_result)
+        return calc_results, ase_images
 
     def get_ionic_steps(self, raw_results):
         """Get last ionic step dict from raw results"""
@@ -389,7 +467,9 @@ class SparcBundle:
         return ionic_steps
 
     def _extract_output_results(self, raw_results):
-        """Extract extra information from results"""
+        """Extract extra information from results, need to be more polished
+        (maybe move to calculator?)
+        """
         last_step = get_ionic_step(raw_results)[-1]
         if "fermi level" in last_step:
             value = last_step["fermi level"]["value"]
@@ -402,18 +482,16 @@ class SparcBundle:
             else:
                 raise ValueError("Wrong unit in Fermi!")
         return
-            
-            
+
 
 def read_sparc(filename, include_all_files=False, index=-1, **kwargs):
     """Parse a SPARC bundle, return an Atoms object or list of Atoms (image)
     with embedded calculator result.
-    
-    Ar
+
     """
     sb = SparcBundle(directory=filename)
-    atoms = sb._read_ion_and_inpt()
-    return atoms
+    atoms_or_images = sb.convert_to_ase(indices=index)
+    return atoms_or_images
 
 
 def write_sparc(filename, atoms, **kwargs):
