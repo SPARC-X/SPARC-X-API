@@ -30,6 +30,7 @@ from .common import psp_dir as default_psp_dir
 from .download_data import is_psp_download_complete
 
 from ase.calculators.singlepoint import SinglePointDFTCalculator
+from ase.units import Hartree
 
 
 class SparcBundle:
@@ -419,7 +420,8 @@ class SparcBundle:
         aimd_results = self.raw_results.get("aimd", [])
         calc_results = []
         if len(aimd_results) == 0:
-            raise CalculationFailed("Cannot read aimd file or it's empty!")
+            # TODO: change error type
+            raise RuntimeError("Cannot read aimd file or it's empty!")
 
         if isinstance(images, int):
             _images = [aimd_results[images]]
@@ -470,7 +472,7 @@ class SparcBundle:
         """Extract extra information from results, need to be more polished
         (maybe move to calculator?)
         """
-        last_step = get_ionic_step(raw_results)[-1]
+        last_step = self.get_ionic_step(raw_results)[-1]
         if "fermi level" in last_step:
             value = last_step["fermi level"]["value"]
             unit = last_step["fermi level"]["unit"]
@@ -512,7 +514,7 @@ def register_ase_io_sparc(name="sparc"):
     atoms.write("test.sparc")
     ```
 
-    The register method only aims to work for ase <= 3.22
+    The register method only aims to work for ase 3.22
     the develope version of ase provides a much more powerful
     register mechanism, we can wait.
     """
