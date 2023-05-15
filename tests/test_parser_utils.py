@@ -118,4 +118,6 @@ def test_make_reverse_mapping():
         np.random.shuffle(sort)
         reverse = make_reverse_mapping(sort)
         rere = make_reverse_mapping(reverse)
-        assert np.isclose(sort, rere).all(), f"Reverse error! {sort}, {reverse}, {rere}"
+        assert np.isclose(
+            sort, rere
+        ).all(), f"Reverse error! {sort}, {reverse}, {rere}"

@@ -59,7 +59,9 @@ class SparcBundle:
 
     psp_env = ["SPARC_PSP_PATH", "SPARC_PP_PATH"]
 
-    def __init__(self, directory, mode="r", atoms=None, label=None, psp_dir=None):
+    def __init__(
+        self, directory, mode="r", atoms=None, label=None, psp_dir=None
+    ):
         self.directory = Path(directory)
         # TODO: more sensible naming for name?
         self.prefix = self.directory.resolve().with_suffix("").name
@@ -222,7 +224,9 @@ class SparcBundle:
         """
         # Find the max output index
         # TODO: move this into another function
-        last_out = sorted(self.directory.glob(f"{self.label}.out*"), reverse=True)[0]
+        last_out = sorted(
+            self.directory.glob(f"{self.label}.out*"), reverse=True
+        )[0]
         # print("Last output file: ", last_out)
         suffix = last_out.suffix
         if suffix == ".out":
@@ -275,7 +279,9 @@ class SparcBundle:
                 self.sorting = sorting
             else:
                 # Compare stored sorting
-                assert (tuple(self.sorting["sort"]) == tuple(sorting["sort"])) and (
+                assert (
+                    tuple(self.sorting["sort"]) == tuple(sorting["sort"])
+                ) and (
                     tuple(self.sorting["resort"]) == tuple(sorting["resort"])
                 ), "Sorting information changed!"
         return results_dict
@@ -300,7 +306,9 @@ class SparcBundle:
 
         if isinstance(indices, int):
             if len(images) != 1:
-                raise RuntimeError("Int indices should return a single atoms object!")
+                raise RuntimeError(
+                    "Int indices should return a single atoms object!"
+                )
             return images[-1]
         else:
             return images
@@ -318,7 +326,9 @@ class SparcBundle:
             sp.results.update(res)
             sp.name = "sparc"
             sp.kpts = (
-                self.raw_results["inpt"].get("parameters", {}).get("KPOINT_GRID", None)
+                self.raw_results["inpt"]
+                .get("parameters", {})
+                .get("KPOINT_GRID", None)
             )
             # There may be a better way handling the parameters...
             sp.parameters = self.raw_results["inpt"].get("parameters", {})
@@ -400,7 +410,9 @@ class SparcBundle:
 
             # Modify the atoms copy
             if "positions" not in result:
-                raise ValueError("Cannot have geopt without positions information!")
+                raise ValueError(
+                    "Cannot have geopt without positions information!"
+                )
             atoms.set_positions(result["positions"])
             if "ase_cell" in result:
                 atoms.set_cell(result["ase_cell"])
@@ -436,11 +448,13 @@ class SparcBundle:
             partial_result = {}
             atoms = self.init_atoms.copy()
             if "total energy per atom" in result:
-                partial_result["energy"] = result["total energy per atom"] * len(atoms)
+                partial_result["energy"] = result[
+                    "total energy per atom"
+                ] * len(atoms)
             if "free energy per atom" in result:
-                partial_result["free energy"] = result["free energy per atom"] * len(
-                    atoms
-                )
+                partial_result["free energy"] = result[
+                    "free energy per atom"
+                ] * len(atoms)
 
             if "forces" in result:
                 # The forces are already re-sorted!
@@ -448,7 +462,9 @@ class SparcBundle:
 
             # Modify the atoms in-place
             if "positions" not in result:
-                raise ValueError("Cannot have aimd without positions information!")
+                raise ValueError(
+                    "Cannot have aimd without positions information!"
+                )
 
             atoms.set_positions(result["positions"])
 
@@ -533,7 +549,9 @@ def register_ase_io_sparc(name="sparc"):
     # Step 1: patch the ase.io.sparc module
     try:
         entry_points = next(
-            ep for ep in pkg_resources.iter_entry_points("ase.io") if ep.name == "sparc"
+            ep
+            for ep in pkg_resources.iter_entry_points("ase.io")
+            if ep.name == "sparc"
         )
         _monkey_mod = entry_points.load()
     except Exception as e:

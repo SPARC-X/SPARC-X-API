@@ -39,14 +39,18 @@ def download_psp(sparc_tag=sparc_tag, psp_dir=psp_dir):
                 source_dir = next(tmpdir.glob("SPARC-*/psps"))
                 print(f"Found source_dir at {source_dir}")
                 if not source_dir.is_dir():
-                    raise FileNotFoundError("Error downloading or extracting zip")
+                    raise FileNotFoundError(
+                        "Error downloading or extracting zip"
+                    )
                 print(f"Moving psp files to {psp_dir}")
                 for ext in ("*.psp8", "*.psp", "*.pot"):
                     for pspf in source_dir.glob(ext):
                         print(f"Found {pspf} --> {psp_dir}")
                         shutil.copy(pspf, psp_dir)
     if not is_psp_download_complete(psp_dir):
-        raise RuntimeError(f"Files downloaded to {psp_dir} have different checksums!")
+        raise RuntimeError(
+            f"Files downloaded to {psp_dir} have different checksums!"
+        )
     return True
 
 

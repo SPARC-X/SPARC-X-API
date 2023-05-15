@@ -10,7 +10,14 @@ from setuptools.command.install import install
 from warnings import warn
 
 
-test_requires = ["pytest", "pyfakefs", "pytest-cov", "black", "flake8", "anybadge"]
+test_requires = [
+    "pytest",
+    "pyfakefs",
+    "pytest-cov",
+    "black",
+    "flake8",
+    "anybadge",
+]
 
 setup(
     name="sparc-dft-api",

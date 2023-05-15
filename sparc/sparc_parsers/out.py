@@ -18,12 +18,12 @@ from ase.utils import reader, writer
 
 from .utils import read_block_input, bisect_and_strip
 
-from ..inputs import SparcInputs
+from ..api import SparcAPI
 import re
 from datetime import datetime
 
 # TODO: should allow user to select the api
-defaultAPI = SparcInputs()
+defaultAPI = SparcAPI()
 
 
 @reader
@@ -117,7 +117,9 @@ def _read_scfs(contents):
 
 
     """
-    convergence_info = _get_block_text(contents, r"Self Consistent Field \(SCF.*?\)")
+    convergence_info = _get_block_text(
+        contents, r"Self Consistent Field \(SCF.*?\)"
+    )
     results_info = _get_block_text(contents, "Energy and force calculation")
 
     if len(convergence_info) != len(results_info):
@@ -182,7 +184,10 @@ def _read_scfs(contents):
                 warn(f"Conversion for unit {unit} unknown! Treat as unit")
                 converted_value = raw_value
                 converted_unit = unit
-            current_step[key] = {"value": converted_value, "unit": converted_unit}
+            current_step[key] = {
+                "value": converted_value,
+                "unit": converted_unit,
+            }
         steps.append(current_step)
     return steps
 
@@ -207,4 +212,6 @@ def _write_out(
     fileobj,
     data_dict,
 ):
-    raise NotImplementedError("Writing output file from python-api not supported!")
+    raise NotImplementedError(
+        "Writing output file from python-api not supported!"
+    )
