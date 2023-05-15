@@ -114,7 +114,8 @@ def read_static_blocks(raw_blocks):
                 coord_dict["symbols"] += [
                     symbol,
                 ] * pos_count
-                coord_dict["coord_frac"] += np.vstack(
+                # import pdb; pdb.set_trace()
+                coord_dict["coord_frac"] = np.vstack(
                     [coord_dict["coord_frac"], coord_f]
                 )
 

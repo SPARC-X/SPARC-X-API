@@ -96,9 +96,15 @@ def _read_run_info(contents):
         key, value = bisect_and_strip(line, ":")
         key = key.lower()
         if key in block_dict:
-            warn(
-                f"Key {key} from run information appears multiple times in your outputfile!"
-            )
+            if key not in ("pseudopotential",):
+                warn(
+                    f"Key {key} from run information appears multiple times in your outputfile!"
+                )
+            # For keys like pseudopotential, we make it a list
+            else:
+                origin_value = list(block_dict[key])
+                value = origin_value + [value]
+
         block_dict[key] = value
     return block_dict
 

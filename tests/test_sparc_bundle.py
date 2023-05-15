@@ -13,11 +13,11 @@ def test_bundle_psp(monkeypatch):
     """Test PSP settings"""
 
     # Disable the default psp searching mechanism
-    from sparc import sparc_io_bundle
+    from sparc import io as sparc_io_bundle
 
     monkeypatch.setattr(sparc_io_bundle, "default_psp_dir", "/tmp")
 
-    from sparc.sparc_io_bundle import SparcBundle
+    from sparc.io import SparcBundle
 
     os.environ.pop("SPARC_PP_PATH", None)
     os.environ.pop("SPARC_PSP_PATH", None)
@@ -42,7 +42,7 @@ def test_bundle_psp(monkeypatch):
 
 def test_default_psp(monkeypatch):
     """Test if default location of psp are correct"""
-    from sparc import sparc_io_bundle
+    from sparc import io as sparc_io_bundle
 
     # Make the psp downloader check always true
     def _fake_psp_check(directory):
@@ -50,7 +50,7 @@ def test_default_psp(monkeypatch):
 
     monkeypatch.setattr(sparc_io_bundle, "is_psp_download_complete", _fake_psp_check)
 
-    from sparc.sparc_io_bundle import SparcBundle
+    from sparc.io import SparcBundle
     from sparc.common import psp_dir as default_psp_dir
 
     os.environ.pop("SPARC_PP_PATH", None)
@@ -61,7 +61,7 @@ def test_default_psp(monkeypatch):
 
 def test_bundle_label():
     """Test bundle label"""
-    from sparc.sparc_io_bundle import SparcBundle
+    from sparc.io import SparcBundle
 
     sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc")
     sb.label == "Cu_FCC"
@@ -82,7 +82,7 @@ def test_bundle_label():
 
 def test_read_ion_inpt():
     """Test ion and inpt read"""
-    from sparc.sparc_io_bundle import SparcBundle
+    from sparc.io import SparcBundle
     from ase.units import Bohr, Angstrom
 
     sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc")
@@ -133,7 +133,7 @@ def test_read_ion_inpt():
 
 def test_write_ion_inpt(fs):
     """Same example as in test_parse_atoms but try writing inpt and atoms"""
-    from sparc.sparc_io_bundle import SparcBundle
+    from sparc.io import SparcBundle
     from ase.units import Bohr, Angstrom
     from ase.build import bulk
 
@@ -210,7 +210,7 @@ def test_write_ion_inpt(fs):
 
 def test_write_ion_inpt_real():
     """Same example as in test_parse_atoms but try writing inpt and atoms"""
-    from sparc.sparc_io_bundle import SparcBundle
+    from sparc.io import SparcBundle
     from ase.units import Bohr, Angstrom
     from ase.build import bulk
 

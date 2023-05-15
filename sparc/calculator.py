@@ -10,7 +10,7 @@ from ase.calculators.calculator import compare_atoms
 from ase.atoms import Atoms
 import subprocess
 
-from .sparc_io_bundle import SparcBundle
+from .io import SparcBundle
 from .utils import _find_default_sparc, h2gpts
 from warnings import warn
 
@@ -24,19 +24,19 @@ from .inputs import SparcInputs
 defaultAPI = SparcInputs()
 
 
-class SPARC(SparcBundle, FileIOCalculator):
+class SPARC(FileIOCalculator):
     # TODO: magmom should be a possible input
     implemented_properties = ["energy", "forces", "fermi", "stress"]
     name = "sparc"
     ase_objtype = "sparc_calculator"  # For JSON storage
     special_inputs = sparc_python_inputs
-    
+
     # A "minimal" set of parameters that user can call plug-and-use
     # like atoms.calc = SPARC()
     default_params = {
         "xc": "pbe",
         "kpts": (1, 1, 1),
-        "h": 0.25,   # Angstrom
+        "h": 0.25,  # Angstrom
     }
 
     def __init__(
@@ -51,7 +51,13 @@ class SPARC(SparcBundle, FileIOCalculator):
         **kwargs,
     ):
         FileIOCalculator.__init__(
-            self, restart=restart, label=label, atoms=atoms, command=command, directory=directory, **kwargs
+            self,
+            restart=restart,
+            label=label,
+            atoms=atoms,
+            command=command,
+            directory=directory,
+            **kwargs,
         )
         # TODO: change label?
         self.label = label if label is not None else "SPARC"
@@ -70,13 +76,14 @@ class SPARC(SparcBundle, FileIOCalculator):
         # and perform type check
         self.valid_params, self.special_params = self._sanitize_kwargs(kwargs)
         self.raw_results = {}
-    
+
     @property
     def directory(self):
         if hasattr(self, "sparc_bundle"):
             return Path(self.sparc_bundle.directory)
         else:
             return Path(self._directory)
+
     @directory.setter
     def directory(self, directory):
         if hasattr(self, "sparc_bundle"):
@@ -84,36 +91,31 @@ class SPARC(SparcBundle, FileIOCalculator):
         else:
             self._directory = Path(directory)
         return
-    
+
     @property
     def label(self):
-        """Rewrite the label from Calculator class, since we don't want to contain pathsep
-        """
+        """Rewrite the label from Calculator class, since we don't want to contain pathsep"""
         if hasattr(self, "sparc_bundle"):
             return self.sparc_bundle.label
         else:
             return getattr(self, "_label", None)
-        
+
     @label.setter
     def label(self, label):
-        """Rewrite the label from Calculator class, since we don't want to contain pathsep
-        """
+        """Rewrite the label from Calculator class, since we don't want to contain pathsep"""
         label = str(label)
         if hasattr(self, "sparc_bundle"):
-            self.sparc_bundle.label = sparc_bundle._make_label(label)
+            self.sparc_bundle.label = self.sparc_bundle._make_label(label)
         else:
             self._label = label
-        
-    
-        
-        
+
     @property
     def sort(self):
         """Like Vasp calculator
         ASE atoms --> sort --> SPARC
         """
         return self.sparc_bundle.sorting["sort"]
-    
+
     @property
     def resort(self):
         """Like Vasp calculator
@@ -155,8 +157,7 @@ class SPARC(SparcBundle, FileIOCalculator):
         return f"{self.command} {extras}"
 
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
-        """Perform a calculation step
-        """
+        """Perform a calculation step"""
         Calculator.calculate(self, atoms, properties, system_changes)
         self.write_input(self.atoms, properties, system_changes)
         self.execute()
@@ -171,16 +172,16 @@ class SPARC(SparcBundle, FileIOCalculator):
         converted_params = self._convert_special_params(atoms=atoms)
         input_parameters = converted_params.copy()
         input_parameters.update(self.valid_params)
-        
+
         # Make sure desired properties are always ensured, but we don't modify the user inputs
         if "forces" in properties:
             input_parameters["print_forces"] = True
-        
+
         if "stress" in properties:
             input_parameters["calc_stress"] = True
-        
+
         # TODO: detect if minimal values are set
-        
+
         # TODO: system_changes ?
 
         self.sparc_bundle._write_ion_and_inpt(
@@ -222,130 +223,23 @@ class SPARC(SparcBundle, FileIOCalculator):
 
         return
 
+    @property
+    def raw_results(self):
+        return getattr(self.sparc_bundle, "raw_results", {})
+
     def read_results(self):
         """Parse from the SparcBundle"""
-        raw_result_dict = self.sparc_bundle.read_results()
-        self.raw_results = raw_result_dict
-        # TODO: result result function should actually planted back to SparcBundle
-        if "static" in self.raw_results:
-            self._extract_static_results()
-        elif "geopt" in self.raw_results:
-            self._extract_geopt_results()
-        elif "aimd" in self.raw_results:
-            # TODO: make sure we always know the atoms!
-            self._extract_aimd_results(self.atoms)
-        else:
-            # TODO: should be another error instead?
-            raise CalculationFailed("Cannot read SPARC output!")
-        # Result of the output results, currently only E-fermi
-        self._extract_out_results()
-        
-    def _extract_static_results(self):
-        """Extract energy / forces from static results
-        """
-        static_results = self.raw_results.get("static", {})
-        if "free energy" in static_results:
-            self.results["energy"] = static_results["free energy"]
-            # TODO: shall we distinguish?
-            self.results["free energy"] = static_results["free energy"]
-        
-        if "forces" in static_results:
-            # The forces are already re-sorted!
-            self.results["forces"] = static_results["forces"]
-            
-        if "stress" in static_results:
-            self.results["stress"] = static_results["stress"]
-        
-        return
-    
-    def _extract_geopt_results(self):
-        """Extract energy / forces from geopt results
-        
-        For calculator, we only need the last image
-        """
-        geopt_results = self.raw_results.get("geopt", [])
-        if len(geopt_results) == 0:
-            raise CalculationFailed("Cannot read geopt file or it's empty!")
-        
-        result = geopt_results[-1]
-        if "energy" in result:
-            self.results["energy"] = result["energy"]
-            # TODO: shall we distinguish?
-            self.results["free energy"] = result["energy"]
-        
-        if "forces" in result:
-            # The forces are already re-sorted!
-            self.results["forces"] = result["forces"]
-            
-        if "stress" in result:
-            self.results["stress"] = result["stress"]
-            
-    def _extract_aimd_results(self, atoms):
-        """Extract energy / forces from aimd results
-        
-        For calculator, we only need the last image
-        
-        We probably want more information for the AIMD calculations, 
-        but I'll keep them for now
-        """
-        aimd_results = self.raw_results.get("aimd", [])
-        if len(aimd_results) == 0:
-            raise CalculationFailed("Cannot read aimd file or it's empty!")
-        
-        result = aimd_results[-1]
-        if "total energy per atom" in result:
-            self.results["energy"] = result["total energy per atom"] * len(atoms)
-        if "free energy per atom" in result:
-            self.results["free energy"] = result["free energy per atom"] * len(atoms)
-        
-        if "forces" in result:
-            # The forces are already re-sorted!
-            self.results["forces"] = result["forces"]
-        
-        # TODO: do we change velocities in results or atoms?
-        if "velocities" in result:
-            self.results["velocities"] = result["velocities"]
-            
-        # TODO: must fix the stress format !
-#         if "stress" in result:
-#             self.results["stress"] = result["stress"]
-        
-    
-    def get_last_ionic_step(self):
-        """Get last ionic step dict from raw results
-        """
-        out_results = self.raw_results.get("out", {})
-        ionic_steps = out_results.get("ionic_steps", [])
-        if len(ionic_steps) > 0:
-            return ionic_steps[-1]
-        else:
-            return {}
-        
-    
-    def _extract_out_results(self):
-        """Extract extra information from results
-        """
-        last_step = self.get_last_ionic_step()
-        if "fermi level" in last_step:
-            value = last_step["fermi level"]["value"]
-            unit = last_step["fermi level"]["unit"]
-            if unit.lower() == "ev":
-                self.results["fermi"] = value
-            # Should rarely happen, but keep it here!
-            elif unit.lower() == "hartree":
-                self.results["fermi"] = value * Hartree
-            else:
-                raise ValueError("Wrong unit in Fermi!")
-        return
-    
-    
-    
+        # TODO: try use cache?
+        # self.sparc_bundle.read_raw_results()
+        last = self.sparc_bundle.convert_to_ase(indices=-1)
+        self.results.update(last.calc.results)
+
+        # self._extract_out_results()
+
     def get_fermi_level(self):
-        """Extra get-method for Fermi level, if calculated
-        """
+        """Extra get-method for Fermi level, if calculated"""
         return self.results.get("fermi", None)
-        
-        
+
     def _detect_sparc_version(self):
         """Run a short sparc test to determine which sparc is used"""
         # TODO: complete the implementation
