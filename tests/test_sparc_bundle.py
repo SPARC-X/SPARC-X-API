@@ -13,11 +13,11 @@ def test_bundle_psp(monkeypatch):
     """Test PSP settings"""
 
     # Disable the default psp searching mechanism
-    from sparc import sparc_io_bundle
+    from sparc import io as sparc_io_bundle
 
     monkeypatch.setattr(sparc_io_bundle, "default_psp_dir", "/tmp")
 
-    from sparc.sparc_io_bundle import SparcBundle
+    from sparc.io import SparcBundle
 
     os.environ.pop("SPARC_PP_PATH", None)
     os.environ.pop("SPARC_PSP_PATH", None)
@@ -42,15 +42,17 @@ def test_bundle_psp(monkeypatch):
 
 def test_default_psp(monkeypatch):
     """Test if default location of psp are correct"""
-    from sparc import sparc_io_bundle
+    from sparc import io as sparc_io_bundle
 
     # Make the psp downloader check always true
     def _fake_psp_check(directory):
         return True
 
-    monkeypatch.setattr(sparc_io_bundle, "is_psp_download_complete", _fake_psp_check)
+    monkeypatch.setattr(
+        sparc_io_bundle, "is_psp_download_complete", _fake_psp_check
+    )
 
-    from sparc.sparc_io_bundle import SparcBundle
+    from sparc.io import SparcBundle
     from sparc.common import psp_dir as default_psp_dir
 
     os.environ.pop("SPARC_PP_PATH", None)
@@ -61,13 +63,15 @@ def test_default_psp(monkeypatch):
 
 def test_bundle_label():
     """Test bundle label"""
-    from sparc.sparc_io_bundle import SparcBundle
+    from sparc.io import SparcBundle
 
     sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc")
     sb.label == "Cu_FCC"
     assert sb._indir(".ion").name == "Cu_FCC.ion"
 
-    sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc", label="Something")
+    sb = SparcBundle(
+        directory=test_output_dir / "Cu_FCC.sparc", label="Something"
+    )
     sb.label == "Something"
 
     assert sb._indir(ext=".ion").name == "Something.ion"
@@ -82,7 +86,7 @@ def test_bundle_label():
 
 def test_read_ion_inpt():
     """Test ion and inpt read"""
-    from sparc.sparc_io_bundle import SparcBundle
+    from sparc.io import SparcBundle
     from ase.units import Bohr, Angstrom
 
     sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc")
@@ -117,7 +121,9 @@ def test_read_ion_inpt():
         * Bohr,
     ).all()
 
-    sb = SparcBundle(directory=test_output_dir / "AlSi_primitive_quick_relax.sparc")
+    sb = SparcBundle(
+        directory=test_output_dir / "AlSi_primitive_quick_relax.sparc"
+    )
     atoms = sb._read_ion_and_inpt()
     assert atoms.get_chemical_formula() == "AlSi"
 
@@ -126,14 +132,16 @@ def test_read_ion_inpt():
     assert atoms.get_chemical_formula() == "Fe2"
     assert tuple(atoms.get_initial_magnetic_moments()) == (1.0, 1.0)
 
-    sb = SparcBundle(directory=test_output_dir / "TiO2_orthogonal_quick_md.sparc")
+    sb = SparcBundle(
+        directory=test_output_dir / "TiO2_orthogonal_quick_md.sparc"
+    )
     atoms = sb._read_ion_and_inpt()
     assert atoms.get_chemical_formula() == "O4Ti2"
 
 
 def test_write_ion_inpt(fs):
     """Same example as in test_parse_atoms but try writing inpt and atoms"""
-    from sparc.sparc_io_bundle import SparcBundle
+    from sparc.io import SparcBundle
     from ase.units import Bohr, Angstrom
     from ase.build import bulk
 
@@ -210,7 +218,7 @@ def test_write_ion_inpt(fs):
 
 def test_write_ion_inpt_real():
     """Same example as in test_parse_atoms but try writing inpt and atoms"""
-    from sparc.sparc_io_bundle import SparcBundle
+    from sparc.io import SparcBundle
     from ase.units import Bohr, Angstrom
     from ase.build import bulk
 
@@ -226,3 +234,25 @@ def test_write_ion_inpt_real():
         sp._write_ion_and_inpt(atoms, direct=True, copy_psp=True)
         # Copy psp should have the psps available
         assert len(list(Path(workdir).glob("*.psp8"))) == 1
+
+
+def test_bundle_diff_label(fs):
+    from sparc.io import SparcBundle
+    from ase.units import Bohr, Angstrom
+    from ase.build import bulk
+
+    fs.create_dir("test.sparc")
+    atoms = bulk("Cu") * [4, 4, 4]
+    sp = SparcBundle(directory="test.sparc", mode="w", label="Cu")
+    sp._write_ion_and_inpt(atoms)
+
+    sp = SparcBundle(directory="test.sparc", mode="r")
+    assert sp.label == "Cu"
+    assert sp.directory.name == "test.sparc"
+
+    # Write another into the bundle
+    sp = SparcBundle(directory="test.sparc", mode="w", label="Cu1")
+    sp._write_ion_and_inpt(atoms)
+
+    with pytest.raises(Exception):
+        sp = SparcBundle(directory="test.sparc", mode="r")

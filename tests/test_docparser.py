@@ -155,13 +155,18 @@ def test_text2value():
     assert np.isclose(
         text2value(" 1 2 3 ", desired_type="integer array"), np.array([1, 2, 3])
     ).all()
-    assert isinstance(text2value(" 1 2 3 ", desired_type="integer array")[0], int)
+    assert isinstance(
+        text2value(" 1 2 3 ", desired_type="integer array")[0], int
+    )
 
     assert np.isclose(
-        text2value(" 1. 2. 3. ", desired_type="double array"), np.array([1, 2, 3])
+        text2value(" 1. 2. 3. ", desired_type="double array"),
+        np.array([1, 2, 3]),
     ).all()
 
-    assert isinstance(text2value(" 1 2 3 ", desired_type="double array")[0], float)
+    assert isinstance(
+        text2value(" 1 2 3 ", desired_type="double array")[0], float
+    )
     assert np.array(
         text2value(" 1 2 3\n 4 5 6", desired_type="double array")
     ).shape == (2, 3)
@@ -174,4 +179,6 @@ def test_text2value():
 def test_docparser_main():
     import subprocess
 
-    subprocess.run(["python", "-m", "sparc.docparser", f"{test_doc_dir.as_posix()}"])
+    subprocess.run(
+        ["python", "-m", "sparc.docparser", f"{test_doc_dir.as_posix()}"]
+    )

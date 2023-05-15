@@ -10,7 +10,14 @@ from setuptools.command.install import install
 from warnings import warn
 
 
-test_requires = ["pytest", "pyfakefs", "pytest-cov", "black", "flake8", "anybadge"]
+test_requires = [
+    "pytest",
+    "pyfakefs",
+    "pytest-cov",
+    "black",
+    "flake8",
+    "anybadge",
+]
 
 setup(
     name="sparc-dft-api",
@@ -21,10 +28,10 @@ setup(
     author_email="ben.comer@gatech.edu",
     url="https://github.com/SPARC-X/sparc-dft-api",
     packages=find_packages(),
-    install_requires=["numpy>=1.20", "ase>=3.22.0", "scipy"],
+    install_requires=["ase>=3.22.0"],
     entry_points={
         "ase.io": [
-            "sparc = sparc.sparc_io_bundle",
+            "sparc = sparc.io",
         ],
     },
     extras_require={

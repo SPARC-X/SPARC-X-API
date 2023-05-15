@@ -158,7 +158,9 @@ def dict_to_atoms(data_dict):
         atoms_count += len(positions)
 
     if "sorting" in data_dict["ion"]:
-        resort = data_dict["ion"]["sorting"].get("resort", np.arange(len(atoms)))
+        resort = data_dict["ion"]["sorting"].get(
+            "resort", np.arange(len(atoms))
+        )
         # Resort may be None
         if len(resort) == 0:
             resort = np.arange(len(atoms))
@@ -251,11 +253,15 @@ def constraints_from_relax(relax_dict):
         # DegreeF == 1 --> move along line, fix line
         elif degree_freedom == 1:
             for ind in indices:
-                cons_list.append(FixedLine(ind, np.array(relax_type).astype(int)))
+                cons_list.append(
+                    FixedLine(ind, np.array(relax_type).astype(int))
+                )
         # DegreeF == 1 --> move along line, fix plane
         elif degree_freedom == 2:
             for ind in indices:
-                cons_list.append(FixedPlane(ind, (~np.array(relax_type)).astype(int)))
+                cons_list.append(
+                    FixedPlane(ind, (~np.array(relax_type)).astype(int))
+                )
     return cons_list
 
 

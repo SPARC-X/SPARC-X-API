@@ -46,7 +46,9 @@ def parse_psp8_header(text):
     mgroup = match.groupdict()
     psp8_data["symbol"] = mgroup["symbol"].strip()
     psp8_data["psp8ver"] = mgroup["psp8ver"].strip()
-    psp8_data["r_core"] = np.fromstring(mgroup["r_core"].strip(), sep=" ", dtype=float)
+    psp8_data["r_core"] = np.fromstring(
+        mgroup["r_core"].strip(), sep=" ", dtype=float
+    )
     # Line 2
     zatom, zion, pspd, *_ = header[1].split()
     psp8_data["zatom"] = float(zatom)
@@ -171,7 +173,9 @@ def find_pseudo_path(symbol, search_path=None, pseudopotential_mapping={}):
         str_psp = str(mapping_psp)
         mapping_psp = Path(mapping_psp)
         # if psp contains any path information (/, \\), treat is as a direct file
-        is_node_file_name = (mapping_psp.name == str_psp) and (os.sep not in str_psp)
+        is_node_file_name = (mapping_psp.name == str_psp) and (
+            os.sep not in str_psp
+        )
         if is_node_file_name:
             if search_path is None:
                 raise NoMatchingPseudopotential(

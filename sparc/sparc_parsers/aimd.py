@@ -19,10 +19,10 @@ from .utils import (
     strip_comments,
 )
 
-from ..inputs import SparcInputs
+from ..api import SparcAPI
 
 # TODO: should allow user to select the api
-defaultAPI = SparcInputs()
+defaultAPI = SparcAPI()
 
 
 @reader
@@ -41,7 +41,9 @@ def _read_aimd(fileobj):
     data = [line for line in stripped if ":Desc" not in line]
 
     # find the index for all atom type lines. They should be at the top of their block
-    step_bounds = [i for i, x in enumerate(data) if ":MDSTEP:" in x] + [len(data)]
+    step_bounds = [i for i, x in enumerate(data) if ":MDSTEP:" in x] + [
+        len(data)
+    ]
     raw_aimd_blocks = [
         data[start:end] for start, end in zip(step_bounds[:-1], step_bounds[1:])
     ]
@@ -155,7 +157,10 @@ def _read_aimd_step(raw_aimd_text):
             warn(f"MD output keyword {header_name} will not be parsed.")
             value = None
         else:
-            warn(f"MD output keyword {header_name} not known to SPARC. " "Ignore.")
+            warn(
+                f"MD output keyword {header_name} not known to SPARC. "
+                "Ignore."
+            )
             value = None
         if value is not None:
             data[name] = value
@@ -168,4 +173,6 @@ def _write_aimd(
     fileobj,
     data_dict,
 ):
-    raise NotImplementedError("Writing aimd file from python-api " "not supported!")
+    raise NotImplementedError(
+        "Writing aimd file from python-api " "not supported!"
+    )
