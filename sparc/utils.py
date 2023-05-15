@@ -3,6 +3,27 @@
 import os
 import shutil
 import numpy as np
+from typing import Union, List
+
+
+def string2index(string: str) -> Union[int, slice, str]:
+    """Convert index string to either int or slice
+    This method is a copy of ase.io.formats.string2index
+    """
+    if ":" not in string:
+        # may contain database accessor
+        try:
+            return int(string)
+        except ValueError:
+            return string
+    i: List[Optional[int]] = []
+    for s in string.split(":"):
+        if s == "":
+            i.append(None)
+        else:
+            i.append(int(s))
+    i += (3 - len(i)) * [None]
+    return slice(*i)
 
 
 def _find_default_sparc():
