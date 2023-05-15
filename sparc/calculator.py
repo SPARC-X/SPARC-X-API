@@ -105,7 +105,7 @@ class SPARC(FileIOCalculator):
         """Rewrite the label from Calculator class, since we don't want to contain pathsep"""
         label = str(label)
         if hasattr(self, "sparc_bundle"):
-            self.sparc_bundle.label = sparc_bundle._make_label(label)
+            self.sparc_bundle.label = self.sparc_bundle._make_label(label)
         else:
             self._label = label
 
@@ -223,7 +223,6 @@ class SPARC(FileIOCalculator):
 
         return
 
-<<<<<<< HEAD
     @property
     def raw_results(self):
         return getattr(self.sparc_bundle, "raw_results", {})
@@ -236,25 +235,6 @@ class SPARC(FileIOCalculator):
         self.results.update(last.calc.results)
 
         # self._extract_out_results()
-=======
-    def read_results(self):
-        """Parse from the SparcBundle"""
-        raw_result_dict = self.sparc_bundle.read_results()
-        self.raw_results = raw_result_dict
-
-        if "static" in self.raw_results:
-            self._extract_static_results()
-        elif "geopt" in self.raw_results:
-            self._extract_geopt_results()
-        elif "aimd" in self.raw_results:
-            # TODO: make sure we always know the atoms!
-            self._extract_aimd_results(self.atoms)
-        else:
-            # TODO: should be another error instead?
-            raise CalculationFailed("Cannot read SPARC output!")
-        # Result of the output results, currently only E-fermi
-        self._extract_out_results()
->>>>>>> parent of fafff07 (use simpler calculator method)
 
     def get_fermi_level(self):
         """Extra get-method for Fermi level, if calculated"""
