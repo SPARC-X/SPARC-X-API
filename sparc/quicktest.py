@@ -38,9 +38,11 @@ def psp_test():
             return True
         else:
             cprint(
-                ("No psp files found! \n"
-                 "Please make sure you have downloaded them via `python -m sparc.download_data`, "
-                 "or set $SPARC_PSP_PATH"),
+                (
+                    "No psp files found! \n"
+                    "Please make sure you have downloaded them via `python -m sparc.download_data`, "
+                    "or set $SPARC_PSP_PATH"
+                ),
                 color="FAIL",
             )
             return False
@@ -49,6 +51,7 @@ def psp_test():
 def api_test():
     cprint("Testing JSON API...", color="COMMENT")
     from sparc.api import SparcAPI
+
     try:
         api = SparcAPI()
     except Exception:
@@ -72,13 +75,15 @@ def command_test():
             test_cmd = calc._make_command()
         except Exception:
             cprint(
-                ("No SPARC command found! \n"
-                 "Please make sure you have sparc in your path, "
-                 "or set up $ASE_SPARC_COMMAND variable!"),
+                (
+                    "No SPARC command found! \n"
+                    "Please make sure you have sparc in your path, "
+                    "or set up $ASE_SPARC_COMMAND variable!"
+                ),
                 color="FAIL",
             )
             return False
-        cprint(f"The prefix for SPARC command is {test_cmd}", colot="OKBLUE")
+        cprint(f"The prefix for SPARC command is {test_cmd}", color="OKBLUE")
         return True
 
 
@@ -107,8 +112,7 @@ def calc_test():
 
 def main():
     cprint(
-        ("Performing a quick test on your "
-         "SPARC and python API setup"),
+        ("Performing a quick test on your " "SPARC and python API setup"),
         color=None,
     )
     results = {}
@@ -116,8 +120,9 @@ def main():
     results["Pseudopotential"] = psp_test()
     results["JSON API"] = api_test()
     results["SPARC command"] = command_test()
-    results["Calculation"] = False if results[
-        "SPARC command"] is False else calc_test()
+    results["Calculation"] = (
+        False if results["SPARC command"] is False else calc_test()
+    )
 
     cprint(
         "\nSummary of test results",
@@ -134,10 +139,12 @@ def main():
             print_wiki = True
 
     if print_wiki:
-        cprint("\nSome of the tests failed! Please refer to the following resources: \n"
-        "1. SPARC's documentation: https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf \n"
-               "2. Python API documentation: https://github.com/SPARC-X/sparc-dft-api/wiki\n",
-               color="FAIL")
+        cprint(
+            "\nSome of the tests failed! Please refer to the following resources: \n"
+            "1. SPARC's documentation: https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf \n"
+            "2. Python API documentation: https://github.com/SPARC-X/sparc-dft-api/wiki\n",
+            color="FAIL",
+        )
 
 
 if __name__ == "__main__":
