@@ -63,15 +63,13 @@ class SparcBundle:
         self, directory, mode="r", atoms=None, label=None, psp_dir=None
     ):
         self.directory = Path(directory)
-        # TODO: more sensible naming for name?
-        self.prefix = self.directory.resolve().with_suffix("").name
-        self.label = self._make_label(label)  # name of the main sparc file
         self.mode = mode.lower()
         assert self.mode in (
             "r",
             "w",
             "a",
         ), f"Invalid mode {self.mode}! Must one of 'r', 'w' or 'a'"
+        self.label = self._make_label(label)  # name of the main sparc file
         # TODO: assigning atoms here is probably not useful!
         self.init_atoms = atoms.copy() if atoms is not None else None
         self.raw_results = None
@@ -85,8 +83,35 @@ class SparcBundle:
         return list(self.directory.glob(f"{self.label}.*"))
 
     def _make_label(self, label=None):
+        """Infer the label from the bundle
+
+        Special cases if label is None:
+        1. read mode --> get the ion file name
+        2. write mode --> infer from the directory
+        """
+        # TODO: more sensible naming for name?
+        prefix = self.directory.resolve().with_suffix("").name
+
         illegal_chars = '\\/:*?"<>|'
-        label_ = label if label is not None else self.prefix
+        if label is not None:
+            label_ = label
+        elif self.mode == "w":
+            label_ = prefix
+        else:
+            # read
+            match_ion = list(self.directory.glob("*.ion"))
+            if len(match_ion) > 1:
+                # TODO: customize error msg
+                raise ValueError(
+                    "Cannot read sparc bundle with multiple ion files without specifying the label!"
+                )
+            elif len(match_ion) == 1:
+                label_ = match_ion[0].name.split(".")[0]
+            else:
+                # No file found, possibly an empty bundle
+                warn("No .ion file found in the read-mode bundle.")
+                label_ = prefix
+
         if any([c in label_ for c in illegal_chars]):
             warn(
                 f"Label name {label_} contains illegal characters! I'll make it 'SPARC'"

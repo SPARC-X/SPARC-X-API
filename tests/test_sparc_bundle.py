@@ -234,3 +234,25 @@ def test_write_ion_inpt_real():
         sp._write_ion_and_inpt(atoms, direct=True, copy_psp=True)
         # Copy psp should have the psps available
         assert len(list(Path(workdir).glob("*.psp8"))) == 1
+
+
+def test_bundle_diff_label(fs):
+    from sparc.io import SparcBundle
+    from ase.units import Bohr, Angstrom
+    from ase.build import bulk
+
+    fs.create_dir("test.sparc")
+    atoms = bulk("Cu") * [4, 4, 4]
+    sp = SparcBundle(directory="test.sparc", mode="w", label="Cu")
+    sp._write_ion_and_inpt(atoms)
+
+    sp = SparcBundle(directory="test.sparc", mode="r")
+    assert sp.label == "Cu"
+    assert sp.directory.name == "test.sparc"
+
+    # Write another into the bundle
+    sp = SparcBundle(directory="test.sparc", mode="w", label="Cu1")
+    sp._write_ion_and_inpt(atoms)
+
+    with pytest.raises(Exception):
+        sp = SparcBundle(directory="test.sparc", mode="r")
