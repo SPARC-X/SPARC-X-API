@@ -28,7 +28,10 @@ def test_parse_psp8_header_valid():
 
 def test_parse_psp8_header_invalid():
     """Test invalid psp8 header"""
-    from sparc.sparc_parsers.pseudopotential import parse_psp8_header, NotPSP8Format
+    from sparc.sparc_parsers.pseudopotential import (
+        parse_psp8_header,
+        NotPSP8Format,
+    )
 
     text = """Cl    ONCVPSP-4.0.1  r_core=   1.45370   2.30420
      11.0000      9.0000      200312    zatom,zion,pspd
@@ -79,7 +82,10 @@ def test_pseudo_infer():
     with pytest.raises(NoMatchingPseudopotential):
         infer_pseudo_path("As", ".")
 
-    assert infer_pseudo_path("As", psp_dir).name == "33_As_15_1.8_2.1_pbe_n_v1.0.psp8"
+    assert (
+        infer_pseudo_path("As", psp_dir).name
+        == "33_As_15_1.8_2.1_pbe_n_v1.0.psp8"
+    )
 
     with pytest.raises(NoMatchingPseudopotential):
         infer_pseudo_path("Hf", psp_dir)
@@ -120,14 +126,18 @@ def test_pseudo_find_and_mapping():
 
     assert (
         find_pseudo_path(
-            "Ag", search_path=psp_dir, pseudopotential_mapping={"Ag": "Ag-PBE.pot"}
+            "Ag",
+            search_path=psp_dir,
+            pseudopotential_mapping={"Ag": "Ag-PBE.pot"},
         ).name
         == "Ag-PBE.pot"
     )
 
     assert (
         find_pseudo_path(
-            "As", search_path=psp_dir, pseudopotential_mapping={"Ag": "Ag-PBE.pot"}
+            "As",
+            search_path=psp_dir,
+            pseudopotential_mapping={"Ag": "Ag-PBE.pot"},
         ).name
         == "33_As_15_1.8_2.1_pbe_n_v1.0.psp8"
     )

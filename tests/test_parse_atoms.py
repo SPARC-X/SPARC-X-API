@@ -26,7 +26,9 @@ def test_atoms2dict():
     mol1.set_initial_charges([0.1] * 8)
     with pytest.warns(UserWarning, match="initial charges"):
         # Charge cannot be written
-        adict = atoms_to_dict(mol1, sort=False, direct=True, comments=["Ethane"])
+        adict = atoms_to_dict(
+            mol1, sort=False, direct=True, comments=["Ethane"]
+        )
 
     # Spin
     mol2 = mol.copy()
@@ -150,7 +152,13 @@ def test_count_symbols():
     from sparc.sparc_parsers.atoms import count_symbols
 
     symbols = list("CHCHHO")
-    expected_output = [("C", 0, 1), ("H", 1, 2), ("C", 2, 3), ("H", 3, 5), ("O", 5, 6)]
+    expected_output = [
+        ("C", 0, 1),
+        ("H", 1, 2),
+        ("C", 2, 3),
+        ("H", 3, 5),
+        ("O", 5, 6),
+    ]
     assert count_symbols(symbols) == expected_output
 
     symbols = ["He"]

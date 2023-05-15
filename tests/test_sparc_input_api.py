@@ -3,12 +3,12 @@ from pathlib import Path
 
 
 def test_sparc_api():
-    from sparc.inputs import SparcInputs
-    from sparc.inputs import default_json_api
+    from sparc.api import SparcAPI
+    from sparc.api import default_json_api
 
     # the default api should always exist
     assert default_json_api.is_file()
-    sis = SparcInputs()
+    sis = SparcAPI()
     assert hasattr(sis, "sparc_version")
     assert hasattr(sis, "categories")
     assert hasattr(sis, "parameters")
@@ -16,29 +16,29 @@ def test_sparc_api():
     assert hasattr(sis, "other_parameters")
 
     # Provide a path
-    sis = SparcInputs(default_json_api)
+    sis = SparcAPI(default_json_api)
 
 
 def test_help():
-    from sparc.inputs import SparcInputs
+    from sparc.api import SparcAPI
 
-    sis = SparcInputs()
+    sis = SparcAPI()
     help_info = sis.help_info("LATVEC")
 
 
 def test_other_data():
-    from sparc.inputs import SparcInputs
+    from sparc.api import SparcAPI
 
-    sis = SparcInputs()
+    sis = SparcAPI()
     assert sis.validate_input("NPT_NH_QMASS", "2\n 700.0\n 700.0")
     assert sis.validate_input("NPT_NH_QMASS", [2, 1.0, 1.0])
 
 
 def test_api_validate():
-    from sparc.inputs import SparcInputs
+    from sparc.api import SparcAPI
     import numpy as np
 
-    sis = SparcInputs()
+    sis = SparcAPI()
     # Integer
     assert sis.validate_input("CALC_PRES", "0")
     assert sis.validate_input("CALC_PRES", "0 ")
@@ -84,10 +84,10 @@ def test_api_validate():
 
 def test_api_validate_all_defaults():
     """All defaults given in the examples should be valid!"""
-    from sparc.inputs import SparcInputs
+    from sparc.api import SparcAPI
     import numpy as np
 
-    sis = SparcInputs()
+    sis = SparcAPI()
     for param, pd in sis.parameters.items():
         default = pd.get("default", None)
         if default and (default != "auto"):
@@ -96,10 +96,10 @@ def test_api_validate_all_defaults():
 
 def test_api_convert_string():
     """Test if read string makes sense"""
-    from sparc.inputs import SparcInputs
+    from sparc.api import SparcAPI
     import numpy as np
 
-    sis = SparcInputs()
+    sis = SparcAPI()
     # Integer
     with pytest.raises(TypeError):
         sis.convert_string_to_value("CALC_PRES", 0)
@@ -137,10 +137,10 @@ def test_api_convert_string():
 
 def test_api_write_string():
     """Test if writing string from value makes sense"""
-    from sparc.inputs import SparcInputs
+    from sparc.api import SparcAPI
     import numpy as np
 
-    sis = SparcInputs()
+    sis = SparcAPI()
     # Integer
     ref_s = "0"
     with pytest.raises(ValueError):

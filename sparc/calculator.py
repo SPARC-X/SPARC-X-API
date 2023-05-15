@@ -17,11 +17,19 @@ from warnings import warn
 # Below are a list of ASE-compatible calculator input parameters that are
 # in Angstrom/eV units
 # Ideas are taken from GPAW calculator
-sparc_python_inputs = ["xc", "h", "kpts", "convergence", "gpts", "nbands", "encut"]
+sparc_python_inputs = [
+    "xc",
+    "h",
+    "kpts",
+    "convergence",
+    "gpts",
+    "nbands",
+    "encut",
+]
 
-from .inputs import SparcInputs
+from .api import SparcAPI
 
-defaultAPI = SparcInputs()
+defaultAPI = SparcAPI()
 
 
 class SPARC(FileIOCalculator):
@@ -156,7 +164,9 @@ class SPARC(FileIOCalculator):
             self.command = command_env
         return f"{self.command} {extras}"
 
-    def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
+    def calculate(
+        self, atoms=None, properties=["energy"], system_changes=all_changes
+    ):
         """Perform a calculation step"""
         Calculator.calculate(self, atoms, properties, system_changes)
         self.write_input(self.atoms, properties, system_changes)
@@ -218,7 +228,10 @@ class SPARC(FileIOCalculator):
         errorcode = self.proc.returncode
 
         if errorcode > 0:
-            msg = f"SPARC failed with command {command}" f"with error code {errorcode}"
+            msg = (
+                f"SPARC failed with command {command}"
+                f"with error code {errorcode}"
+            )
             raise CalculationFailed(msg)
 
         return
@@ -226,6 +239,11 @@ class SPARC(FileIOCalculator):
     @property
     def raw_results(self):
         return getattr(self.sparc_bundle, "raw_results", {})
+
+    @raw_results.setter
+    def raw_results(self, value):
+        self.sparc_bundle.raw_results = value
+        return
 
     def read_results(self):
         """Parse from the SparcBundle"""
@@ -308,7 +326,9 @@ class SPARC(FileIOCalculator):
                 converted_sparc_params["FD_GRID"] = gpts
             else:
                 # TODO: customize error
-                raise ValueError(f"Input parameter gpts has invalid value {gpts}")
+                raise ValueError(
+                    f"Input parameter gpts has invalid value {gpts}"
+                )
 
         # kpts
         if "kpts" in params:
@@ -318,7 +338,9 @@ class SPARC(FileIOCalculator):
                 converted_sparc_params["KPOINT_GRID"] = kpts
             else:
                 # TODO: customize error
-                raise ValueError(f"Input parameter kpts has invalid value {kpts}")
+                raise ValueError(
+                    f"Input parameter kpts has invalid value {kpts}"
+                )
 
         # nbands
         if "nbands" in params:
@@ -329,6 +351,8 @@ class SPARC(FileIOCalculator):
                 converted_sparc_params["NSTATES"] = nbands
             else:
                 # TODO: customize error
-                raise ValueError(f"Input parameter nbands has invalid value {nbands}")
+                raise ValueError(
+                    f"Input parameter nbands has invalid value {nbands}"
+                )
 
         return converted_sparc_params
