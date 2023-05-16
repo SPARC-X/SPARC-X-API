@@ -44,8 +44,7 @@ def _read_geopt(fileobj):
         len(data)
     ]
     raw_geopt_blocks = [
-        data[start:end] for start, end in zip(step_bounds[:-1],
-                                              step_bounds[1:])
+        data[start:end] for start, end in zip(step_bounds[:-1], step_bounds[1:])
     ]
     geopt_steps = [_read_geopt_step(step) for step in raw_geopt_blocks]
 

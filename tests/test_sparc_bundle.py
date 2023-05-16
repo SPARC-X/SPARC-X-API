@@ -256,3 +256,41 @@ def test_bundle_diff_label(fs):
 
     with pytest.raises(Exception):
         sp = SparcBundle(directory="test.sparc", mode="r")
+
+
+def test_bundle_write_multi(fs):
+    from sparc.io import write_sparc, read_sparc
+    from ase.build import bulk
+    from ase.io import write, read
+    import numpy as np
+
+    fs.create_dir("test.sparc")
+    atoms = bulk("Cu") * [4, 4, 4]
+    images = [atoms]
+    write_sparc("test.sparc", atoms)
+    write_sparc("test.sparc", images)
+    write("test.sparc", atoms, format="sparc")
+    write("test.sparc", images, format="sparc")
+    images.append(atoms.copy())
+    with pytest.raises(Exception):
+        write_sparc("test.sparc", images)
+
+    with pytest.raises(Exception):
+        write("test.sparc", images, format="sparc")
+
+    atoms2 = read_sparc("test.sparc")
+    atoms2 = read("test.sparc", format="sparc")
+    assert np.isclose(atoms.positions, atoms2.positions).all()
+
+
+def test_bundle_psp():
+    from sparc.io import SparcBundle
+
+    for f in test_output_dir.glob("*.sparc"):
+        sb = SparcBundle(f)
+        sb.read_raw_results()
+        assert len(sb.psp_data) > 0
+        # Embedded psp8 files should have the psp data available
+        if len(list(f.glob("*.psp8"))) > 0:
+            for elem, psp_data in sb.psp_data.items():
+                assert "symbol" in psp_data

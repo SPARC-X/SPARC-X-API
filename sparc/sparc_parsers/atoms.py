@@ -59,8 +59,8 @@ def atoms_to_dict(
     has_charge = np.any(atoms.get_initial_charges() != 0)
     if has_charge:
         warn(
-                "SPARC currently doesn't support changing total number of electrons! "
-                "via nomimal charges. The initial charges in the structure will be ignored."
+            "SPARC currently doesn't support changing total number of electrons! "
+            "via nomimal charges. The initial charges in the structure will be ignored."
         )
 
     relax_mask = relax_from_all_constraints(atoms.constraints, len(atoms))
