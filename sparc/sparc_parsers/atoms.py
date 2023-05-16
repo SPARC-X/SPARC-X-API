@@ -31,16 +31,15 @@ def atoms_to_dict(
 ):
     """Given an ASE Atoms object, convert to SPARC ion and inpt data dict
 
-    psp_dir: search path for psp8 files
-    pseudopotentials: a mapping between symbol and psp file names, similar to QE
-                      like 'Na': 'Na-pbe.psp8'. If the file name does not contain path information, use psp_dir / filname, otherwise use the file path.
+    psp_dir: search path for psp8 files pseudopotentials: a mapping
+    between symbol and psp file names, similar to QE like 'Na':
+    'Na-pbe.psp8'. If the file name does not contain path information,
+    use psp_dir / filname, otherwise use the file path.
 
     We don't do any env variable replace ment for psp_dir, it should be handled by the
     explicit _write_ion_and_inpt() function
 
     At this step, the copy_psp is not applied, since we don't yet know the location to write
-
-
 
     """
     # Step 1: if we should sort the atoms?
@@ -60,10 +59,8 @@ def atoms_to_dict(
     has_charge = np.any(atoms.get_initial_charges() != 0)
     if has_charge:
         warn(
-            (
                 "SPARC currently doesn't support changing total number of electrons! "
                 "via nomimal charges. The initial charges in the structure will be ignored."
-            )
         )
 
     relax_mask = relax_from_all_constraints(atoms.constraints, len(atoms))

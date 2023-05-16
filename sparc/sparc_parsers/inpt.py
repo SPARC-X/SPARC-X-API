@@ -18,7 +18,8 @@ def _read_inpt(fileobj):
     data, comments = strip_comments(contents)
     # We do not read the cell at this time!
 
-    # find the index for all atom type lines. They should be at the top of their block
+    # find the index for all atom type lines. They should be at the
+    # top of their block
     inpt_blocks = read_block_input(data, validator=defaultAPI)
     return {"inpt": {"params": inpt_blocks, "comments": comments}}
 

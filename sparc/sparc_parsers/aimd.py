@@ -27,11 +27,10 @@ defaultAPI = SparcAPI()
 
 @reader
 def _read_aimd(fileobj):
-    """
-    Parse the aimd information
-    Each geopt is similar to the static block, except that the field name is started by
-    ':'
-    The relaxations are separated by ':MDSTEP:' seperators
+    """Parse the aimd information Each geopt is similar to the static
+    block, except that the field name is started by ':' The
+    relaxations are separated by ':MDSTEP:' seperators
+
     """
     contents = fileobj.read()
     # label = get_label(fileobj, ".ion")
@@ -40,12 +39,14 @@ def _read_aimd(fileobj):
     # Do not include the description lines
     data = [line for line in stripped if ":Desc" not in line]
 
-    # find the index for all atom type lines. They should be at the top of their block
+    # find the index for all atom type lines. They should be at the
+    # top of their block
     step_bounds = [i for i, x in enumerate(data) if ":MDSTEP:" in x] + [
         len(data)
     ]
     raw_aimd_blocks = [
-        data[start:end] for start, end in zip(step_bounds[:-1], step_bounds[1:])
+        data[start:end] for start, end in zip(step_bounds[:-1],
+                                              step_bounds[1:])
     ]
     aimd_steps = [_read_aimd_step(step) for step in raw_aimd_blocks]
 

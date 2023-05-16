@@ -478,13 +478,15 @@ def sanitize_default(param_dict):
 def sanitize_type(param_dict):
     """Sanitize the param dict so that the type are more consistent
 
-    For example, if type is Double / Integer, but parameter is a vector, make a double vector or integer vector
+    For example, if type is Double / Integer,
+    but parameter is a vector,
+    make a double vector or integer vector
     """
     sanitized_dict = param_dict.copy()
     symbol = param_dict["symbol"]
     origin_type = param_dict.get("type", None)
     if origin_type is None:
-        print(f"Dict does not have type!")
+        print("Dict does not have type!")
         return sanitized_dict
     origin_type = origin_type.lower()
 
@@ -515,7 +517,8 @@ def sanitize_type(param_dict):
                 default
             )
         except Exception as e:
-            warn(f"Array conversion failed for {example_value}, ignore.")
+            warn(f"Array conversion failed for {example_value}, ignore."
+                 f"The error is {e}")
             _array_test = False  # Retain
 
         if _array_test is True:

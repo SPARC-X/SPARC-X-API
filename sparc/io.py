@@ -37,24 +37,25 @@ from ase.units import Hartree
 class SparcBundle:
     """Provide access to a calculation folder of SPARC as a simple bundle
 
-    The bundle can be optionally named as .sparc following the ASE's .bundle format
+    The bundle can be optionally named as .sparc following the ASE's
+    .bundle format
 
     Currently the write method only supports 1 image, while read method support reading
     atoms results in following conditions
 
-    1) No calculation (minimal): .ion + .inpt file --> 1 image
-    2) Single point calculation: .ion + .inpt + .out + .static --> 1 image with calc
-    3) Multiple SP calculations: chain all .out{digits} and .static{digitis} outputs
-    4) Relaxation: read from .geopt and .out (supporting chaining)
-    5) AIMD: read from .aimd and .out (support chaining)
+    1) No calculation (minimal): .ion + .inpt file --> 1 image 2)
+    Single point calculation: .ion + .inpt + .out + .static --> 1
+    image with calc 3) Multiple SP calculations: chain all
+    .out{digits} and .static{digitis} outputs 4) Relaxation: read from
+    .geopt and .out (supporting chaining) 5) AIMD: read from .aimd and
+    .out (support chaining)
 
 
-    Currently, the bundle object is intended to be used for one-time read / write
+    Currently, the bundle object is intended to be used for one-time
+    read / write
 
     TODO: multiple occurance support
     TODO: archive support
-
-
 
     """
 
@@ -143,7 +144,8 @@ class SparcBundle:
             else:
                 warn(
                     (
-                        "PSP directory bundled with sparc-dft-api is broken! Please use `sparc.download_data` to re-download them!"
+                        "PSP directory bundled with sparc-dft-api is broken! "
+                        "Please use `sparc.download_data` to re-download them!"
                     )
                 )
 
@@ -201,8 +203,10 @@ class SparcBundle:
         input_parameters={},
         **kwargs,
     ):
-        """Write the ion and inpt files to a bundle. This method only supports writing 1 image.
-        If input_parameters are empty, there will only be .ion writing the positions and .inpt writing a minimal cell information
+        """Write the ion and inpt files to a bundle. This method only
+        supports writing 1 image.  If input_parameters are empty,
+        there will only be .ion writing the positions and .inpt
+        writing a minimal cell information
 
         """
         if self.mode != "w":
@@ -244,9 +248,10 @@ class SparcBundle:
         """Parse all files using the given self.label.
         The results are merged dict from all file formats
 
-        Argument
-        all_files: True --> include all files (out, out_01, out_02, etc)
-                   when all files are included, output is a list of dicts; otherwise a single dict
+        Argument all_files: True --> include all files (out, out_01,
+        out_02, etc) when all files are included, output is a list of
+        dicts; otherwise a single dict
+
         """
         # Find the max output index
         # TODO: move this into another function
@@ -279,7 +284,8 @@ class SparcBundle:
         return self.raw_results
 
     def _read_results_from_index(self, index, d_format="{:02d}"):
-        """Read the results from one calculation index, and return a single raw result dict"""
+        """Read the results from one calculation index, and return a
+        single raw result dict"""
         results_dict = {}
 
         for ext in ("ion", "inpt"):
@@ -316,9 +322,11 @@ class SparcBundle:
         return results_dict
 
     def convert_to_ase(self, index=-1, include_all_files=False, **kwargs):
-        """Read the raw results from the bundle and create atoms with single point calculators
+        """Read the raw results from the bundle and create atoms with
+        single point calculators
 
         TODO: what to do about the indices?
+
         """
         # Convert to images!
         rs = self.read_raw_results(include_all_files=include_all_files)
@@ -355,9 +363,12 @@ class SparcBundle:
             return res_images[string2index(index)]
 
     def _make_singlepoint(self, calc_results, images, raw_results):
-        """Convert a calculator dict and images of Atoms to list of SinglePointDFTCalculators
+        """Convert a calculator dict and images of Atoms to list of
+        SinglePointDFTCalculators
 
-        The calculator also takes parameters from ion, inpt that exist in self.raw_results
+        The calculator also takes parameters from ion, inpt that exist
+        in self.raw_results
+
         """
         converted_images = []
         for res, _atoms in zip(calc_results, images):
@@ -382,11 +393,11 @@ class SparcBundle:
         return converted_images
 
     def _extract_static_results(self, raw_results, index=":"):
-        """Extract the static calculation results and atomic structure(s)
-        Returns:
-        calc_results: dict with at least energy value
-        atoms: ASE atoms object
-        The priority is to parse position from static file first, then fallback from ion + inpt
+        """Extract the static calculation results and atomic
+        structure(s) Returns: calc_results: dict with at least energy
+        value atoms: ASE atoms object The priority is to parse
+        position from static file first, then fallback from ion + inpt
+
         """
         # TODO: implement the multi-file static
         static_results = raw_results.get("static", {})
@@ -414,11 +425,11 @@ class SparcBundle:
         return [calc_results], [atoms]
 
     def _extract_geopt_results(self, raw_results, index=":"):
-        """Extract the static calculation results and atomic structure(s)
-        Returns:
-        calc_results: dict with at least energy value
-        atoms: ASE atoms object
-        The priority is to parse position from static file first, then fallback from ion + inpt
+        """Extract the static calculation results and atomic
+        structure(s) Returns: calc_results: dict with at least energy
+        value atoms: ASE atoms object The priority is to parse
+        position from static file first, then fallback from ion + inpt
+
         """
         print("RAW_RES:  ", raw_results)
         geopt_results = raw_results.get("geopt", [])
@@ -470,17 +481,20 @@ class SparcBundle:
 
         We probably want more information for the AIMD calculations,
         but I'll keep them for now
+
         """
         aimd_results = raw_results.get("aimd", [])
         calc_results = []
         if len(aimd_results) == 0:
             warn(
-                "Aimd file is empty! This is not an error if the calculation is continued from restart. "
+                "Aimd file is empty! "
+                "This is not an error if the calculation "
+                "is continued from restart. "
             )
             return None, None
 
         if isinstance(index, int):
-            _images = [aimd_results[images]]
+            _images = [aimd_results[index]]
         elif isinstance(index, str):
             _images = aimd_results[string2index(index)]
 
@@ -579,7 +593,6 @@ def register_ase_io_sparc(name="sparc"):
     """
     from ase.io.formats import define_io_format as F
     from ase.io.formats import ioformats
-    from importlib import import_module
     import pkg_resources
     import sys
     from warnings import warn
@@ -600,8 +613,11 @@ def register_ase_io_sparc(name="sparc"):
     except Exception as e:
         warn(
             (
-                "Failed to load entrypoint `ase.io.sparc`, you may need to reinstall sparc python api.\n"
-                'You may still use `sparc.read_sparc` and `sparc.write_sparc` methods, but not `ase.io.read("test.sparc")`\n',
+                "Failed to load entrypoint `ase.io.sparc`, "
+                "you may need to reinstall sparc python api.\n"
+                "You may still use `sparc.read_sparc` and "
+                "`sparc.write_sparc` methods, "
+                "but not `ase.io.read`\n",
                 f"The error is {e}",
             )
         )
@@ -621,8 +637,9 @@ def register_ase_io_sparc(name="sparc"):
         warn(
             (
                 "Registering .sparc format with ase.io failed. "
-                "You may still use `sparc.read_sparc` and `sparc.write_sparc` methods. "
-                "You're welcome to contact the developer to report this issue."
+                "You may still use `sparc.read_sparc` and "
+                "`sparc.write_sparc` methods. \n"
+                "Please contact the developer to report this issue."
             )
         )
         return
