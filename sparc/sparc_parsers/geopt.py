@@ -38,12 +38,14 @@ def _read_geopt(fileobj):
     # The geopt comments are simply discarded
     data, comments = strip_comments(contents)
 
-    # find the index for all atom type lines. They should be at the top of their block
+    # find the index for all atom type lines. They should be at the
+    # top of their block
     step_bounds = [i for i, x in enumerate(data) if ":RELAXSTEP:" in x] + [
         len(data)
     ]
     raw_geopt_blocks = [
-        data[start:end] for start, end in zip(step_bounds[:-1], step_bounds[1:])
+        data[start:end] for start, end in zip(step_bounds[:-1],
+                                              step_bounds[1:])
     ]
     geopt_steps = [_read_geopt_step(step) for step in raw_geopt_blocks]
 

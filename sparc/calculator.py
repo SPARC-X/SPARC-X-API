@@ -1,18 +1,13 @@
-import numpy as np
 import os
 from pathlib import Path
-from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
-from ase.units import Bohr, Hartree, fs, GPa
-from ase.calculators.calculator import CalculatorError, CalculatorSetupError
-from ase.calculators.calculator import CalculationFailed, SCFError, ReadError
-from ase.calculators.singlepoint import SinglePointCalculator
-from ase.calculators.calculator import compare_atoms
-from ase.atoms import Atoms
+from ase.calculators.calculator import (Calculator, FileIOCalculator,
+                                        all_changes)
 import subprocess
 
 from .io import SparcBundle
 from .utils import _find_default_sparc, h2gpts
 from warnings import warn
+from .api import SparcAPI
 
 # Below are a list of ASE-compatible calculator input parameters that are
 # in Angstrom/eV units
@@ -27,7 +22,6 @@ sparc_python_inputs = [
     "encut",
 ]
 
-from .api import SparcAPI
 
 defaultAPI = SparcAPI()
 
@@ -110,7 +104,9 @@ class SPARC(FileIOCalculator):
 
     @label.setter
     def label(self, label):
-        """Rewrite the label from Calculator class, since we don't want to contain pathsep"""
+        """Rewrite the label from Calculator class,
+        since we don't want to contain pathsep
+        """
         label = str(label)
         if hasattr(self, "sparc_bundle"):
             self.sparc_bundle.label = self.sparc_bundle._make_label(label)
@@ -151,22 +147,23 @@ class SPARC(FileIOCalculator):
                 if sparc_exe is None:
                     raise EnvironmentError(
                         "Cannot find your sparc setup via $ASE_SPARC_COMMAND, SPARC.command, or "
-                        "infer from your $PATH. Please refer to the manual!"
-                    )
+                        "infer from your $PATH. Please refer to the manual!")
                 if mpi_exe is not None:
                     command_env = f"{mpi_exe} -n {num_cores} {sparc_exe}"
                 else:
                     command_env = f"{sparc_exe}"
                 warn(
                     f"Your sparc command is inferred to be {command_env}, "
-                    "If this is not correct, please manually set $ASE_SPARC_COMMAND or SPARC.command!"
+                    "If this is not correct, "
+                    "please manually set $ASE_SPARC_COMMAND or SPARC.command!"
                 )
             self.command = command_env
         return f"{self.command} {extras}"
 
-    def calculate(
-        self, atoms=None, properties=["energy"], system_changes=all_changes
-    ):
+    def calculate(self,
+                  atoms=None,
+                  properties=["energy"],
+                  system_changes=all_changes):
         """Perform a calculation step"""
         Calculator.calculate(self, atoms, properties, system_changes)
         self.write_input(self.atoms, properties, system_changes)
@@ -228,11 +225,9 @@ class SPARC(FileIOCalculator):
         errorcode = self.proc.returncode
 
         if errorcode > 0:
-            msg = (
-                f"SPARC failed with command {command}"
-                f"with error code {errorcode}"
-            )
-            raise CalculationFailed(msg)
+            msg = (f"SPARC failed with command {command}"
+                   f"with error code {errorcode}")
+            raise RuntimeError(msg)
 
         return
 
@@ -313,8 +308,7 @@ class SPARC(FileIOCalculator):
             h = params.pop("h")
             if atoms is None:
                 raise ValueError(
-                    "Must have an active atoms object to convert h --> gpts!"
-                )
+                    "Must have an active atoms object to convert h --> gpts!")
             # TODO: is there any limitation for parallelization?
             gpts = h2gpts(h, atoms.cell)
             params["gpts"] = gpts
@@ -327,8 +321,7 @@ class SPARC(FileIOCalculator):
             else:
                 # TODO: customize error
                 raise ValueError(
-                    f"Input parameter gpts has invalid value {gpts}"
-                )
+                    f"Input parameter gpts has invalid value {gpts}")
 
         # kpts
         if "kpts" in params:
@@ -339,8 +332,7 @@ class SPARC(FileIOCalculator):
             else:
                 # TODO: customize error
                 raise ValueError(
-                    f"Input parameter kpts has invalid value {kpts}"
-                )
+                    f"Input parameter kpts has invalid value {kpts}")
 
         # nbands
         if "nbands" in params:
@@ -352,7 +344,6 @@ class SPARC(FileIOCalculator):
             else:
                 # TODO: customize error
                 raise ValueError(
-                    f"Input parameter nbands has invalid value {nbands}"
-                )
+                    f"Input parameter nbands has invalid value {nbands}")
 
         return converted_sparc_params

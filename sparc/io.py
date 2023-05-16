@@ -28,6 +28,7 @@ from .sparc_parsers.atoms import dict_to_atoms, atoms_to_dict
 from .sparc_parsers.pseudopotential import copy_psp_file
 from .common import psp_dir as default_psp_dir
 from .download_data import is_psp_download_complete
+from .utils import string2index
 
 from ase.calculators.singlepoint import SinglePointDFTCalculator
 from ase.units import Hartree
@@ -36,24 +37,25 @@ from ase.units import Hartree
 class SparcBundle:
     """Provide access to a calculation folder of SPARC as a simple bundle
 
-    The bundle can be optionally named as .sparc following the ASE's .bundle format
+    The bundle can be optionally named as .sparc following the ASE's
+    .bundle format
 
     Currently the write method only supports 1 image, while read method support reading
     atoms results in following conditions
 
-    1) No calculation (minimal): .ion + .inpt file --> 1 image
-    2) Single point calculation: .ion + .inpt + .out + .static --> 1 image with calc
-    3) Multiple SP calculations: chain all .out{digits} and .static{digitis} outputs
-    4) Relaxation: read from .geopt and .out (supporting chaining)
-    5) AIMD: read from .aimd and .out (support chaining)
+    1) No calculation (minimal): .ion + .inpt file --> 1 image 2)
+    Single point calculation: .ion + .inpt + .out + .static --> 1
+    image with calc 3) Multiple SP calculations: chain all
+    .out{digits} and .static{digitis} outputs 4) Relaxation: read from
+    .geopt and .out (supporting chaining) 5) AIMD: read from .aimd and
+    .out (support chaining)
 
 
-    Currently, the bundle object is intended to be used for one-time read / write
+    Currently, the bundle object is intended to be used for one-time
+    read / write
 
     TODO: multiple occurance support
     TODO: archive support
-
-
 
     """
 
@@ -142,7 +144,8 @@ class SparcBundle:
             else:
                 warn(
                     (
-                        "PSP directory bundled with sparc-dft-api is broken! Please use `sparc.download_data` to re-download them!"
+                        "PSP directory bundled with sparc-dft-api is broken! "
+                        "Please use `sparc.download_data` to re-download them!"
                     )
                 )
 
@@ -200,8 +203,10 @@ class SparcBundle:
         input_parameters={},
         **kwargs,
     ):
-        """Write the ion and inpt files to a bundle. This method only supports writing 1 image.
-        If input_parameters are empty, there will only be .ion writing the positions and .inpt writing a minimal cell information
+        """Write the ion and inpt files to a bundle. This method only
+        supports writing 1 image.  If input_parameters are empty,
+        there will only be .ion writing the positions and .inpt
+        writing a minimal cell information
 
         """
         if self.mode != "w":
@@ -243,9 +248,10 @@ class SparcBundle:
         """Parse all files using the given self.label.
         The results are merged dict from all file formats
 
-        Argument
-        all_files: True --> include all files (out, out_01, out_02, etc)
-                   when all files are included, output is a list of dicts; otherwise a single dict
+        Argument all_files: True --> include all files (out, out_01,
+        out_02, etc) when all files are included, output is a list of
+        dicts; otherwise a single dict
+
         """
         # Find the max output index
         # TODO: move this into another function
@@ -271,11 +277,15 @@ class SparcBundle:
             results = self._read_results_from_index(self.last_image)
 
         self.raw_results = results
-        self.init_atoms = dict_to_atoms(self.raw_results)
+        if include_all_files:
+            self.init_atoms = dict_to_atoms(self.raw_results[0])
+        else:
+            self.init_atoms = dict_to_atoms(self.raw_results)
         return self.raw_results
 
     def _read_results_from_index(self, index, d_format="{:02d}"):
-        """Read the results from one calculation index, and return a single raw result dict"""
+        """Read the results from one calculation index, and return a
+        single raw result dict"""
         results_dict = {}
 
         for ext in ("ion", "inpt"):
@@ -311,37 +321,54 @@ class SparcBundle:
                 ), "Sorting information changed!"
         return results_dict
 
-    def convert_to_ase(self, indices=-1):
-        """Read the raw results from the bundle and create atoms with single point calculators
+    def convert_to_ase(self, index=-1, include_all_files=False, **kwargs):
+        """Read the raw results from the bundle and create atoms with
+        single point calculators
 
         TODO: what to do about the indices?
+
         """
-        raw_results = self.read_raw_results()
-        if "static" in raw_results:
-            calc_results, images = self._extract_static_results(indices)
-        elif "geopt" in raw_results:
-            calc_results, images = self._extract_geopt_results(indices)
-        elif "aimd" in raw_results:
-            calc_results, images = self._extract_aimd_results(indices)
+        # Convert to images!
+        rs = self.read_raw_results(include_all_files=include_all_files)
+        if isinstance(rs, dict):
+            raw_results = [rs]
         else:
-            calc_results, images = None, [self.init_atoms.copy()]
-
-        if calc_results is not None:
-            images = self._make_singlepoint(calc_results, images)
-
-        if isinstance(indices, int):
-            if len(images) != 1:
-                raise RuntimeError(
-                    "Int indices should return a single atoms object!"
+            raw_results = list(rs)
+        res_images = []
+        print("RAW RES: ", raw_results)
+        for entry in raw_results:
+            if "static" in entry:
+                calc_results, images = self._extract_static_results(
+                    entry, index=":"
                 )
-            return images[-1]
+            elif "geopt" in entry:
+                calc_results, images = self._extract_geopt_results(
+                    entry, index=":"
+                )
+            elif "aimd" in entry:
+                calc_results, images = self._extract_aimd_results(
+                    entry, index=":"
+                )
+            else:
+                calc_results, images = None, [self.init_atoms.copy()]
+
+            if images is not None:
+                if calc_results is not None:
+                    images = self._make_singlepoint(calc_results, images, entry)
+                res_images.extend(images)
+
+        if isinstance(index, int):
+            return res_images[index]
         else:
-            return images
+            return res_images[string2index(index)]
 
-    def _make_singlepoint(self, calc_results, images):
-        """Convert a calculator dict and images of Atoms to list of SinglePointDFTCalculators
+    def _make_singlepoint(self, calc_results, images, raw_results):
+        """Convert a calculator dict and images of Atoms to list of
+        SinglePointDFTCalculators
 
-        The calculator also takes parameters from ion, inpt that exist in self.raw_results
+        The calculator also takes parameters from ion, inpt that exist
+        in self.raw_results
+
         """
         converted_images = []
         for res, _atoms in zip(calc_results, images):
@@ -351,29 +378,29 @@ class SparcBundle:
             sp.results.update(res)
             sp.name = "sparc"
             sp.kpts = (
-                self.raw_results["inpt"]
+                raw_results["inpt"]
                 .get("parameters", {})
                 .get("KPOINT_GRID", None)
             )
             # There may be a better way handling the parameters...
-            sp.parameters = self.raw_results["inpt"].get("parameters", {})
+            sp.parameters = raw_results["inpt"].get("parameters", {})
             sp.raw_parameters = {
-                "ion": self.raw_results["ion"],
-                "inpt": self.raw_results["inpt"],
+                "ion": raw_results["ion"],
+                "inpt": raw_results["inpt"],
             }
             atoms.calc = sp
             converted_images.append(atoms)
         return converted_images
 
-    def _extract_static_results(self, indices=":"):
-        """Extract the static calculation results and atomic structure(s)
-        Returns:
-        calc_results: dict with at least energy value
-        atoms: ASE atoms object
-        The priority is to parse position from static file first, then fallback from ion + inpt
+    def _extract_static_results(self, raw_results, index=":"):
+        """Extract the static calculation results and atomic
+        structure(s) Returns: calc_results: dict with at least energy
+        value atoms: ASE atoms object The priority is to parse
+        position from static file first, then fallback from ion + inpt
+
         """
-        # TODO: what about embed raw_results to the bundle?
-        static_results = self.raw_results.get("static", {})
+        # TODO: implement the multi-file static
+        static_results = raw_results.get("static", {})
         calc_results = {}
         if "free energy" in static_results:
             calc_results["energy"] = static_results["free energy"]
@@ -397,25 +424,26 @@ class SparcBundle:
                 atoms.set_positions(atoms_dict["coord"])
         return [calc_results], [atoms]
 
-    def _extract_geopt_results(self, images=":"):
-        """Extract the static calculation results and atomic structure(s)
-        Returns:
-        calc_results: dict with at least energy value
-        atoms: ASE atoms object
-        The priority is to parse position from static file first, then fallback from ion + inpt
+    def _extract_geopt_results(self, raw_results, index=":"):
+        """Extract the static calculation results and atomic
+        structure(s) Returns: calc_results: dict with at least energy
+        value atoms: ASE atoms object The priority is to parse
+        position from static file first, then fallback from ion + inpt
+
         """
-        geopt_results = self.raw_results.get("geopt", [])
+        print("RAW_RES:  ", raw_results)
+        geopt_results = raw_results.get("geopt", [])
         calc_results = []
         if len(geopt_results) == 0:
-            raise ValueError("Cannot read geopt file or it's empty!")
+            warn(
+                "Geopt file is empty! This is not an error if the calculation is continued from restart. "
+            )
+            return None, None
 
-        if isinstance(images, int):
-            _images = [geopt_results[images]]
-        elif isinstance(images, str):
-            if images == ":":
-                _images = geopt_results
-            else:
-                raise NotImplemented("Not implemented indices!")
+        if isinstance(index, int):
+            _images = [geopt_results[index]]
+        elif isinstance(index, str):
+            _images = geopt_results[string2index(index)]
 
         ase_images = []
         for result in _images:
@@ -446,27 +474,29 @@ class SparcBundle:
 
         return calc_results, ase_images
 
-    def _extract_aimd_results(self, images=":"):
+    def _extract_aimd_results(self, raw_results, index=":"):
         """Extract energy / forces from aimd results
 
         For calculator, we only need the last image
 
         We probably want more information for the AIMD calculations,
         but I'll keep them for now
+
         """
-        aimd_results = self.raw_results.get("aimd", [])
+        aimd_results = raw_results.get("aimd", [])
         calc_results = []
         if len(aimd_results) == 0:
-            # TODO: change error type
-            raise RuntimeError("Cannot read aimd file or it's empty!")
+            warn(
+                "Aimd file is empty! "
+                "This is not an error if the calculation "
+                "is continued from restart. "
+            )
+            return None, None
 
-        if isinstance(images, int):
-            _images = [aimd_results[images]]
-        elif isinstance(images, str):
-            if images == ":":
-                _images = aimd_results
-            else:
-                raise NotImplemented("Not implemented indices!")
+        if isinstance(index, int):
+            _images = [aimd_results[index]]
+        elif isinstance(index, str):
+            _images = aimd_results[string2index(index)]
 
         ase_images = []
         for result in _images:
@@ -527,13 +557,15 @@ class SparcBundle:
         return
 
 
-def read_sparc(filename, include_all_files=False, index=-1, **kwargs):
+def read_sparc(filename, index=-1, include_all_files=False, **kwargs):
     """Parse a SPARC bundle, return an Atoms object or list of Atoms (image)
     with embedded calculator result.
 
     """
     sb = SparcBundle(directory=filename)
-    atoms_or_images = sb.convert_to_ase(indices=index)
+    atoms_or_images = sb.convert_to_ase(
+        index=index, include_all_files=include_all_files, **kwargs
+    )
     return atoms_or_images
 
 
@@ -561,7 +593,6 @@ def register_ase_io_sparc(name="sparc"):
     """
     from ase.io.formats import define_io_format as F
     from ase.io.formats import ioformats
-    from importlib import import_module
     import pkg_resources
     import sys
     from warnings import warn
@@ -582,8 +613,11 @@ def register_ase_io_sparc(name="sparc"):
     except Exception as e:
         warn(
             (
-                "Failed to load entrypoint `ase.io.sparc`, you may need to reinstall sparc python api.\n"
-                'You may still use `sparc.read_sparc` and `sparc.write_sparc` methods, but not `ase.io.read("test.sparc")`\n',
+                "Failed to load entrypoint `ase.io.sparc`, "
+                "you may need to reinstall sparc python api.\n"
+                "You may still use `sparc.read_sparc` and "
+                "`sparc.write_sparc` methods, "
+                "but not `ase.io.read`\n",
                 f"The error is {e}",
             )
         )
@@ -603,8 +637,9 @@ def register_ase_io_sparc(name="sparc"):
         warn(
             (
                 "Registering .sparc format with ase.io failed. "
-                "You may still use `sparc.read_sparc` and `sparc.write_sparc` methods. "
-                "You're welcome to contact the developer to report this issue."
+                "You may still use `sparc.read_sparc` and "
+                "`sparc.write_sparc` methods. \n"
+                "Please contact the developer to report this issue."
             )
         )
         return

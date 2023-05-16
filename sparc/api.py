@@ -56,9 +56,11 @@ class SparcAPI:
         return message
 
     def validate_input(self, parameter, input):
-        """Give a string for a parameter, determine if the input follows the type
+        """Give a string for a parameter,
+        determine if the input follows the type
 
-        input can be either a string or a 'direct' data type, like python float or numpy float
+        input can be either a string or a 'direct' data type,
+        like python float or numpy float
 
         TODO: there are many exceptions in array types, should enumerate
         """
@@ -95,8 +97,10 @@ class SparcAPI:
                 if ("." in input) and ("integer" in dtype):
                     warn(
                         (
-                            f"Input {input} for parameter {parameter} it not strictly integer. "
-                            "I may still perform the conversion but be aware of data loss"
+                            f"Input {input} for parameter "
+                            f"{parameter} it not strictly integer. "
+                            "I may still perform the conversion "
+                            "but be aware of data loss"
                         )
                     )
                 try:
