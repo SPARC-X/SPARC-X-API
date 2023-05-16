@@ -42,13 +42,14 @@ class SPARC(FileIOCalculator):
 
     def __init__(
         self,
-        restart=None,
+        restart=False,
         directory=".",
         *,
         label=None,
         atoms=None,
         command=None,
         psp_dir=None,
+        log="sparc.log",
         **kwargs,
     ):
         FileIOCalculator.__init__(
@@ -77,6 +78,7 @@ class SPARC(FileIOCalculator):
         # and perform type check
         self.valid_params, self.special_params = self._sanitize_kwargs(kwargs)
         self.raw_results = {}
+        self.log = self.directory / log if log is not None else None
 
     @property
     def directory(self):
@@ -215,7 +217,11 @@ class SPARC(FileIOCalculator):
 
         # TODO: distinguish between normal process
         try:
-            self.proc = subprocess.run(command, shell=True, cwd=self.directory)
+            if self.log is not None:
+                with open(self.log, "a") as fd:
+                    self.proc = subprocess.run(command, shell=True, cwd=self.directory, stdout=fd)
+            else:
+                self.proc = subprocess.run(command, shell=True, cwd=self.directory, stdout=None)
         except OSError as err:
             msg = 'Failed to execute "{}"'.format(command)
             raise EnvironmentError(msg) from err
@@ -245,7 +251,7 @@ class SPARC(FileIOCalculator):
         """Parse from the SparcBundle"""
         # TODO: try use cache?
         # self.sparc_bundle.read_raw_results()
-        last = self.sparc_bundle.convert_to_ase(indices=-1)
+        last = self.sparc_bundle.convert_to_ase(indices=-1, include_all_files=True)
         self.results.update(last.calc.results)
 
         # self._extract_out_results()
