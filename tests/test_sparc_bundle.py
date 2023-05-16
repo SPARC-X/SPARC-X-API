@@ -281,3 +281,16 @@ def test_bundle_write_multi(fs):
     atoms2 = read_sparc("test.sparc")
     atoms2 = read("test.sparc", format="sparc")
     assert np.isclose(atoms.positions, atoms2.positions).all()
+
+
+def test_bundle_psp():
+    from sparc.io import SparcBundle
+
+    for f in test_output_dir.glob("*.sparc"):
+        sb = SparcBundle(f)
+        sb.read_raw_results()
+        assert len(sb.psp_data) > 0
+        # Embedded psp8 files should have the psp data available
+        if len(list(f.glob("*.psp8"))) > 0:
+            for elem, psp_data in sb.psp_data.items():
+                assert "symbol" in psp_data

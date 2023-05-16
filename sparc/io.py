@@ -25,7 +25,7 @@ from .sparc_parsers.aimd import _read_aimd
 from .sparc_parsers.out import _read_out
 
 from .sparc_parsers.atoms import dict_to_atoms, atoms_to_dict
-from .sparc_parsers.pseudopotential import copy_psp_file
+from .sparc_parsers.pseudopotential import copy_psp_file, parse_psp8_header
 from .common import psp_dir as default_psp_dir
 from .download_data import is_psp_download_complete
 from .utils import string2index
@@ -75,6 +75,8 @@ class SparcBundle:
         self.label = self._make_label(label)  # name of the main sparc file
         # TODO: assigning atoms here is probably not useful!
         self.init_atoms = atoms.copy() if atoms is not None else None
+        self.init_inputs = {}
+        self.psp_data = {}
         self.raw_results = None
         self.psp_dir = self.__find_psp_dir(psp_dir)
         # Sorting should be consistent across the whole bundle!
@@ -281,10 +283,19 @@ class SparcBundle:
             results = self._read_results_from_index(self.last_image)
 
         self.raw_results = results
+
         if include_all_files:
-            self.init_atoms = dict_to_atoms(self.raw_results[0])
+            init_raw_results = self.raw_results[0]
         else:
-            self.init_atoms = dict_to_atoms(self.raw_results)
+            init_raw_results = self.raw_results.copy()
+
+        # TODO: init is actually last!
+        self.init_atoms = dict_to_atoms(init_raw_results)
+        self.init_inputs = {
+            "ion": init_raw_results["ion"],
+            "inpt": init_raw_results["inpt"],
+        }
+        self.psp_data = self.read_psp_info()
         return self.raw_results
 
     def _read_results_from_index(self, index, d_format="{:02d}"):
@@ -537,28 +548,51 @@ class SparcBundle:
             calc_results.append(partial_result)
         return calc_results, ase_images
 
-    def get_ionic_steps(self, raw_results):
-        """Get last ionic step dict from raw results"""
-        out_results = raw_results.get("out", {})
-        ionic_steps = out_results.get("ionic_steps", [])
-        return ionic_steps
+    # def get_ionic_steps(self, raw_results):
+    #     """Get last ionic step dict from raw results"""
+    #     out_results = raw_results.get("out", {})
+    #     ionic_steps = out_results.get("ionic_steps", [])
+    #     return ionic_steps
 
-    def _extract_output_results(self, raw_results):
-        """Extract extra information from results, need to be more polished
-        (maybe move to calculator?)
+    # def _extract_output_results(self, raw_results):
+    #     """Extract extra information from results, need to be more polished
+    #     (maybe move to calculator?)
+    #     """
+    #     last_step = self.get_ionic_step(raw_results)[-1]
+    #     if "fermi level" in last_step:
+    #         value = last_step["fermi level"]["value"]
+    #         unit = last_step["fermi level"]["unit"]
+    #         if unit.lower() == "ev":
+    #             self.results["fermi"] = value
+    #         # Should rarely happen, but keep it here!
+    #         elif unit.lower() == "hartree":
+    #             self.results["fermi"] = value * Hartree
+    #         else:
+    #             raise ValueError("Wrong unit in Fermi!")
+    #     return
+
+    def read_psp_info(self):
+        """Parse the psp information from inpt file options
+        The psp file locations are relative to the bundle.
+
+        If the files cannot be found, the dict will only contain
+        the path
         """
-        last_step = self.get_ionic_step(raw_results)[-1]
-        if "fermi level" in last_step:
-            value = last_step["fermi level"]["value"]
-            unit = last_step["fermi level"]["unit"]
-            if unit.lower() == "ev":
-                self.results["fermi"] = value
-            # Should rarely happen, but keep it here!
-            elif unit.lower() == "hartree":
-                self.results["fermi"] = value * Hartree
+        inpt = self.init_inputs.get("ion", {})
+        blocks = inpt.get("atom_blocks", [])
+        psp_info = {}
+        for block in blocks:
+            element = block["ATOM_TYPE"]
+            pseudo_path = block["PSEUDO_POT"]
+            real_path = (self.directory / pseudo_path).resolve()
+            psp_info[element] = {"rel_path": pseudo_path}
+            if not real_path.is_file():
+                warn(f"Cannot locate pseudopotential {pseudo_path}. ")
             else:
-                raise ValueError("Wrong unit in Fermi!")
-        return
+                header = open(real_path, "r").read()
+                psp_data = parse_psp8_header(header)
+                psp_info[element].update(psp_data)
+        return psp_info
 
 
 def read_sparc(filename, index=-1, include_all_files=False, **kwargs):
