@@ -517,8 +517,10 @@ def sanitize_type(param_dict):
                 default
             )
         except Exception as e:
-            warn(f"Array conversion failed for {example_value}, ignore."
-                 f"The error is {e}")
+            warn(
+                f"Array conversion failed for {example_value}, ignore."
+                f"The error is {e}"
+            )
             _array_test = False  # Retain
 
         if _array_test is True:

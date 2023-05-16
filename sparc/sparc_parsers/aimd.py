@@ -45,8 +45,7 @@ def _read_aimd(fileobj):
         len(data)
     ]
     raw_aimd_blocks = [
-        data[start:end] for start, end in zip(step_bounds[:-1],
-                                              step_bounds[1:])
+        data[start:end] for start, end in zip(step_bounds[:-1], step_bounds[1:])
     ]
     aimd_steps = [_read_aimd_step(step) for step in raw_aimd_blocks]
 

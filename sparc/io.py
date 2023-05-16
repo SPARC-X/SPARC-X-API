@@ -32,6 +32,7 @@ from .utils import string2index
 
 from ase.calculators.singlepoint import SinglePointDFTCalculator
 from ase.units import Hartree
+from ase.atoms import Atoms
 
 
 class SparcBundle:
@@ -257,16 +258,19 @@ class SparcBundle:
         # TODO: move this into another function
         last_out = sorted(
             self.directory.glob(f"{self.label}.out*"), reverse=True
-        )[0]
-        # print("Last output file: ", last_out)
-        suffix = last_out.suffix
-        if suffix == ".out":
-            self.last_image = 0
+        )
+        # No output file, only ion / inpt
+        if len(last_out) == 0:
+            self.last_image = -1
         else:
-            self.last_image = int(suffix.split("_")[1])
+            suffix = last_out[0].suffix
+            if suffix == ".out":
+                self.last_image = 0
+            else:
+                self.last_image = int(suffix.split("_")[1])
         self.num_calculations = self.last_image + 1
 
-        print(self.last_image, self.num_calculations)
+        # print(self.last_image, self.num_calculations)
 
         if include_all_files:
             results = [
@@ -569,8 +573,19 @@ def read_sparc(filename, index=-1, include_all_files=False, **kwargs):
     return atoms_or_images
 
 
-def write_sparc(filename, atoms, **kwargs):
-    sb = SparcBundle(directory=filename)
+def write_sparc(filename, images, **kwargs):
+    """Write sparc file. Images can only be Atoms object
+    or list of length 1
+    """
+    if isinstance(images, Atoms):
+        atoms = images
+    elif isinstance(images, list):
+        if len(images) > 1:
+            raise ValueError(
+                "SPARC format only supports writing one atoms object!"
+            )
+        atoms = images[0]
+    sb = SparcBundle(directory=filename, mode="w")
     sb._write_ion_and_inpt(atoms, **kwargs)
     return
 

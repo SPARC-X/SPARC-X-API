@@ -256,3 +256,28 @@ def test_bundle_diff_label(fs):
 
     with pytest.raises(Exception):
         sp = SparcBundle(directory="test.sparc", mode="r")
+
+
+def test_bundle_write_multi(fs):
+    from sparc.io import write_sparc, read_sparc
+    from ase.build import bulk
+    from ase.io import write, read
+    import numpy as np
+
+    fs.create_dir("test.sparc")
+    atoms = bulk("Cu") * [4, 4, 4]
+    images = [atoms]
+    write_sparc("test.sparc", atoms)
+    write_sparc("test.sparc", images)
+    write("test.sparc", atoms, format="sparc")
+    write("test.sparc", images, format="sparc")
+    images.append(atoms.copy())
+    with pytest.raises(Exception):
+        write_sparc("test.sparc", images)
+
+    with pytest.raises(Exception):
+        write("test.sparc", images, format="sparc")
+
+    atoms2 = read_sparc("test.sparc")
+    atoms2 = read("test.sparc", format="sparc")
+    assert np.isclose(atoms.positions, atoms2.positions).all()

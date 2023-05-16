@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
-from ase.calculators.calculator import (Calculator, FileIOCalculator,
-                                        all_changes)
+from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
 import subprocess
 
 from .io import SparcBundle
@@ -147,7 +146,8 @@ class SPARC(FileIOCalculator):
                 if sparc_exe is None:
                     raise EnvironmentError(
                         "Cannot find your sparc setup via $ASE_SPARC_COMMAND, SPARC.command, or "
-                        "infer from your $PATH. Please refer to the manual!")
+                        "infer from your $PATH. Please refer to the manual!"
+                    )
                 if mpi_exe is not None:
                     command_env = f"{mpi_exe} -n {num_cores} {sparc_exe}"
                 else:
@@ -160,10 +160,9 @@ class SPARC(FileIOCalculator):
             self.command = command_env
         return f"{self.command} {extras}"
 
-    def calculate(self,
-                  atoms=None,
-                  properties=["energy"],
-                  system_changes=all_changes):
+    def calculate(
+        self, atoms=None, properties=["energy"], system_changes=all_changes
+    ):
         """Perform a calculation step"""
         Calculator.calculate(self, atoms, properties, system_changes)
         self.write_input(self.atoms, properties, system_changes)
@@ -225,8 +224,10 @@ class SPARC(FileIOCalculator):
         errorcode = self.proc.returncode
 
         if errorcode > 0:
-            msg = (f"SPARC failed with command {command}"
-                   f"with error code {errorcode}")
+            msg = (
+                f"SPARC failed with command {command}"
+                f"with error code {errorcode}"
+            )
             raise RuntimeError(msg)
 
         return
@@ -308,7 +309,8 @@ class SPARC(FileIOCalculator):
             h = params.pop("h")
             if atoms is None:
                 raise ValueError(
-                    "Must have an active atoms object to convert h --> gpts!")
+                    "Must have an active atoms object to convert h --> gpts!"
+                )
             # TODO: is there any limitation for parallelization?
             gpts = h2gpts(h, atoms.cell)
             params["gpts"] = gpts
@@ -321,7 +323,8 @@ class SPARC(FileIOCalculator):
             else:
                 # TODO: customize error
                 raise ValueError(
-                    f"Input parameter gpts has invalid value {gpts}")
+                    f"Input parameter gpts has invalid value {gpts}"
+                )
 
         # kpts
         if "kpts" in params:
@@ -332,7 +335,8 @@ class SPARC(FileIOCalculator):
             else:
                 # TODO: customize error
                 raise ValueError(
-                    f"Input parameter kpts has invalid value {kpts}")
+                    f"Input parameter kpts has invalid value {kpts}"
+                )
 
         # nbands
         if "nbands" in params:
@@ -344,6 +348,7 @@ class SPARC(FileIOCalculator):
             else:
                 # TODO: customize error
                 raise ValueError(
-                    f"Input parameter nbands has invalid value {nbands}")
+                    f"Input parameter nbands has invalid value {nbands}"
+                )
 
         return converted_sparc_params
