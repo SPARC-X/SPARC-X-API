@@ -3,7 +3,7 @@
 import os
 import shutil
 import numpy as np
-from typing import Union, List
+from typing import Union, List, Optional
 
 
 def string2index(string: str) -> Union[int, slice, str]:
