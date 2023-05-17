@@ -8,6 +8,7 @@ from .utils import _find_default_sparc, h2gpts
 from warnings import warn
 from .api import SparcAPI
 import datetime
+from ase.units import Bohr, Hartree, eV, GPa
 
 # Below are a list of ASE-compatible calculator input parameters that are
 # in Angstrom/eV units
@@ -358,6 +359,29 @@ class SPARC(FileIOCalculator):
                 raise ValueError(
                     f"Input parameter nbands has invalid value {nbands}"
                 )
+        
+        # convergence is a dict
+        if "convergence" in params:
+            convergence = params.pop("convergence")
+            tol_e = convergence.get("energy", None)
+            if tol_e:
+                # TOL SCF: Ha / atom <--> energy tol: eV / atom
+                converted_sparc_params["SCF_ENERGY_ACC"] = tol_e / Hartree
+            
+            tol_f = convergence.get("forces", None)
+            if tol_f:
+                # TOL SCF: Ha / Bohr <--> energy tol: Ha / Bohr
+                converted_sparc_params["TOL_RELAX"] = tol_f / Hartree * Bohr
+            
+            tol_dens = convergence.get("density", None)
+            if tol_dens:
+                # TOL SCF: electrons / atom
+                converted_sparc_params["TOL_PSEUDOCHARGE"] = tol_dens
+                
+            tol_stress = convergence.get("stress", None)
+            if tol_stress:
+                # TOL SCF: electrons / atom
+                converted_sparc_params["TOL_RELAX_CELL"] = tol_stress / GPa
 
         return converted_sparc_params
     
