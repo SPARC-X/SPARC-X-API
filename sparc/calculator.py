@@ -20,7 +20,6 @@ sparc_python_inputs = [
     "convergence",
     "gpts",
     "nbands",
-    "encut",
 ]
 
 
@@ -36,6 +35,7 @@ class SPARC(FileIOCalculator):
 
     # A "minimal" set of parameters that user can call plug-and-use
     # like atoms.calc = SPARC()
+    # TODO: should we provide a minimal example for each system?
     default_params = {
         "xc": "pbe",
         "kpts": (1, 1, 1),
@@ -44,7 +44,7 @@ class SPARC(FileIOCalculator):
 
     def __init__(
         self,
-        restart=False,
+        restart=None,
         directory=".",
         *,
         label=None,
@@ -53,34 +53,40 @@ class SPARC(FileIOCalculator):
         psp_dir=None,
         log="sparc.log",
         **kwargs,
-    ):
+    ):  
+        # Initialize the calculator but without restart.
+        # Handle old restart file separatedly since we rely on the sparc_bundle to work
         FileIOCalculator.__init__(
             self,
-            restart=restart,
+            restart=None,
             label=label,
             atoms=atoms,
             command=command,
             directory=directory,
             **kwargs,
         )
-        # TODO: change label?
-        self.label = label if label is not None else "SPARC"
+        
         self.sparc_bundle = SparcBundle(
-            directory=Path(directory),
+            directory=Path(self.directory),
             mode="w",
-            atoms=atoms,
-            label=self.label,
+            atoms=self.atoms,
+            label=label if label is not None else "SPARC",
             psp_dir=psp_dir,
         )
-        print(self.directory)
-        print(self.sparc_bundle.directory)
+
+        # Try restarting from an old calculation
+        self._restart(restart=restart)
+        
         # Run a short test to return version of SPARC's binary
+        # TODO: sparc_version should allow both read from results / short stdout
         self.sparc_version = self._detect_sparc_version()
+        
         # Sanitize the kwargs by converting lower -- > upper
         # and perform type check
+        # TODO: self.parameter should be the only entry
         self.valid_params, self.special_params = self._sanitize_kwargs(kwargs)
-        self.raw_results = {}
         self.log = self.directory / log if log is not None else None
+        
 
     @property
     def directory(self):
@@ -254,10 +260,37 @@ class SPARC(FileIOCalculator):
         """Parse from the SparcBundle"""
         # TODO: try use cache?
         # self.sparc_bundle.read_raw_results()
-        last = self.sparc_bundle.convert_to_ase(indices=-1, include_all_files=True)
+        last = self.sparc_bundle.convert_to_ase(indices=-1, include_all_files=False)
+        self.atoms = last.copy()
         self.results.update(last.calc.results)
 
         # self._extract_out_results()
+        
+    def _restart(self, restart=None):
+        """Reload the input parameters and atoms from previous calculation.
+        
+        If self.parameters is already set, the parameters will not be loaded
+        If self.atoms is already set, the atoms will be not be read
+        """
+        if restart is None:
+            return
+        reload_atoms = self.atoms is None
+        reload_parameters = len(self.parameters) == 0
+        
+        self.read_results()
+        if not reload_atoms:
+            self.atoms = None
+        if reload_parameters:
+            self.parameters = self.raw_results["inpt"]["params"]
+        
+        if (not reload_parameters) or (not reload_atoms):
+            warn("Extra parameters or atoms are provided when restarting the SPARC calculator, "
+                "previous results will be cleared.")
+            self.results.clear()
+            self.sparc_bundle.raw_results.clear()
+        return
+            
+    
 
     def get_fermi_level(self):
         """Extra get-method for Fermi level, if calculated"""
@@ -385,10 +418,12 @@ class SPARC(FileIOCalculator):
 
         return converted_sparc_params
     
-    def print_sysinfo(self, command):
+    def print_sysinfo(self, command=None):
         """Record current runtime information
         """
         now = datetime.datetime.now().isoformat()
+        if command is None:
+            command = self.command
         msg = ("\n" + "*" * 80 + "\n"
               f"SPARC program started by sparc-python-api at {now}\n"
               f"command: {command}\n"

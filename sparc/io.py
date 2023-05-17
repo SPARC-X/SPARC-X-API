@@ -77,7 +77,7 @@ class SparcBundle:
         self.init_atoms = atoms.copy() if atoms is not None else None
         self.init_inputs = {}
         self.psp_data = {}
-        self.raw_results = None
+        self.raw_results = {}
         self.psp_dir = self.__find_psp_dir(psp_dir)
         # Sorting should be consistent across the whole bundle!
         self.sorting = None
