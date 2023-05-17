@@ -220,6 +220,13 @@ class SparcBundle:
         atoms = self.atoms.copy() if atoms is None else atoms.copy()
         # TODO: make the parameter more explicit
         pseudopotentials = kwargs.pop("pseudopotentials", {})
+
+        if sort:
+            if self.sorting is not None:
+                old_sort = self.sorting.get("sort", None)
+                if old_sort:
+                    sort = old_sort
+
         data_dict = atoms_to_dict(
             atoms,
             direct=direct,

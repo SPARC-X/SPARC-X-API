@@ -25,12 +25,20 @@ sparc_python_inputs = [
 
 defaultAPI = SparcAPI()
 
+
 def deprecated(message):
     def decorator(func):
         def new_func(*args, **kwargs):
-            warn("Function {} is deprecated in sparc-dft-api v0.2! {}".format(func.__name__, message), category=DeprecationWarning)
+            warn(
+                "Function {} is deprecated sparc-dft-api >= v0.2! {}".format(
+                    func.__name__, message
+                ),
+                category=DeprecationWarning,
+            )
             return func(*args, **kwargs)
+
         return new_func
+
     return decorator
 
 
@@ -61,7 +69,7 @@ class SPARC(FileIOCalculator):
         psp_dir=None,
         log="sparc.log",
         **kwargs,
-    ):  
+    ):
         # Initialize the calculator but without restart.
         # Handle old restart file separatedly since we rely on the sparc_bundle to work
         FileIOCalculator.__init__(
@@ -73,11 +81,11 @@ class SPARC(FileIOCalculator):
             directory=directory,
             **kwargs,
         )
-        
+
         # sparc bundle will set the label
         if label is None:
             label = "SPARC" if restart is None else None
-        
+
         self.sparc_bundle = SparcBundle(
             directory=Path(self.directory),
             mode="w",
@@ -88,17 +96,16 @@ class SPARC(FileIOCalculator):
 
         # Try restarting from an old calculation and set results
         self._restart(restart=restart)
-        
+
         # Run a short test to return version of SPARC's binary
         # TODO: sparc_version should allow both read from results / short stdout
         self.sparc_version = self._detect_sparc_version()
-        
+
         # Sanitize the kwargs by converting lower -- > upper
         # and perform type check
         # TODO: self.parameter should be the only entry
         self.valid_params, self.special_params = self._sanitize_kwargs(kwargs)
         self.log = self.directory / log if log is not None else None
-        
 
     @property
     def directory(self):
@@ -240,9 +247,13 @@ class SPARC(FileIOCalculator):
         try:
             if self.log is not None:
                 with open(self.log, "a") as fd:
-                    self.proc = subprocess.run(command, shell=True, cwd=self.directory, stdout=fd)
+                    self.proc = subprocess.run(
+                        command, shell=True, cwd=self.directory, stdout=fd
+                    )
             else:
-                self.proc = subprocess.run(command, shell=True, cwd=self.directory, stdout=None)
+                self.proc = subprocess.run(
+                    command, shell=True, cwd=self.directory, stdout=None
+                )
         except OSError as err:
             msg = 'Failed to execute "{}"'.format(command)
             raise EnvironmentError(msg) from err
@@ -272,15 +283,17 @@ class SPARC(FileIOCalculator):
         """Parse from the SparcBundle"""
         # TODO: try use cache?
         # self.sparc_bundle.read_raw_results()
-        last = self.sparc_bundle.convert_to_ase(indices=-1, include_all_files=False)
+        last = self.sparc_bundle.convert_to_ase(
+            indices=-1, include_all_files=False
+        )
         self.atoms = last.copy()
         self.results.update(last.calc.results)
 
         # self._extract_out_results()
-        
+
     def _restart(self, restart=None):
         """Reload the input parameters and atoms from previous calculation.
-        
+
         If self.parameters is already set, the parameters will not be loaded
         If self.atoms is already set, the atoms will be not be read
         """
@@ -288,21 +301,21 @@ class SPARC(FileIOCalculator):
             return
         reload_atoms = self.atoms is None
         reload_parameters = len(self.parameters) == 0
-        
+
         self.read_results()
         if not reload_atoms:
             self.atoms = None
         if reload_parameters:
             self.parameters = self.raw_results["inpt"]["params"]
-        
+
         if (not reload_parameters) or (not reload_atoms):
-            warn("Extra parameters or atoms are provided when restarting the SPARC calculator, "
-                "previous results will be cleared.")
+            warn(
+                "Extra parameters or atoms are provided when restarting the SPARC calculator, "
+                "previous results will be cleared."
+            )
             self.results.clear()
             self.sparc_bundle.raw_results.clear()
         return
-            
-    
 
     def get_fermi_level(self):
         """Extra get-method for Fermi level, if calculated"""
@@ -404,7 +417,7 @@ class SPARC(FileIOCalculator):
                 raise ValueError(
                     f"Input parameter nbands has invalid value {nbands}"
                 )
-        
+
         # convergence is a dict
         if "convergence" in params:
             convergence = params.pop("convergence")
@@ -412,100 +425,103 @@ class SPARC(FileIOCalculator):
             if tol_e:
                 # TOL SCF: Ha / atom <--> energy tol: eV / atom
                 converted_sparc_params["SCF_ENERGY_ACC"] = tol_e / Hartree
-            
+
             tol_f = convergence.get("forces", None)
             if tol_f:
                 # TOL SCF: Ha / Bohr <--> energy tol: Ha / Bohr
                 converted_sparc_params["TOL_RELAX"] = tol_f / Hartree * Bohr
-            
+
             tol_dens = convergence.get("density", None)
             if tol_dens:
                 # TOL SCF: electrons / atom
                 converted_sparc_params["TOL_PSEUDOCHARGE"] = tol_dens
-                
+
             tol_stress = convergence.get("stress", None)
             if tol_stress:
                 # TOL SCF: electrons / atom
                 converted_sparc_params["TOL_RELAX_CELL"] = tol_stress / GPa
 
         return converted_sparc_params
-    
+
     def print_sysinfo(self, command=None):
-        """Record current runtime information
-        """
+        """Record current runtime information"""
         now = datetime.datetime.now().isoformat()
         if command is None:
             command = self.command
-        msg = ("\n" + "*" * 80 + "\n"
-              f"SPARC program started by sparc-python-api at {now}\n"
-              f"command: {command}\n"
-              )
+        msg = (
+            "\n" + "*" * 80 + "\n"
+            f"SPARC program started by sparc-python-api at {now}\n"
+            f"command: {command}\n"
+        )
         if self.log is None:
             print(msg)
         else:
             with open(self.log, "a") as fd:
                 print(msg, file=fd)
-    
+
     ###############################################
     # Below are deprecated functions from v1
     ###############################################
-    @deprecated("Please use SPARC.set")
+    @deprecated("Please use SPARC.set instead for setting grid")
     def interpret_grid_input(self, atoms, **kwargs):
         return None
-    
-    @deprecated("Please use SPARC.set")
+
+    @deprecated("Please use SPARC.set instead for setting kpoints")
     def interpret_kpoint_input(self, atoms, **kwargs):
         return None
-    
-    @deprecated("Please use SPARC.set")
+
+    @deprecated(
+        "Please use SPARC.set instead for setting downsampling parameter"
+    )
     def interpret_downsampling_input(self, atoms, **kwargs):
         return None
-    
-    @deprecated("Please use SPARC.set")
+
+    @deprecated("Please use SPARC.set instead for setting kpoint shift")
     def interpret_kpoint_shift(self, atoms, **kwargs):
         return None
-        
+
     @deprecated("Please use SPARC.psp_dir instead")
     def get_pseudopotential_directory(self, pseudo_dir=None, **kwargs):
         return self.sparc_bundle.psp_dir
-    
-    @deprecated("Please use SPARC.psp_dir instead")
-    def get_pseudopotential_directory(self, pseudo_dir=None, **kwargs):
-        return self.sparc_bundle.psp_dir
-    
+
     # TODO: update method
     def get_nstates(self):
         return None
-    
+
     @deprecated("Please set the variables separatedly")
     def setup_parallel_env(self):
         return None
-    
+
     @deprecated("Please use SPARC._make_command instead")
     def generate_command(self):
         return self._make_command(f"-name {self.label}")
-    
+
     # TODO: update the method!
-    def estimate_memory(self, atoms=None, units='GB', **kwargs):
+    def estimate_memory(self, atoms=None, units="GB", **kwargs):
         """
         a function to estimate the amount of memory required to run
         the selected calculation. This function takes in **kwargs,
         but if none are passed in, it will fall back on the parameters
         input when the class was instantiated
         """
-        conversion_dict = {'MB': 1e-6, 'GB': 1e-9, 'B': 1, 'byte': 1,
-                           'KB': 1e-3}
+        conversion_dict = {
+            "MB": 1e-6,
+            "GB": 1e-9,
+            "B": 1,
+            "byte": 1,
+            "KB": 1e-3,
+        }
         if kwargs == {}:
             kwargs = self.parameters
         if atoms is None:
             atoms = self.atoms
 
-        nstates = kwargs.get('NSTATES')
+        nstates = kwargs.get("NSTATES")
         if nstates is None:
             nstates = self.get_nstates(atoms=atoms, **kwargs)
 
         # some annoying code to figure out if it's a spin system
-        spin_polarized = kwargs.get('nstates')
+        spin_polarized = kwargs.get("nstates")
         if spin_polarized is not None:
             spin_polarized = int(spin_polarized)
         else:
@@ -515,58 +531,83 @@ class SPARC(FileIOCalculator):
         else:
             spin_factor = 1
 
-        if 'MESH_SPACING' in kwargs:
-            kwargs['h'] = kwargs.pop('MESH_SPACING')
+        if "MESH_SPACING" in kwargs:
+            kwargs["h"] = kwargs.pop("MESH_SPACING")
         npoints = np.product(self.interpret_grid_input(atoms, **kwargs))
 
         kpt_grid = self.interpret_kpoint_input(atoms, **kwargs)
-        kpt_factor = np.ceil(np.product(kpt_grid)/2)
+        kpt_factor = np.ceil(np.product(kpt_grid) / 2)
 
         # this is a pretty generous over-estimate
         # TODO: check this function is working
         estimate = 5 * npoints * nstates * kpt_factor * spin_factor * 8  # bytes
         converted_estimate = estimate * conversion_dict[units]
         return converted_estimate
-    
-    #TODO: update method for static / geopt / aimd
+
+    # TODO: update method for static / geopt / aimd
     def get_scf_steps(self, include_uncompleted_last_step=False):
         raise NotImplemented
-        
+
     @deprecated("Use SPARC.get_number_of_ionic_steps instead")
     def get_geometric_steps(self, include_uncompleted_last_step=False):
         raise NotImplemented
-        
-    
+
     def get_runtime(self):
         raise NotImplemented
-        
+
     def get_fermi_level(self):
         raise NotImplemented
 
-
-
-    #TODO: update method for static / geopt / aimd
+    # TODO: update method for static / geopt / aimd
     def get_scf_steps(self, include_uncompleted_last_step=False):
         raise NotImplemented
-        
+
     @deprecated("Use SPARC.get_number_of_ionic_steps instead")
     def get_geometric_steps(self, include_uncompleted_last_step=False):
         raise NotImplemented
-        
-    
+
     def get_runtime(self):
         raise NotImplemented
-        
+
     def get_fermi_level(self):
         raise NotImplemented
-        
+
     @deprecated
     def concatinate_output(self):
         raise DeprecationWarning("Functionality moved in sparc.SparcBundle.")
-        
+
     @deprecated
     def read_line(self, **kwargs):
-        raise DeprecationWarning("Parsers for individual files have been moved to sparc.sparc_parsers module")
-    
-    
-    
+        raise DeprecationWarning(
+            "Parsers for individual files have been moved to sparc.sparc_parsers module"
+        )
+
+    @deprecated
+    def parse_output(self, **kwargs):
+        raise DeprecationWarning("Use SPARC.read_results for parsing results!")
+
+    @deprecated
+    def parse_relax(self, *args, **kwargs):
+        raise DeprecationWarning("Use SPARC.read_results for parsing results!")
+
+    @deprecated
+    def parse_MD(self, *args, **kwargs):
+        raise DeprecationWarning("Use SPARC.read_results for parsing results!")
+
+    @deprecated
+    def parse_input_args(self, input_block):
+        raise DeprecationWarning("Use SPARC.set for argument handling!")
+
+    @deprecated
+    def recover_index_order_from_ion_file(self, label):
+        raise DeprecationWarning(
+            "Use SPARC.sort and SPARC.resort for atomic index sorting!"
+        )
+
+    @deprecated
+    def atoms_dict(self, *args, **kwargs):
+        raise DeprecationWarning("")
+
+    @deprecated
+    def dict_atoms(self, *args, **kwargs):
+        raise DeprecationWarning("")
