@@ -7,6 +7,7 @@ from .io import SparcBundle
 from .utils import _find_default_sparc, h2gpts
 from warnings import warn
 from .api import SparcAPI
+import datetime
 
 # Below are a list of ASE-compatible calculator input parameters that are
 # in Angstrom/eV units
@@ -214,6 +215,7 @@ class SPARC(FileIOCalculator):
         # TODO: add -socket?
         extras = f"-name {self.label}"
         command = self._make_command(extras=extras)
+        self.print_sysinfo(command)
 
         # TODO: distinguish between normal process
         try:
@@ -358,3 +360,18 @@ class SPARC(FileIOCalculator):
                 )
 
         return converted_sparc_params
+    
+    def print_sysinfo(self, command):
+        """Record current runtime information
+        """
+        now = datetime.datetime.now().isoformat()
+        msg = ("\n" + "*" * 80 + "\n"
+              f"SPARC program started by sparc-python-api at {now}\n"
+              f"command: {command}\n"
+              )
+        if self.log is None:
+            print(msg)
+        else:
+            with open(self.log, "a") as fd:
+                print(msg, file=fd)
+        
