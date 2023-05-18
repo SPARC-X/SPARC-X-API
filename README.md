@@ -3,7 +3,7 @@
 [![Coverage](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)
 [![Unit tests](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml/badge.svg)](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml)
 
-`sparc-dft-api` is an [ASE]()-compatible python API for the density functional theory (DFT) code [SPARC](). It provides the following functionalities:
+`sparc-dft-api` is an [ASE](https://wiki.fysik.dtu.dk/ase/)-compatible python API for the density functional theory (DFT) code [SPARC](https://github.com/SPARC-X/SPARC). Starting v0.2, it provides the following functionalities:
 
 1. ASE-compatible I/O format for SPARC files
 2. JSON API associated with SPARC C-code for parameter validation and conversion
@@ -14,16 +14,31 @@
 - [ ] 
  -->
 ## Installation:
-Choose one of the following ways to install `sparc-dft-api`. The minimal system requirements are 
-a python >= 3.7 environment on Linux platform. `sparc-dft-api` itself depends on `ase>=3.22`
 
-### 1. Via `conda` (recommended)
+`sparc-dft-api` may be installed via any of the following approaches:
+
+### 1. Via `anaconda` or `miniconda` (recommended)
+
+Install `anaconda` or `miniconda` and create a working conda environment (see [conda documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands)). After than, use `conda install` to install the API:
+
 ```bash
-conda install -c alchem0x2a sparc-dft-api sparc
+conda install -c alchem0x2a sparc-dft-api
+```
+<!-- *TODO*:
+- [] Change to conda-forge later
+ -->
+
+*NOTE: above conda code will change to conda-forge channel in official release*
+
+
+You may also want to install our pre-compiled SPARC binaries and the SPMS pseudopotentials within the environment (x86-64 Linux only)
+
+```bash
+conda install -c alchem0x2a sparc
 ```
 
-This will install the SPARC executable (`openblas` + `scalapack` version), the SPMS pseudopotential and 
-the python-api all in one step.
+*NOTE: above conda code will change to conda-forge channel in official release*
+
 
 <!-- *TODO*:
 - [ ] Push the conda-package to channel
@@ -33,23 +48,27 @@ the python-api all in one step.
  
 ### 2. Install stable version from [PyPI]()
 ```bash
-pip instal sparc-dft-api>=2.0
+python -m pip instal sparc-dft-api>=2.0
 ```
+
+*NOTE: need to update compiled wheel in pypi*
 
 <!-- WIP
-- [ ] Push to pypi? -->
+- [ ] Push to pypi? 
+-->
 
-### 3. Install latest version from GitHub
+### 3. Install latest develop version from GitHub
 
 ```bash
-pip install git+https://github.com/SPARC-X/sparc-dft-api
+python -m pip install git+https://github.com/SPARC-X/sparc-dft-api
 ```
-Download the latest SPMS pseudopotentials after installation (optional):
+
+You can download the latest SPMS pseudopotentials after installation (optional):
 ```bash
 python -m sparc.download_data
 ```
 
-Please following SPARC's [manual]() for compilation and installation of the SPARC DFT code itself in this case.
+Please following the SPARC [manual](https://github.com/SPARC-X/SPARC) for compilation and installation of the SPARC DFT code itself in this case.
 
 <!-- *TODO*
 - [ ] Make Pypi
@@ -63,7 +82,9 @@ We recommend the users to run a simple check after installation:
 python -m sparc.quicktest
 ```
 
-An `ALL PASS` output indicates your SPARC executable, pseudopotential files, and python api are ready to work.
+A successful setup would have the following output
+**TODO: add the image placeholder**
+
 If you encounter any issues, please refer to the [Trouble Shooting] section.
 
 <!-- *TODO*
@@ -75,6 +96,24 @@ If you encounter any issues, please refer to the [Trouble Shooting] section.
 
 
 ## `sparc-dft-api`: Basic usages
+### 0. Environmental variables
+By design, sparc-dft-api >= v0.2 will automate the discovery for 
+pseudopotential files, JSON API and SPARC binary. You can control them 
+by setting the environmental varialbles:
+### A) Pseudopotential files
+Pseudopotential files (in *Abinit*'s psp8 format) are looked for in the following
+order:
+1) `psp_dir` argument passed to the `sparc.SPARC` calculator
+2) Environmental variables `$SPARC_PSP_PATH` or `$SPARC_PP_PATH` 
+3) `psp` directory bundled with the sparc-dft-api installation (must be downloaded via `python -m sparc.download_data`)
+
+### B) JSON API file
+**TODO**
+
+### C) `SPARC` command
+**TODO**
+
+
 ### 1. Read / write SPARC files
 
 Unlike other DFT codes where the ASE format corresponds to a single file,
@@ -165,6 +204,8 @@ atoms.get_potential_energy()
 ```
 
 This example runs a short NVE MD simulation (5 steps) at 800 K for 27 Al atoms.
+
+
 
 
 ## Major changes from `sparc-dft-api` [v1.0]

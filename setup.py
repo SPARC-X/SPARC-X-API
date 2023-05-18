@@ -2,10 +2,7 @@
 
 from distutils.core import setup
 from setuptools import find_packages
-
 from warnings import warn
-
-
 from setuptools.command.install import install
 from warnings import warn
 
@@ -21,7 +18,7 @@ test_requires = [
 
 setup(
     name="sparc-dft-api",
-    version="0.2",
+    version="0.2-alpha",
     python_requires=">=3.8",
     description="Python Wrapper for the SPARC-X DFT Code",
     author="Ben Comer",
