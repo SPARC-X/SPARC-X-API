@@ -424,3 +424,71 @@ unit system:
 |                | `density` e/atom          | `convergence={`density`: 1e-6}`| `TOL_PSEUDOCHARGE: 1e-6` |
 
 *WIP*: support more advanced settings like D3, HSE and DFT+U in `xc` settings
+
+### Rules for input parameters in `sparc.SPARC` calculator
+
+When constructing the `sparc.SPARC` calculator using the syntax 
+```python
+calc = SPARC(directory="", **kwargs)
+```
+the parameters are handled in the following priority:
+1) Parameters available to `.inpt` files (i.e. **CAPITALIZED**) have highest priority and overwrite all special inputs. They should be set directly using the atomic unit values (i.e the same value as they appear in the `.inpt` files).
+2) Special inputs (i.e, `h`, `kpts`, `gpts`, `xc`, `convergence`) have second highest priority and overwrite default values. They are using the ASE unit system (i.e. Å, eV, GPa, fs). 
+3) If none of the parameters are provided, `SPARC` uses its default parameter set, currently 
+```python
+{"xc": "pbe", "h": 0.25, "kpts": (1, 1, 1)}
+```
+
+We accept parameters in both upper and lower cases, in other words, `FD_GRID=[10, 10, 10]` and `fd_grid=[10, 10, 10]` are equivalent.
+Additionally, boolean inputs (i.e. `PRINT_FORCES`) can be written in both integer or boolean values.
+
+
+### Multiple occurance of output files
+
+In a typical SPARC calculation, there may be multiple result files in the SPARC bundle, with different suffixes (e.g. `.out`, `.out_01`, `.out_02` etc.). 
+These files can be a result of restarted geometry optimization / AIMD or written by an ASE optimizer.
+
+When using `read_sparc` to access the files, you can add `include_all_files=True` option to parse
+trajectories from all files. 
+
+```python
+from sparc.io import read_sparc
+# Read all images from .static, .static_01, .static_02 etc.
+images = read_sparc("path/to/calc.sparc", index=":", include_all_files=True)
+
+# Read only from .static_02
+last_atoms = read_sparc("path/to/calc.sparc", include_all_files=False)
+```
+
+By default, `sparc.SPARC` calculator only access the last image of last output file when reading the calculation results.
+
+
+## Troubleshooting
+
+**Work in progress**
+
+## Notes for developers
+### Setting up development environment
+
+We recommend use the pip installation from github
+```python
+git clone https://github.com/SPARC-X/sparc-dft-api.git
+pip install -e "sparc-dft-api[test]"
+python -m sparc.download_data
+```
+
+which will setup sparc-dft-api along with `pytest` toolchains. 
+
+### Running tests
+
+All unit tests are based on `pytest` and inside `tests/` directory. 
+To run all tests (no heavy DFT calculations):
+```python
+python -m pytest -svv tests/
+```
+
+If you are on a HPC environment, you can opt to run a comprehensive test suite with DFT calculations:
+```python
+python -m pytest -svv tests/test_all_dft.py
+```
+(**WORK IN PROGRESS**)
