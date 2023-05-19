@@ -44,9 +44,15 @@ def atoms_to_dict(
     """
     # Step 1: if we should sort the atoms?
     # origin_atoms = atoms.copy()
+    # sort = True re-calculate the sorting information
+    # sort = list re-uses the sorting information
     if sort:
-        sort_ = np.argsort(atoms.get_chemical_symbols())
-        resort_ = make_reverse_mapping(sort_)
+        if isinstance(sort, list):
+            sort_ = np.array(sort)
+            resort_ = make_reverse_mapping(sort_)
+        else:
+            sort_ = np.argsort(atoms.get_chemical_symbols())
+            resort_ = make_reverse_mapping(sort_)
         # This is the sorted atoms object
         atoms = atoms[sort_]
     else:

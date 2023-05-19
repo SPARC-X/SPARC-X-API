@@ -77,7 +77,7 @@ class SparcBundle:
         self.init_atoms = atoms.copy() if atoms is not None else None
         self.init_inputs = {}
         self.psp_data = {}
-        self.raw_results = None
+        self.raw_results = {}
         self.psp_dir = self.__find_psp_dir(psp_dir)
         # Sorting should be consistent across the whole bundle!
         self.sorting = None
@@ -220,6 +220,13 @@ class SparcBundle:
         atoms = self.atoms.copy() if atoms is None else atoms.copy()
         # TODO: make the parameter more explicit
         pseudopotentials = kwargs.pop("pseudopotentials", {})
+
+        if sort:
+            if self.sorting is not None:
+                old_sort = self.sorting.get("sort", None)
+                if old_sort:
+                    sort = old_sort
+
         data_dict = atoms_to_dict(
             atoms,
             direct=direct,

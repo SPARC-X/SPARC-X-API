@@ -294,3 +294,27 @@ def test_bundle_psp():
         if len(list(f.glob("*.psp8"))) > 0:
             for elem, psp_data in sb.psp_data.items():
                 assert "symbol" in psp_data
+
+
+def test_bundle_reuse_sorting():
+    """sort=True should reuse the sorting information from bundle"""
+    from sparc.io import SparcBundle
+    import tempfile
+    from pathlib import Path
+
+    sb = SparcBundle(test_output_dir / "Cu_FCC.sparc")
+    init_atoms = sb.convert_to_ase()
+
+    atoms2 = init_atoms.copy()
+    atoms2.rattle()
+    sort1 = sb.sorting["sort"]
+
+    # Hard hack to write another directory, though not really done manually
+    with tempfile.TemporaryDirectory() as tmpdir:
+        sb.directory = Path(tmpdir)
+        sb.mode = "w"
+        sb._write_ion_and_inpt(atoms=atoms2)
+        # Create another bundle reader
+        sb2 = SparcBundle(tmpdir)
+        atoms2 = sb2.convert_to_ase()
+        assert np.isclose(sort1, sb2.sorting["sort"]).all()
