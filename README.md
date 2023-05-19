@@ -75,9 +75,69 @@ Please following the SPARC [manual](https://github.com/SPARC-X/SPARC) for compil
 - [ ] Make wheel available
  -->
 
+### Setting up environmental varibles
+By design, `sparc-dft-api` >= v0.2 will automate the discovery for 
+pseudopotential files, JSON API and SPARC binary. 
+But you can also have fine control over how they can be setup:
+
+#### A) Pseudopotential files
+Pseudopotential files (in `Abinit` psp8 format) are looked for in the following
+order:
+1) `psp_dir` argument passed to the `sparc.SPARC` calculator
+2) Environmental variables `$SPARC_PSP_PATH` or `$SPARC_PP_PATH` 
+3) `psp8` files bundled with the sparc-dft-api installation (must be downloaded via `python -m sparc.download_data`)
+
+You can  set the `$SPARC_PSP_PATH` variable like follows:
+```bash
+export SPARC_PSP_PATH="/path/to/your/psp8/directory"
+```
+
+To get the location of default psp8 files in option 3), run the following code:
+```bash
+python -c "from sparc.common import psp_dir; print(psp_dir)"
+```
+
+#### B) JSON API file
+Currently the calculator's API validator is bundled with sparc-dft-api. 
+In future releases it will be possible to dynamically load a JSON API by 
+matching the SPARC binary version. You can take a look at the api file at 
+`sparc.sparc_json_api.default_json_api`, which should contain entries like:
+
+```json
+"FD_GRID": {
+   "symbol": "FD_GRID",
+   "label": "FD_GRID",
+   "type": "integer array",
+   "default": null,
+   "unit": "No unit",
+   "example": "FD_GRID: 26 26 30",
+   "description": "A set of three whitespace delimited values specifying the number of finite-difference intervals in the lattice vector (LATVEC) directions, respectively.",
+   "remark": "The convergence of results with respect to spatial discretization needs to be verified. ECUT, MESH_SPACING, FD_GRID cannot be specified simultaneously.",
+   "allow_bool_input": false,
+   "default_remark": "None",
+   "description_raw": "A set of three whitespace delimited values specifying the number of finite-difference intervals in the lattice vector (\\hyperlink{LATVEC}{\\texttt{LATVEC}}) directions, respectively.",
+   "remark_raw": "The convergence of results with respect to spatial discretization needs to be verified. \\hyperlink{ECUT}{\\texttt{ECUT}}, \\hyperlink{MESH_SPACING}{\\texttt{MESH\\_SPACING}}, \\hyperlink{FD_GRID}{\\texttt{FD\\_GRID}} cannot be specified simultaneously.",
+   "category": "system"
+  },
+```
+
+#### C) `SPARC` command
+
+The command used for running SPARC calculations are detected in the following order:
+1) Passing `command` argument to `sparc.SPARC` calculator
+2) Setting `$ASE_SPARC_COMMAND` variable
+3) If None of the above exists, look for a SPARC binary under current `$PATH` and combine with the suitable `mpi` command prefix (auto-detected).
+
+Example:
+```bash
+export ASE_SPARC_COMMAND="mpirun -n 8 /path/to/sparc -name PREFIX"
+```
+
+*Note*: the `-name PREFIX` part can be omitted in `sparc-dft-api` >= v0.2, since it will autocomplete the command using the `SPARC.label` property.
+
 ### Post-installation check
 
-We recommend the users to run a simple check after installation:
+We recommend the users to run a simple check after installation and setup:
 ```bash
 python -m sparc.quicktest
 ```
@@ -99,40 +159,6 @@ If you encounter any issues, please refer to the [Trouble Shooting]() section.
 
 
 ## `sparc-dft-api`: Basic usages
-### 0. Prerequisites
-
-By design, sparc-dft-api >= v0.2 will automate the discovery for 
-pseudopotential files, JSON API and SPARC binary. 
-But you can also have fine control over how they can be setup:
-
-### A) Pseudopotential files
-Pseudopotential files (in *Abinit*'s psp8 format) are looked for in the following
-order:
-1) `psp_dir` argument passed to the `sparc.SPARC` calculator
-2) Environmental variables `$SPARC_PSP_PATH` or `$SPARC_PP_PATH` 
-3) `psp` directory bundled with the sparc-dft-api installation (must be downloaded via `python -m sparc.download_data`)
-
-### B) JSON API file
-Currently the calculator's API validator is bundled with sparc-dft-api. 
-In future releases it will be possible to dynamically load a JSON API by 
-matching the SPARC binary version.
-
-### C) `SPARC` command
-
-The command used for running SPARC calculations are detected in the following order:
-1) Passing `command` argument to `sparc.SPARC` calculator
-2) Setting `$ASE_SPARC_COMMAND` variable
-3) If None of the above exists, look for a SPARC binary under current `$PATH` and combine with the suitable `mpi` command prefix (auto-detected).
-
-Example:
-```bash
-export ASE_SPARC_COMMAND="mpirun -n 8 /path/to/sparc -name NAME"
-```
-
-*Note*: the `-name NAME` part can be omitted. In that case, the calculator will 
-autocomplete the command using its `label` property.
-
-
 ### 1. Read / write SPARC files
 
 Unlike other DFT codes where the ASE format corresponds to a single file,
@@ -221,19 +247,70 @@ atoms.get_potential_energy()
 This example runs a short NVE MD simulation (5 steps) at 800 K for 27 Al atoms. 
 If you want to extract more information about the MD simulation steps, take a look at `SPARC.raw_results`.
 
+4. Geometric optimization using ASE's optimizers 
+
+The power of `sparc-dft-api` is to combine single point `SPARC` calculations with advanced ASE optimizers, such as BFGS, FIRE or GPMin. Example 2 can be re-written as:
+
+```python
+from sparc.calculator import SPARC
+from ase.build import bulk
+from ase.optimize import LBFGS
+atoms = bulk("Al", cubic=True)
+atoms.rattle(0.05)
+atoms.calc = SPARC(h=0.25, kpts=(3, 3, 3), directory="run_opt_ase")
+opt = LBFGS(atoms, alpha=90)
+opt.run(fmax=0.02)
+```
 
 
+## Major changes from `sparc-dft-api` [v0.1](https://github.com/SPARC-X/sparc-dft-api/tree/eac557f214b402122a506f88f38c7a8767283503)
 
-## Major changes from `sparc-dft-api` [v1.0]
+`sparc-dft-api` has been heavily refactored in v0.2. If you're using legacy Python codes
+that are written under v0.1 API, there are a few major changes that require your attention:
 
-The python API has been heavily re-formatted v2.0. If you're using legacy python codes
-that are written under v1.0 API, there are a few major changes that require your attention:
+1. Support for single `.ion` file format is deprecated. Instead, `v0.2` API treats the whole SPARC directory as a bundle format. Please use `read_sparc` and `write_sparc` methods for basic file I/O instead.
+Nevertheless, reading calculation results generated by a v0.1 API code will not be affected.
 
-1. v2.0 API no longer provides a single I/O format for SPARC `.ion` file due to the reason explained in 
-   [I/O] section. The lattice information in `.ion` files generated by legacy API will remain
-   harmless but not parsed.
-2. v2.0 API uses a different mapping scheme for the sorting of ASE atoms objects (similar to `Vasp`).
-3. v2.0 API keeps all SPARC internal parameters (i.e. those can be **CAPITALIZED**) in atomic units, will all other
-   ASE-specific units are in Å / eV / fs. *TODO: discuss with group for opinion*
-4. v2.0 API is more flexible treating the `ASE_SPARC_COMMAND` environmental variable. While the same command v1.0 uses
-   should still work, there is no need to specify `-name PREFIX` in the command.
+2. v0.2 API uses a different mapping scheme for the sorting of ASE atoms objects (similar to `Vasp`), add a comment section in `.ion` file similar to follows:
+```python
+# ASE-SORT:
+# 3 2 1 0
+# END ASE-SORT
+```
+which maps atoms 3, 2, 1, 0 from the SPARC .ion file order to atoms 0, 1, 2, 3 in ASE order. This is useful for systems that are constructed by ASE's `add_adsorbate` method.
+
+3. v0.2 API accepts all SPARC internal parameters (i.e. **CAPITALIZED**) in *atomic units* for consistency reason. 
+However, we also keep a list of "special input params" that are conventionally used in other ASE calculators, that use Å / eV / GPa / fs unit system.
+
+4. Defining `LATVEC`, `LATVEC_SCALE`, or `CELL` via the calculator parameters is no longer encouraged. Instead, all structure changes should be made to the `Atoms` object.
+
+For more discussion please see [Advanced Topic] section.
+
+Below are a list of v0.1 method of the `SPARC` calculator and their current status in v0.2 API. 
+`calc` is an instance of `sparc.SPARC`.
+
+|  old methods           | status in v0.2 API |     alternatives                   |
+|------------------------|--------------------|------------------------------------|
+| `interpret_grid_input` | deprecated         | `calc.set(fd_grid=[20, 20, 20])`   |
+| `interpret_kpoint_input` | deprecated         | `calc.set(kpts=[3, 3, 3])`   |
+| `interpret_downsampling_input` | deprecated   | Manual setting not recommended |
+| `interpret_kpoint_shift` | deprecated | `calc.set(kpoint_shift=[0, 0, 0])` |
+| `get_pseudopotential_directory` | deprecated | `calc.psp_dir` |
+| `get_nstates`          | maintained     |            |
+| `setup_parallel_env` | deprecated | Manual set |
+| `generate_command` | deprecated | `calc._make_command()` |
+| `estimate_memory` | maintained | |
+| `get_scf_steps` | maintained | |
+| `get_geometric_steps` | deprecated | `calc.get_number_of_ionic_steps()`|
+| `get_runtime` | maintained | |
+| `get_fermi_level` | maintained | |
+| `concatinate_output` | deprecated | Use `sparc.SparcBundle` instead |
+| `read_line` | deprecated | Use `sparc.SparcBundle` instead |
+| `parse_output` | deprecated | `calc.read_results()` |
+| `parse_relax` | deprecated | `calc.read_results()` |
+| `parse_md` | deprecated | `calc.read_results()` |
+| `parse_input_args` | deprecated | `calc.set(**kwargs)` |
+| `recover_index_order_from_ion_file` | deprecated | Use `calc.sort` and `calc.resort` |
+| `atoms_dict` | deprecated | Use third party library like `bson` |
+| `dict_atoms` | deprecated | Use third party library like `bson` |
+
