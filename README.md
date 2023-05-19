@@ -82,10 +82,13 @@ We recommend the users to run a simple check after installation:
 python -m sparc.quicktest
 ```
 
-A successful setup would have the following output
-**TODO: add the image placeholder**
+A successful setup would show the following blocks at the end of the output
 
-If you encounter any issues, please refer to the [Trouble Shooting] section.
+<img width="500" alt="image" src="https://github.com/alchem0x2A/sparc-dft-api/assets/6829706/95cb712e-4c77-4b14-8130-4961e3c50278">
+
+
+
+If you encounter any issues, please refer to the [Trouble Shooting]() section.
 
 <!-- *TODO*
 - [ ] Test ase io format support
