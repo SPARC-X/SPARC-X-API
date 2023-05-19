@@ -96,10 +96,12 @@ If you encounter any issues, please refer to the [Trouble Shooting] section.
 
 
 ## `sparc-dft-api`: Basic usages
-### 0. Environmental variables
+### 0. Prerequisites
+
 By design, sparc-dft-api >= v0.2 will automate the discovery for 
-pseudopotential files, JSON API and SPARC binary. You can control them 
-by setting the environmental varialbles:
+pseudopotential files, JSON API and SPARC binary. 
+But you can also have fine control over how they can be setup:
+
 ### A) Pseudopotential files
 Pseudopotential files (in *Abinit*'s psp8 format) are looked for in the following
 order:
@@ -108,10 +110,24 @@ order:
 3) `psp` directory bundled with the sparc-dft-api installation (must be downloaded via `python -m sparc.download_data`)
 
 ### B) JSON API file
-**TODO**
+Currently the calculator's API validator is bundled with sparc-dft-api. 
+In future releases it will be possible to dynamically load a JSON API by 
+matching the SPARC binary version.
 
 ### C) `SPARC` command
-**TODO**
+
+The command used for running SPARC calculations are detected in the following order:
+1) Passing `command` argument to `sparc.SPARC` calculator
+2) Setting `$ASE_SPARC_COMMAND` variable
+3) If None of the above exists, look for a SPARC binary under current `$PATH` and combine with the suitable `mpi` command prefix (auto-detected).
+
+Example:
+```bash
+export ASE_SPARC_COMMAND="mpirun -n 8 /path/to/sparc -name NAME"
+```
+
+*Note*: the `-name NAME` part can be omitted. In that case, the calculator will 
+autocomplete the command using its `label` property.
 
 
 ### 1. Read / write SPARC files
@@ -222,7 +238,7 @@ that are written under v1.0 API, there are a few major changes that require your
 4. v2.0 API is more flexible treating the `ASE_SPARC_COMMAND` environmental variable. While the same command v1.0 uses
    should still work, there is no need to specify `-name PREFIX` in the command.
 
-
+<!-- 
 
 <!-- ###### *Behind the scene*
 
@@ -437,4 +453,4 @@ atoms.set_pbc([False] * 3 )
 atoms.set_calculator(calc)
 calc.write_input()
 ~~~ -->
-
+ -->
