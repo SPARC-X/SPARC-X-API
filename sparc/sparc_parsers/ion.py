@@ -129,7 +129,7 @@ def _write_ion(
             "RELAX",
         ]:
             val = block.get(key, None)
-            print(key, val)
+            # print(key, val)
             if (key not in ["RELAX", "COORD", "COORD_FRAC"]) and (val is None):
                 raise ValueError(
                     f"Key {key} is not provided! Abort writing ion file"

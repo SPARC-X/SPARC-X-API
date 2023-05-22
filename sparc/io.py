@@ -357,7 +357,7 @@ class SparcBundle:
         else:
             raw_results = list(rs)
         res_images = []
-        print("RAW RES: ", raw_results)
+        # print("RAW RES: ", raw_results)
         for entry in raw_results:
             if "static" in entry:
                 calc_results, images = self._extract_static_results(
@@ -453,7 +453,7 @@ class SparcBundle:
         position from static file first, then fallback from ion + inpt
 
         """
-        print("RAW_RES:  ", raw_results)
+        # print("RAW_RES:  ", raw_results)
         geopt_results = raw_results.get("geopt", [])
         calc_results = []
         if len(geopt_results) == 0:

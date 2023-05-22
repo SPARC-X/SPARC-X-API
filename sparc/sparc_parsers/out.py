@@ -35,7 +35,7 @@ def _read_out(fileobj):
     """
     contents = fileobj.read()
     sparc_version = _read_sparc_version(contents[:4096])
-    print(sparc_version)
+    # print(sparc_version)
     # TODO: use the sparc version to construct the API
     output_dict = {"sparc_version": sparc_version}
     # Combine the input parameters and parallelization sections
@@ -74,7 +74,7 @@ def _read_input_params(contents, validator=defaultAPI):
         _get_block_text(contents, "Input parameters")
         + _get_block_text(contents, "Parallelization")
     ).split("\n")
-    print(lines)
+    # print(lines)
     params = read_block_input(lines, validator=validator)
     return params
 
