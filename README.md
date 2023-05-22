@@ -9,10 +9,7 @@
 2. JSON API associated with SPARC C-code for parameter validation and conversion
 3. Fully functional calculator interface for SPARC
 
-<!-- *TODO*:
-- [ ] More advanced interface
-- [ ] 
- -->
+
 ## Installation:
 
 `sparc-dft-api` may be installed via any of the following approaches:
@@ -162,8 +159,8 @@ If you encounter any issues, please refer to the [Trouble Shooting]() section.
 ### 1. Read / write SPARC files
 
 Unlike other DFT codes where the ASE format corresponds to a single file,
-`sparc-dft-api` provides I/O support for the whole calculation directory, a.k.a "SPARC bundle".``
-`sparc-dft-api` allows automatic discovery of this file format (`sparc-bundle`) in ASE:
+`sparc-dft-api` provides I/O support for the whole calculation directory, a.k.a "SPARC bundle". 
+`sparc-dft-api` allows automatic discovery of this file format (`"sparc"`) in ASE:
 
 - Read from a sparc bundle
 
@@ -171,7 +168,7 @@ Unlike other DFT codes where the ASE format corresponds to a single file,
 import sparc
 from ase.io import read, write
 
-atoms = read("test.sparc", format="sparc", image=-1)
+atoms = read("test.sparc", index=-1, format="sparc")
 ```
 
 - Write a minimal sparc bundle from atoms
@@ -212,7 +209,7 @@ atoms.get_potential_energy()
 atoms.get_forces()
 ```
 
-This example sets up a calculation for H2 atoms in a 10 x 10 x 10 Å$^3$ PBC cell with PBE 
+This example sets up a calculation for H2 atoms in a 10 Å x 10 Å x 10 Å PBC cell with PBE 
 exchange correlation function, and a grid spacing (`h`) of 0.25 Å. Note by calling `atoms.get_forces`,
 the calculator will automatically sets the flags for printing the forces.
 
@@ -221,7 +218,7 @@ the calculator will automatically sets the flags for printing the forces.
 from sparc.calculator import SPARC
 from ase.build import bulk
 atoms = bulk("Al", cubic=True)
-atoms.rattle()
+atoms.rattle(0.05)
 atoms.calc = SPARC(h=0.25, kpts=(3, 3, 3), relax_flag=True, directory="run_opt")
 atoms.get_potential_energy()
 atoms.get_forces()
@@ -291,28 +288,28 @@ Below are a list of v0.1 method of the `SPARC` calculator and their current stat
 
 |  old methods           | status in v0.2 API |     alternatives                   |
 |------------------------|--------------------|------------------------------------|
-| `interpret_grid_input` | deprecated         | `calc.set(fd_grid=[20, 20, 20])`   |
-| `interpret_kpoint_input` | deprecated         | `calc.set(kpts=[3, 3, 3])`   |
-| `interpret_downsampling_input` | deprecated   | Manual setting not recommended |
-| `interpret_kpoint_shift` | deprecated | `calc.set(kpoint_shift=[0, 0, 0])` |
-| `get_pseudopotential_directory` | deprecated | `calc.psp_dir` |
+| `interpret_grid_input` | <span style="color:red">deprecated</span>         | `calc.set(fd_grid=[20, 20, 20])`   |
+| `interpret_kpoint_input` | <span style="color:red">deprecated</span>         | `calc.set(kpts=[3, 3, 3])`   |
+| `interpret_downsampling_input` | <span style="color:red">deprecated</span>   | Manual setting not recommended |
+| `interpret_kpoint_shift` | <span style="color:red">deprecated</span> | `calc.set(kpoint_shift=[0, 0, 0])` |
+| `get_pseudopotential_directory` | <span style="color:red">deprecated</span> | `calc.psp_dir` |
 | `get_nstates`          | maintained     |            |
-| `setup_parallel_env` | deprecated | Manual set |
-| `generate_command` | deprecated | `calc._make_command()` |
+| `setup_parallel_env` | <span style="color:red">deprecated</span> | Manual set |
+| `generate_command` | <span style="color:red">deprecated</span> | `calc._make_command()` |
 | `estimate_memory` | maintained | |
 | `get_scf_steps` | maintained | |
-| `get_geometric_steps` | deprecated | `calc.get_number_of_ionic_steps()`|
+| `get_geometric_steps` | <span style="color:red">deprecated</span> | `calc.get_number_of_ionic_steps()`|
 | `get_runtime` | maintained | |
 | `get_fermi_level` | maintained | |
-| `concatinate_output` | deprecated | Use `sparc.SparcBundle` instead |
-| `read_line` | deprecated | Use `sparc.SparcBundle` instead |
-| `parse_output` | deprecated | `calc.read_results()` |
-| `parse_relax` | deprecated | `calc.read_results()` |
-| `parse_md` | deprecated | `calc.read_results()` |
-| `parse_input_args` | deprecated | `calc.set(**kwargs)` |
-| `recover_index_order_from_ion_file` | deprecated | Use `calc.sort` and `calc.resort` |
-| `atoms_dict` | deprecated | Use third party library like `bson` |
-| `dict_atoms` | deprecated | Use third party library like `bson` |
+| `concatinate_output` | <span style="color:red">deprecated</span> | Use `sparc.SparcBundle` instead |
+| `read_line` | <span style="color:red">deprecated</span> | Use `sparc.SparcBundle` instead |
+| `parse_output` | <span style="color:red">deprecated</span> | `calc.read_results()` |
+| `parse_relax` | <span style="color:red">deprecated</span> | `calc.read_results()` |
+| `parse_md` | <span style="color:red">deprecated</span> | `calc.read_results()` |
+| `parse_input_args` | <span style="color:red">deprecated</span> | `calc.set(**kwargs)` |
+| `recover_index_order_from_ion_file` | <span style="color:red">deprecated</span> | Use `calc.sort` and `calc.resort` |
+| `atoms_dict` | <span style="color:red">deprecated</span> | Use third party library like `bson` |
+| `dict_atoms` | <span style="color:red">deprecated</span> | Use third party library like `bson` |
 
 ## Advanced Topics
 ### Behind the bundle file format

@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from pathlib import Path
 from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
 import subprocess
