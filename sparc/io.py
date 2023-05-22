@@ -445,8 +445,8 @@ class SparcBundle:
             # TODO: detect change in atomic symbols!
             # TODO: Check naming, is it coord_frac or scaled_positions?
             if "coord_frac" in atoms_dict:
-                atoms.set_scaled_positions(atoms_dict["coord_frac"][self.resort],
-                                           apply_constraint=False)
+                # TODO: check if set_scaled_positions requires constraint?
+                atoms.set_scaled_positions(atoms_dict["coord_frac"][self.resort])
             elif "coord" in atoms_dict:
                 atoms.set_positions(atoms_dict["coord"][self.resort],
                                     apply_constraint=False)
