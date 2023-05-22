@@ -151,9 +151,7 @@ def dict_to_atoms(data_dict):
             # Consider moving spins to another function
         spins = block.get("SPIN", None)
         if spins is None:
-            spins = np.zeros_like(positions)
-        # TODO: should all reshape come in ion parser??
-        spins = spins.reshape((-1, 3))
+            spins = np.zeros(len(positions))
         for pos, spin in zip(positions, spins):
             # TODO: What about charge?
             atoms.append(Atom(symbol=element, position=pos, magmom=spin))
@@ -181,14 +179,16 @@ def dict_to_atoms(data_dict):
         )
     # TODO: check if this mapping is correct
     print(relax_dict)
-    resorted_relax_dict = {resort[i]: r for i, r in relax_dict.items()}
+    sort = make_reverse_mapping(resort)
+    print(resort, sort)
+    sorted_relax_dict = {sort[i]: r for i, r in relax_dict.items()}
     # Now we do a sort on the atom indices. The atom positions read from
     # .ion correspond to the `sort` and we use `resort` to transform
 
     # TODO: should we store the sorting information in SparcBundle?
 
     atoms = atoms[resort]
-    constraints = constraints_from_relax(resorted_relax_dict)
+    constraints = constraints_from_relax(sorted_relax_dict)
     atoms.constraints = constraints
 
     # TODO: set pbc and relax

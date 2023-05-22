@@ -293,8 +293,10 @@ class SparcBundle:
 
         if include_all_files:
             init_raw_results = self.raw_results[0]
+            # self.sorting = self.raw_results[0]["ion"]["sorting"]
         else:
             init_raw_results = self.raw_results.copy()
+            # self.sorting = self.raw_results["ion"]["sorting"]
 
         # TODO: init is actually last!
         self.init_atoms = dict_to_atoms(init_raw_results)
@@ -420,6 +422,8 @@ class SparcBundle:
         value atoms: ASE atoms object The priority is to parse
         position from static file first, then fallback from ion + inpt
 
+        Note: make all energy / forces resorted!
+
         """
         # TODO: implement the multi-file static
         static_results = raw_results.get("static", {})
@@ -429,8 +433,8 @@ class SparcBundle:
             calc_results["free energy"] = static_results["free energy"]
 
         if "forces" in static_results:
-            # The forces are already re-sorted!
-            calc_results["forces"] = static_results["forces"]
+            # TODO: what about non-sorted ones
+            calc_results["forces"] = static_results["forces"][self.resort]
 
         if "stress" in static_results:
             calc_results["stress"] = static_results["stress"]
@@ -441,9 +445,11 @@ class SparcBundle:
             # TODO: detect change in atomic symbols!
             # TODO: Check naming, is it coord_frac or scaled_positions?
             if "coord_frac" in atoms_dict:
-                atoms.set_scaled_positions(atoms_dict["coord_frac"])
+                atoms.set_scaled_positions(atoms_dict["coord_frac"][self.resort],
+                                           apply_constraint=False)
             elif "coord" in atoms_dict:
-                atoms.set_positions(atoms_dict["coord"])
+                atoms.set_positions(atoms_dict["coord"][self.resort],
+                                    apply_constraint=False)
         return [calc_results], [atoms]
 
     def _extract_geopt_results(self, raw_results, index=":"):
@@ -468,6 +474,7 @@ class SparcBundle:
             _images = geopt_results[string2index(index)]
 
         ase_images = []
+        # import pdb; pdb.set_trace()
         for result in _images:
             atoms = self.init_atoms.copy()
             partial_result = {}
@@ -477,8 +484,8 @@ class SparcBundle:
                 partial_result["free energy"] = result["energy"]
 
             if "forces" in result:
-                # The forces are already re-sorted!
-                partial_result["forces"] = result["forces"]
+                # TODO: what about non-sorted calculations
+                partial_result["forces"] = result["forces"][self.resort]
 
             if "stress" in result:
                 partial_result["stress"] = result["stress"]
@@ -488,7 +495,8 @@ class SparcBundle:
                 raise ValueError(
                     "Cannot have geopt without positions information!"
                 )
-            atoms.set_positions(result["positions"])
+            atoms.set_positions(result["positions"][self.resort],
+                                apply_constraint=False)
             if "ase_cell" in result:
                 atoms.set_cell(result["ase_cell"])
             calc_results.append(partial_result)
@@ -535,7 +543,7 @@ class SparcBundle:
 
             if "forces" in result:
                 # The forces are already re-sorted!
-                partial_result["forces"] = result["forces"]
+                partial_result["forces"] = result["forces"][self.resort]
 
             # Modify the atoms in-place
             if "positions" not in result:
@@ -543,13 +551,14 @@ class SparcBundle:
                     "Cannot have aimd without positions information!"
                 )
 
-            atoms.set_positions(result["positions"])
+            atoms.set_positions(result["positions"][self.resort],
+                                apply_constraint=False)
 
             # TODO: need to get an example for NPT MD to set Cell
             # TODO: need to set stress information
 
             if "velocities" in result:
-                atoms.set_velocities(result["velocities"])
+                atoms.set_velocities(result["velocities"][self.resort])
 
             ase_images.append(atoms)
             calc_results.append(partial_result)
@@ -577,6 +586,35 @@ class SparcBundle:
     #         else:
     #             raise ValueError("Wrong unit in Fermi!")
     #     return
+
+    @property
+    def sort(self):
+        """wrap the self.sorting dict. If sorting information does not exist,
+        use the default slicing
+        """
+        
+        if self.sorting is None:
+            return slice(None, None, None)
+        sort = self.sorting.get("sort", [])
+        if len(sort) > 0:
+            return sort
+        else:
+            return slice(None, None, None)
+
+    @property
+    def resort(self):
+        """wrap the self.sorting dict. If sorting information does not exist,
+        use the default slicing
+        """
+        
+        if self.sorting is None:
+            return slice(None, None, None)
+        resort = self.sorting.get("resort", [])
+        if len(resort) > 0:
+            return resort
+        else:
+            return slice(None, None, None)
+        
 
     def read_psp_info(self):
         """Parse the psp information from inpt file options

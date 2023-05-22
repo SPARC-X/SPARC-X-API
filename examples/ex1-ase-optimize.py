@@ -4,9 +4,10 @@
 
 
 """
+from sparc import SPARC
+
 import numpy as np
 from ase.build import molecule
-from sparc import SPARC
 from ase.optimize.lbfgs import LBFGS
 from ase.constraints import FixAtoms
 
@@ -24,6 +25,7 @@ def optimize_sparc_internal():
                  relax_method="LBFGS",
                  directory="ex1-sparc")
     atoms.calc = calc
+    # breakpoint()
     e_fin = atoms.get_potential_energy()
     f_fin = atoms.get_forces()
     # Number of ionic steps in case calc.get_number_of_ionic_steps not implemented
