@@ -149,3 +149,37 @@ def test_sparc_fake_read(monkeypatch, fs):
 
     atoms = read(Path("test.sparc"), format="sparc")
     assert atoms.get_chemical_formula() == "Al"
+
+
+def test_sparc_read_auto(monkeypatch, fs):
+    """Same version of the fake read but with automatic format discover"""
+    import sparc
+    from pathlib import Path
+    from ase.io import sparc as _sparc
+
+    def fake_read_sparc(filename, *args, **kwargs):
+        print("I'm the fake reader")
+        from ase.build import bulk
+
+        return bulk("Al")
+
+    monkeypatch.setattr(sparc, "read_sparc", fake_read_sparc)
+    monkeypatch.setattr(_sparc, "read_sparc", fake_read_sparc)
+    from ase.io import read
+
+    fs.create_dir("test.sparc")
+    # With current ase version it is not possible to omit the "sparc" part
+    # as it always detects the directory method to bundletrajectory
+    atoms = read("test.sparc")
+    assert atoms.get_chemical_formula() == "Al"
+
+    atoms = read(Path("test.sparc"))
+    assert atoms.get_chemical_formula() == "Al"
+
+
+def test_ase_io_filetype():
+    """If hacked ase.io.formats.filetype correctly recognized sparc format"""
+    import sparc
+    from ase.io.formats import filetype
+
+    assert filetype("test.sparc") == "sparc"

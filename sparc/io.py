@@ -13,7 +13,6 @@ from pathlib import Path
 
 # from .sparc_parsers.ion import read_ion, write_ion
 
-
 from warnings import warn
 
 # various io formatters
@@ -293,8 +292,10 @@ class SparcBundle:
 
         if include_all_files:
             init_raw_results = self.raw_results[0]
+            # self.sorting = self.raw_results[0]["ion"]["sorting"]
         else:
             init_raw_results = self.raw_results.copy()
+            # self.sorting = self.raw_results["ion"]["sorting"]
 
         # TODO: init is actually last!
         self.init_atoms = dict_to_atoms(init_raw_results)
@@ -357,7 +358,7 @@ class SparcBundle:
         else:
             raw_results = list(rs)
         res_images = []
-        print("RAW RES: ", raw_results)
+        # print("RAW RES: ", raw_results)
         for entry in raw_results:
             if "static" in entry:
                 calc_results, images = self._extract_static_results(
@@ -420,6 +421,8 @@ class SparcBundle:
         value atoms: ASE atoms object The priority is to parse
         position from static file first, then fallback from ion + inpt
 
+        Note: make all energy / forces resorted!
+
         """
         # TODO: implement the multi-file static
         static_results = raw_results.get("static", {})
@@ -429,8 +432,8 @@ class SparcBundle:
             calc_results["free energy"] = static_results["free energy"]
 
         if "forces" in static_results:
-            # The forces are already re-sorted!
-            calc_results["forces"] = static_results["forces"]
+            # TODO: what about non-sorted ones
+            calc_results["forces"] = static_results["forces"][self.resort]
 
         if "stress" in static_results:
             calc_results["stress"] = static_results["stress"]
@@ -441,9 +444,14 @@ class SparcBundle:
             # TODO: detect change in atomic symbols!
             # TODO: Check naming, is it coord_frac or scaled_positions?
             if "coord_frac" in atoms_dict:
-                atoms.set_scaled_positions(atoms_dict["coord_frac"])
+                # TODO: check if set_scaled_positions requires constraint?
+                atoms.set_scaled_positions(
+                    atoms_dict["coord_frac"][self.resort]
+                )
             elif "coord" in atoms_dict:
-                atoms.set_positions(atoms_dict["coord"])
+                atoms.set_positions(
+                    atoms_dict["coord"][self.resort], apply_constraint=False
+                )
         return [calc_results], [atoms]
 
     def _extract_geopt_results(self, raw_results, index=":"):
@@ -453,7 +461,7 @@ class SparcBundle:
         position from static file first, then fallback from ion + inpt
 
         """
-        print("RAW_RES:  ", raw_results)
+        # print("RAW_RES:  ", raw_results)
         geopt_results = raw_results.get("geopt", [])
         calc_results = []
         if len(geopt_results) == 0:
@@ -468,6 +476,7 @@ class SparcBundle:
             _images = geopt_results[string2index(index)]
 
         ase_images = []
+        # import pdb; pdb.set_trace()
         for result in _images:
             atoms = self.init_atoms.copy()
             partial_result = {}
@@ -477,8 +486,8 @@ class SparcBundle:
                 partial_result["free energy"] = result["energy"]
 
             if "forces" in result:
-                # The forces are already re-sorted!
-                partial_result["forces"] = result["forces"]
+                # TODO: what about non-sorted calculations
+                partial_result["forces"] = result["forces"][self.resort]
 
             if "stress" in result:
                 partial_result["stress"] = result["stress"]
@@ -488,7 +497,9 @@ class SparcBundle:
                 raise ValueError(
                     "Cannot have geopt without positions information!"
                 )
-            atoms.set_positions(result["positions"])
+            atoms.set_positions(
+                result["positions"][self.resort], apply_constraint=False
+            )
             if "ase_cell" in result:
                 atoms.set_cell(result["ase_cell"])
             calc_results.append(partial_result)
@@ -535,7 +546,7 @@ class SparcBundle:
 
             if "forces" in result:
                 # The forces are already re-sorted!
-                partial_result["forces"] = result["forces"]
+                partial_result["forces"] = result["forces"][self.resort]
 
             # Modify the atoms in-place
             if "positions" not in result:
@@ -543,13 +554,15 @@ class SparcBundle:
                     "Cannot have aimd without positions information!"
                 )
 
-            atoms.set_positions(result["positions"])
+            atoms.set_positions(
+                result["positions"][self.resort], apply_constraint=False
+            )
 
             # TODO: need to get an example for NPT MD to set Cell
             # TODO: need to set stress information
 
             if "velocities" in result:
-                atoms.set_velocities(result["velocities"])
+                atoms.set_velocities(result["velocities"][self.resort])
 
             ase_images.append(atoms)
             calc_results.append(partial_result)
@@ -577,6 +590,34 @@ class SparcBundle:
     #         else:
     #             raise ValueError("Wrong unit in Fermi!")
     #     return
+
+    @property
+    def sort(self):
+        """wrap the self.sorting dict. If sorting information does not exist,
+        use the default slicing
+        """
+
+        if self.sorting is None:
+            return slice(None, None, None)
+        sort = self.sorting.get("sort", [])
+        if len(sort) > 0:
+            return sort
+        else:
+            return slice(None, None, None)
+
+    @property
+    def resort(self):
+        """wrap the self.sorting dict. If sorting information does not exist,
+        use the default slicing
+        """
+
+        if self.sorting is None:
+            return slice(None, None, None)
+        resort = self.sorting.get("resort", [])
+        if len(resort) > 0:
+            return resort
+        else:
+            return slice(None, None, None)
 
     def read_psp_info(self):
         """Parse the psp information from inpt file options
@@ -649,6 +690,23 @@ def register_ase_io_sparc(name="sparc"):
     """
     from ase.io.formats import define_io_format as F
     from ase.io.formats import ioformats
+    from ase.io.formats import filetype as _old_filetype
+    from ase.io import formats as hacked_formats
+
+    def _new_filetype(filename, read=True, guess=True):
+        """A hacked solution for the auto format recovery"""
+        path = Path(filename)
+        ext = path.name
+        if ".sparc" in ext:
+            return "sparc"
+        else:
+            if path.is_dir():
+                if (len(list(path.glob("*.ion"))) > 0) and (
+                    len(list(path.glob("*.inpt"))) > 0
+                ):
+                    return "sparc"
+            return _old_filetype(filename, read, guess)
+
     import pkg_resources
     import sys
     from warnings import warn
@@ -656,7 +714,7 @@ def register_ase_io_sparc(name="sparc"):
     name = name.lower()
     if name in ioformats.keys():
         return
-    desc = "Bundled calculation directory for SPARC " "quantum chemistry code"
+    desc = "SPARC .sparc bundle"
 
     # Step 1: patch the ase.io.sparc module
     try:
@@ -679,7 +737,11 @@ def register_ase_io_sparc(name="sparc"):
         )
         return
 
+    hacked_formats.filetype = _new_filetype
+
     sys.modules[f"ase.io.{name}"] = _monkey_mod
+    sys.modules["ase.io.formats"] = hacked_formats
+    # sys.modules[f"ase.io.format"] = _monkey_mod
 
     # Step 2: define a new format
     F(
@@ -699,6 +761,20 @@ def register_ase_io_sparc(name="sparc"):
             )
         )
         return
+
+    from ase.io import read
+    import tempfile
+
+    with tempfile.TemporaryDirectory(suffix=".sparc") as tmpdir:
+        try:
+            read(tmpdir.name)
+        except Exception as e:
+            emsg = str(e).lower()
+            if "bundletrajectory" in emsg:
+                warn(
+                    "Atomatic format inference for sparc is not correctly registered. "
+                    "You may need to use format=sparc in ase.io.read and ase.io.write. "
+                )
 
     # TODO: remove print options as it may be redundant
     print("Successfully registered sparc format with ase.io!")

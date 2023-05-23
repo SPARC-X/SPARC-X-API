@@ -151,11 +151,13 @@ def dict_to_atoms(data_dict):
             # Consider moving spins to another function
         spins = block.get("SPIN", None)
         if spins is None:
-            spins = np.zeros_like(positions)
+            spins = np.zeros(len(positions))
         for pos, spin in zip(positions, spins):
             # TODO: What about charge?
             atoms.append(Atom(symbol=element, position=pos, magmom=spin))
-        relax = block.get("RELAX", [])
+        relax = block.get("RELAX", np.array([]))
+        # Reshape relax into 2d array
+        relax = relax.reshape((-1, 3))
         for i, r in enumerate(relax, start=atoms_count):
             relax_dict[i] = r
         atoms_count += len(positions)
@@ -176,14 +178,17 @@ def dict_to_atoms(data_dict):
             "Length of resort mapping is different from the number of atoms!"
         )
     # TODO: check if this mapping is correct
-    resorted_relax_dict = {resort[i]: r for i, r in relax_dict.items()}
+    print(relax_dict)
+    sort = make_reverse_mapping(resort)
+    print(resort, sort)
+    sorted_relax_dict = {sort[i]: r for i, r in relax_dict.items()}
     # Now we do a sort on the atom indices. The atom positions read from
     # .ion correspond to the `sort` and we use `resort` to transform
 
     # TODO: should we store the sorting information in SparcBundle?
 
     atoms = atoms[resort]
-    constraints = constraints_from_relax(resorted_relax_dict)
+    constraints = constraints_from_relax(sorted_relax_dict)
     atoms.constraints = constraints
 
     # TODO: set pbc and relax

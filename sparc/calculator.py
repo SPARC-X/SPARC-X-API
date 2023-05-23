@@ -198,6 +198,37 @@ class SPARC(FileIOCalculator):
         self.write_input(self.atoms, properties, system_changes)
         self.execute()
         self.read_results()
+        # Extra step, copy the atoms back to original atoms, if it's an
+        # geopt or aimd calculation
+        if ("geopt" in self.raw_results) or ("aimd" in self.raw_results):
+            # Update the parent atoms
+            atoms.set_positions(self.atoms.positions, apply_constraint=False)
+            atoms.cell = self.atoms.cell
+            atoms.constraints = self.atoms.constraints
+            atoms.pbc = self.atoms.pbc
+            # copy init magmom just to avoid check_state issue
+            if "initial_magmoms" in self.atoms.arrays:
+                atoms.set_initial_magnetic_moments(
+                    self.atoms.get_initial_magnetic_moments()
+                )
+
+            # atoms = self.atoms.copy()
+
+    # def update_atoms(self, atoms):
+    #     """Update atoms after calculation if the positions are changed
+
+    #     Idea taken from Vasp.update_atoms.
+    #     """
+    #     if (self.int_params['ibrion'] is not None
+    #             and self.int_params['nsw'] is not None):
+    #         if self.int_params['ibrion'] > -1 and self.int_params['nsw'] > 0:
+    #             # Update atomic positions and unit cell with the ones read
+    #             # from CONTCAR.
+    #             atoms_sorted = read(self._indir('CONTCAR'))
+    #             atoms.positions = atoms_sorted[self.resort].positions
+    #             atoms.cell = atoms_sorted.cell
+
+    # self.atoms = atoms  # Creates a copy
 
     def write_input(self, atoms, properties=[], system_changes=[]):
         """Create input files via SparcBundle"""

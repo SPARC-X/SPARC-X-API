@@ -318,3 +318,29 @@ def test_bundle_reuse_sorting():
         sb2 = SparcBundle(tmpdir)
         atoms2 = sb2.convert_to_ase()
         assert np.isclose(sort1, sb2.sorting["sort"]).all()
+
+
+def test_bundle_nh3():
+    """Sorted & constrained NH3
+
+    Order of atoms in SPARC ion file is H, H, H, N
+    Make sure the constraint is aso correct
+    """
+    from sparc.io import SparcBundle
+    import tempfile
+    from pathlib import Path
+    from ase.build import molecule
+    from ase.constraints import FixAtoms
+
+    nh3 = molecule("NH3", cell=(6, 6, 6))
+    nh3.constraints = [FixAtoms([0])]
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        sb = SparcBundle(directory=tmpdir, mode="w")
+        sb._write_ion_and_inpt(atoms=nh3)
+        # Read back, the sorting should remain the same
+        sb2 = SparcBundle(directory=tmpdir, mode="r")
+        atoms = sb2.convert_to_ase()
+        assert tuple(sb2.sorting["resort"]) == (3, 0, 1, 2)
+        assert tuple(atoms.get_chemical_symbols()) == ("N", "H", "H", "H")
+        assert atoms.constraints[0].index[0] == 0
