@@ -324,6 +324,9 @@ Below are a list of v0.1 method of the `SPARC` calculator and their current stat
 | `dict_atoms` | <span style="color:red">deprecated</span> | Use third party library like `bson` |
 
 ## Advanced Topics
+The design of`sparc-dft-api` is schematically shown in the following figure
+<img width="929" alt="image" src="https://github.com/alchem0x2A/sparc-dft-api/assets/6829706/3419b1c4-3c56-4fd1-a6de-1ce2aea426e7">
+
 ### Behind the bundle file format
 
 Instead of parsing individual `.ion` and `.inpt` files, 
