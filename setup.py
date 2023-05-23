@@ -30,6 +30,7 @@ setup(
         "ase.io": [
             "sparc = sparc.io",
         ],
+        "console_scripts": ["sparc-ase=sparc.cli:main"],
     },
     extras_require={
         "test": test_requires,

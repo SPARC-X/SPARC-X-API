@@ -714,7 +714,7 @@ def register_ase_io_sparc(name="sparc"):
     name = name.lower()
     if name in ioformats.keys():
         return
-    desc = "Bundled calculation directory for SPARC " "quantum chemistry code"
+    desc = "SPARC .sparc bundle"
 
     # Step 1: patch the ase.io.sparc module
     try:

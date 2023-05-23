@@ -168,7 +168,7 @@ Unlike other DFT codes where the ASE format corresponds to a single file,
 import sparc
 from ase.io import read, write
 
-atoms = read("test.sparc", index=-1, format="sparc")
+atoms = read("test.sparc", index=-1)
 ```
 
 - Write a minimal sparc bundle from atoms
@@ -178,7 +178,7 @@ import sparc
 from ase.io import read, write
 from ase.build import Bulk
 atoms = Bulk("Al") * [4, 4, 4]
-atoms.write("test.sparc", format="sparc")
+atoms.write("test.sparc")
 ```
 
 For more details about the bundle IO format, please see [Advanced Topics]() section
@@ -258,6 +258,14 @@ atoms.calc = SPARC(h=0.25, kpts=(3, 3, 3), directory="run_opt_ase")
 opt = LBFGS(atoms, alpha=90)
 opt.run(fmax=0.02)
 ```
+
+### 4. Commandline tools
+
+`sparc-dft-api` provides a simple command wrapper `sparc-ase` to add
+support of SPARC file formats to the `ase` cli tools. Simple replace
+`ase [subcommand] [args]` with `sparc-ase [subcommand] [args]` to
+access your SPARC bundle files as you would use for other file formats.
+
 
 
 ## Major changes from `sparc-dft-api` [v0.1](https://github.com/SPARC-X/sparc-dft-api/tree/eac557f214b402122a506f88f38c7a8767283503)
