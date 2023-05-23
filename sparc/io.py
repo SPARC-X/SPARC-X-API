@@ -747,7 +747,7 @@ def register_ase_io_sparc(name="sparc"):
     F(
         name,
         desc=desc,
-        code="1S",  # Currently make only 1 image
+        code="+S",  # read_sparc has multi-image support
         ext="sparc",
     )
 
