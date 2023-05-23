@@ -265,6 +265,9 @@ opt.run(fmax=0.02)
 support of SPARC file formats to the `ase` cli tools. Simple replace
 `ase [subcommand] [args]` with `sparc-ase [subcommand] [args]` to
 access your SPARC bundle files as you would use for other file formats.
+As an example, use `sparc-ase gui path/to/your/bundle.sparc` for the visualization of
+atomistic structures. Depending on the file contents, either single atoms or multiple
+images will be displayed.
 
 Below is a screenshot showing the usage of `sparc-ase gui` to visualize a 
 short [MD trajectory](tests/outputs/NH3_sort_lbfgs_opt.sparc).
