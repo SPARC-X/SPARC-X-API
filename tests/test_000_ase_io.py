@@ -135,7 +135,7 @@ def test_sparc_fake_read(monkeypatch, fs):
         print("I'm the fake reader")
         from ase.build import bulk
 
-        return bulk("Al")
+        return [bulk("Al")]
 
     monkeypatch.setattr(sparc, "read_sparc", fake_read_sparc)
     monkeypatch.setattr(_sparc, "read_sparc", fake_read_sparc)
@@ -144,10 +144,11 @@ def test_sparc_fake_read(monkeypatch, fs):
     fs.create_dir("test.sparc")
     # With current ase version it is not possible to omit the "sparc" part
     # as it always detects the directory method to bundletrajectory
-    atoms = read("test.sparc", format="sparc")
+    atoms = read("test.sparc", index=0, format="sparc")
+    print(atoms)
     assert atoms.get_chemical_formula() == "Al"
 
-    atoms = read(Path("test.sparc"), format="sparc")
+    atoms = read(Path("test.sparc"), index=0, format="sparc")
     assert atoms.get_chemical_formula() == "Al"
 
 
@@ -161,7 +162,7 @@ def test_sparc_read_auto(monkeypatch, fs):
         print("I'm the fake reader")
         from ase.build import bulk
 
-        return bulk("Al")
+        return [bulk("Al")]
 
     monkeypatch.setattr(sparc, "read_sparc", fake_read_sparc)
     monkeypatch.setattr(_sparc, "read_sparc", fake_read_sparc)
@@ -170,10 +171,10 @@ def test_sparc_read_auto(monkeypatch, fs):
     fs.create_dir("test.sparc")
     # With current ase version it is not possible to omit the "sparc" part
     # as it always detects the directory method to bundletrajectory
-    atoms = read("test.sparc")
+    atoms = read("test.sparc", index=0)
     assert atoms.get_chemical_formula() == "Al"
 
-    atoms = read(Path("test.sparc"))
+    atoms = read(Path("test.sparc"), index=0)
     assert atoms.get_chemical_formula() == "Al"
 
 
