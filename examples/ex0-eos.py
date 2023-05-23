@@ -8,13 +8,16 @@ from ase.build import bulk
 from sparc import SPARC
 from ase.eos import calculate_eos
 
+
 def main():
     # Al in conventional cell
-    atoms = bulk('Al', cubic=True)
+    atoms = bulk("Al", cubic=True)
     calc = SPARC(h=0.25, kpts=(3, 3, 3), xc="pbe", directory="ex0-eos")
     vol = atoms.get_volume()
     atoms.calc = calc
-    eos = calculate_eos(atoms, npoints=5, eps=0.05, trajectory="al-eos-sparc.traj")
+    eos = calculate_eos(
+        atoms, npoints=5, eps=0.05, trajectory="al-eos-sparc.traj"
+    )
     print("Original volume: Ang^3", vol)
     v, e, B = eos.fit()
     print("Fitted volume (Ang^3), energy (eV), modulus (eV/Ang^3)")
@@ -27,6 +30,6 @@ def main():
     print(f"Energy diff {abs(e0_sparc - e)} eV")
     return
 
+
 if __name__ == "__main__":
     main()
-

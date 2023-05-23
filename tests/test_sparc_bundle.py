@@ -319,6 +319,7 @@ def test_bundle_reuse_sorting():
         atoms2 = sb2.convert_to_ase()
         assert np.isclose(sort1, sb2.sorting["sort"]).all()
 
+
 def test_bundle_nh3():
     """Sorted & constrained NH3
 
@@ -330,6 +331,7 @@ def test_bundle_nh3():
     from pathlib import Path
     from ase.build import molecule
     from ase.constraints import FixAtoms
+
     nh3 = molecule("NH3", cell=(6, 6, 6))
     nh3.constraints = [FixAtoms([0])]
     with tempfile.TemporaryDirectory() as tmpdir:

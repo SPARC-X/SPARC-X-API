@@ -8,6 +8,7 @@ from sparc import SPARC
 
 import numpy as np
 from ase.build import molecule
+
 # from ase.optimize.lbfgs import LBFGS
 from ase.optimize.bfgs import BFGS
 from ase.constraints import FixAtoms
@@ -20,11 +21,16 @@ nh3.rattle()
 
 def optimize_sparc_internal():
     atoms = nh3.copy()
-    calc = SPARC(h=0.25, kpts=(1, 1, 1), xc="pbe",
-                 convergence={"forces": 0.02},
-                 relax_flag=True, print_relaxout=True,
-                 relax_method="LBFGS",
-                 directory="ex1-sparc")
+    calc = SPARC(
+        h=0.25,
+        kpts=(1, 1, 1),
+        xc="pbe",
+        convergence={"forces": 0.02},
+        relax_flag=True,
+        print_relaxout=True,
+        relax_method="LBFGS",
+        directory="ex1-sparc",
+    )
     atoms.calc = calc
     # breakpoint()
     e_fin = atoms.get_potential_energy()
@@ -39,8 +45,9 @@ def optimize_sparc_internal():
 
 def optimize_ase_lbfgs():
     atoms = nh3.copy()
-    calc = SPARC(h=0.25, kpts=(1, 1, 1), xc="pbe", print_forces=True,
-                 directory="ex1-ase")
+    calc = SPARC(
+        h=0.25, kpts=(1, 1, 1), xc="pbe", print_forces=True, directory="ex1-ase"
+    )
     atoms.calc = calc
     opt = BFGS(atoms)
     opt.run(fmax=0.02)
@@ -56,4 +63,3 @@ def optimize_ase_lbfgs():
 if __name__ == "__main__":
     # optimize_sparc_internal()
     optimize_ase_lbfgs()
-
