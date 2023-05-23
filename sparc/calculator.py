@@ -208,14 +208,16 @@ class SPARC(FileIOCalculator):
             atoms.pbc = self.atoms.pbc
             # copy init magmom just to avoid check_state issue
             if "initial_magmoms" in self.atoms.arrays:
-                atoms.set_initial_magnetic_moments(self.atoms.get_initial_magnetic_moments())
-            
+                atoms.set_initial_magnetic_moments(
+                    self.atoms.get_initial_magnetic_moments()
+                )
+
             # atoms = self.atoms.copy()
 
     # def update_atoms(self, atoms):
     #     """Update atoms after calculation if the positions are changed
 
-    #     Idea taken from Vasp.update_atoms. 
+    #     Idea taken from Vasp.update_atoms.
     #     """
     #     if (self.int_params['ibrion'] is not None
     #             and self.int_params['nsw'] is not None):
@@ -226,7 +228,7 @@ class SPARC(FileIOCalculator):
     #             atoms.positions = atoms_sorted[self.resort].positions
     #             atoms.cell = atoms_sorted.cell
 
-        # self.atoms = atoms  # Creates a copy
+    # self.atoms = atoms  # Creates a copy
 
     def write_input(self, atoms, properties=[], system_changes=[]):
         """Create input files via SparcBundle"""
