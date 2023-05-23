@@ -10,6 +10,9 @@ def string2index(string: str) -> Union[int, slice, str]:
     """Convert index string to either int or slice
     This method is a copy of ase.io.formats.string2index
     """
+    # A quick fix for slice
+    if isinstance(string, (list, slice)):
+        return string
     if ":" not in string:
         # may contain database accessor
         try:
