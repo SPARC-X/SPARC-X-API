@@ -1,0 +1,311 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks,c]{} \label{Paral options}
+
+\begin{center}
+\Huge \textbf{Parallelization options}
+\end{center}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks]{\texttt{NP\_SPIN\_PARAL}} \label{NP_SPIN_PARAL}
+\vspace*{-12pt}
+\begin{columns}
+\column{0.4\linewidth}
+\begin{block}{Type}
+Integer
+\end{block}
+
+\begin{block}{Default}
+Automatically optimized
+\end{block}
+
+\column{0.4\linewidth}
+\begin{block}{Unit}
+No unit
+\end{block}
+
+\begin{block}{Example}
+\texttt{NP\_SPIN\_PARAL}: 2
+\end{block}
+\end{columns}
+
+\begin{block}{Description}
+Number of spin groups.
+\end{block}
+
+\begin{block}{Remark}
+This option is for development purpose. It's better to let SPARC choose the parallization parameters in practice.
+\end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks]{\texttt{NP\_KPOINT\_PARAL}} \label{NP_KPOINT_PARAL}
+\vspace*{-12pt}
+\begin{columns}
+\column{0.4\linewidth}
+\begin{block}{Type}
+Integer
+\end{block}
+
+\begin{block}{Default}
+Automatically optimized
+\end{block}
+
+\column{0.4\linewidth}
+\begin{block}{Unit}
+No unit
+\end{block}
+
+\begin{block}{Example}
+\texttt{NP\_KPOINT\_PARAL}: 5
+\end{block}
+\end{columns}
+
+\begin{block}{Description}
+Number of k-point groups.
+\end{block}
+
+\begin{block}{Remark}
+This option is for development purpose. It's better to let SPARC choose the parallization parameters in practice.
+\end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks]{\texttt{NP\_BAND\_PARAL}} \label{NP_BAND_PARAL}
+\vspace*{-12pt}
+\begin{columns}
+\column{0.4\linewidth}
+\begin{block}{Type}
+Integer
+\end{block}
+
+\begin{block}{Default}
+Automatically optimized
+\end{block}
+
+\column{0.4\linewidth}
+\begin{block}{Unit}
+No unit
+\end{block}
+
+\begin{block}{Example}
+\texttt{NP\_BAND\_PARAL}: 5
+\end{block}
+\end{columns}
+
+\begin{block}{Description}
+Number of band groups.
+\end{block}
+
+\begin{block}{Remark}
+This option is for development purpose. It's better to let SPARC choose the parallization parameters in practice.
+\end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks]{\texttt{NP\_DOMAIN\_PARAL}} \label{NP_DOMAIN_PARAL}
+\vspace*{-12pt}
+\begin{columns}
+\column{0.4\linewidth}
+\begin{block}{Type}
+Integer
+\end{block}
+
+\begin{block}{Default}
+Automatically optimized
+\end{block}
+
+\column{0.4\linewidth}
+\begin{block}{Unit}
+No unit
+\end{block}
+
+\begin{block}{Example}
+\texttt{NP\_DOMAIN\_PARAL}: 3 3 2
+\end{block}
+\end{columns}
+
+\begin{block}{Description}
+Dimensions of the 3D Cartesian topology embedded in each band group.
+\end{block}
+
+\begin{block}{Remark}
+This option is for development purpose. It's better to let SPARC choose the parallization parameters in practice.
+\end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks]{\texttt{NP\_DOMAIN\_PHI\_PARAL}} \label{NP_DOMAIN_PHI_PARAL}
+\vspace*{-12pt}
+\begin{columns}
+\column{0.4\linewidth}
+\begin{block}{Type}
+Integer
+\end{block}
+
+\begin{block}{Default}
+Automatically optimized
+\end{block}
+
+\column{0.4\linewidth}
+\begin{block}{Unit}
+No unit
+\end{block}
+
+\begin{block}{Example}
+\texttt{NP\_DOMAIN\_PHI\_PARAL}: 1 1 2
+\end{block}
+\end{columns}
+
+\begin{block}{Description}
+Dimensions of the 3D Cartesian topology embedded in the global communicator.
+\end{block}
+
+\begin{block}{Remark}
+This option is for development purpose. It's better to let SPARC choose the parallization parameters in practice.
+\end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks]{\texttt{EIG\_SERIAL\_MAXNS}} \label{EIG_SERIAL_MAXNS}
+\vspace*{-12pt}
+\begin{columns}
+\column{0.4\linewidth}
+\begin{block}{Type}
+Integer
+\end{block}
+
+\begin{block}{Default}
+2000
+\end{block}
+
+\column{0.4\linewidth}
+\begin{block}{Unit}
+No unit
+\end{block}
+
+\begin{block}{Example}
+\texttt{EIG\_SERIAL\_MAXNS}: 1000
+\end{block}
+\end{columns}
+
+\begin{block}{Description}
+Maximum \hyperlink{NSTATES}{\texttt{NSTATES}} value up to which a serial algorithm will be used to solve the subspace eigenproblem.
+\end{block}
+
+\begin{block}{Remark}
+If one wants to use a parallel algorithm to solve the subspace eigenproblem for all cases, simply set \texttt{EIG\_SERIAL\_MAXNS} to $0$. Alternatively, set \texttt{EIG\_SERIAL\_MAXNS} to a very large value to always use serial algorithm.
+\end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks]{\texttt{EIG\_PARAL\_BLKSZ}} \label{EIG_PARAL_BLKSZ}
+\vspace*{-12pt}
+\begin{columns}
+\column{0.4\linewidth}
+\begin{block}{Type}
+Integer
+\end{block}
+
+\begin{block}{Default}
+128
+\end{block}
+
+\column{0.4\linewidth}
+\begin{block}{Unit}
+No unit
+\end{block}
+
+\begin{block}{Example}
+\texttt{EIG\_PARAL\_BLKSZ}: 64
+\end{block}
+\end{columns}
+
+\begin{block}{Description}
+Block size for the distribution of matrix in block-cyclic format in a parallel algorithm for solving the subspace eigenproblem.
+\end{block}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks]{\texttt{EIG\_PARAL\_ORFAC}} \label{EIG_PARAL_ORFAC}
+\vspace*{-12pt}
+\begin{columns}
+\column{0.4\linewidth}
+\begin{block}{Type}
+Double
+\end{block}
+\begin{block}{Default}
+0.0
+\end{block}
+\column{0.4\linewidth}
+\begin{block}{Unit}
+No unit
+\end{block}
+\begin{block}{Example}
+\texttt{EIG\_PARAL\_ORFAC}: 0.001
+\end{block}
+\end{columns}
+\begin{block}{Description}
+Specifies which eigenvectors should be reorthogonalized when using the parallel eigensolver 
+\href{https://software.intel.com/content/www/us/en/develop/documentation/onemkl-developer-reference-c/top/scalapack-routines/scalapack-driver-routines/p-syevx.html}{\texttt{p?syevx}} 
+or 
+\href{https://software.intel.com/content/www/us/en/develop/documentation/onemkl-developer-reference-c/top/scalapack-routines/scalapack-driver-routines/p-sygvx.html}{\texttt{p?sygvx}} 
+for solving the subspace eigenproblem. 
+The parallel eigensolvers can be turned on using the \hyperlink{EIG_SERIAL_MAXNS}{\texttt{EIG\_SERIAL\_MAXNS}} flag.
+No reorthogonalization will be done if \texttt{EIG\_PARAL\_ORFAC} equals zero. A default value of $0.001$ is used if \texttt{EIG\_PARAL\_ORFAC} is negative. 
+Note that reorthogonalization of eigenvectors is extremely time-consuming.
+% See the corresponding documentation for more details.
+\end{block}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[allowframebreaks]{\texttt{EIG\_PARAL\_MAXNP}} \label{EIG_PARAL_MAXNP}
+\vspace*{-12pt}
+\begin{columns}
+\column{0.4\linewidth}
+\begin{block}{Type}
+Integer
+\end{block}
+
+\begin{block}{Default}
+Generated by a linear model.
+\end{block}
+
+\column{0.4\linewidth}
+\begin{block}{Unit}
+No unit
+\end{block}
+
+\begin{block}{Example}
+\texttt{EIG\_PARAL\_MAXNP}: 36
+\end{block}
+\end{columns}
+
+\begin{block}{Description}
+Maximum number of processors used in parallel eigensolver. The number is machine dependent. Users could provide their own value for best performance. 
+\end{block}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
