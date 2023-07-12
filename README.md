@@ -19,22 +19,22 @@
 Install `anaconda` or `miniconda` and create a working conda environment (see [conda documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands)). After than, use `conda install` to install the API:
 
 ```bash
-conda install -c alchem0x2a sparc-dft-api
+conda install -c conda-forge sparc-dft-api
 ```
 <!-- *TODO*:
 - [] Change to conda-forge later
  -->
 
-*NOTE: above conda code will change to conda-forge channel in official release*
+*NOTE: this is a draft section!*
 
 
 You may also want to install our pre-compiled SPARC binaries and the SPMS pseudopotentials within the environment (x86-64 Linux only)
 
 ```bash
-conda install -c alchem0x2a sparc
+conda install -c conda-forge sparc
 ```
 
-*NOTE: above conda code will change to conda-forge channel in official release*
+*NOTE: this is a draft section! above conda code will change to conda-forge channel in official release*
 
 
 <!-- *TODO*:
@@ -48,7 +48,7 @@ conda install -c alchem0x2a sparc
 python -m pip instal sparc-dft-api>=2.0
 ```
 
-*NOTE: need to update compiled wheel in pypi*
+*NOTE: this is a draft section! need to update compiled wheel in pypi*
 
 <!-- WIP
 - [ ] Push to pypi? 
@@ -78,7 +78,7 @@ pseudopotential files, JSON API and SPARC binary.
 But you can also have fine control over how they can be setup:
 
 ### A) Pseudopotential files
-Pseudopotential files (in `Abinit` psp8 format) are looked for in the following
+Pseudopotential files (in `Abinit` psp8 format) are searched in the following
 order:
 1) `psp_dir` argument passed to the `sparc.SPARC` calculator
 2) Environmental variables `$SPARC_PSP_PATH` or `$SPARC_PP_PATH` 
@@ -265,6 +265,15 @@ opt.run(fmax=0.02)
 support of SPARC file formats to the `ase` cli tools. Simple replace
 `ase [subcommand] [args]` with `sparc-ase [subcommand] [args]` to
 access your SPARC bundle files as you would use for other file formats.
+As an example, use `sparc-ase gui path/to/your/bundle.sparc` for the visualization of
+atomistic structures. Depending on the file contents, either single atoms or multiple
+images will be displayed.
+
+Below is a screenshot showing the usage of `sparc-ase gui` to visualize a 
+short [MD trajectory](tests/outputs/NH3_sort_lbfgs_opt.sparc).
+
+<img width="1200" alt="image" src="https://github.com/alchem0x2A/sparc-dft-api/assets/6829706/e72329ff-7194-4819-94f8-486ef2218844">
+
 
 
 
@@ -320,6 +329,9 @@ Below are a list of v0.1 method of the `SPARC` calculator and their current stat
 | `dict_atoms` | <span style="color:red">deprecated</span> | Use third party library like `bson` |
 
 ## Advanced Topics
+The design of`sparc-dft-api` is schematically shown in the following figure
+<img width="929" alt="image" src="https://github.com/alchem0x2A/sparc-dft-api/assets/6829706/3419b1c4-3c56-4fd1-a6de-1ce2aea426e7">
+
 ### Behind the bundle file format
 
 Instead of parsing individual `.ion` and `.inpt` files, 
@@ -470,7 +482,11 @@ By default, `sparc.SPARC` calculator only access the last image of last output f
 
 ## Troubleshooting
 
-**Work in progress**
+### Known issues
+*This is a list of known bugs with the current sparc-dft-api, remove them when PRs are contributed*
+- [ ] `sparc-ase` command currently does not support multi-image yet
+- [ ] `SPARC` calculator may occasionally require more DFT steps than needed during optimization
+- [ ] Raw result parsing from SPARC files may need to be re-factored in a generator form
 
 ## Notes for developers
 ### Setting up development environment
@@ -496,4 +512,12 @@ If you are on a HPC environment, you can opt to run a comprehensive test suite w
 ```python
 python -m pytest -svv tests/test_all_dft.py
 ```
-(**WORK IN PROGRESS**)
+
+(*Draft, to be implemented later*)
+
+### Adding examples
+
+All examples are listed in `examples/` directory. Please add examples that are important
+for demonstrating the functionalities of `sparc-dft-api` while the calculations can be 
+finished using moderate computating power (e.g. a few minutes with 4 cores).
+

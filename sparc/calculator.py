@@ -251,6 +251,8 @@ class SPARC(FileIOCalculator):
 
         # TODO: system_changes ?
 
+        # TODO: check parameter exclusion
+
         self.sparc_bundle._write_ion_and_inpt(
             atoms=atoms,
             label=self.label,
@@ -386,6 +388,9 @@ class SPARC(FileIOCalculator):
     def _convert_special_params(self, atoms=None):
         """Convert ASE-compatible parameters to SPARC compatible ones
         parameters like `h`, `nbands` may need atoms information
+
+        Special rules:
+        h <--> gpts <--> FD_GRID, only when None of FD_GRID / ECUT or MESH_SPACING is provided
         """
         converted_sparc_params = {}
         validator = defaultAPI
@@ -410,9 +415,13 @@ class SPARC(FileIOCalculator):
                 raise ValueError(
                     "Must have an active atoms object to convert h --> gpts!"
                 )
-            # TODO: is there any limitation for parallelization?
-            gpts = h2gpts(h, atoms.cell)
-            params["gpts"] = gpts
+            if any([p in self.valid_params for p in ("FD_GRID", "ECUT", "MESH_SPACING")]):
+                warn("You have specified one of FD_GRID, ECUT or MESH_SPACING, "
+                     "conversion of h to mesh grid is ignored.")
+            else:
+                # TODO: is there any limitation for parallelization?
+                gpts = h2gpts(h, atoms.cell)
+                params["gpts"] = gpts
 
         # gpts --> FD_GRID
         if "gpts" in params:
@@ -458,6 +467,7 @@ class SPARC(FileIOCalculator):
                 # TOL SCF: Ha / atom <--> energy tol: eV / atom
                 converted_sparc_params["SCF_ENERGY_ACC"] = tol_e / Hartree
 
+            # TODO: per AJ's suggestion, better change forces to relaxation
             tol_f = convergence.get("forces", None)
             if tol_f:
                 # TOL SCF: Ha / Bohr <--> energy tol: Ha / Bohr

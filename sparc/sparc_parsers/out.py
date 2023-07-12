@@ -64,7 +64,15 @@ def _read_sparc_version(header):
         warn("Header does not contain SPARC version information!")
         return None
     date_str = match[0].strip().replace(",", " ")
-    date_version = datetime.strptime(date_str, "%b %d %Y").strftime("%Y.%m.%d")
+    # Accept both abbreviate and full month name
+    try:
+        date_version = datetime.strptime(date_str, "%B %d %Y").strftime("%Y.%m.%d")
+    except ValueError:
+        try:
+            date_version = datetime.strptime(date_str, "%b %d %Y").strftime("%Y.%m.%d")
+        except ValueError:
+            warn("Cannot fetch SPARC version information!")
+            date_version = None
     return date_version
 
 
