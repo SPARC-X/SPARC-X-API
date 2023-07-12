@@ -65,7 +65,6 @@ class SparcAPI:
         TODO: there are many exceptions in array types, should enumerate
         """
         is_input_string = isinstance(input, str)
-
         pdict = self.get_parameter_dict(parameter)
         dtype = pdict["type"]
         if dtype == "string":

@@ -62,7 +62,7 @@ class SparcBundle:
     psp_env = ["SPARC_PSP_PATH", "SPARC_PP_PATH"]
 
     def __init__(
-        self, directory, mode="r", atoms=None, label=None, psp_dir=None
+        self, directory, mode="r", atoms=None, label=None, psp_dir=None,
     ):
         self.directory = Path(directory)
         self.mode = mode.lower()
@@ -81,6 +81,7 @@ class SparcBundle:
         # Sorting should be consistent across the whole bundle!
         self.sorting = None
         self.last_image = -1
+        self.allow_custom_parameters = allow_custom_parameters
 
     def _find_files(self):
         """Find all files matching '{label}.*'"""
@@ -203,6 +204,8 @@ class SparcBundle:
         copy_psp=False,
         comment="",
         input_parameters={},
+        # Parameters that do not require type conversion
+        custom_parameters={},
         **kwargs,
     ):
         """Write the ion and inpt files to a bundle. This method only
@@ -377,7 +380,8 @@ class SparcBundle:
 
             if images is not None:
                 if calc_results is not None:
-                    images = self._make_singlepoint(calc_results, images, entry)
+                    images = self._make_singlepoint(
+                        calc_results, images, entry)
                 res_images.extend(images)
 
         if isinstance(index, int):
