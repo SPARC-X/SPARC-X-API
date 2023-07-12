@@ -230,6 +230,49 @@ class SPARC(FileIOCalculator):
 
     # self.atoms = atoms  # Creates a copy
 
+    def _check_input_exclusion(self, input_parameters, atoms=None):
+        """Check if mutually exclusive parameters are provided
+
+        The exclusion rules are taken from the SPARC manual and currently hard-coded.
+        We may need to have a clever way to do the automatic rule conversion in API
+        """
+        # Rule 1: ECUT, MESH_SPACING, FD_GRID
+        count = 0
+        for key in ["ECUT", "MESH_SPACING", "FD_GRID"]:
+            if key in input_parameters:
+                count += 1
+        if count > 1:
+            # TODO: change to ExclusionParameterError
+            raise ValueError("ECUT, MESH_SPACING, FD_GRID cannot be specified simultaneously!")
+
+        # Rule 2: LATVEC_SCALE, CELL
+        if ("LATVEC_SCALE" in input_parameters) and ("CELL" in input_parameters):
+            # TODO: change to ExclusionParameterError
+            raise ValueError("LATVEC_SCALE and CELL cannot be specified simultaneously!")
+        
+        # When the cell is provided via ase object, we will forbid user to provide
+        # LATVEC, LATVEC_SCALE or CELL
+        # TODO: make sure the rule makes sense for molecules
+        if (atoms is not None):
+            if any([p in input_parameters for p in ["LATVEC", "LATVEC_SCALE", "CELL"]]):
+                raise ValueError("When passing an ase atoms object, LATVEC, LATVEC_SCALE or CELL cannot be set simultaneously!")
+
+        
+    def _check_minimal_input(self, input_parameters):
+        """Check if the minimal input set is satisfied
+
+        TODO: maybe we need to move the minimal set to class default
+        """
+        for param in ["EXCHANGE_CORRELATION", "KPOINT_GRID"]:
+            if param not in input_parameters:
+                # TODO: change to MissingParameterError
+                raise ValueError(f"Parameter {param} is not provided.")
+        # At least one from ECUT, MESH_SPACING and FD_GRID must be provided
+        if not any([param in input_parameters for param in ("ECUT", "MESH_SPACING", "FD_GRID")]):
+            raise ValueError("You should provide at least one of ECUT, MESH_SPACING or FD_GRID.")
+
+
+
     def write_input(self, atoms, properties=[], system_changes=[]):
         """Create input files via SparcBundle"""
         # import pdb; pdb.set_trace()
@@ -239,6 +282,7 @@ class SPARC(FileIOCalculator):
         converted_params = self._convert_special_params(atoms=atoms)
         input_parameters = converted_params.copy()
         input_parameters.update(self.valid_params)
+        
 
         # Make sure desired properties are always ensured, but we don't modify the user inputs
         if "forces" in properties:
@@ -252,6 +296,10 @@ class SPARC(FileIOCalculator):
         # TODO: system_changes ?
 
         # TODO: check parameter exclusion
+
+        self._check_input_exclusion(input_parameters, atoms=atoms)
+        self._check_minimal_input(input_parameters)
+        
 
         self.sparc_bundle._write_ion_and_inpt(
             atoms=atoms,
@@ -397,6 +445,7 @@ class SPARC(FileIOCalculator):
         params = self.special_params.copy()
 
         # xc --> EXCHANGE_CORRELATION
+        # TODO: more XC options
         if "xc" in params:
             xc = params.pop("xc")
             if xc.lower() == "pbe":
