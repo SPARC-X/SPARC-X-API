@@ -69,7 +69,6 @@ class SPARC(FileIOCalculator):
         command=None,
         psp_dir=None,
         log="sparc.log",
-        custom_params={},  # custom_params are KEY: val pairs for testing purposes and require no validation
         **kwargs,
     ):
         # Initialize the calculator but without restart.
@@ -108,7 +107,6 @@ class SPARC(FileIOCalculator):
         # and perform type check
         # TODO: self.parameter should be the only entry
         self.valid_params, self.special_params = self._sanitize_kwargs(kwargs)
-        self.custom_params = custom_params
         self.log = self.directory / log if log is not None else None
 
     @property
@@ -319,7 +317,6 @@ class SPARC(FileIOCalculator):
             copy_psp=True,
             comment="",
             input_parameters=input_parameters,
-            custom_parameters=self._convert_custom_params(self.custom_params),
         )
 
     def execute(self):
@@ -438,18 +435,6 @@ class SPARC(FileIOCalculator):
                     warn(f"Input parameter {key} does not have a valid value!")
         return valid_params, special_params
 
-    def _convert_custom_params(self, custom_params):
-        """Convert custom params without validation
-        """
-        converted_params = {}
-        for key, value in custom_params.items():
-            key = key.upper()
-            if (key.lower() in self.special_inputs) or (key in self.valid_params):
-                raise ValueError(f"{key} should not be provided in the `custom_params` because it's a known parameter!")
-            
-            value = str(value) + " #<custom parameter>"
-            converted_params[key] = value
-        return converted_params
 
     def _convert_special_params(self, atoms=None):
         """Convert ASE-compatible parameters to SPARC compatible ones

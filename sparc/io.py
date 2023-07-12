@@ -81,7 +81,6 @@ class SparcBundle:
         # Sorting should be consistent across the whole bundle!
         self.sorting = None
         self.last_image = -1
-        self.allow_custom_parameters = allow_custom_parameters
 
     def _find_files(self):
         """Find all files matching '{label}.*'"""
@@ -205,7 +204,6 @@ class SparcBundle:
         comment="",
         input_parameters={},
         # Parameters that do not require type conversion
-        custom_parameters={},
         **kwargs,
     ):
         """Write the ion and inpt files to a bundle. This method only

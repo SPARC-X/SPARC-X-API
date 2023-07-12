@@ -64,6 +64,7 @@ def test_cell_param():
         with pytest.raises(Exception):
             calc.write_input(atoms)
 
+
 def test_unknown_params():
     from sparc.calculator import SPARC
     from ase.build import bulk
@@ -72,19 +73,6 @@ def test_unknown_params():
         with pytest.raises(Exception):
             calc = SPARC(h=0.2, directory=tmpdir, CUSTOM_KEY="[10, 10, 10]")
 
-# def test_custom_params():
-#     from sparc.calculator import SPARC
-#     from ase.build import bulk
-#     atoms = bulk("Al", cubic=True)
-#     with tempfile.TemporaryDirectory() as tmpdir:
-#         calc = SPARC(h=0.2, directory=tmpdir, custom_params={"custom_key1": "[10, 10, 10]", 
-#                                                              "custom_key2": [10, 10, 10], 
-#                                                              "custom_key3": 9,})
-#         calc.write_input(atoms)
-#         filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
-#         assert "CUSTOM_KEY1: [10, 10, 10]" in filecontent
-#         assert "CUSTOM_KEY2: [10, 10, 10]" in filecontent
-#         assert "CUSTOM_KEY3: 9" in filecontent
 
 def test_label():
     from sparc.calculator import SPARC
