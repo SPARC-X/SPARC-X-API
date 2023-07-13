@@ -8,6 +8,28 @@ curdir = Path(__file__).parent
 test_output_dir = curdir / "outputs"
 
 
+def test_output_date_parser():
+    from sparc.sparc_parsers.out import _read_sparc_version
+    header1 = """***************************************************************************
+*                       SPARC (version Feb 03, 2023)                      *
+*   Copyright (c) 2020 Material Physics & Mechanics Group, Georgia Tech   *
+*           Distributed under GNU General Public License 3 (GPL)          *
+*                   Start time: Sun Feb  5 13:39:04 2023                  *
+***************************************************************************
+                           Input parameters                                
+***************************************************************************"""
+    assert _read_sparc_version(header1) == "2023.02.03"
+    header2 = """***************************************************************************
+*                       SPARC (version June 24, 2023)                      *
+*   Copyright (c) 2020 Material Physics & Mechanics Group, Georgia Tech   *
+*           Distributed under GNU General Public License 3 (GPL)          *
+*                   Start time: Sun Feb  5 13:39:04 2023                  *
+***************************************************************************
+                           Input parameters                                
+***************************************************************************"""
+    assert _read_sparc_version(header2) == "2023.06.24"
+
+
 def test_output_parser():
     from sparc.common import repo_dir
     from sparc.sparc_parsers.out import _read_out

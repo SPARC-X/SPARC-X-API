@@ -62,7 +62,7 @@ class SparcBundle:
     psp_env = ["SPARC_PSP_PATH", "SPARC_PP_PATH"]
 
     def __init__(
-        self, directory, mode="r", atoms=None, label=None, psp_dir=None
+        self, directory, mode="r", atoms=None, label=None, psp_dir=None,
     ):
         self.directory = Path(directory)
         self.mode = mode.lower()
@@ -203,6 +203,7 @@ class SparcBundle:
         copy_psp=False,
         comment="",
         input_parameters={},
+        # Parameters that do not require type conversion
         **kwargs,
     ):
         """Write the ion and inpt files to a bundle. This method only
@@ -377,7 +378,8 @@ class SparcBundle:
 
             if images is not None:
                 if calc_results is not None:
-                    images = self._make_singlepoint(calc_results, images, entry)
+                    images = self._make_singlepoint(
+                        calc_results, images, entry)
                 res_images.extend(images)
 
         if isinstance(index, int):
@@ -402,11 +404,11 @@ class SparcBundle:
             sp.name = "sparc"
             sp.kpts = (
                 raw_results["inpt"]
-                .get("parameters", {})
+                .get("params", {})
                 .get("KPOINT_GRID", None)
             )
             # There may be a better way handling the parameters...
-            sp.parameters = raw_results["inpt"].get("parameters", {})
+            sp.parameters = raw_results["inpt"].get("params", {})
             sp.raw_parameters = {
                 "ion": raw_results["ion"],
                 "inpt": raw_results["inpt"],
@@ -493,15 +495,27 @@ class SparcBundle:
                 partial_result["stress"] = result["stress"]
 
             # Modify the atoms copy
-            if "positions" not in result:
-                raise ValueError(
-                    "Cannot have geopt without positions information!"
+            if "positions" in result:
+                atoms.set_positions(
+                    result["positions"][self.resort], apply_constraint=False
                 )
-            atoms.set_positions(
-                result["positions"][self.resort], apply_constraint=False
-            )
-            if "ase_cell" in result:
-                atoms.set_cell(result["ase_cell"])
+                if "ase_cell" in result:
+                    atoms.set_cell(result["ase_cell"])
+            else:
+                # For geopt and RELAX=2 (cell relaxation), 
+                # the positions may not be written in .geopt file
+                relax_flag = raw_results["inpt"]["params"].get("RELAX_FLAG", 0)
+                if relax_flag != 2:
+                    raise ValueError(
+                            ".geopt file missing positions while RELAX!=2. "
+                            "Please check your setup ad output files."
+                        )
+                if "ase_cell" not in result:
+                    raise ValueError(
+                            "Cannot recover positions from .geopt file due to missing cell information. "
+                            "Please check your setup ad output files."
+                        )
+                atoms.set_cell(result["ase_cell"], scale_atoms=True)
             calc_results.append(partial_result)
             ase_images.append(atoms)
 

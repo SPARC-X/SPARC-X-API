@@ -72,11 +72,12 @@ class SPARC(FileIOCalculator):
         **kwargs,
     ):
         # Initialize the calculator but without restart.
+        # Do not pass the label to the parent FileIOCalculator class to avoid issue
         # Handle old restart file separatedly since we rely on the sparc_bundle to work
         FileIOCalculator.__init__(
             self,
             restart=None,
-            label=label,
+            label=None,
             atoms=atoms,
             command=command,
             directory=directory,
@@ -230,6 +231,49 @@ class SPARC(FileIOCalculator):
 
     # self.atoms = atoms  # Creates a copy
 
+    def _check_input_exclusion(self, input_parameters, atoms=None):
+        """Check if mutually exclusive parameters are provided
+
+        The exclusion rules are taken from the SPARC manual and currently hard-coded.
+        We may need to have a clever way to do the automatic rule conversion in API
+        """
+        # Rule 1: ECUT, MESH_SPACING, FD_GRID
+        count = 0
+        for key in ["ECUT", "MESH_SPACING", "FD_GRID"]:
+            if key in input_parameters:
+                count += 1
+        if count > 1:
+            # TODO: change to ExclusionParameterError
+            raise ValueError("ECUT, MESH_SPACING, FD_GRID cannot be specified simultaneously!")
+
+        # Rule 2: LATVEC_SCALE, CELL
+        if ("LATVEC_SCALE" in input_parameters) and ("CELL" in input_parameters):
+            # TODO: change to ExclusionParameterError
+            raise ValueError("LATVEC_SCALE and CELL cannot be specified simultaneously!")
+        
+        # When the cell is provided via ase object, we will forbid user to provide
+        # LATVEC, LATVEC_SCALE or CELL
+        # TODO: make sure the rule makes sense for molecules
+        if (atoms is not None):
+            if any([p in input_parameters for p in ["LATVEC", "LATVEC_SCALE", "CELL"]]):
+                raise ValueError("When passing an ase atoms object, LATVEC, LATVEC_SCALE or CELL cannot be set simultaneously!")
+
+        
+    def _check_minimal_input(self, input_parameters):
+        """Check if the minimal input set is satisfied
+
+        TODO: maybe we need to move the minimal set to class default
+        """
+        for param in ["EXCHANGE_CORRELATION", "KPOINT_GRID"]:
+            if param not in input_parameters:
+                # TODO: change to MissingParameterError
+                raise ValueError(f"Parameter {param} is not provided.")
+        # At least one from ECUT, MESH_SPACING and FD_GRID must be provided
+        if not any([param in input_parameters for param in ("ECUT", "MESH_SPACING", "FD_GRID")]):
+            raise ValueError("You should provide at least one of ECUT, MESH_SPACING or FD_GRID.")
+
+
+
     def write_input(self, atoms, properties=[], system_changes=[]):
         """Create input files via SparcBundle"""
         # import pdb; pdb.set_trace()
@@ -239,17 +283,24 @@ class SPARC(FileIOCalculator):
         converted_params = self._convert_special_params(atoms=atoms)
         input_parameters = converted_params.copy()
         input_parameters.update(self.valid_params)
+        
 
         # Make sure desired properties are always ensured, but we don't modify the user inputs
         if "forces" in properties:
-            input_parameters["print_forces"] = True
+            input_parameters["PRINT_FORCES"] = True
 
         if "stress" in properties:
-            input_parameters["calc_stress"] = True
+            input_parameters["CALC_STRESS"] = True
 
         # TODO: detect if minimal values are set
 
         # TODO: system_changes ?
+
+        # TODO: check parameter exclusion
+
+        self._check_input_exclusion(input_parameters, atoms=atoms)
+        self._check_minimal_input(input_parameters)
+        
 
         self.sparc_bundle._write_ion_and_inpt(
             atoms=atoms,
@@ -380,18 +431,24 @@ class SPARC(FileIOCalculator):
                     valid_params[key] = value
                 else:
                     # TODO: helper information
+                    # TODO: should we raise exception instead?
                     warn(f"Input parameter {key} does not have a valid value!")
         return valid_params, special_params
+
 
     def _convert_special_params(self, atoms=None):
         """Convert ASE-compatible parameters to SPARC compatible ones
         parameters like `h`, `nbands` may need atoms information
+
+        Special rules:
+        h <--> gpts <--> FD_GRID, only when None of FD_GRID / ECUT or MESH_SPACING is provided
         """
         converted_sparc_params = {}
         validator = defaultAPI
         params = self.special_params.copy()
 
         # xc --> EXCHANGE_CORRELATION
+        # TODO: more XC options
         if "xc" in params:
             xc = params.pop("xc")
             if xc.lower() == "pbe":
@@ -410,9 +467,13 @@ class SPARC(FileIOCalculator):
                 raise ValueError(
                     "Must have an active atoms object to convert h --> gpts!"
                 )
-            # TODO: is there any limitation for parallelization?
-            gpts = h2gpts(h, atoms.cell)
-            params["gpts"] = gpts
+            if any([p in self.valid_params for p in ("FD_GRID", "ECUT", "MESH_SPACING")]):
+                warn("You have specified one of FD_GRID, ECUT or MESH_SPACING, "
+                     "conversion of h to mesh grid is ignored.")
+            else:
+                # TODO: is there any limitation for parallelization?
+                gpts = h2gpts(h, atoms.cell)
+                params["gpts"] = gpts
 
         # gpts --> FD_GRID
         if "gpts" in params:
@@ -458,6 +519,7 @@ class SPARC(FileIOCalculator):
                 # TOL SCF: Ha / atom <--> energy tol: eV / atom
                 converted_sparc_params["SCF_ENERGY_ACC"] = tol_e / Hartree
 
+            # TODO: per AJ's suggestion, better change forces to relaxation
             tol_f = convergence.get("forces", None)
             if tol_f:
                 # TOL SCF: Ha / Bohr <--> energy tol: Ha / Bohr

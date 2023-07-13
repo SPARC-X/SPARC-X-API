@@ -37,3 +37,20 @@ def test_geopt_parser():
 
     max_final_f = np.max(np.abs(step["forces"]))
     assert max_final_f < 1.0e-3 * Hartree / Bohr
+
+
+def test_geopt_parser_relax2():
+    from sparc.common import repo_dir
+    from sparc.sparc_parsers.geopt import _read_geopt
+
+    data_dict = _read_geopt(
+        test_output_dir / "Si8_cell_geopt_relax2.sparc" / "Si8_cell_geopt.geopt"
+    )
+    geopt_steps = data_dict["geopt"]
+    for i, step in enumerate(geopt_steps):
+        assert i == step.get("step", -1)
+        # RELAX=2 no position information
+        assert "positions" not in step
+        assert "stress" in step
+        assert "cell" in step
+        assert "latvec" in step
