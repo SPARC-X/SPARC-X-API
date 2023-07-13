@@ -271,4 +271,4 @@ A detailed description about how the API works can be found [here](doc/advanced_
 The API changes compared to v0.1 are summarized [here](doc/changes_v0.1.md)
 
 ## How to contribute
-Please refer to our [guidelines for contributors](doc/contribution_guidline.md)
+Please refer to our [guidelines for contributors](doc/contribution_guideline.md)
