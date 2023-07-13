@@ -1,5 +1,5 @@
 {
- "sparc_version": "2023.04.11",
+ "sparc_version": "2023.07.10",
  "categories": [
   "system",
   "scf",
@@ -318,12 +318,12 @@
    "default": null,
    "unit": "No unit",
    "example": "EXCHANGE_CORRELATION: LDA_PW",
-   "description": "Choice of exchange-correlation functional. Options are LDA_PW (Perdew-Wang LDA), LDA_PZ (Purdew-Zunger LDA), \nGGA_PBE (PBE GGA), GGA_RPBE (revised PBE GGA), and GGA_PBEsol (PBE GGA revised for solids), \nPBE0, HF (Hartree-Fock), HSE,\nvdWDF1 (van der Waals Density Functional developed by Dion et al.), vdWDF2 (vdW Density Functional modified by Lee et al), and SCAN (SCAN metaGGA).",
-   "remark": "For spin-polarized calculation (SPIN_TYP = 1), LDA_PZ is not available.\nBefore using vdWDF1 or vdWDF2, please read the description and remark of VDWDF_GEN_KERNEL to see the requirements.",
+   "description": "Choice of exchange-correlation functional. Options are LDA_PW (Perdew-Wang LDA), LDA_PZ (Purdew-Zunger LDA), \nGGA_PBE (PBE GGA), GGA_RPBE (revised PBE GGA), and GGA_PBEsol (PBE GGA revised for solids), \nPBE0, HF (Hartree-Fock), HSE,\nvdWDF1 (van der Waals Density Functional developed by Dion et al.), vdWDF2 (vdW Density Functional modified by Lee et al), and SCAN (SCAN metaGGA), and R2SCAN (r2SCAN metaGGA).",
+   "remark": "For spin-polarized calculation (SPIN_TYP = 1), LDA_PZ is not available.\nCurrently SCAN and R2SCAN does not support nonlinear core correction pseudopotential.",
    "allow_bool_input": false,
    "default_remark": "No Default",
-   "description_raw": "Choice of exchange-correlation functional. Options are \\texttt{LDA\\_PW} (Perdew-Wang LDA), \\texttt{LDA\\_PZ} (Purdew-Zunger LDA), \n\\texttt{GGA\\_PBE} (PBE GGA), \\texttt{GGA\\_RPBE} (revised PBE GGA), and \\texttt{GGA\\_PBEsol} (PBE GGA revised for solids), \n\\texttt{PBE0}, \\texttt{HF} (Hartree-Fock), \\texttt{HSE},\n\\texttt{vdWDF1} (van der Waals Density Functional developed by Dion et al.), \\texttt{vdWDF2} (vdW Density Functional modified by Lee et al), and \\texttt{SCAN} (SCAN metaGGA).",
-   "remark_raw": "For spin-polarized calculation (\\hyperlink{SPIN_TYP}{\\texttt{SPIN\\_TYP}} = 1), \\texttt{LDA\\_PZ} is not available.\n\nBefore using \\texttt{vdWDF1} or \\texttt{vdWDF2}, please read the description and remark of \\hyperlink{VDWDF_GEN_KERNEL}{\\texttt{VDWDF\\_GEN\\_KERNEL}} to see the requirements.",
+   "description_raw": "Choice of exchange-correlation functional. Options are \\texttt{LDA\\_PW} (Perdew-Wang LDA), \\texttt{LDA\\_PZ} (Purdew-Zunger LDA), \n\\texttt{GGA\\_PBE} (PBE GGA), \\texttt{GGA\\_RPBE} (revised PBE GGA), and \\texttt{GGA\\_PBEsol} (PBE GGA revised for solids), \n\\texttt{PBE0}, \\texttt{HF} (Hartree-Fock), \\texttt{HSE},\n\\texttt{vdWDF1} (van der Waals Density Functional developed by Dion et al.), \\texttt{vdWDF2} (vdW Density Functional modified by Lee et al), and \\texttt{SCAN} (SCAN metaGGA), and \\texttt{R2SCAN} (r2SCAN metaGGA).",
+   "remark_raw": "For spin-polarized calculation (\\hyperlink{SPIN_TYP}{\\texttt{SPIN\\_TYP}} = 1), \\texttt{LDA\\_PZ} is not available.\n\nCurrently SCAN and R2SCAN does not support nonlinear core correction pseudopotential.",
    "category": "system"
   },
   "EXX_ACE_VALENCE_STATES": {
@@ -379,7 +379,7 @@
    "symbol": "EXX_FRAC",
    "label": "EXX_FRAC",
    "type": "double",
-   "default": 0.25,
+   "default": null,
    "unit": "No unit",
    "example": "EXX_FRAC: 0.3",
    "description": "Fraction of exact exchange in hybrid functional, e.g. PBE0 and HSE, while the fraction of PBE is 1-EXX_FRAC",
@@ -559,7 +559,7 @@
    "symbol": "ION_TEMP_END",
    "label": "ION_TEMP_END",
    "type": "double",
-   "default": NaN,
+   "default": null,
    "unit": "Kelvin",
    "example": "ION_TEMP_END: 100",
    "description": "Specifies the final temperature of the thermostat. Thermostat temperature is varied linearly from ION_TEMP to ION_TEMP_END with respect to time.",
@@ -623,22 +623,7 @@
    "symbol": "KPOINT_SHIFT",
    "label": "KPOINT_SHIFT",
    "type": "double array",
-   "default": [
-    [
-     0.0,
-     NaN,
-     NaN,
-     NaN,
-     NaN
-    ],
-    [
-     0.5,
-     NaN,
-     NaN,
-     NaN,
-     NaN
-    ]
-   ],
+   "default": null,
    "unit": "No unit",
    "example": "KPOINT_SHIFT: 0.5 0.5 0.5",
    "description": "Shift of k-points with respect to k-point grid containing \\Gamma-point.",
@@ -1423,12 +1408,12 @@
    "unit": "No unit",
    "example": "PRINT_ORBITAL: 1",
    "description": "Flag for writing Kohn-Sham orbitals into a binary file.",
-   "remark": "It consists of headers with system information and the orbitals. \nFirst define a few variables and their types. \n\\begintable[]\n\\begintabular|m1.8cm|m2cm|m6.3cm|\n\\hline\nname         & type, length       & description                                                                                                   \n \\hline\nNx Ny Nz     & int, 1             & Number of FD nodes in x,y,z directions                                                                        \n \\hline\nNd           & int, 1             & Total number of FD nodes                                                                                      \n \\hline\ndx, dy,dz     & double, 1         & mesh size in x,y,z directions\n                    \n \\hline\ndV           & double, 1          & unit Volume                                                                                                   \n \\hline\nisReal       & int, 1             & Flag for orbitals being real or complex                                                                       \n \\hline\nnspin        & int, 1             & Number of spin channel printed                                                                                \n \\hline\nnkpt         & int, 1             & Number of k-point printed                                                                                     \n \\hline\nnband        & int, 1             & Number of bands printed   \n                    \n \\hline\n\\endtabular\n\\endtable",
+   "remark": "It consists of headers with system information and the orbitals. \nFirst define a few variables and their types. \n\\begintable[]\n\\begintabular|m1.8cm|m2cm|m6.3cm|\n\\hline\nname         & type, length       & description                                                                                                   \n \\hline\nNx Ny Nz     & int, 1             & Number of FD nodes in x,y,z directions                                                                        \n \\hline\nNd           & int, 1             & Total number of FD nodes                                                                                      \n \\hline\ndx, dy,dz    & double, 1         & mesh size in x,y,z directions                                                                                 \n \\hline\ndV           & double, 1          & unit Volume                                                                                                   \n \\hline\nNspinor      & int, 2             & Number of spinor in orbitals                                                                                  \n \\hline\nisReal       & int, 1             & Flag for orbitals being real or complex                                                                       \n \\hline\nnspin        & int, 1             & Number of spin channel printed                                                                                \n \\hline\nnkpt         & int, 1             & Number of k-point printed                                                                                     \n \\hline\n\\endtabular\n\\endtable",
    "remark -- cont.": "\\begin{algorithm}[H]\n\\begin{algorithmic}\n\\For{ispin = 1:nspin}\n\\For{ikpt = 1:nkpt}\n\\For{iband = 1:nband}\n    \\State spin\\_index, kpt\\_index, kpt\\_vec, band\\_index\n    \\If{isReal == 1}\n        \\State psi\\_real\n    \\Else\n        \\State psi\\_complex\n    \\EndIf\n\\EndFor\n\\EndFor\n\\EndFor\n\\end{algorithmic}\n\\end{algorithm}",
    "allow_bool_input": true,
    "default_remark": "0",
    "description_raw": "Flag for writing Kohn-Sham orbitals into a binary file.",
-   "remark_raw": "It consists of headers with system information and the orbitals. \nFirst define a few variables and their types. \n\\begin{table}[]\n\\begin{tabular}{|m{1.8cm}|m{2cm}|m{6.3cm}|}\n\\hline\nname         & type, length       & description                                                                                                   \\\\ \\hline\nNx Ny Nz     & int, 1             & Number of FD nodes in x,y,z directions                                                                        \\\\ \\hline\nNd           & int, 1             & Total number of FD nodes                                                                                      \\\\ \\hline\ndx, dy,dz     & double, 1         & mesh size in x,y,z directions\n                    \\\\ \\hline\ndV           & double, 1          & unit Volume                                                                                                   \\\\ \\hline\nisReal       & int, 1             & Flag for orbitals being real or complex                                                                       \\\\ \\hline\nnspin        & int, 1             & Number of spin channel printed                                                                                \\\\ \\hline\nnkpt         & int, 1             & Number of k-point printed                                                                                     \\\\ \\hline\nnband        & int, 1             & Number of bands printed   \n                    \\\\ \\hline\n\\end{tabular}\n\\end{table}",
+   "remark_raw": "It consists of headers with system information and the orbitals. \nFirst define a few variables and their types. \n\\begin{table}[]\n\\begin{tabular}{|m{1.8cm}|m{2cm}|m{6.3cm}|}\n\\hline\nname         & type, length       & description                                                                                                   \\\\ \\hline\nNx Ny Nz     & int, 1             & Number of FD nodes in x,y,z directions                                                                        \\\\ \\hline\nNd           & int, 1             & Total number of FD nodes                                                                                      \\\\ \\hline\ndx, dy,dz    & double, 1         & mesh size in x,y,z directions                                                                                 \\\\ \\hline\ndV           & double, 1          & unit Volume                                                                                                   \\\\ \\hline\nNspinor      & int, 2             & Number of spinor in orbitals                                                                                  \\\\ \\hline\nisReal       & int, 1             & Flag for orbitals being real or complex                                                                       \\\\ \\hline\nnspin        & int, 1             & Number of spin channel printed                                                                                \\\\ \\hline\nnkpt         & int, 1             & Number of k-point printed                                                                                     \\\\ \\hline\n\\end{tabular}\n\\end{table}",
    "category": "print options"
   },
   "PRINT_RELAXOUT": {
@@ -1594,7 +1579,7 @@
    "example": "RELAX_FLAG: 1",
    "description": "Flag for performing structural relaxation. 0 means no structural relaxation. 1 represents relaxation of atom positions. 2 represents optimization of volume with the fractional coordinates of the atoms fixed. 3 represents full optimization of the cell i.e., both atoms and cell volume are relaxed",
    "remark": "This flag should not be specified if MD_FLAG is set to 1.",
-   "allow_bool_input": true,
+   "allow_bool_input": false,
    "default_remark": "0",
    "description_raw": "Flag for performing structural relaxation. $0$ means no structural relaxation. $1$ represents relaxation of atom positions. $2$ represents optimization of volume with the fractional coordinates of the atoms fixed. $3$ represents full optimization of the cell i.e., both atoms and cell volume are relaxed",
    "remark_raw": "This flag should not be specified if \\hyperlink{MD_FLAG}{\\texttt{MD\\_FLAG}} is set to $1$.",
@@ -1771,7 +1756,7 @@
    "symbol": "TOL_FOCK",
    "label": "TOL_FOCK",
    "type": "double",
-   "default": NaN,
+   "default": null,
    "unit": "No unit",
    "example": "TOL_FOCK: 1e-6",
    "description": "The tolerance on the Hartree-Fock outer loop, measured by the exact exchange energy difference per atom in 2 consecutive outer loops.",
@@ -1801,7 +1786,7 @@
    "symbol": "TOL_POISSON",
    "label": "TOL_POISSON",
    "type": "double",
-   "default": 0.00001,
+   "default": null,
    "unit": "No unit",
    "example": "TOL_POISSON: 1e-6",
    "description": "The tolerance on the norm of the relative residual for the Poisson equation.",
@@ -1816,7 +1801,7 @@
    "symbol": "TOL_PRECOND",
    "label": "TOL_PRECOND",
    "type": "double",
-   "default": NaN,
+   "default": null,
    "unit": "No unit",
    "example": "TOL_PRECOND: 1e-4",
    "description": "The tolerance on the relative residual for the linear systems arising during the real-space preconditioning of the SCF.",
@@ -1831,7 +1816,7 @@
    "symbol": "TOL_PSEUDOCHARGE",
    "label": "TOL_PSEUDOCHARGE",
    "type": "double",
-   "default": NaN,
+   "default": null,
    "unit": "No unit",
    "example": "TOL_PSEUDOCHARGE: 1e-6",
    "description": "The error in the net enclosed charge for the pseudocharge density of each atom.",
@@ -1876,7 +1861,7 @@
    "symbol": "TOL_SCF",
    "label": "TOL_SCF",
    "type": "double",
-   "default": NaN,
+   "default": null,
    "unit": "No unit",
    "example": "TOL_SCF: 1e-5",
    "description": "In case of single point calculation, TOL_SCF is set for 10^-5 Ha/atom energy accuracy.\nIn case of MD, TOL_SCF is set for 10^-3 Ha/Bohr force accuracy.\nIn case of relaxation, TOL_SCF is set for TOL_RELAX/5 Ha/Bohr force accuracy. \nThe tolerance on the normalized residual of the effective potential or the electron density for convergence of the SCF iteration.",
@@ -1891,7 +1876,7 @@
    "symbol": "TOL_SCF_INIT",
    "label": "TOL_SCF_INIT",
    "type": "double",
-   "default": NaN,
+   "default": null,
    "unit": "No unit",
    "example": "TOL_SCF_INIT: 1e-6",
    "description": "The initial SCF tolerance for PBE iteration when using hybrid functionals.",
@@ -1920,11 +1905,11 @@
  },
  "other_parameters": {},
  "data_types": [
+  "string",
+  "other",
   "double",
   "integer",
   "integer array",
-  "other",
-  "double array",
-  "string"
+  "double array"
  ]
 }
