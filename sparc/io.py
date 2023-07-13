@@ -404,11 +404,11 @@ class SparcBundle:
             sp.name = "sparc"
             sp.kpts = (
                 raw_results["inpt"]
-                .get("parameters", {})
+                .get("params", {})
                 .get("KPOINT_GRID", None)
             )
             # There may be a better way handling the parameters...
-            sp.parameters = raw_results["inpt"].get("parameters", {})
+            sp.parameters = raw_results["inpt"].get("params", {})
             sp.raw_parameters = {
                 "ion": raw_results["ion"],
                 "inpt": raw_results["inpt"],
@@ -504,7 +504,7 @@ class SparcBundle:
             else:
                 # For geopt and RELAX=2 (cell relaxation), 
                 # the positions may not be written in .geopt file
-                relax_flag = raw_results["inpt"]["parameters"].get("RELAX", 0)
+                relax_flag = raw_results["inpt"]["params"].get("RELAX_FLAG", 0)
                 if relax_flag != 2:
                     raise ValueError(
                             ".geopt file missing positions while RELAX!=2. "

@@ -29,6 +29,7 @@ def test_bundle_read():
 
     for bundle in test_output_dir.glob("*.sparc"):
         if bundle.name not in ("Al_multi_geopt.sparc",):
+            print(bundle)
             images = read_sparc(bundle)
         else:
             images = read_sparc(bundle, include_all_files=True)

@@ -44,7 +44,7 @@ def test_geopt_parser_relax2():
     from sparc.sparc_parsers.geopt import _read_geopt
 
     data_dict = _read_geopt(
-        test_output_dir / "Si8_cell_geopt_relax2" / "Si8_cell_geopt.geopt"
+        test_output_dir / "Si8_cell_geopt_relax2.sparc" / "Si8_cell_geopt.geopt"
     )
     geopt_steps = data_dict["geopt"]
     for i, step in enumerate(geopt_steps):
