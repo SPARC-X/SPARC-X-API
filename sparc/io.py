@@ -495,15 +495,27 @@ class SparcBundle:
                 partial_result["stress"] = result["stress"]
 
             # Modify the atoms copy
-            if "positions" not in result:
-                raise ValueError(
-                    "Cannot have geopt without positions information!"
+            if "positions" in result:
+                atoms.set_positions(
+                    result["positions"][self.resort], apply_constraint=False
                 )
-            atoms.set_positions(
-                result["positions"][self.resort], apply_constraint=False
-            )
-            if "ase_cell" in result:
-                atoms.set_cell(result["ase_cell"])
+                if "ase_cell" in result:
+                    atoms.set_cell(result["ase_cell"])
+            else:
+                # For geopt and RELAX=2 (cell relaxation), 
+                # the positions may not be written in .geopt file
+                relax_flag = raw_results["inpt"]["parameters"].get("RELAX", 0)
+                if relax_flag != 2:
+                    raise ValueError(
+                            ".geopt file missing positions while RELAX!=2. "
+                            "Please check your setup ad output files."
+                        )
+                if "ase_cell" not in result:
+                    raise ValueError(
+                            "Cannot recover positions from .geopt file due to missing cell information. "
+                            "Please check your setup ad output files."
+                        )
+                atoms.set_cell(result["ase_cell"], scale_atoms=True)
             calc_results.append(partial_result)
             ase_images.append(atoms)
 

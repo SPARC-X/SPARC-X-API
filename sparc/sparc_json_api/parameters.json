@@ -1785,7 +1785,7 @@
   "TOL_POISSON": {
    "symbol": "TOL_POISSON",
    "label": "TOL_POISSON",
-   "type": "integer",
+   "type": "double",
    "default": null,
    "unit": "No unit",
    "example": "TOL_POISSON: 1e-6",
