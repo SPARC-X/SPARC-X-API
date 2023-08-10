@@ -1,9 +1,9 @@
-# sparc-dft-api
+# `sparc-dft-api`: A Python API for the SPARC DFT Code
 [![Package](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/package.svg)](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/package.svg)
 [![Coverage](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)
 [![Unit tests](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml/badge.svg)](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml)
 
-`sparc-dft-api` is an [ASE](https://wiki.fysik.dtu.dk/ase/)-compatible python API for the density functional theory (DFT) code [SPARC](https://github.com/SPARC-X/SPARC). Starting v0.2, it provides the following functionalities:
+`sparc-dft-api` is an [ASE](https://wiki.fysik.dtu.dk/ase/)-compatible python API for the density functional theory (DFT) code [SPARC](https://github.com/SPARC-X/SPARC). Starting v1.0.0, it provides the following functionalities:
 
 1. ASE-compatible I/O format for SPARC files
 2. JSON API associated with SPARC C-code for parameter validation and conversion
@@ -25,7 +25,7 @@ conda install -c conda-forge sparc-dft-api
 - [] Change to conda-forge later
  -->
 
-*NOTE: this is a draft section!*
+<!-- *NOTE: this is a draft section!* -->
 
 
 You may also want to install our pre-compiled SPARC binaries and the SPMS pseudopotentials within the environment (x86-64 Linux only)
@@ -68,7 +68,7 @@ python -m sparc.download_data
 Please following the SPARC [manual](https://github.com/SPARC-X/SPARC) for compilation and installation of the SPARC DFT code itself in this case.
 
 ## Setting up the environment
-By design, `sparc-dft-api` >= v0.2 will automate the discovery for 
+By design, `sparc-dft-api` will automate the discovery for 
 pseudopotential files, JSON API and SPARC binary. 
 But you can also have fine control over how they can be setup:
 
@@ -125,7 +125,7 @@ Example:
 export ASE_SPARC_COMMAND="mpirun -n 8 /path/to/sparc -name PREFIX"
 ```
 
-*Note*: the `-name PREFIX` part can be omitted in `sparc-dft-api` >= v0.2, since it will autocomplete the command using the `SPARC.label` property.
+*Note*: the `-name PREFIX` part can be omitted in `sparc-dft-api` > v1.0.0, since it will autocomplete the command using the `SPARC.label` property.
 
 ## Post-installation check
 
