@@ -1,113 +1,274 @@
-# sparc-dft-api
+# `sparc-dft-api`: A Python API for the SPARC DFT Code
+[![Package](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/package.svg)](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/package.svg)
+[![Coverage](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)
+[![Unit tests](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml/badge.svg)](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml)
 
-sparc-dft-api is an ASE based python wrapper for the density functional theory (DFT) code SPARC. This wrapper requires <ins>Python3</ins>, and is *currently in active development and alpha testing*, so please use it with caution and report any errors in the "Issues" and/or submit pull requests with patches to fix issues as needed.
+`sparc-dft-api` is an [ASE](https://wiki.fysik.dtu.dk/ase/)-compatible python API for the density functional theory (DFT) code [SPARC](https://github.com/SPARC-X/SPARC). Starting v1.0.0, it provides the following functionalities:
+
+1. ASE-compatible I/O format for SPARC files
+2. JSON API associated with SPARC C-code for parameter validation and conversion
+3. Fully functional calculator interface for SPARC
+
 
 ## Installation:
-The following command should install the package:
 
-~~~
-pip install git+https://github.com/SPARC-X/sparc-dft-api
-~~~
+`sparc-dft-api` may be installed via any of the following approaches:
 
-prerequisites:
+### 1. Via `anaconda` or `miniconda` (recommended)
 
-python packages:
+Install `anaconda` or `miniconda` and create a working conda environment (see [conda documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands)). After than, use `conda install` to install the API:
 
-`scipy`
+```bash
+conda install -c conda-forge sparc-dft-api
+```
+<!-- *TODO*:
+- [] Change to conda-forge later
+ -->
 
-`numpy`
-
-`ase`
-
-`spglib`
-
-software:
-
-`SPARC`
-
-(https://github.com/SPARC-X/SPARC)
-
-Currently installation is barebones, simply clone this repository (`git clone https://github.com/SPARC-X/sparc-dft-api.git`) and add the folder to your pythonpath (`export PYTHONPATH=[were you cloned the repository]:$PYTHONPATH`)
+<!-- *NOTE: this is a draft section!* -->
 
 
-# Usage
+You may also want to install our pre-compiled SPARC binaries and the SPMS pseudopotentials within the environment (x86-64 Linux only)
 
-To enable the SPARC calculator to work you need to tell it what command to use to run sparc and where your pseudopotentials are. These should be stored in the environment variables `$ASE_SPARC_COMMAND` and `$SPARC_PSP_PATH` respectively. e.g.:
+```bash
+conda install -c conda-forge sparc
+```
 
-`export ASE_SPARC_COMMAND=[command to run SPARC]`
-
-`export SPARC_PSP_PATH=[location of pseudopotentials]`
-
-The `ASE_SPARC_COMMAND` variable is somewhat tricky to set up. All the information about parallelization should be included where appropriate in the command (i.e. `mpirun -np X`.) SPARC takes in a flag `-name` followed by the prefix of the input file names. This wrapper deals with the prefixes completely internally, but the word `PREFIX` should be put in after the `-name` flag for SPARC. Here are two examples command if the `sparc` executable is in your `$PATH` environment variable:
-
-`export ASE_SPARC_COMMAND="mpirun -np $PBS_NP sparc -name PREFIX"`
+*NOTE: this is a draft section! above conda code will change to conda-forge channel in official release*
 
 
-`export ASE_SPARC_COMMAND="mpirun -rmk pbs sparc -name PREFIX"`
+<!-- *TODO*:
+- [ ] Push the conda-package to channel
+- [ ] Make sure the SPARC_PP_PATH env variables are automatically set
+- [ ] Mantain a conda-forge release?
+ -->
+ 
+### 2. Install stable version from [PyPI]()
+```bash
+python -m pip instal sparc-dft-api>=2.0
+```
 
-note that the exact word "PREFIX" should be contained in this command.
+*NOTE: this is a draft section! need to update compiled wheel in pypi*
 
-`SPARC_PSP_PATH` is a path that points to the location of your pseudopotential files. These must have the naming convention: `[element name].pot` to be detected. Currently SPARC only uses the psp8 format. Alternatively, rather than setting this environment variable you may pass the information in with the `pseudo_dir` argument.
+<!-- WIP
+- [ ] Push to pypi? 
+-->
 
-Once those environment varibles are in place, the SPARC ASE calculator works like any other ASE calculator. It must be imported, instantiated, and called. There are examples of common operations at the bottom of this README.
+### 3. Install latest develop version from GitHub
 
-## Allowable Arguments
+```bash
+python -m pip install git+https://github.com/SPARC-X/sparc-dft-api
+```
 
-The SPARC calculator behaves similarly to other ASE calculators, taking an atoms object to define the system being calculated and a `label` argument for the filename prefixes. The arguments used to control the SPARC software are identical to those of the SPARC software program. Docuymentation can be found at the link below:
+You can download the latest SPMS pseudopotentials after installation (optional):
+```bash
+python -m sparc.download_data
+```
 
-https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf
+Please following the SPARC [manual](https://github.com/SPARC-X/SPARC) for compilation and installation of the SPARC DFT code itself in this case.
 
-### Mesh Spacing
-A mesh spacing or finite difference grid must be defined for the calculator to work. This can be done in one of three ways:
-1. by inputting the MESH_SPACING argument. This will use SPARC's internal mesh spacing to generate a grid
-2. by using the `h` argument, this  will default to converting to MESH_SPACING and utilizing this arguement in SPARC
-3. Inputting the `fd_grid` arugment which explicitly defines the finite difference grid. For example `fd_grid=[25,25,25]`
+## Setting up the environment
+By design, `sparc-dft-api` will automate the discovery for 
+pseudopotential files, JSON API and SPARC binary. 
+But you can also have fine control over how they can be setup:
 
-## Examples
+### A) Pseudopotential files
+Pseudopotential files (in `Abinit` psp8 format) are searched in the following
+order:
+1) `psp_dir` argument passed to the `sparc.SPARC` calculator
+2) Environmental variables `$SPARC_PSP_PATH` or `$SPARC_PP_PATH` 
+3) `psp8` files bundled with the sparc-dft-api installation (must be downloaded via `python -m sparc.download_data`)
+
+You can  set the `$SPARC_PSP_PATH` variable like follows:
+```bash
+export SPARC_PSP_PATH="/path/to/your/psp8/directory"
+```
+
+To get the location of default psp8 files in option 3), run the following code:
+```bash
+python -c "from sparc.common import psp_dir; print(psp_dir)"
+```
+
+### B) JSON API file
+Currently the calculator's API validator is bundled with sparc-dft-api. 
+In future releases it will be possible to dynamically load a JSON API by 
+matching the SPARC binary version. You can take a look at the api file at 
+`sparc.sparc_json_api.default_json_api`, which should contain entries like:
+
+```json
+"FD_GRID": {
+   "symbol": "FD_GRID",
+   "label": "FD_GRID",
+   "type": "integer array",
+   "default": null,
+   "unit": "No unit",
+   "example": "FD_GRID: 26 26 30",
+   "description": "A set of three whitespace delimited values specifying the number of finite-difference intervals in the lattice vector (LATVEC) directions, respectively.",
+   "remark": "The convergence of results with respect to spatial discretization needs to be verified. ECUT, MESH_SPACING, FD_GRID cannot be specified simultaneously.",
+   "allow_bool_input": false,
+   "default_remark": "None",
+   "description_raw": "A set of three whitespace delimited values specifying the number of finite-difference intervals in the lattice vector (\\hyperlink{LATVEC}{\\texttt{LATVEC}}) directions, respectively.",
+   "remark_raw": "The convergence of results with respect to spatial discretization needs to be verified. \\hyperlink{ECUT}{\\texttt{ECUT}}, \\hyperlink{MESH_SPACING}{\\texttt{MESH\\_SPACING}}, \\hyperlink{FD_GRID}{\\texttt{FD\\_GRID}} cannot be specified simultaneously.",
+   "category": "system"
+  },
+```
+
+### C) `SPARC` command
+
+The command used for running SPARC calculations are detected in the following order:
+1) Passing `command` argument to `sparc.SPARC` calculator
+2) Setting `$ASE_SPARC_COMMAND` variable
+3) If None of the above exists, look for a SPARC binary under current `$PATH` and combine with the suitable `mpi` command prefix (auto-detected).
+
+Example:
+```bash
+export ASE_SPARC_COMMAND="mpirun -n 8 /path/to/sparc -name PREFIX"
+```
+
+*Note*: the `-name PREFIX` part can be omitted in `sparc-dft-api` > v1.0.0, since it will autocomplete the command using the `SPARC.label` property.
+
+## Post-installation check
+
+We recommend the users to run a simple check after installation and setup:
+```bash
+python -m sparc.quicktest
+```
+
+A successful setup would show the following blocks at the end of the output
+
+<img width="500" alt="image" src="https://github.com/alchem0x2A/sparc-dft-api/assets/6829706/95cb712e-4c77-4b14-8130-4961e3c50278">
 
 
-### Single Point Calculation
-~~~
-#get sparc calculator
-from sparc.sparc_core import SPARC
-calc = SPARC(h=0.2) # a grid spacing grid must be entered.
 
-#make atoms
+If you encounter any issues, please refer to the [Trouble Shooting](doc/troubleshooting.md).
+
+## `sparc-dft-api`: Basic usages
+### 1. Read / write SPARC files
+
+Unlike other DFT codes where the ASE format corresponds to a single file,
+`sparc-dft-api` provides I/O support for the whole calculation directory, a.k.a "SPARC bundle". 
+`sparc-dft-api` allows automatic discovery of this file format (`"sparc"`) in ASE:
+
+- Read from a sparc bundle
+
+```python
+import sparc
+from ase.io import read, write
+
+atoms = read("test.sparc", index=-1)
+```
+
+- Write a minimal sparc bundle from atoms
+
+```python
+import sparc
+from ase.io import read, write
+from ase.build import Bulk
+atoms = Bulk("Al") * [4, 4, 4]
+atoms.write("test.sparc")
+```
+
+For more details about the bundle IO format, please see [Advanced Topics]() section
+
+### 2. JSON API for SPARC calculator
+
+ASE-based DFT calculator interfaces often face the challenge of version inconsistencies 
+between low-level codes (Fortran/C/C++) and outdated upper-level APIs (Python) regarding parameter sets and default values. 
+In `sparc-dft-api`, DFT parameters are meticulously managed through a JSON API, translated from SPARC's LaTeX documentation. 
+Each release of `sparc-dft-api` is linked with a specific version of the SPARC source code, ensuring compatibility and consistency with the default parameter set. 
+
+Automatic conversion and validation between plain-text SPARC input files and sparc-dft-api are
+handled using the `sparc.api.SparcAPI` class. If you want more fine control, please refer to [Advanced Topics]() section.
+
+
+### 3. Calculator interface
+
+`sparc-dft-api` provides a calculator interface that should be familiar for users with experience on any other 
+ASE calculators (`Vasp`, `QuantumEspresso`, `GPAW` etc), as shown in the following examples:
+
+1. Single point calculation
+```python
+from sparc.calculator import SPARC
+from ase.build import molecule
+atoms = molecule("H2", cell=(10, 10, 10), pbc=True, directory="run_sp")
+atoms.calc = SPARC(h=0.25)
+atoms.get_potential_energy()
+atoms.get_forces()
+```
+
+This example sets up a calculation for H2 atoms in a 10 Å x 10 Å x 10 Å PBC cell with PBE 
+exchange correlation function, and a grid spacing (`h`) of 0.25 Å. Note by calling `atoms.get_forces`,
+the calculator will automatically sets the flags for printing the forces.
+
+2. Geometric optimization (using SPARC's internal routines)
+```python
+from sparc.calculator import SPARC
 from ase.build import bulk
-atoms = bulk('Si',cubic=True)
-atoms.set_pbc([True] * 3)
-atoms.set_calculator(calc)
+atoms = bulk("Al", cubic=True)
+atoms.rattle(0.05)
+atoms.calc = SPARC(h=0.25, kpts=(3, 3, 3), relax_flag=True, directory="run_opt")
 atoms.get_potential_energy()
-~~~
+atoms.get_forces()
+```
 
+This example sets up a calculation for a rattled Aluminum primitive unit cell, calculate with PBE 
+functional, grid spacing of 0.25 Å, and 3 x 3 x 3 K-point grid. 
+Optimization of ionic positions 
+is handled with SPARC's default LBFGS routine.
 
-### Relaxation
-~~~
-from sparc.sparc_core import SPARC
-calc = SPARC(h=0.2, RELAX_FLAG=1) # a grid spacing grid must be entered.
+3. AIMD in SPARC
 
-#make atoms
-from ase.build import molecule
-atoms = molecule('H2')
-atoms.set_cell([6,6,6])
-atoms.center()
-atoms.set_pbc([False] * 3 )
-atoms.set_calculator(calc)
+```python
+from sparc.calculator import SPARC
+from ase.build import bulk
+md_params = dict(md_flag=True, ion_temp=800, md_method="NVE", md_timestep=0.6, md_nstep=5)
+atoms = bulk("Al") * (3, 3, 3)
+atoms.rattle()
+atoms.calc = SPARC(h=0.25, kpts=(1, 1, 1), directory="run_aimd", **md_params)             
 atoms.get_potential_energy()
-~~~
+```
 
-### Writing Input Files
-~~~
-from sparc.sparc_core import SPARC
-calc = SPARC(h=0.2, RELAX_FLAG=1) # a grid spacing grid must be entered.
+This example runs a short NVE MD simulation (5 steps) at 800 K for 27 Al atoms. 
+If you want to extract more information about the MD simulation steps, take a look at `SPARC.raw_results`.
 
-#make atoms
-from ase.build import molecule
-atoms = molecule('H2')
-atoms.set_cell([6,6,6])
-atoms.center()
-atoms.set_pbc([False] * 3 )
-atoms.set_calculator(calc)
-calc.write_input()
-~~~
+4. Geometric optimization using ASE's optimizers 
 
+The power of `sparc-dft-api` is to combine single point `SPARC` calculations with advanced ASE optimizers, such as BFGS, FIRE or GPMin. Example 2 can be re-written as:
+
+```python
+from sparc.calculator import SPARC
+from ase.build import bulk
+from ase.optimize import LBFGS
+atoms = bulk("Al", cubic=True)
+atoms.rattle(0.05)
+atoms.calc = SPARC(h=0.25, kpts=(3, 3, 3), directory="run_opt_ase")
+opt = LBFGS(atoms, alpha=90)
+opt.run(fmax=0.02)
+```
+
+### 4. Commandline tools
+
+`sparc-dft-api` provides a simple command wrapper `sparc-ase` to add
+support of SPARC file formats to the `ase` cli tools. Simple replace
+`ase [subcommand] [args]` with `sparc-ase [subcommand] [args]` to
+access your SPARC bundle files as you would use for other file formats.
+As an example, use `sparc-ase gui path/to/your/bundle.sparc` for the visualization of
+atomistic structures. Depending on the file contents, either single atoms or multiple
+images will be displayed.
+
+Below is a screenshot showing the usage of `sparc-ase gui` to visualize a 
+short [MD trajectory](tests/outputs/NH3_sort_lbfgs_opt.sparc).
+
+<img width="1200" alt="image" src="https://github.com/alchem0x2A/sparc-dft-api/assets/6829706/e72329ff-7194-4819-94f8-486ef2218844">
+
+## Troubleshooting
+Please refer to the [troubleshooting](doc/troubleshooting.md) guidelines
+
+## Advanced topics
+A detailed description about how the API works can be found [here](doc/advanced_topics.md)
+
+## API changes
+The API changes compared to v0.1 are summarized [here](doc/changes_v0.1.md)
+
+## How to contribute
+Please refer to our [guidelines for contributors](doc/contribution_guideline.md)
