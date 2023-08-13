@@ -18,11 +18,11 @@ test_requires = [
 
 setup(
     name="sparc-dft-api",
-    version="0.2-alpha",
+    version="1.0.0",
     python_requires=">=3.8",
-    description="Python Wrapper for the SPARC-X DFT Code",
-    author="Ben Comer",
-    author_email="ben.comer@gatech.edu",
+    description="Python API for the SPARC DFT Code",
+    author="Tian Tian, Ben Comer",
+    author_email="alchem0x2a@gmail.com, ben.comer@gatech.edu",
     url="https://github.com/SPARC-X/sparc-dft-api",
     packages=find_packages(),
     install_requires=["ase>=3.22.0"],
