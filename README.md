@@ -16,32 +16,22 @@
 
 ### 1. Via `anaconda` or `miniconda` (recommended)
 
-Install `anaconda` or `miniconda` and create a working conda environment (see [conda documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands)). After than, use `conda install` to install the API:
+Install `anaconda` or `miniconda` and create a working [conda environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands) and install the Python API with pseudopotential files:
 
 ```bash
-conda install -c conda-forge sparc-dft-api
+conda create --name sparc-env
+conda activate sparc-env
+conda install -c alchem0x2a sparc-dft-api
 ```
-<!-- *TODO*:
-- [] Change to conda-forge later
- -->
 
-<!-- *NOTE: this is a draft section!* -->
-
-
-You may also want to install our pre-compiled SPARC binaries and the SPMS pseudopotentials within the environment (x86-64 Linux only)
+On Linux platforms (x86_64, aarch64), you can also install the precompiled `sparc` DFT binaries along with the API:
 
 ```bash
-conda install -c conda-forge sparc
+conda install -c alchem0x2a sparc
+conda activate sparc-env   # Re-activate to have the env variables effective
 ```
 
-*NOTE: this is a draft section! above conda code will change to conda-forge channel in official release*
 
-
-<!-- *TODO*:
-- [ ] Push the conda-package to channel
-- [ ] Make sure the SPARC_PP_PATH env variables are automatically set
-- [ ] Mantain a conda-forge release?
- -->
  
 ### 2. Install stable version from [PyPI]()
 ```bash
