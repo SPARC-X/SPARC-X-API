@@ -280,6 +280,18 @@ short [MD trajectory](tests/outputs/NH3_sort_lbfgs_opt.sparc).
 
 <img width="1200" alt="image" src="https://github.com/alchem0x2A/sparc-dft-api/assets/6829706/e72329ff-7194-4819-94f8-486ef2218844">
 
+### 5. Units used in `sparc-dft-api`
+
+In the SPARC DFT code, all input parameters conventionally employ atomic units, such as Hartree and Bohr. Conversely, ASE objects (like `Atoms.positions`, `Atoms.cell`, `Atoms.get_potential_energy()`) utilize eV/Angstrom units.
+
+When you set up a calculator as below:
+```python
+atoms.calc = SPARC(h=0.25, REFERENCE_CUTOFF=0.5, EXX_RANGE_PBE=0.16, **params)
+```
+inputs following ASE's convention (e.g., `h`) adopt eV/Angstrom units (thus the same setting can be applied to other DFT calculators),
+On the other hand, all SPARC-specific parameters, which can often be recognized by their capitalized format (like `REFERENCE_CUTOFF`, `EXX_RANGE_PBE`), retain their original values consistent with their representation in the `.inpt` files.
+The reasoning and details about unit conversion can be found in the [Rules for Input Parameters](https://github.com/alchem0x2A/sparc-dft-api/blob/master/doc/advanced_topics.md#rules-for-input-parameters-in-sparcsparc-calculator)  in Advanced Topics.
+
 ## Troubleshooting
 Please refer to the [troubleshooting](doc/troubleshooting.md) guidelines
 
