@@ -43,17 +43,14 @@ conda activate sparc-env   # Re-activate to have the env variables effective
 python -m pip install git+https://github.com/SPARC-X/sparc-dft-api
 ```
 
-Optionally, you can download the latest SPMS pseudopotentials
-post-installation, if you don't have them already:
+Optionally, you can download the latest SPMS pseudopotentials and unpacks the pseudopotential files into `<python-lib-root>/site-packages/sparc/psp`:
 
 ```bash
 python -m sparc.download_data
 ```
 
-This command unpacks the pseudopotential files into
-`<python-lib-root>/site-packages/sparc/psp`.
 
-To utilize the API for initiating SPARC calculations, please
+To utilize the API for drive SPARC calculations, please
 following the [SPARC manual](https://github.com/SPARC-X/SPARC) for
 compilation and installation of the SPARC DFT code itself.
 
@@ -69,14 +66,13 @@ A proper setup will display the following sections at the output's conclusion:
 
 <img width="500" alt="image" src="https://github.com/alchem0x2A/sparc-dft-api/assets/6829706/95cb712e-4c77-4b14-8130-4961e3c50278">
 
-For using the API to interpret SPARC input and output files, it's
+For using the API to parse SPARC input and output files, it's
 essential that the "Import" and "JSON API" tests are successful. For
-calculations to be viable, all tests must pass.
+run SPARC calculations, all tests must pass.
 
 Please refer to the [Setting Up the
 Environment](#setting-up-the-environment) or guidance on correctly
-configuring the environment variables. This ensures the Python API can
-locate the SPARC setups.  If you run into any problems, consult our
+configuring the environment variables. If you run into further problems, consult our
 [Trouble Shooting](doc/troubleshooting.md).
 
 ## Setting up the environment
@@ -89,10 +85,8 @@ Pseudopotential files (in `Abinit` psp8 format) are loaded in the following
 order:
 
 1) Via the `psp_dir` argument passed to the `sparc.SPARC` calculator.
-
 2) Through the environment variables `$SPARC_PSP_PATH` or `$SPARC_PP_PATH` (this is the
  method employed by [`conda` installation](#1-via-anaconda-or-miniconda-recommended)).
-
 3) By using `psp8` files bundled with the sparc-dft-api installation (see the
 [manual installation](#2-manual-installation-from-source-with-pip)).
 
@@ -122,8 +116,7 @@ schema used by the API at sparc.sparc_json_api.default_json_api
    "example": "FD_GRID: 26 26 30",
    "description": "#<Some description...>",
    "allow_bool_input": false,
-   "category": "system",
-   #<extra key:value lines>
+   "category": "system"
   },
 ```
 
@@ -163,7 +156,6 @@ file format:
 ```python
 import sparc
 from ase.io import read, write
-
 atoms = read("test.sparc", index=-1)
 ```
 
@@ -195,7 +187,7 @@ If you've obtained the full SPARC [source
 code](https://github.com/SPARC-X/SPARC), you can generate a copy of
 the schema by the following code:
 ```bash
-python -m sparc.docparser /<sparc-source-code-root>/doc/.LaTeX
+python -m sparc.docparser <sparc-source-code-root>/doc/.LaTeX
 ```
 which produces a `parameters.json` file.
 
