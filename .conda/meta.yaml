@@ -12,7 +12,8 @@ source:
 
 build:
   noarch: python
-  script: "{{ PYTHON }} -m pip install . --no-deps -vv"
+  # Install sparc-dft-api and include the psp files
+  script: "{{ PYTHON }} -m pip install . --no-deps -vv && cd .. && {{ PYTHON }} -m sparc.download_data"
   entry_points:
     - "sparc-ase = sparc.cli:main"
     
@@ -21,14 +22,15 @@ requirements:
   build:
     - "python>=3.8"
     - setuptools
+    - "ase>=3.22"
     - pip
   host:
     - "python>=3.8"
+    - "ase>=3.22"
     - pip
   run:
     - "python>=3.8"
     - "ase>=3.22"
-    - sparc # [linux]
 
 about:
   home: https://github.com/SPARC-X/sparc-dft-api
