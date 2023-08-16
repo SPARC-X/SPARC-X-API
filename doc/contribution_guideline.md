@@ -2,7 +2,7 @@
 We welcome users of SPARC and its python-API to submit issues and pull requests via github.
 When reporting a bug, please make sure to include the following information:
 
-- `SPARC` version (if available. Should look like "Month Day, Year" in the `.out` file)
+- SPARC version (if available. Should look like "Month Day, Year" in the `.out` file)
 - `sparc-python-api` version or commit hash
 - Minimal example for reproducing the error
 - Error trace message
@@ -22,12 +22,12 @@ pip install -e "sparc-dft-api[test]"
 python -m sparc.download_data
 ```
 
-If you need to test running DFT using the API, compile or install the `sparc` executables following the [manual](https://github.com/SPARC-X/SPARC/blob/master/README.md). 
+If you need to test running DFT using the API, compile or install the `sparc` executables following the [manual](https://github.com/SPARC-X/SPARC/blob/master/README.md).
 
 
 ### Running tests
 
-All unit tests are based on `pytest` and inside `tests/` directory. 
+All unit tests are based on `pytest` and inside `tests/` directory.
 To run all tests (no heavy DFT calculations):
 ```python
 python -m pytest -svv tests/
@@ -43,7 +43,7 @@ python -m pytest -svv tests/test_all_dft.py
 ### Adding examples
 
 All examples are listed in `examples/` directory. Please add examples that are important
-for demonstrating the functionalities of `sparc-dft-api` while the calculations can be 
+for demonstrating the functionalities of `sparc-dft-api` while the calculations can be
 finished using moderate computating power (e.g. a few minutes with 4 CPU cores).
 
 The examples can have the name in the format `ex[Number]-[purpose].py`.
@@ -67,7 +67,7 @@ sparc
 ├── sparc_json_api         # Directory for maintaining the JSON API
 │   └── parameters.json
 ├── sparc_parsers          # Parsers for individual SPARC in-/output formats
-│   ├── __init__.py        
+│   ├── __init__.py
 │   ├── aimd.py
 │   ├── atoms.py
 │   ├── geopt.py
@@ -78,3 +78,25 @@ sparc
 │   ├── static.py
 │   └── utils.py
 ```
+
+### CI/CD by Github Actions
+
+The repo contains a few CI/CD pipelines based on Github Actions. You
+may need to take care of the settings if you're one of the
+maintainers. For normal code contributors, this section may be
+omitted.
+
+- Unit test
+
+The steps are described [here](.github/workflows/installation_test.yml).
+Please make sure to exclude any computationally-heavy tests from the step "Test with pytest".
+
+- Coverage
+
+The CI workflow contains a coverage report step based on the unit test
+and generates a [coverage
+badge](https://github.com/SPARC-X/sparc-dft-api/blob/badges/badges/coverage.svg)
+on the [`badges`
+branch](https://github.com/SPARC-X/sparc-dft-api/tree/badges).
+
+For repo maintainers, please make sure the `badges` branch is present and **do not merge to this branch**.
