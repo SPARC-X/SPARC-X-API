@@ -158,6 +158,7 @@ import sparc
 from ase.io import read, write
 atoms = read("test.sparc", index=-1)
 ```
+*Note*: To read multiple output files from the same directory, e.g., SPARC.aimd, SPARC.aimd\_01, pass the keyword argument `include_all_files=True` to `read()`
 
 - Writing a minimal SPARC bundle from atoms
 
