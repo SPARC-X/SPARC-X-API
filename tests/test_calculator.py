@@ -4,10 +4,10 @@ import tempfile
 
 
 def test_h_parameter():
-    """Parameter h will be overwritten by any of FD_GRID, MESH_SPACING, ECUT
-    """
+    """Parameter h will be overwritten by any of FD_GRID, MESH_SPACING, ECUT"""
     from sparc.calculator import SPARC
     from ase.build import bulk
+
     atoms = bulk("Al", cubic=True)
     with tempfile.TemporaryDirectory() as tmpdir:
         calc = SPARC(h=0.2, directory=tmpdir)
@@ -39,6 +39,7 @@ def test_h_parameter():
 def test_conflict_param():
     from sparc.calculator import SPARC
     from ase.build import bulk
+
     atoms = bulk("Al", cubic=True)
     with tempfile.TemporaryDirectory() as tmpdir:
         calc = SPARC(h=0.2, directory=tmpdir, FD_GRID=[25, 25, 25], ECUT=25)
@@ -47,8 +48,9 @@ def test_conflict_param():
             calc.write_input(atoms)
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        calc = SPARC(h=0.2, directory=tmpdir, FD_GRID=[
-                     25, 25, 25], MESH_SPACING=0.4)
+        calc = SPARC(
+            h=0.2, directory=tmpdir, FD_GRID=[25, 25, 25], MESH_SPACING=0.4
+        )
         # FD_GRID and ECUT are conflict, but only detected during the writing
         with pytest.raises(Exception):
             calc.write_input(atoms)
@@ -57,6 +59,7 @@ def test_conflict_param():
 def test_cell_param():
     from sparc.calculator import SPARC
     from ase.build import bulk
+
     atoms = bulk("Al", cubic=True)
     with tempfile.TemporaryDirectory() as tmpdir:
         calc = SPARC(h=0.2, directory=tmpdir, CELL=[10, 10, 10])
@@ -68,6 +71,7 @@ def test_cell_param():
 def test_unknown_params():
     from sparc.calculator import SPARC
     from ase.build import bulk
+
     atoms = bulk("Al", cubic=True)
     with tempfile.TemporaryDirectory() as tmpdir:
         with pytest.raises(Exception):
@@ -77,9 +81,38 @@ def test_unknown_params():
 def test_label():
     from sparc.calculator import SPARC
     from ase.build import bulk
+
     atoms = bulk("Al", cubic=True)
     with tempfile.TemporaryDirectory() as tmpdir:
         calc = SPARC(h=0.2, directory=tmpdir, label="test_label")
         assert calc.label == "test_label"
         calc.write_input(atoms)
         assert (Path(tmpdir) / "test_label.inpt").exists()
+
+
+def test_cache_results():
+    # Test if the calculation results are cached (same structure)
+    from sparc.calculator import SPARC
+    from ase.build import molecule
+    from pathlib import Path
+
+    nh3 = molecule("NH3", cell=(8, 8, 8), pbc=True)
+    nh3.rattle()
+
+    dummy_calc = SPARC()
+    try:
+        cmd = dummy_calc._make_command()
+    except EnvironmentError:
+        print("Skip test since no sparc command found")
+        return
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(
+            h=0.3, kpts=(1, 1, 1), xc="pbe", print_forces=True, directory=tmpdir
+        )
+        nh3.calc = calc
+        forces = nh3.get_forces()
+        # make sure no more calculations are needed
+        assert len(calc.check_state(nh3)) == 0
+        energy = nh3.get_potential_energy()
+        static_files = list(Path(tmpdir).glob("*.static*"))
+        assert len(static_files) == 1

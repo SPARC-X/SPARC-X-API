@@ -6,6 +6,7 @@ import os
 curdir = Path(__file__).parent
 test_output_dir = curdir / "outputs"
 
+
 def test_read_sparc_all():
     from sparc.io import read_sparc
     from sparc.common import repo_dir

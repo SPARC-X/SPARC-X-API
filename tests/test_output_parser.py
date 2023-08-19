@@ -10,6 +10,7 @@ test_output_dir = curdir / "outputs"
 
 def test_output_date_parser():
     from sparc.sparc_parsers.out import _read_sparc_version
+
     header1 = """***************************************************************************
 *                       SPARC (version Feb 03, 2023)                      *
 *   Copyright (c) 2020 Material Physics & Mechanics Group, Georgia Tech   *
