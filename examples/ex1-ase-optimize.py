@@ -13,7 +13,7 @@ from ase.build import molecule
 from ase.optimize.bfgs import BFGS
 from ase.constraints import FixAtoms
 
-nh3 = molecule("NH3", cell=(6, 6, 6))
+nh3 = molecule("NH3", cell=(8, 8, 8), pbc=True)
 # Fix the N center
 nh3.constraints = [FixAtoms([0])]
 nh3.rattle()
@@ -50,6 +50,7 @@ def optimize_ase_lbfgs():
     )
     atoms.calc = calc
     opt = BFGS(atoms)
+    #breakpoint()
     opt.run(fmax=0.02)
     e_fin = atoms.get_potential_energy()
     f_fin = atoms.get_forces()
@@ -61,5 +62,5 @@ def optimize_ase_lbfgs():
 
 
 if __name__ == "__main__":
-    # optimize_sparc_internal()
+    optimize_sparc_internal()
     optimize_ase_lbfgs()

@@ -157,6 +157,35 @@ class SPARC(FileIOCalculator):
         """
         return self.sparc_bundle.sorting["resort"]
 
+    def check_state(self, atoms, tol=1e-9):
+        """Updated check_state method.
+        By default self.atoms (cached from output files) contains the initial_magmoms,
+        so we add a zero magmoms to the atoms for comparison if it does not exist.
+
+        reading a result from the .out file has only precision up to 10 digits
+        """
+        atoms_copy = atoms.copy()
+        if "initial_magmoms" not in atoms_copy.arrays:
+            atoms_copy.set_initial_magnetic_moments(
+                [
+                    0,
+                ]
+                * len(atoms_copy)
+            )
+        # First we check for default changes
+        system_changes = FileIOCalculator.check_state(self, atoms_copy, tol=tol)
+        # A few hard-written rules. Wrapping should only affect the position
+        if "positions" in system_changes:
+            atoms_copy.wrap()
+            new_system_changes = FileIOCalculator.check_state(
+                self, atoms_copy, tol=tol
+            )
+            # TODO: make sure such check only happens for PBC
+            # the position is wrapped, accept as the same structure
+            if "positions" not in new_system_changes:
+                system_changes.remove("positions")
+        return system_changes
+
     def _make_command(self, extras=""):
         """Use $ASE_SPARC_COMMAND or self.command to determine the command
         as a last resort, if `sparc` exists in the PATH, use that information
@@ -195,6 +224,12 @@ class SPARC(FileIOCalculator):
         self, atoms=None, properties=["energy"], system_changes=all_changes
     ):
         """Perform a calculation step"""
+        # For v1.0.0, we'll only allow pbc=True to make ourselves easier
+        # TODO: need to have more flexible support for pbc types and check_state
+        if not all(atoms.pbc):
+            raise NotImplementedError(
+                "Non-pbc atoms input has not been tested in the api. Please use pbc=True for now."
+            )
         Calculator.calculate(self, atoms, properties, system_changes)
         self.write_input(self.atoms, properties, system_changes)
         self.execute()
@@ -244,21 +279,33 @@ class SPARC(FileIOCalculator):
                 count += 1
         if count > 1:
             # TODO: change to ExclusionParameterError
-            raise ValueError("ECUT, MESH_SPACING, FD_GRID cannot be specified simultaneously!")
+            raise ValueError(
+                "ECUT, MESH_SPACING, FD_GRID cannot be specified simultaneously!"
+            )
 
         # Rule 2: LATVEC_SCALE, CELL
-        if ("LATVEC_SCALE" in input_parameters) and ("CELL" in input_parameters):
+        if ("LATVEC_SCALE" in input_parameters) and (
+            "CELL" in input_parameters
+        ):
             # TODO: change to ExclusionParameterError
-            raise ValueError("LATVEC_SCALE and CELL cannot be specified simultaneously!")
-        
+            raise ValueError(
+                "LATVEC_SCALE and CELL cannot be specified simultaneously!"
+            )
+
         # When the cell is provided via ase object, we will forbid user to provide
         # LATVEC, LATVEC_SCALE or CELL
         # TODO: make sure the rule makes sense for molecules
-        if (atoms is not None):
-            if any([p in input_parameters for p in ["LATVEC", "LATVEC_SCALE", "CELL"]]):
-                raise ValueError("When passing an ase atoms object, LATVEC, LATVEC_SCALE or CELL cannot be set simultaneously!")
+        if atoms is not None:
+            if any(
+                [
+                    p in input_parameters
+                    for p in ["LATVEC", "LATVEC_SCALE", "CELL"]
+                ]
+            ):
+                raise ValueError(
+                    "When passing an ase atoms object, LATVEC, LATVEC_SCALE or CELL cannot be set simultaneously!"
+                )
 
-        
     def _check_minimal_input(self, input_parameters):
         """Check if the minimal input set is satisfied
 
@@ -269,10 +316,15 @@ class SPARC(FileIOCalculator):
                 # TODO: change to MissingParameterError
                 raise ValueError(f"Parameter {param} is not provided.")
         # At least one from ECUT, MESH_SPACING and FD_GRID must be provided
-        if not any([param in input_parameters for param in ("ECUT", "MESH_SPACING", "FD_GRID")]):
-            raise ValueError("You should provide at least one of ECUT, MESH_SPACING or FD_GRID.")
-
-
+        if not any(
+            [
+                param in input_parameters
+                for param in ("ECUT", "MESH_SPACING", "FD_GRID")
+            ]
+        ):
+            raise ValueError(
+                "You should provide at least one of ECUT, MESH_SPACING or FD_GRID."
+            )
 
     def write_input(self, atoms, properties=[], system_changes=[]):
         """Create input files via SparcBundle"""
@@ -283,7 +335,6 @@ class SPARC(FileIOCalculator):
         converted_params = self._convert_special_params(atoms=atoms)
         input_parameters = converted_params.copy()
         input_parameters.update(self.valid_params)
-        
 
         # Make sure desired properties are always ensured, but we don't modify the user inputs
         if "forces" in properties:
@@ -300,7 +351,6 @@ class SPARC(FileIOCalculator):
 
         self._check_input_exclusion(input_parameters, atoms=atoms)
         self._check_minimal_input(input_parameters)
-        
 
         self.sparc_bundle._write_ion_and_inpt(
             atoms=atoms,
@@ -435,7 +485,6 @@ class SPARC(FileIOCalculator):
                     warn(f"Input parameter {key} does not have a valid value!")
         return valid_params, special_params
 
-
     def _convert_special_params(self, atoms=None):
         """Convert ASE-compatible parameters to SPARC compatible ones
         parameters like `h`, `nbands` may need atoms information
@@ -467,9 +516,16 @@ class SPARC(FileIOCalculator):
                 raise ValueError(
                     "Must have an active atoms object to convert h --> gpts!"
                 )
-            if any([p in self.valid_params for p in ("FD_GRID", "ECUT", "MESH_SPACING")]):
-                warn("You have specified one of FD_GRID, ECUT or MESH_SPACING, "
-                     "conversion of h to mesh grid is ignored.")
+            if any(
+                [
+                    p in self.valid_params
+                    for p in ("FD_GRID", "ECUT", "MESH_SPACING")
+                ]
+            ):
+                warn(
+                    "You have specified one of FD_GRID, ECUT or MESH_SPACING, "
+                    "conversion of h to mesh grid is ignored."
+                )
             else:
                 # TODO: is there any limitation for parallelization?
                 gpts = h2gpts(h, atoms.cell)
