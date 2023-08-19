@@ -157,6 +157,25 @@ class SPARC(FileIOCalculator):
         """
         return self.sparc_bundle.sorting["resort"]
 
+    def check_state(self, atoms, tol=1e-14):
+        """Updated check_state method.
+        By default self.atoms (cached from output files) contains the initial_magmoms,
+        so we add a zero magmoms to the atoms for comparison if it does not exist.
+
+        tol=1e-14 should be enough if the values are written as ":.16f"
+        """
+        atoms_copy = atoms.copy()
+        if "initial_magmoms" not in atoms_copy.arrays:
+            atoms_copy.set_initial_magnetic_moments(
+                [
+                    0,
+                ]
+                * len(atoms_copy)
+            )
+        # First we check for default changes
+        system_changes = FileIOCalculator.check_state(self, atoms_copy, tol=tol)
+        return system_changes
+
     def _make_command(self, extras=""):
         """Use $ASE_SPARC_COMMAND or self.command to determine the command
         as a last resort, if `sparc` exists in the PATH, use that information
@@ -191,9 +210,7 @@ class SPARC(FileIOCalculator):
             self.command = command_env
         return f"{self.command} {extras}"
 
-    def calculate(
-        self, atoms=None, properties=["energy"], system_changes=all_changes
-    ):
+    def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         """Perform a calculation step"""
         Calculator.calculate(self, atoms, properties, system_changes)
         self.write_input(self.atoms, properties, system_changes)
@@ -244,21 +261,26 @@ class SPARC(FileIOCalculator):
                 count += 1
         if count > 1:
             # TODO: change to ExclusionParameterError
-            raise ValueError("ECUT, MESH_SPACING, FD_GRID cannot be specified simultaneously!")
+            raise ValueError(
+                "ECUT, MESH_SPACING, FD_GRID cannot be specified simultaneously!"
+            )
 
         # Rule 2: LATVEC_SCALE, CELL
         if ("LATVEC_SCALE" in input_parameters) and ("CELL" in input_parameters):
             # TODO: change to ExclusionParameterError
-            raise ValueError("LATVEC_SCALE and CELL cannot be specified simultaneously!")
-        
+            raise ValueError(
+                "LATVEC_SCALE and CELL cannot be specified simultaneously!"
+            )
+
         # When the cell is provided via ase object, we will forbid user to provide
         # LATVEC, LATVEC_SCALE or CELL
         # TODO: make sure the rule makes sense for molecules
-        if (atoms is not None):
+        if atoms is not None:
             if any([p in input_parameters for p in ["LATVEC", "LATVEC_SCALE", "CELL"]]):
-                raise ValueError("When passing an ase atoms object, LATVEC, LATVEC_SCALE or CELL cannot be set simultaneously!")
+                raise ValueError(
+                    "When passing an ase atoms object, LATVEC, LATVEC_SCALE or CELL cannot be set simultaneously!"
+                )
 
-        
     def _check_minimal_input(self, input_parameters):
         """Check if the minimal input set is satisfied
 
@@ -269,10 +291,12 @@ class SPARC(FileIOCalculator):
                 # TODO: change to MissingParameterError
                 raise ValueError(f"Parameter {param} is not provided.")
         # At least one from ECUT, MESH_SPACING and FD_GRID must be provided
-        if not any([param in input_parameters for param in ("ECUT", "MESH_SPACING", "FD_GRID")]):
-            raise ValueError("You should provide at least one of ECUT, MESH_SPACING or FD_GRID.")
-
-
+        if not any(
+            [param in input_parameters for param in ("ECUT", "MESH_SPACING", "FD_GRID")]
+        ):
+            raise ValueError(
+                "You should provide at least one of ECUT, MESH_SPACING or FD_GRID."
+            )
 
     def write_input(self, atoms, properties=[], system_changes=[]):
         """Create input files via SparcBundle"""
@@ -283,7 +307,6 @@ class SPARC(FileIOCalculator):
         converted_params = self._convert_special_params(atoms=atoms)
         input_parameters = converted_params.copy()
         input_parameters.update(self.valid_params)
-        
 
         # Make sure desired properties are always ensured, but we don't modify the user inputs
         if "forces" in properties:
@@ -300,7 +323,6 @@ class SPARC(FileIOCalculator):
 
         self._check_input_exclusion(input_parameters, atoms=atoms)
         self._check_minimal_input(input_parameters)
-        
 
         self.sparc_bundle._write_ion_and_inpt(
             atoms=atoms,
@@ -345,10 +367,7 @@ class SPARC(FileIOCalculator):
         errorcode = self.proc.returncode
 
         if errorcode > 0:
-            msg = (
-                f"SPARC failed with command {command}"
-                f"with error code {errorcode}"
-            )
+            msg = f"SPARC failed with command {command}" f"with error code {errorcode}"
             raise RuntimeError(msg)
 
         return
@@ -366,9 +385,7 @@ class SPARC(FileIOCalculator):
         """Parse from the SparcBundle"""
         # TODO: try use cache?
         # self.sparc_bundle.read_raw_results()
-        last = self.sparc_bundle.convert_to_ase(
-            indices=-1, include_all_files=False
-        )
+        last = self.sparc_bundle.convert_to_ase(indices=-1, include_all_files=False)
         self.atoms = last.copy()
         self.results.update(last.calc.results)
 
@@ -435,7 +452,6 @@ class SPARC(FileIOCalculator):
                     warn(f"Input parameter {key} does not have a valid value!")
         return valid_params, special_params
 
-
     def _convert_special_params(self, atoms=None):
         """Convert ASE-compatible parameters to SPARC compatible ones
         parameters like `h`, `nbands` may need atoms information
@@ -467,9 +483,13 @@ class SPARC(FileIOCalculator):
                 raise ValueError(
                     "Must have an active atoms object to convert h --> gpts!"
                 )
-            if any([p in self.valid_params for p in ("FD_GRID", "ECUT", "MESH_SPACING")]):
-                warn("You have specified one of FD_GRID, ECUT or MESH_SPACING, "
-                     "conversion of h to mesh grid is ignored.")
+            if any(
+                [p in self.valid_params for p in ("FD_GRID", "ECUT", "MESH_SPACING")]
+            ):
+                warn(
+                    "You have specified one of FD_GRID, ECUT or MESH_SPACING, "
+                    "conversion of h to mesh grid is ignored."
+                )
             else:
                 # TODO: is there any limitation for parallelization?
                 gpts = h2gpts(h, atoms.cell)
@@ -482,9 +502,7 @@ class SPARC(FileIOCalculator):
                 converted_sparc_params["FD_GRID"] = gpts
             else:
                 # TODO: customize error
-                raise ValueError(
-                    f"Input parameter gpts has invalid value {gpts}"
-                )
+                raise ValueError(f"Input parameter gpts has invalid value {gpts}")
 
         # kpts
         if "kpts" in params:
@@ -494,9 +512,7 @@ class SPARC(FileIOCalculator):
                 converted_sparc_params["KPOINT_GRID"] = kpts
             else:
                 # TODO: customize error
-                raise ValueError(
-                    f"Input parameter kpts has invalid value {kpts}"
-                )
+                raise ValueError(f"Input parameter kpts has invalid value {kpts}")
 
         # nbands
         if "nbands" in params:
@@ -507,9 +523,7 @@ class SPARC(FileIOCalculator):
                 converted_sparc_params["NSTATES"] = nbands
             else:
                 # TODO: customize error
-                raise ValueError(
-                    f"Input parameter nbands has invalid value {nbands}"
-                )
+                raise ValueError(f"Input parameter nbands has invalid value {nbands}")
 
         # convergence is a dict
         if "convergence" in params:
@@ -564,9 +578,7 @@ class SPARC(FileIOCalculator):
     def interpret_kpoint_input(self, atoms, **kwargs):
         return None
 
-    @deprecated(
-        "Please use SPARC.set instead for setting downsampling parameter"
-    )
+    @deprecated("Please use SPARC.set instead for setting downsampling parameter")
     def interpret_downsampling_input(self, atoms, **kwargs):
         return None
 
