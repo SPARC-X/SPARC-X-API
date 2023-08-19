@@ -62,7 +62,12 @@ class SparcBundle:
     psp_env = ["SPARC_PSP_PATH", "SPARC_PP_PATH"]
 
     def __init__(
-        self, directory, mode="r", atoms=None, label=None, psp_dir=None,
+        self,
+        directory,
+        mode="r",
+        atoms=None,
+        label=None,
+        psp_dir=None,
     ):
         self.directory = Path(directory)
         self.mode = mode.lower()
@@ -378,8 +383,7 @@ class SparcBundle:
 
             if images is not None:
                 if calc_results is not None:
-                    images = self._make_singlepoint(
-                        calc_results, images, entry)
+                    images = self._make_singlepoint(calc_results, images, entry)
                 res_images.extend(images)
 
         if isinstance(index, int):
@@ -403,9 +407,7 @@ class SparcBundle:
             sp.results.update(res)
             sp.name = "sparc"
             sp.kpts = (
-                raw_results["inpt"]
-                .get("params", {})
-                .get("KPOINT_GRID", None)
+                raw_results["inpt"].get("params", {}).get("KPOINT_GRID", None)
             )
             # There may be a better way handling the parameters...
             sp.parameters = raw_results["inpt"].get("params", {})
@@ -502,19 +504,19 @@ class SparcBundle:
                 if "ase_cell" in result:
                     atoms.set_cell(result["ase_cell"])
             else:
-                # For geopt and RELAX=2 (cell relaxation), 
+                # For geopt and RELAX=2 (cell relaxation),
                 # the positions may not be written in .geopt file
                 relax_flag = raw_results["inpt"]["params"].get("RELAX_FLAG", 0)
                 if relax_flag != 2:
                     raise ValueError(
-                            ".geopt file missing positions while RELAX!=2. "
-                            "Please check your setup ad output files."
-                        )
+                        ".geopt file missing positions while RELAX!=2. "
+                        "Please check your setup ad output files."
+                    )
                 if "ase_cell" not in result:
                     raise ValueError(
-                            "Cannot recover positions from .geopt file due to missing cell information. "
-                            "Please check your setup ad output files."
-                        )
+                        "Cannot recover positions from .geopt file due to missing cell information. "
+                        "Please check your setup ad output files."
+                    )
                 atoms.set_cell(result["ase_cell"], scale_atoms=True)
             calc_results.append(partial_result)
             ase_images.append(atoms)
