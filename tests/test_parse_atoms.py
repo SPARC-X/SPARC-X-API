@@ -26,28 +26,24 @@ def test_atoms2dict():
     mol1.set_initial_charges([0.1] * 8)
     with pytest.warns(UserWarning, match="initial charges"):
         # Charge cannot be written
-        adict = atoms_to_dict(
-            mol1, sort=False, direct=True, comments=["Ethane"]
-        )
+        adict = atoms_to_dict(mol1,
+                              sort=False,
+                              direct=True,
+                              comments=["Ethane"])
 
     # Spin
     mol2 = mol.copy()
     mol2.set_initial_magnetic_moments([1.0] * 8)
     adict = atoms_to_dict(mol2, sort=True, direct=True, comments=["Ethane"])
-    assert np.isclose(
-        adict["ion"]["atom_blocks"][0]["SPIN"], np.array([1.0, 1.0])
-    ).all()
+    assert np.isclose(adict["ion"]["atom_blocks"][0]["SPIN"],
+                      np.array([1.0, 1.0])).all()
 
     # Fix
     mol3 = mol.copy()
-    mol3.constraints = [
-        FixAtoms(
-            [
-                0,
-                1,
-            ]
-        )
-    ]
+    mol3.constraints = [FixAtoms([
+        0,
+        1,
+    ])]
     adict = atoms_to_dict(mol3, sort=True, direct=True, comments=["Ethane"])
     print(np.array(adict["ion"]["atom_blocks"][0]["RELAX"]))
     print(np.array(adict["ion"]["atom_blocks"][1]["RELAX"]))
@@ -69,26 +65,28 @@ def test_dict2atoms():
         "ion": {
             "atom_blocks": [
                 {
-                    "ATOM_TYPE": "Cu",
-                    "ATOMIC_MASS": "63.546",
-                    "PSEUDO_POT": "../../../psps/29_Cu_19_1.7_1.9_pbe_n_v1.0.psp8",
-                    "N_TYPE_ATOM": 4,
-                    "COORD_FRAC": np.array(
-                        [
-                            [0.0, 0.0, 0.0],
-                            [0.0, 0.5, 0.5],
-                            [0.5, 0.0, 0.5],
-                            [0.5, 0.5, 0.0],
-                        ]
-                    ),
-                    "RELAX": np.array(
-                        [
-                            [True, True, True],
-                            [False, False, False],
-                            [False, False, False],
-                            [False, False, False],
-                        ]
-                    ),
+                    "ATOM_TYPE":
+                    "Cu",
+                    "ATOMIC_MASS":
+                    "63.546",
+                    "PSEUDO_POT":
+                    "../../../psps/29_Cu_19_1.7_1.9_pbe_n_v1.0.psp8",
+                    "N_TYPE_ATOM":
+                    4,
+                    "COORD_FRAC":
+                    np.array([
+                        [0.0, 0.0, 0.0],
+                        [0.0, 0.5, 0.5],
+                        [0.5, 0.0, 0.5],
+                        [0.5, 0.5, 0.0],
+                    ]),
+                    "RELAX":
+                    np.array([
+                        [True, True, True],
+                        [False, False, False],
+                        [False, False, False],
+                        [False, False, False],
+                    ]),
                 },
             ],
             "comments": [
@@ -110,7 +108,10 @@ def test_dict2atoms():
                 "COORD:                      # Cartesian coordinates (au)",
                 "fractional coordinates (in lattice vector basis)",
             ],
-            "sorting": {"sort": [3, 2, 1, 0], "resort": [3, 2, 1, 0]},
+            "sorting": {
+                "sort": [3, 2, 1, 0],
+                "resort": [3, 2, 1, 0]
+            },
         },
         "inpt": {
             "params": {
@@ -133,18 +134,12 @@ def test_dict2atoms():
     assert set(atoms.constraints[0].get_indices()) == set([0, 1, 2])
 
     # Reconver the indices
-    expected_pos = (
-        np.array(
-            [
-                [0.5, 0.5, 0.0],
-                [0.5, 0.0, 0.5],
-                [0.0, 0.5, 0.5],
-                [0.0, 0.0, 0.0],
-            ]
-        )
-        * 5.5
-        * Bohr
-    )
+    expected_pos = (np.array([
+        [0.5, 0.5, 0.0],
+        [0.5, 0.0, 0.5],
+        [0.0, 0.5, 0.5],
+        [0.0, 0.0, 0.0],
+    ]) * 5.5 * Bohr)
     assert np.isclose(atoms.positions, expected_pos).all()
 
 
@@ -219,3 +214,25 @@ def test_relax_from_constraint():
     with pytest.warns(UserWarning, match="only support freezing entire"):
         # Freezing diagonal is not possible
         assert relax_from_constraint(FixedPlane(0, [1, 1, 1])) == {}
+
+
+def test_atoms_pbc_write():
+    from sparc.sparc_parsers.atoms import atoms_to_dict
+    from ase.build import molecule, bulk, mx2
+
+    h2 = molecule("H2")
+    sparc_dict = atoms_to_dict(h2)
+
+    assert sparc_dict["inpt"]["params"]["BC"] == "D D D"
+    h2.pbc = True
+
+    sparc_dict = atoms_to_dict(h2)
+    assert sparc_dict["inpt"]["params"]["BC"] == "P P P"
+
+    al = bulk("Al", cubic=True)
+    sparc_dict = atoms_to_dict(al)
+    assert sparc_dict["inpt"]["params"]["BC"] == "P P P"
+
+    mos2 = mx2("MoS2")
+    sparc_dict = atoms_to_dict(mos2)
+    assert sparc_dict["inpt"]["params"]["BC"] == "P P D"
