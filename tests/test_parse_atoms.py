@@ -1,6 +1,9 @@
 import pytest
 import numpy as np
+from pathlib import Path
 
+curdir = Path(__file__).parent
+test_output_dir = curdir / "outputs"
 
 def test_atoms2dict():
     from sparc.sparc_parsers.atoms import atoms_to_dict
@@ -216,7 +219,7 @@ def test_relax_from_constraint():
         assert relax_from_constraint(FixedPlane(0, [1, 1, 1])) == {}
 
 
-def test_atoms_pbc_write():
+def test_atoms_pbc_conversion():
     from sparc.sparc_parsers.atoms import atoms_to_dict
     from ase.build import molecule, bulk, mx2
 
@@ -236,3 +239,4 @@ def test_atoms_pbc_write():
     mos2 = mx2("MoS2")
     sparc_dict = atoms_to_dict(mos2)
     assert sparc_dict["inpt"]["params"]["BC"] == "P P D"
+    
