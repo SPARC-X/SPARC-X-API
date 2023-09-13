@@ -116,8 +116,23 @@ def atoms_to_dict(
     # use atoms object's internal PBC
     # TODO: have to use space to join the single keywords
     # breakpoint()
-    sparc_bc = " ".join(["P" if bc_ else "D" for bc_ in atoms.pbc])
-    inpt_blocks["BC"] = sparc_bc
+    sparc_bc = ["P" if bc_ else "D" for bc_ in atoms.pbc]
+    # If "sparc_bc" info is stored in the atoms object, convert again
+    if "sparc_bc" in atoms.info.keys():
+        converted_bc = []
+        stored_sparc_bc = atoms.info["sparc_bc"]
+        for bc1, bc2 in zip(sparc_bc, stored_sparc_bc):
+            # We store helix and cyclic BCs as non-periodic in ase-atoms
+            print(bc1, bc2)
+            if ((bc1 == "D") and (bc2 != "P")) \
+               or ((bc1 == "P") and (bc2 == "P")):
+                converted_bc.append(bc2)
+            else:
+                raise ValueError("Boundary conditions stored in ASE "
+                                 "atoms.pbc and atoms.info['sparc_bc'] "
+                                 "are different!")
+        sparc_bc = converted_bc
+    inpt_blocks["BC"] = " ".join(sparc_bc)
 
     if not isinstance(comments, list):
         comments = comments.split("\n")
@@ -204,10 +219,12 @@ def dict_to_atoms(data_dict):
     for bc_ in sparc_bc:
         if bc_.upper() in ["C", "H"]:
             warn((
-                "Converting SPARC's helix or cyclic boundary conditions "
-                "into ASE atoms is not yet supported. The boundary condition will be set to periodic"
+                "Parsing SPARC's helix or cyclic boundary conditions"
+                " into ASE atoms is only partially supported. "
+                "Saving the atoms object into other format may cause "
+                "data-loss of the SPARC-specific BC information."
             ))
-            pbc = True
+            pbc = False         # Do not confuse ase-gui, we'll manually handle the visualization
         elif bc_.upper() == "D":
             pbc = False
         elif bc_.upper() == "P":
@@ -215,6 +232,7 @@ def dict_to_atoms(data_dict):
         else:
             raise ValueError("Unknown BC keyword values!")
         ase_bc.append(pbc)
+    atoms.info["sparc_bc"] = [bc_.upper() for bc_ in sparc_bc]
     atoms.pbc = ase_bc
 
     return atoms
