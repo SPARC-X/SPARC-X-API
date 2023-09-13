@@ -240,3 +240,5 @@ def test_atoms_pbc_conversion():
     sparc_dict = atoms_to_dict(mos2)
     assert sparc_dict["inpt"]["params"]["BC"] == "P P D"
     
+def test_cyclix_read():
+    

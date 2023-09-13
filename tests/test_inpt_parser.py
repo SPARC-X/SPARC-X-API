@@ -84,7 +84,7 @@ def test_cell_conversion():
     from ase.units import Bohr, Angstrom
 
     # 0. invalid
-    # 1. invalid
+    # 1. valid, equivalent to LATVEC = diag(1.5, 1.5, 1.5)
     data_dict = {
         "inpt": {
             "params": {
@@ -92,8 +92,8 @@ def test_cell_conversion():
             }
         }
     }
-    with pytest.raises(KeyError):
-        _inpt_cell_to_ase_cell(data_dict)
+    cell = _inpt_cell_to_ase_cell(data_dict)
+    assert np.isclose(cell, np.eye(3) * 1.5 * Bohr).all()
 
     # 1. invalid
     data_dict = {

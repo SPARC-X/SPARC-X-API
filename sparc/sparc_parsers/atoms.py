@@ -112,27 +112,11 @@ def atoms_to_dict(
     # TODO: what if atoms does not have cell?
     cell_au = atoms.cell / Bohr
     inpt_blocks = {"LATVEC": cell_au, "LATVEC_SCALE": [1.0, 1.0, 1.0]}
-    # Add PBC support @2023.08.31
-    # use atoms object's internal PBC
+
+    # Step 5: retrieve boundary condition information
     # TODO: have to use space to join the single keywords
     # breakpoint()
-    sparc_bc = ["P" if bc_ else "D" for bc_ in atoms.pbc]
-    # If "sparc_bc" info is stored in the atoms object, convert again
-    if "sparc_bc" in atoms.info.keys():
-        converted_bc = []
-        stored_sparc_bc = atoms.info["sparc_bc"]
-        for bc1, bc2 in zip(sparc_bc, stored_sparc_bc):
-            # We store helix and cyclic BCs as non-periodic in ase-atoms
-            print(bc1, bc2)
-            if ((bc1 == "D") and (bc2 != "P")) \
-               or ((bc1 == "P") and (bc2 == "P")):
-                converted_bc.append(bc2)
-            else:
-                raise ValueError("Boundary conditions stored in ASE "
-                                 "atoms.pbc and atoms.info['sparc_bc'] "
-                                 "are different!")
-        sparc_bc = converted_bc
-    inpt_blocks["BC"] = " ".join(sparc_bc)
+    inpt_blocks.update(atoms_bc_to_sparc(atoms))
 
     if not isinstance(comments, list):
         comments = comments.split("\n")
@@ -146,6 +130,8 @@ def atoms_to_dict(
     }
     inpt_data = {"params": inpt_blocks, "comments": []}
     return {"ion": ion_data, "inpt": inpt_data}
+
+
 
 
 def dict_to_atoms(data_dict):
@@ -213,27 +199,8 @@ def dict_to_atoms(data_dict):
     # TODO: move to a more modular function
     # TODO: Datatype for BC in the API, should it be string, or string array?
     sparc_bc = new_data_dict["inpt"]["params"].get("BC", "P P P").split()
-    # TODO: What about "H" and "C" keywords?
-    ase_bc = []
-    # print(sparc_bc, type(sparc_bc))
-    for bc_ in sparc_bc:
-        if bc_.upper() in ["C", "H"]:
-            warn((
-                "Parsing SPARC's helix or cyclic boundary conditions"
-                " into ASE atoms is only partially supported. "
-                "Saving the atoms object into other format may cause "
-                "data-loss of the SPARC-specific BC information."
-            ))
-            pbc = False         # Do not confuse ase-gui, we'll manually handle the visualization
-        elif bc_.upper() == "D":
-            pbc = False
-        elif bc_.upper() == "P":
-            pbc = True
-        else:
-            raise ValueError("Unknown BC keyword values!")
-        ase_bc.append(pbc)
-    atoms.info["sparc_bc"] = [bc_.upper() for bc_ in sparc_bc]
-    atoms.pbc = ase_bc
+    twist_angle = float(new_data_dict["inpt"]["params"].get("TWIST_ANGLE", 0))
+    modify_atoms_bc(atoms, sparc_bc, twist_angle)
 
     return atoms
 
@@ -357,3 +324,65 @@ def relax_from_all_constraints(constraints, natoms):
             # always make it more constrained
             relax[atom_index] = list(np.bitwise_and(relax[atom_index], rdims))
     return relax
+
+def modify_atoms_bc(atoms, sparc_bc, twist_angle=0):
+    """Modify the atoms boundary conditions in-place from the bc information
+    sparc_bc is a keyword from inpt
+    twist_angle is the helix twist angle in inpt
+
+    conversion rules:
+    BC: P --> pbc=True
+    BC: D, H, C --> pbc=False
+    """
+    ase_bc = []
+    # print(sparc_bc, type(sparc_bc))
+    for bc_ in sparc_bc:
+        if bc_.upper() in ["C", "H"]:
+            warn((
+                "Parsing SPARC's helix or cyclic boundary conditions"
+                " into ASE atoms is only partially supported. "
+                "Saving the atoms object into other format may cause "
+                "data-loss of the SPARC-specific BC information."
+            ))
+            pbc = False         # Do not confuse ase-gui, we'll manually handle the visualization
+        elif bc_.upper() == "D":
+            pbc = False
+        elif bc_.upper() == "P":
+            pbc = True
+        else:
+            raise ValueError("Unknown BC keyword values!")
+        ase_bc.append(pbc)
+    atoms.info["sparc_bc"] = [bc_.upper() for bc_ in sparc_bc]
+    if twist_angle != 0:
+        atoms.info["twist_angle (rad/Bohr)"] = twist_angle
+    atoms.pbc = ase_bc
+    return
+
+def atoms_bc_to_sparc(atoms):
+    """Use atoms' internal pbc and info to construct inpt blocks
+
+    Returns:
+    a dict containing 'BC' or 'TWIST_ANGLE'
+    """
+    sparc_bc = ["P" if bc_ else "D" for bc_ in atoms.pbc]
+    
+    # If "sparc_bc" info is stored in the atoms object, convert again
+    if "sparc_bc" in atoms.info.keys():
+        converted_bc = []
+        stored_sparc_bc = atoms.info["sparc_bc"]
+        for bc1, bc2 in zip(sparc_bc, stored_sparc_bc):
+            # We store helix and cyclic BCs as non-periodic in ase-atoms
+            print(bc1, bc2)
+            if ((bc1 == "D") and (bc2 != "P")) \
+               or ((bc1 == "P") and (bc2 == "P")):
+                converted_bc.append(bc2)
+            else:
+                raise ValueError("Boundary conditions stored in ASE "
+                                 "atoms.pbc and atoms.info['sparc_bc'] "
+                                 "are different!")
+        sparc_bc = converted_bc
+    block = {"BC": " ".join(sparc_bc)}
+    if "twist_angle" in atoms.info.keys():
+        block["TWIST_ANGLE"] = atoms.info["twist_angle (rad/Bohr)"]
+    return block
+    
