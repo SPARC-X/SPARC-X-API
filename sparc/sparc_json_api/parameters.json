@@ -1594,7 +1594,7 @@
    "example": "RELAX_FLAG: 1",
    "description": "Flag for performing structural relaxation. 0 means no structural relaxation. 1 represents relaxation of atom positions. 2 represents optimization of volume with the fractional coordinates of the atoms fixed. 3 represents full optimization of the cell i.e., both atoms and cell volume are relaxed",
    "remark": "This flag should not be specified if MD_FLAG is set to 1.",
-   "allow_bool_input": true,
+   "allow_bool_input": false,
    "default_remark": "0",
    "description_raw": "Flag for performing structural relaxation. $0$ means no structural relaxation. $1$ represents relaxation of atom positions. $2$ represents optimization of volume with the fractional coordinates of the atoms fixed. $3$ represents full optimization of the cell i.e., both atoms and cell volume are relaxed",
    "remark_raw": "This flag should not be specified if \\hyperlink{MD_FLAG}{\\texttt{MD\\_FLAG}} is set to $1$.",

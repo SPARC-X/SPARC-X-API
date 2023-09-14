@@ -74,8 +74,14 @@ def _read_static_block(raw_block):
         name = "free energy"
     elif "Atomic forces" in header_name:
         name = "forces"
-    elif "Stress" in header_name:
+    elif "Stress (GPa)" in header_name:
         name = "stress"
+    elif "Stress equiv." in header_name:
+        name = "stress_equiv"
+    elif "Stress (Ha/Bohr)" in header_name:
+        name = "stress_1d"
+    elif "Stress (Ha/Bohr**2)" in header_name:
+        name = "stress_2d"
     elif "Fractional coordinates" in header_name:
         # Fractional coordinates of Si -- > name=coord_frac symbol="Si"
         name = "coord_frac"
@@ -125,6 +131,7 @@ def read_static_blocks(raw_blocks):
             value = raw_value * Hartree / Bohr
         elif name == "stress":
             # Stress is in eV/Ang^3, may need to convert to Virial later when cell is known
+            # For low-dimension stress info, use stress_equiv
             stress_ev_a3 = raw_value * GPa
             if stress_ev_a3.shape != (3, 3):
                 raise ValueError("Stress from static file is not a 3x3 matrix!")
@@ -140,6 +147,14 @@ def read_static_blocks(raw_blocks):
                     stress_ev_a3[0, 1],
                 ]
             )
+        elif name == "stress_equiv":
+            # Only store the size up to the max. periodic directions,
+            # let the atom parser decide how to transform the matrix
+            value = raw_value * GPa
+        elif name == "stress_1d":
+            value = raw_value * Hartree / Bohr
+        elif name == "stress_2d":
+            value = raw_value * Hartree / (Bohr**2)
 
         # Non-frac coord
         if value is not None:
