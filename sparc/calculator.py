@@ -220,12 +220,14 @@ class SPARC(FileIOCalculator):
 
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         """Perform a calculation step"""
-        # For v1.0.0, we'll only allow pbc=True to make ourselves easier
-        # TODO: need to have more flexible support for pbc types and check_state
-        if not all(atoms.pbc):
-            raise NotImplementedError(
-                "Non-pbc atoms input has not been tested in the api. Please use pbc=True for now."
-            )
+        # Check if the user accidentally provides atoms unit cell without vacuum
+
+        if atoms and any([atoms.cell.cellpar()[:3] == 0]):
+            # TODO: choose a better error name
+            msg = "Cannot setup SPARC calculation because at least one of the lattice dimension is zero!"
+            if any([bc_ is False for bc_ in atoms.pbc]):
+                msg += " Please add a vacuum in the non-periodic direction of your input structure."
+            raise ValueError(msg)
         Calculator.calculate(self, atoms, properties, system_changes)
         self.write_input(self.atoms, properties, system_changes)
         self.execute()
@@ -244,7 +246,15 @@ class SPARC(FileIOCalculator):
                     self.atoms.get_initial_magnetic_moments()
                 )
 
-            # atoms = self.atoms.copy()
+    def get_stress(self, atoms=None):
+        """Warn user the dimensionality change when using stress"""
+        if "stress_equiv" in self.results:
+            raise NotImplementedError(
+                "You're requesting stress in a low-dimensional system. Please use `calc.results['stress_equiv']` instead!"
+            )
+        return super().get_stress(atoms)
+
+        # atoms = self.atoms.copy()
 
     # def update_atoms(self, atoms):
     #     """Update atoms after calculation if the positions are changed

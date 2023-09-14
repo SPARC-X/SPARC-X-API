@@ -430,6 +430,9 @@ class SparcBundle:
         if "stress" in static_results:
             calc_results["stress"] = static_results["stress"]
 
+        if "stress_equiv" in static_results:
+            calc_results["stress_equiv"] = static_results["stress_equiv"]
+
         atoms = self.init_atoms.copy()
         if "atoms" in static_results:
             atoms_dict = static_results["atoms"]
