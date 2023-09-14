@@ -82,10 +82,7 @@ def test_pseudo_infer():
     with pytest.raises(NoMatchingPseudopotential):
         infer_pseudo_path("As", ".")
 
-    assert (
-        infer_pseudo_path("As", psp_dir).name
-        == "33_As_15_1.8_2.1_pbe_n_v1.0.psp8"
-    )
+    assert infer_pseudo_path("As", psp_dir).name == "33_As_15_1.8_2.1_pbe_n_v1.0.psp8"
 
     with pytest.raises(NoMatchingPseudopotential):
         infer_pseudo_path("Hf", psp_dir)

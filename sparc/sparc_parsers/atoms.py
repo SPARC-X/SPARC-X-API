@@ -2,21 +2,20 @@
 and vice versa
 """
 
-import numpy as np
+from copy import deepcopy
+from warnings import warn
 
-from ase import Atoms, Atom
+import numpy as np
+from ase import Atom, Atoms
+from ase.constraints import FixAtoms, FixedLine, FixedPlane
 from ase.units import Bohr
 
-# from .sparc_parsers.ion import read_ion, write_ion
-
-from .ion import _ion_coord_to_ase_pos
 from .inpt import _inpt_cell_to_ase_cell
+from .ion import _ion_coord_to_ase_pos
 from .pseudopotential import find_pseudo_path
 from .utils import make_reverse_mapping
-from ase.constraints import FixAtoms, FixedLine, FixedPlane
 
-from warnings import warn
-from copy import deepcopy
+# from .sparc_parsers.ion import read_ion, write_ion
 
 
 def atoms_to_dict(
@@ -117,6 +116,11 @@ def atoms_to_dict(
     cell_au = atoms.cell / Bohr
     inpt_blocks = {"LATVEC": cell_au, "LATVEC_SCALE": [1.0, 1.0, 1.0]}
 
+    # Step 5: retrieve boundary condition information
+    # TODO: have to use space to join the single keywords
+    # breakpoint()
+    inpt_blocks.update(atoms_bc_to_sparc(atoms))
+
     if not isinstance(comments, list):
         comments = comments.split("\n")
     ion_data = {
@@ -163,9 +167,7 @@ def dict_to_atoms(data_dict):
         atoms_count += len(positions)
 
     if "sorting" in data_dict["ion"]:
-        resort = data_dict["ion"]["sorting"].get(
-            "resort", np.arange(len(atoms))
-        )
+        resort = data_dict["ion"]["sorting"].get("resort", np.arange(len(atoms)))
         # Resort may be None
         if len(resort) == 0:
             resort = np.arange(len(atoms))
@@ -178,9 +180,9 @@ def dict_to_atoms(data_dict):
             "Length of resort mapping is different from the number of atoms!"
         )
     # TODO: check if this mapping is correct
-    print(relax_dict)
+    # print(relax_dict)
     sort = make_reverse_mapping(resort)
-    print(resort, sort)
+    # print(resort, sort)
     sorted_relax_dict = {sort[i]: r for i, r in relax_dict.items()}
     # Now we do a sort on the atom indices. The atom positions read from
     # .ion correspond to the `sort` and we use `resort` to transform
@@ -191,8 +193,13 @@ def dict_to_atoms(data_dict):
     constraints = constraints_from_relax(sorted_relax_dict)
     atoms.constraints = constraints
 
-    # TODO: set pbc and relax
-    atoms.pbc = True
+    # @2023.08.31 add support for PBC
+    # TODO: move to a more modular function
+    # TODO: Datatype for BC in the API, should it be string, or string array?
+    sparc_bc = new_data_dict["inpt"]["params"].get("BC", "P P P").split()
+    twist_angle = float(new_data_dict["inpt"]["params"].get("TWIST_ANGLE", 0))
+    modify_atoms_bc(atoms, sparc_bc, twist_angle)
+
     return atoms
 
 
@@ -261,15 +268,11 @@ def constraints_from_relax(relax_dict):
         # DegreeF == 1 --> move along line, fix line
         elif degree_freedom == 1:
             for ind in indices:
-                cons_list.append(
-                    FixedLine(ind, np.array(relax_type).astype(int))
-                )
+                cons_list.append(FixedLine(ind, np.array(relax_type).astype(int)))
         # DegreeF == 1 --> move along line, fix plane
         elif degree_freedom == 2:
             for ind in indices:
-                cons_list.append(
-                    FixedPlane(ind, (~np.array(relax_type)).astype(int))
-                )
+                cons_list.append(FixedPlane(ind, (~np.array(relax_type)).astype(int)))
     return cons_list
 
 
@@ -323,3 +326,71 @@ def relax_from_all_constraints(constraints, natoms):
             # always make it more constrained
             relax[atom_index] = list(np.bitwise_and(relax[atom_index], rdims))
     return relax
+
+
+def modify_atoms_bc(atoms, sparc_bc, twist_angle=0):
+    """Modify the atoms boundary conditions in-place from the bc information
+    sparc_bc is a keyword from inpt
+    twist_angle is the helix twist angle in inpt
+
+    conversion rules:
+    BC: P --> pbc=True
+    BC: D, H, C --> pbc=False
+    """
+    ase_bc = []
+    # print(sparc_bc, type(sparc_bc))
+    for bc_ in sparc_bc:
+        if bc_.upper() in ["C", "H"]:
+            warn(
+                (
+                    "Parsing SPARC's helix or cyclic boundary conditions"
+                    " into ASE atoms is only partially supported. "
+                    "Saving the atoms object into other format may cause "
+                    "data-loss of the SPARC-specific BC information."
+                )
+            )
+            pbc = (
+                False  # Do not confuse ase-gui, we'll manually handle the visualization
+            )
+        elif bc_.upper() == "D":
+            pbc = False
+        elif bc_.upper() == "P":
+            pbc = True
+        else:
+            raise ValueError("Unknown BC keyword values!")
+        ase_bc.append(pbc)
+    atoms.info["sparc_bc"] = [bc_.upper() for bc_ in sparc_bc]
+    if twist_angle != 0:
+        atoms.info["twist_angle (rad/Bohr)"] = twist_angle
+    atoms.pbc = ase_bc
+    return
+
+
+def atoms_bc_to_sparc(atoms):
+    """Use atoms' internal pbc and info to construct inpt blocks
+
+    Returns:
+    a dict containing 'BC' or 'TWIST_ANGLE'
+    """
+    sparc_bc = ["P" if bc_ else "D" for bc_ in atoms.pbc]
+
+    # If "sparc_bc" info is stored in the atoms object, convert again
+    if "sparc_bc" in atoms.info.keys():
+        converted_bc = []
+        stored_sparc_bc = atoms.info["sparc_bc"]
+        for bc1, bc2 in zip(sparc_bc, stored_sparc_bc):
+            # We store helix and cyclic BCs as non-periodic in ase-atoms
+            print(bc1, bc2)
+            if ((bc1 == "D") and (bc2 != "P")) or ((bc1 == "P") and (bc2 == "P")):
+                converted_bc.append(bc2)
+            else:
+                raise ValueError(
+                    "Boundary conditions stored in ASE "
+                    "atoms.pbc and atoms.info['sparc_bc'] "
+                    "are different!"
+                )
+        sparc_bc = converted_bc
+    block = {"BC": " ".join(sparc_bc)}
+    if "twist_angle" in atoms.info.keys():
+        block["TWIST_ANGLE"] = atoms.info["twist_angle (rad/Bohr)"]
+    return block

@@ -16,9 +16,7 @@ l.write_input(atoms=atoms, h=0.1, spin_typ=1, pseudo_dir=".", SPIN_TYP=1)
 
 print("input writing functional")
 # check reading and writing .ion files
-atoms.set_constraint(
-    [FixAtoms([0]), FixedLine(1, [0, 1, 0]), FixedPlane(2, [1, 0, 0])]
-)
+atoms.set_constraint([FixAtoms([0]), FixedLine(1, [0, 1, 0]), FixedPlane(2, [1, 0, 0])])
 write_ion(open("in1.ion", "w"), atoms, pseudo_dir=".")
 recovered_atoms = read_ion(open("in1.ion", "r"))
 assert compare_atoms(atoms, recovered_atoms) == []

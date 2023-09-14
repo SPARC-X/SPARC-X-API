@@ -53,7 +53,5 @@ def test_multi_file_geopt_read():
     assert len(images) == 7
 
     last = read_sparc(bundle, index=-1, include_all_files=True)
-    assert np.isclose(
-        last.get_potential_energy(), -9.057488887961474 * Hartree, 1e-4
-    )
+    assert np.isclose(last.get_potential_energy(), -9.057488887961474 * Hartree, 1e-4)
     return

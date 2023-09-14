@@ -50,7 +50,7 @@ def optimize_ase_lbfgs():
     )
     atoms.calc = calc
     opt = BFGS(atoms)
-    #breakpoint()
+    # breakpoint()
     opt.run(fmax=0.02)
     e_fin = atoms.get_potential_energy()
     f_fin = atoms.get_forces()

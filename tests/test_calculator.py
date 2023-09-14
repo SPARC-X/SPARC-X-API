@@ -48,9 +48,7 @@ def test_conflict_param():
             calc.write_input(atoms)
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        calc = SPARC(
-            h=0.2, directory=tmpdir, FD_GRID=[25, 25, 25], MESH_SPACING=0.4
-        )
+        calc = SPARC(h=0.2, directory=tmpdir, FD_GRID=[25, 25, 25], MESH_SPACING=0.4)
         # FD_GRID and ECUT are conflict, but only detected during the writing
         with pytest.raises(Exception):
             calc.write_input(atoms)

@@ -69,8 +69,7 @@ def test_write_inpt():
             "PRINT_DENSITY",
         ):
             assert (
-                data_dict["inpt"]["params"][key]
-                == new_data_dict["inpt"]["params"][key]
+                data_dict["inpt"]["params"][key] == new_data_dict["inpt"]["params"][key]
             )
         for key in ("LATVEC", "LATVEC_SCALE"):
             assert np.isclose(
@@ -84,7 +83,7 @@ def test_cell_conversion():
     from ase.units import Bohr, Angstrom
 
     # 0. invalid
-    # 1. invalid
+    # 1. valid, equivalent to LATVEC = diag(1.5, 1.5, 1.5)
     data_dict = {
         "inpt": {
             "params": {
@@ -92,14 +91,12 @@ def test_cell_conversion():
             }
         }
     }
-    with pytest.raises(KeyError):
-        _inpt_cell_to_ase_cell(data_dict)
+    cell = _inpt_cell_to_ase_cell(data_dict)
+    assert np.isclose(cell, np.eye(3) * 1.5 * Bohr).all()
 
     # 1. invalid
     data_dict = {
-        "inpt": {
-            "params": {"CELL": [1.5, 1.5, 1.5], "LATVEC_SCALE": [1.5, 1.5, 1.5]}
-        }
+        "inpt": {"params": {"CELL": [1.5, 1.5, 1.5], "LATVEC_SCALE": [1.5, 1.5, 1.5]}}
     }
     with pytest.raises(ValueError):
         _inpt_cell_to_ase_cell(data_dict)
@@ -135,3 +132,14 @@ def test_cell_conversion():
     cell = _inpt_cell_to_ase_cell(data_dict)
 
     assert np.isclose(cell, np.diag([8, 8, 9]) * Bohr).all()
+
+    # 6. valid, equivalent to LATVEC = diag(1.5, 1.5, 1.5)
+    data_dict = {
+        "inpt": {
+            "params": {
+                "LATVEC_SCALE": [1.5, 1.5, 1.5],
+            }
+        }
+    }
+    cell = _inpt_cell_to_ase_cell(data_dict)
+    assert np.isclose(cell, np.eye(3) * 1.5 * Bohr).all()

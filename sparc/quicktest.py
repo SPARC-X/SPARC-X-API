@@ -120,9 +120,7 @@ def main():
     results["Pseudopotential"] = psp_test()
     results["JSON API"] = api_test()
     results["SPARC command"] = command_test()
-    results["Calculation"] = (
-        False if results["SPARC command"] is False else calc_test()
-    )
+    results["Calculation"] = False if results["SPARC command"] is False else calc_test()
 
     cprint(
         "\nSummary of test results",

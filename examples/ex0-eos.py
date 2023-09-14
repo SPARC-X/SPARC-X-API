@@ -15,9 +15,7 @@ def main():
     calc = SPARC(h=0.25, kpts=(3, 3, 3), xc="pbe", directory="ex0-eos")
     vol = atoms.get_volume()
     atoms.calc = calc
-    eos = calculate_eos(
-        atoms, npoints=5, eps=0.05, trajectory="al-eos-sparc.traj"
-    )
+    eos = calculate_eos(atoms, npoints=5, eps=0.05, trajectory="al-eos-sparc.traj")
     print("Original volume: Ang^3", vol)
     v, e, B = eos.fit()
     print("Fitted volume (Ang^3), energy (eV), modulus (eV/Ang^3)")

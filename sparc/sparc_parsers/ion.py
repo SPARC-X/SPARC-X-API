@@ -53,9 +53,7 @@ def _read_ion(fileobj):
     sort, resort, new_comments = _read_sort_comment(comments)
 
     # find the index for all atom type lines. They should be at the top of their block
-    atom_type_bounds = [i for i, x in enumerate(data) if "ATOM_TYPE" in x] + [
-        len(data)
-    ]
+    atom_type_bounds = [i for i, x in enumerate(data) if "ATOM_TYPE" in x] + [len(data)]
     atom_blocks = [
         read_block_input(data[start:end], validator=defaultAPI)
         for start, end in zip(atom_type_bounds[:-1], atom_type_bounds[1:])
@@ -131,9 +129,7 @@ def _write_ion(
             val = block.get(key, None)
             # print(key, val)
             if (key not in ["RELAX", "COORD", "COORD_FRAC"]) and (val is None):
-                raise ValueError(
-                    f"Key {key} is not provided! Abort writing ion file"
-                )
+                raise ValueError(f"Key {key} is not provided! Abort writing ion file")
             # TODO: change the API version
             if val is None:
                 continue
@@ -225,7 +221,5 @@ def _read_sort_comment(lines):
             "ASE atoms resort comment block is not properly formatted, this may cause data loss!"
         )
     sort = make_reverse_mapping(resort)
-    assert set(sort) == set(
-        resort
-    ), "Sort and resort info are of different length!"
+    assert set(sort) == set(resort), "Sort and resort info are of different length!"
     return sort, resort, new_lines
