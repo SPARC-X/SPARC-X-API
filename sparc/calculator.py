@@ -222,7 +222,7 @@ class SPARC(FileIOCalculator):
         """Perform a calculation step"""
         # Check if the user accidentally provides atoms unit cell without vacuum
 
-        if atoms and any([atoms.cell.cellpar()[:3] == 0]):
+        if atoms and np.any(atoms.cell.cellpar()[:3] == 0):
             # TODO: choose a better error name
             msg = "Cannot setup SPARC calculation because at least one of the lattice dimension is zero!"
             if any([bc_ is False for bc_ in atoms.pbc]):
