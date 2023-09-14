@@ -1118,7 +1118,7 @@
   "NPT_SCALE_VECS": {
    "symbol": "NPT_SCALE_VECS",
    "label": "NPT_SCALE_VECS",
-   "type": "integer",
+   "type": "integer array",
    "default": 1,
    "unit": "No unit",
    "example": "NPT_SCALE_VECS: 2",
