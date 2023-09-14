@@ -129,6 +129,7 @@ def _read_scfs(contents):
 
 
     """
+    # import pdb; pdb.set_trace()
     convergence_info = _get_block_text(
         contents, r"Self Consistent Field \(SCF.*?\)"
     )
@@ -146,25 +147,45 @@ def _read_scfs(contents):
         conv, res = step
         # TODO: add support for convergence fields
         conv_lines = conv.splitlines()
+        # conv_header is normally 4-column table
         conv_header = re.split(r"\s{3,}", conv_lines[0])
-        # In some cases the ionic step ends with a warning message
-        # To be flexible, we only extract lines starting with a number
-        conv_array = np.genfromtxt(
-            [l for l in conv_lines if l.split()[0].isdigit()], dtype=float
-        )
-        # TODO: the meaning of the header should me split to the width
 
-        conv_dict = {}
-        for i, field in enumerate(conv_header):
-            field = field.split("(")[0].strip().lower()
-            value = conv_array[:, i]
-            if "free energy" in field:
-                value *= Hartree
-            conv_dict[field] = value
+        scf_sub_steps = []
+        # For ground-state calculations, the output will be only 1 block
+        # For hybrid (HSE/PBE0) calculations the EXX loops will also be included
+        # General rule: we search for the line "Total number of SCF: N", read back N(+1) lines
+        for lino, line in enumerate(conv_lines):
+            if "Total number of SCF:" not in line:
+                continue
+            # import pdb; pdb.set_trace()
+            scf_num = int(line.split(":")[-1])
+            conv_array = np.genfromtxt(
+                [l for l in conv_lines[lino - scf_num: lino] if l.split()[0].isdigit()],
+                dtype=float,
+                ndmin=2,
+            )
+            conv_dict = {}
+            for i, field in enumerate(conv_header):
+                field = field.strip()
+                value = conv_array[:, i]
+                # TODO: re-use the value conversion function in res part
+                if "Ha/atom" in field:
+                    value *= Hartree
+                    field.replace("Ha/atom", "eV/atom")
+                if "Iteration" in field:
+                    value = value.astype(int)
+                conv_dict[field] = value
+            # Determine if the current block is a ground-state or EXX
+            name_line = conv_lines[lino - scf_num - 1]
+            if "Iteration" in name_line:
+                name = "ground state"
+            else:
+                name = name_line
+                
+            conv_dict["name"] = name
+            scf_sub_steps.append(conv_dict)
 
-        current_step["convergence"] = conv_dict
-        # TODO: what is this?
-        {"header": conv_header, "values": conv_array}
+        current_step["convergence"] = scf_sub_steps
 
         res = res.splitlines()
         for line in res:
