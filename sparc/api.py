@@ -89,8 +89,13 @@ class SparcAPI:
                 float(input)
                 return True
             except (TypeError, ValueError):
-                return False
+                try:
+                    float(input.split()[0])
+                    return True
+                except Exception:
+                    return False
         elif "array" in dtype:
+            # import pdb; pdb.set_trace()
             if is_input_string:
                 if ("." in input) and ("integer" in dtype):
                     warn(
@@ -102,7 +107,8 @@ class SparcAPI:
                         )
                     )
                 try:
-                    arr = np.genfromtxt(input.splitlines(), dtype=float)
+                    # import pdb; pdb.set_trace()
+                    arr = np.genfromtxt(input.splitlines(), dtype=float, ndmin=1)
                     # In valid input with nan
                     if np.isnan(arr).any():
                         arr = np.array(0.0)
@@ -110,7 +116,7 @@ class SparcAPI:
                     arr = np.array(0.0)
             else:
                 try:
-                    arr = np.asarray(input)
+                    arr = np.atleast_1d(np.asarray(input))
                     if (arr.dtype not in (int, bool)) and ("integer" in dtype):
                         warn(
                             (
@@ -123,6 +129,9 @@ class SparcAPI:
                 except Exception:
                     arr = np.array(0.0)
             return len(arr.shape) > 0
+        # elif dtype == "other":
+        #     # Any "other"-type inputs should be provided only using string
+        #     return is_input_string
         else:
             raise ValueError(f"Data type {dtype} is not supported!")
 
@@ -131,6 +140,8 @@ class SparcAPI:
 
         # Special case, the string may be a multiline string-array!
         if isinstance(string, list):
+            # Make sure there is a line break at the end, for cases like ["2."]
+            string.append("")
             string = [s.strip() for s in string]
             string = "\n".join(string)
 
@@ -152,15 +163,25 @@ class SparcAPI:
             if allow_bool_input:
                 value = bool(value)
         elif dtype == "double":
-            value = float(string)
+            # Some inputs, like TARGET_PRESSURE, may be accepted with a unit
+            # like 0.0 GPa. Only accept the first part
+            try:
+                value = float(string)
+            except ValueError as e:
+                try:
+                    value = float(string.split()[0])
+                except Exception:
+                    raise e
         elif dtype == "integer array":
-            value = np.genfromtxt(string.splitlines(), dtype=int)
+            value = np.genfromtxt(string.splitlines(), dtype=int, ndmin=1)
             if allow_bool_input:
                 value = value.astype(bool)
         elif dtype == "double array":
-            value = np.genfromtxt(string.splitlines(), dtype=float)
-        else:
+            value = np.genfromtxt(string.splitlines(), dtype=float, ndmin=1)
+        elif dtype == "other":
+            value = string
             # should not happen since validate_input has gatekeeping
+        else:
             raise ValueError(f"Unsupported type {dtype}")
 
         return value
@@ -189,6 +210,10 @@ class SparcAPI:
             string = "{:.14f}".format(float(value))
         elif dtype in ("integer array", "double array"):
             string = _array_to_string(value, dtype)
+        elif dtype == "other":
+            if not is_input_string:
+                raise ValueError("Only support string value when datatype is other")
+            string = value
         else:
             # should not happen since validate_input has gatekeeping
             raise ValueError(f"Unsupported type {dtype}")
