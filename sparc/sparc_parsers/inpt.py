@@ -83,26 +83,26 @@ def _inpt_cell_to_ase_cell(data_dict):
     # if "CELL" in inpt_blocks:
     #     cell = np.eye(inpt_blocks["CELL"]) * Bohr
     if "LATVEC" not in inpt_blocks:
-        if "CELL" in inpt_blocks:
-            lat_array = np.eye(3)
+        if ("CELL" in inpt_blocks) or ("LATVEC_SCALE" in inpt_blocks):
+            lat_array = np.eye(3) * Bohr
         else:
-            raise KeyError("LATVEC is missing in inpt file and no CELL provided!")
+            raise KeyError("LATVEC is missing in inpt file and no CELL / LATVEC_SCALE provided!")
     else:
         lat_array = np.array(inpt_blocks["LATVEC"]) * Bohr
+    
     # LATVEC_SCALE: just multiplies
     if "LATVEC_SCALE" in inpt_blocks:
-        scale = inpt_blocks["LATVEC_SCALE"]
-        # TODO: Is this correct?
+        scale = np.array(inpt_blocks["LATVEC_SCALE"])
         cell = (lat_array.T * scale).T
 
     # CELL: the lengths are in the LATVEC directions
     # TODO: the documentation about CELL is a bit messy. Is CELL always orthogonal?
     # Anyway the lat_array when CELL is none should be ok
     elif "CELL" in inpt_blocks:
-        scale = np.array(inpt_blocks["CELL"]) * Bohr
+        scale = np.array(inpt_blocks["CELL"])
         unit_lat_array = lat_array / np.linalg.norm(
             lat_array, axis=1, keepdims=True
-        )
+        ) * Bohr
         cell = (unit_lat_array.T * scale).T
     else:
         cell = lat_array

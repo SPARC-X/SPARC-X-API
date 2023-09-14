@@ -135,3 +135,14 @@ def test_cell_conversion():
     cell = _inpt_cell_to_ase_cell(data_dict)
 
     assert np.isclose(cell, np.diag([8, 8, 9]) * Bohr).all()
+
+    # 6. valid, equivalent to LATVEC = diag(1.5, 1.5, 1.5)
+    data_dict = {
+        "inpt": {
+            "params": {
+                "LATVEC_SCALE": [1.5, 1.5, 1.5],
+            }
+        }
+    }
+    cell = _inpt_cell_to_ase_cell(data_dict)
+    assert np.isclose(cell, np.eye(3) * 1.5 * Bohr).all()
