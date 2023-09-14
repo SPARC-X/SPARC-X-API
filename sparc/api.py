@@ -30,8 +30,7 @@ class SparcAPI:
         parameter = parameter.upper()
         if parameter not in self.parameters.keys():
             raise KeyError(
-                f"Parameter {parameter} is not known to "
-                f"SPARC {self.sparc_version}!"
+                f"Parameter {parameter} is not known to " f"SPARC {self.sparc_version}!"
             )
         return self.parameters[parameter]
 
@@ -206,9 +205,7 @@ def _array_to_string(arr, format):
         fmt = "%d"
     elif format in ("double array", "double"):
         fmt = "%.14f"
-    np.savetxt(
-        buf, arr, delimiter=" ", fmt=fmt, header="", footer="", newline="\n"
-    )
+    np.savetxt(buf, arr, delimiter=" ", fmt=fmt, header="", footer="", newline="\n")
     # Return the string output of the buffer with
     # whitespaces removed
     return buf.getvalue().strip()

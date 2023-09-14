@@ -35,8 +35,11 @@ def read_block_input(block, validator=None):
     use_validator = True if validator else False
     for line in block:
         if ":" not in line:
-            # no key, assume multiline value
-            block_dict[multiline_key].append(line.strip())
+            # import pdb; pdb.set_trace()
+            # no key, assume multiline value.
+            # be careful not to add blank lines
+            if multiline_key:
+                block_dict[multiline_key].append(line.strip())
             continue
         key, value = bisect_and_strip(line, ":")
         key = key.upper()

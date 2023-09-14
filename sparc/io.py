@@ -270,9 +270,7 @@ class SparcBundle:
         """
         # Find the max output index
         # TODO: move this into another function
-        last_out = sorted(
-            self.directory.glob(f"{self.label}.out*"), reverse=True
-        )
+        last_out = sorted(self.directory.glob(f"{self.label}.out*"), reverse=True)
         # No output file, only ion / inpt
         if len(last_out) == 0:
             self.last_image = -1
@@ -343,9 +341,7 @@ class SparcBundle:
                 self.sorting = sorting
             else:
                 # Compare stored sorting
-                assert (
-                    tuple(self.sorting["sort"]) == tuple(sorting["sort"])
-                ) and (
+                assert (tuple(self.sorting["sort"]) == tuple(sorting["sort"])) and (
                     tuple(self.sorting["resort"]) == tuple(sorting["resort"])
                 ), "Sorting information changed!"
         return results_dict
@@ -367,17 +363,11 @@ class SparcBundle:
         # print("RAW RES: ", raw_results)
         for entry in raw_results:
             if "static" in entry:
-                calc_results, images = self._extract_static_results(
-                    entry, index=":"
-                )
+                calc_results, images = self._extract_static_results(entry, index=":")
             elif "geopt" in entry:
-                calc_results, images = self._extract_geopt_results(
-                    entry, index=":"
-                )
+                calc_results, images = self._extract_geopt_results(entry, index=":")
             elif "aimd" in entry:
-                calc_results, images = self._extract_aimd_results(
-                    entry, index=":"
-                )
+                calc_results, images = self._extract_aimd_results(entry, index=":")
             else:
                 calc_results, images = None, [self.init_atoms.copy()]
 
@@ -406,9 +396,7 @@ class SparcBundle:
             # Simply copy the results?
             sp.results.update(res)
             sp.name = "sparc"
-            sp.kpts = (
-                raw_results["inpt"].get("params", {}).get("KPOINT_GRID", None)
-            )
+            sp.kpts = raw_results["inpt"].get("params", {}).get("KPOINT_GRID", None)
             # There may be a better way handling the parameters...
             sp.parameters = raw_results["inpt"].get("params", {})
             sp.raw_parameters = {
@@ -449,9 +437,7 @@ class SparcBundle:
             # TODO: Check naming, is it coord_frac or scaled_positions?
             if "coord_frac" in atoms_dict:
                 # TODO: check if set_scaled_positions requires constraint?
-                atoms.set_scaled_positions(
-                    atoms_dict["coord_frac"][self.resort]
-                )
+                atoms.set_scaled_positions(atoms_dict["coord_frac"][self.resort])
             elif "coord" in atoms_dict:
                 atoms.set_positions(
                     atoms_dict["coord"][self.resort], apply_constraint=False
@@ -552,13 +538,11 @@ class SparcBundle:
             partial_result = {}
             atoms = self.init_atoms.copy()
             if "total energy per atom" in result:
-                partial_result["energy"] = result[
-                    "total energy per atom"
-                ] * len(atoms)
+                partial_result["energy"] = result["total energy per atom"] * len(atoms)
             if "free energy per atom" in result:
-                partial_result["free energy"] = result[
-                    "free energy per atom"
-                ] * len(atoms)
+                partial_result["free energy"] = result["free energy per atom"] * len(
+                    atoms
+                )
 
             if "forces" in result:
                 # The forces are already re-sorted!
@@ -566,9 +550,7 @@ class SparcBundle:
 
             # Modify the atoms in-place
             if "positions" not in result:
-                raise ValueError(
-                    "Cannot have aimd without positions information!"
-                )
+                raise ValueError("Cannot have aimd without positions information!")
 
             atoms.set_positions(
                 result["positions"][self.resort], apply_constraint=False
@@ -679,9 +661,7 @@ def write_sparc(filename, images, **kwargs):
         atoms = images
     elif isinstance(images, list):
         if len(images) > 1:
-            raise ValueError(
-                "SPARC format only supports writing one atoms object!"
-            )
+            raise ValueError("SPARC format only supports writing one atoms object!")
         atoms = images[0]
     sb = SparcBundle(directory=filename, mode="w")
     sb._write_ion_and_inpt(atoms, **kwargs)
@@ -735,9 +715,7 @@ def register_ase_io_sparc(name="sparc"):
     # Step 1: patch the ase.io.sparc module
     try:
         entry_points = next(
-            ep
-            for ep in pkg_resources.iter_entry_points("ase.io")
-            if ep.name == "sparc"
+            ep for ep in pkg_resources.iter_entry_points("ase.io") if ep.name == "sparc"
         )
         _monkey_mod = entry_points.load()
     except Exception as e:

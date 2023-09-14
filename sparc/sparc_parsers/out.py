@@ -66,14 +66,10 @@ def _read_sparc_version(header):
     date_str = match[0].strip().replace(",", " ")
     # Accept both abbreviate and full month name
     try:
-        date_version = datetime.strptime(date_str, "%B %d %Y").strftime(
-            "%Y.%m.%d"
-        )
+        date_version = datetime.strptime(date_str, "%B %d %Y").strftime("%Y.%m.%d")
     except ValueError:
         try:
-            date_version = datetime.strptime(date_str, "%b %d %Y").strftime(
-                "%Y.%m.%d"
-            )
+            date_version = datetime.strptime(date_str, "%b %d %Y").strftime("%Y.%m.%d")
         except ValueError:
             warn("Cannot fetch SPARC version information!")
             date_version = None
@@ -130,9 +126,7 @@ def _read_scfs(contents):
 
     """
     # import pdb; pdb.set_trace()
-    convergence_info = _get_block_text(
-        contents, r"Self Consistent Field \(SCF.*?\)"
-    )
+    convergence_info = _get_block_text(contents, r"Self Consistent Field \(SCF.*?\)")
     results_info = _get_block_text(contents, "Energy and force calculation")
 
     if len(convergence_info) != len(results_info):
@@ -160,7 +154,11 @@ def _read_scfs(contents):
             # import pdb; pdb.set_trace()
             scf_num = int(line.split(":")[-1])
             conv_array = np.genfromtxt(
-                [l for l in conv_lines[lino - scf_num: lino] if l.split()[0].isdigit()],
+                [
+                    l
+                    for l in conv_lines[lino - scf_num : lino]
+                    if l.split()[0].isdigit()
+                ],
                 dtype=float,
                 ndmin=2,
             )
@@ -181,7 +179,7 @@ def _read_scfs(contents):
                 name = "ground state"
             else:
                 name = name_line
-                
+
             conv_dict["name"] = name
             scf_sub_steps.append(conv_dict)
 
@@ -248,6 +246,4 @@ def _write_out(
     fileobj,
     data_dict,
 ):
-    raise NotImplementedError(
-        "Writing output file from python-api not supported!"
-    )
+    raise NotImplementedError("Writing output file from python-api not supported!")

@@ -85,11 +85,14 @@ def atoms_to_dict(
             block_dict["PSEUDO_POT"] = psp_file.resolve().as_posix()
 
         except Exception:
-            warn((
-                f"Failed to find pseudo potential file for symbol {symbol}. I will use a dummy file name"
-            ))
+            warn(
+                (
+                    f"Failed to find pseudo potential file for symbol {symbol}. I will use a dummy file name"
+                )
+            )
             block_dict[
-                "PSEUDO_POT"] = f"{symbol}-dummy.psp8        # Please replace with real psp file name!"
+                "PSEUDO_POT"
+            ] = f"{symbol}-dummy.psp8        # Please replace with real psp file name!"
         # TODO: atomic mass?
         p_atoms = atoms[start:end]
         if direct:
@@ -123,15 +126,10 @@ def atoms_to_dict(
     ion_data = {
         "atom_blocks": atom_blocks,
         "comments": comments,
-        "sorting": {
-            "sort": sort_,
-            "resort": resort_
-        },
+        "sorting": {"sort": sort_, "resort": resort_},
     }
     inpt_data = {"params": inpt_blocks, "comments": []}
     return {"ion": ion_data, "inpt": inpt_data}
-
-
 
 
 def dict_to_atoms(data_dict):
@@ -169,8 +167,7 @@ def dict_to_atoms(data_dict):
         atoms_count += len(positions)
 
     if "sorting" in data_dict["ion"]:
-        resort = data_dict["ion"]["sorting"].get("resort",
-                                                 np.arange(len(atoms)))
+        resort = data_dict["ion"]["sorting"].get("resort", np.arange(len(atoms)))
         # Resort may be None
         if len(resort) == 0:
             resort = np.arange(len(atoms))
@@ -180,7 +177,8 @@ def dict_to_atoms(data_dict):
     if len(resort) != len(atoms):
         # TODO: new exception
         raise ValueError(
-            "Length of resort mapping is different from the number of atoms!")
+            "Length of resort mapping is different from the number of atoms!"
+        )
     # TODO: check if this mapping is correct
     # print(relax_dict)
     sort = make_reverse_mapping(resort)
@@ -270,14 +268,11 @@ def constraints_from_relax(relax_dict):
         # DegreeF == 1 --> move along line, fix line
         elif degree_freedom == 1:
             for ind in indices:
-                cons_list.append(
-                    FixedLine(ind,
-                              np.array(relax_type).astype(int)))
+                cons_list.append(FixedLine(ind, np.array(relax_type).astype(int)))
         # DegreeF == 1 --> move along line, fix plane
         elif degree_freedom == 2:
             for ind in indices:
-                cons_list.append(
-                    FixedPlane(ind, (~np.array(relax_type)).astype(int)))
+                cons_list.append(FixedPlane(ind, (~np.array(relax_type)).astype(int)))
     return cons_list
 
 
@@ -295,13 +290,17 @@ def relax_from_constraint(constraint):
         dimensions = [d != 1 for d in constraint.dir]
         expected_free = 2
     else:
-        warn(f"The constraint type {type_name} is not supported by"
-             " SPARC's .ion format. This constraint will be"
-             " ignored")
+        warn(
+            f"The constraint type {type_name} is not supported by"
+            " SPARC's .ion format. This constraint will be"
+            " ignored"
+        )
         return {}
     if dimensions.count(True) != expected_free:
-        warn("SPARC's .ion filetype can only support freezing entire "
-             f"dimensions (x,y,z). The {type_name} constraint will be ignored")
+        warn(
+            "SPARC's .ion filetype can only support freezing entire "
+            f"dimensions (x,y,z). The {type_name} constraint will be ignored"
+        )
         return {}
     return {i: dimensions for i in constraint.get_indices()}  # atom indices
 
@@ -317,13 +316,17 @@ def relax_from_all_constraints(constraints, natoms):
     for c in constraints:
         for atom_index, rdims in relax_from_constraint(c).items():
             if atom_index >= natoms:
-                raise ValueError((
-                    "Number of total atoms smaller than the constraint indices!\n"
-                    "Please check your input"))
+                raise ValueError(
+                    (
+                        "Number of total atoms smaller than the constraint indices!\n"
+                        "Please check your input"
+                    )
+                )
             # There might be multiple constraints applied on one index,
             # always make it more constrained
             relax[atom_index] = list(np.bitwise_and(relax[atom_index], rdims))
     return relax
+
 
 def modify_atoms_bc(atoms, sparc_bc, twist_angle=0):
     """Modify the atoms boundary conditions in-place from the bc information
@@ -338,13 +341,17 @@ def modify_atoms_bc(atoms, sparc_bc, twist_angle=0):
     # print(sparc_bc, type(sparc_bc))
     for bc_ in sparc_bc:
         if bc_.upper() in ["C", "H"]:
-            warn((
-                "Parsing SPARC's helix or cyclic boundary conditions"
-                " into ASE atoms is only partially supported. "
-                "Saving the atoms object into other format may cause "
-                "data-loss of the SPARC-specific BC information."
-            ))
-            pbc = False         # Do not confuse ase-gui, we'll manually handle the visualization
+            warn(
+                (
+                    "Parsing SPARC's helix or cyclic boundary conditions"
+                    " into ASE atoms is only partially supported. "
+                    "Saving the atoms object into other format may cause "
+                    "data-loss of the SPARC-specific BC information."
+                )
+            )
+            pbc = (
+                False  # Do not confuse ase-gui, we'll manually handle the visualization
+            )
         elif bc_.upper() == "D":
             pbc = False
         elif bc_.upper() == "P":
@@ -358,6 +365,7 @@ def modify_atoms_bc(atoms, sparc_bc, twist_angle=0):
     atoms.pbc = ase_bc
     return
 
+
 def atoms_bc_to_sparc(atoms):
     """Use atoms' internal pbc and info to construct inpt blocks
 
@@ -365,7 +373,7 @@ def atoms_bc_to_sparc(atoms):
     a dict containing 'BC' or 'TWIST_ANGLE'
     """
     sparc_bc = ["P" if bc_ else "D" for bc_ in atoms.pbc]
-    
+
     # If "sparc_bc" info is stored in the atoms object, convert again
     if "sparc_bc" in atoms.info.keys():
         converted_bc = []
@@ -373,16 +381,16 @@ def atoms_bc_to_sparc(atoms):
         for bc1, bc2 in zip(sparc_bc, stored_sparc_bc):
             # We store helix and cyclic BCs as non-periodic in ase-atoms
             print(bc1, bc2)
-            if ((bc1 == "D") and (bc2 != "P")) \
-               or ((bc1 == "P") and (bc2 == "P")):
+            if ((bc1 == "D") and (bc2 != "P")) or ((bc1 == "P") and (bc2 == "P")):
                 converted_bc.append(bc2)
             else:
-                raise ValueError("Boundary conditions stored in ASE "
-                                 "atoms.pbc and atoms.info['sparc_bc'] "
-                                 "are different!")
+                raise ValueError(
+                    "Boundary conditions stored in ASE "
+                    "atoms.pbc and atoms.info['sparc_bc'] "
+                    "are different!"
+                )
         sparc_bc = converted_bc
     block = {"BC": " ".join(sparc_bc)}
     if "twist_angle" in atoms.info.keys():
         block["TWIST_ANGLE"] = atoms.info["twist_angle (rad/Bohr)"]
     return block
-    

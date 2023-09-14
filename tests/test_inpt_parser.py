@@ -69,8 +69,7 @@ def test_write_inpt():
             "PRINT_DENSITY",
         ):
             assert (
-                data_dict["inpt"]["params"][key]
-                == new_data_dict["inpt"]["params"][key]
+                data_dict["inpt"]["params"][key] == new_data_dict["inpt"]["params"][key]
             )
         for key in ("LATVEC", "LATVEC_SCALE"):
             assert np.isclose(
@@ -97,9 +96,7 @@ def test_cell_conversion():
 
     # 1. invalid
     data_dict = {
-        "inpt": {
-            "params": {"CELL": [1.5, 1.5, 1.5], "LATVEC_SCALE": [1.5, 1.5, 1.5]}
-        }
+        "inpt": {"params": {"CELL": [1.5, 1.5, 1.5], "LATVEC_SCALE": [1.5, 1.5, 1.5]}}
     }
     with pytest.raises(ValueError):
         _inpt_cell_to_ase_cell(data_dict)

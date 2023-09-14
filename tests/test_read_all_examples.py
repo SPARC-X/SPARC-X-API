@@ -12,7 +12,6 @@ import tempfile
 import shutil
 
 
-
 def test_read_all_tests():
     """Search all .inpt files within the tests dir."""
 
@@ -22,7 +21,7 @@ def test_read_all_tests():
     tests_dir = os.environ.get("SPARC_TESTS_DIR", "")
     if len(tests_dir) == 0:
         pytest.skip(allow_module_level=True)
-    
+
     tests_dir = Path(tests_dir)
     for inpt_file in tests_dir.glob("**/*.inpt"):
         workdir = inpt_file.parent
@@ -45,6 +44,3 @@ def test_read_all_tests():
             except Exception as e:
                 print("Failed: ", parent_name, workdir)
                 print("\t: Error is ", e)
-                
-        
-                

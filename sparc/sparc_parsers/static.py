@@ -39,8 +39,7 @@ def _read_static(fileobj):
     block_bounds = [i for i, x in enumerate(data) if ":" in x] + [len(data)]
     # blocks = [read_static_block(data[start:end]) for start, end in zip(block_bounds[:-1], block_bounds[1:])]
     raw_blocks = [
-        data[start:end]
-        for start, end in zip(block_bounds[:-1], block_bounds[1:])
+        data[start:end] for start, end in zip(block_bounds[:-1], block_bounds[1:])
     ]
     static_dict = read_static_blocks(raw_blocks)
     return {"static": static_dict}
@@ -176,6 +175,4 @@ def _write_static(
     fileobj,
     data_dict,
 ):
-    raise NotImplementedError(
-        "Writing static file from python-api not supported!"
-    )
+    raise NotImplementedError("Writing static file from python-api not supported!")
