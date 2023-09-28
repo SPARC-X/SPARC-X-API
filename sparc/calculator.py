@@ -472,13 +472,34 @@ class SPARC(FileIOCalculator):
         params = self.special_params.copy()
 
         # xc --> EXCHANGE_CORRELATION
-        # TODO: more XC options
         if "xc" in params:
             xc = params.pop("xc")
             if xc.lower() == "pbe":
                 converted_sparc_params["EXCHANGE_CORRELATION"] = "GGA_PBE"
             elif xc.lower() == "lda":
-                converted_sparc_params["EXCHANGE_CORRELATION"] = "LDA_PW"
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "LDA_PZ"
+            elif xc.lower() == "rpbe":
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "GGA_RPBE"
+            elif xc.lower() == "pbesol":
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "GGA_PBEsol"
+            elif xc.lower() == "pbe0":
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "PBE0"
+            elif xc.lower() == "hf":
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "HF"
+            # backward compatibility for HSE03. Note HSE06 is not supported yet 
+            elif (xc.lower() == "hse") or (xc.lower() == "hse03"):
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "HSE"
+            # backward compatibility for VASP-style XCs
+            elif (xc.lower() == "vdwdf1") or (xc.lower() == "vdw-df") or (xc.lower() == "vdw-df1"):
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "vdWDF1"
+            elif (xc.lower() == "vdwdf2") or (xc.lower() == "vdw-df2"):
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "vdWDF2"
+            elif xc.lower() == "scan":
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "SCAN"
+            else:
+                # TODO: alternative exception
+                raise ValueError(f"xc keyword value {xc} is invalid!")
+        
 
         # h --> gpts
         if "h" in params:

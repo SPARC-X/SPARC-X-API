@@ -36,6 +36,91 @@ def test_h_parameter():
         assert "FD_GRID: 25 25 25" in filecontent
 
 
+def test_xc_parameter():
+    from sparc.calculator import SPARC
+    from ase.build import bulk
+    atoms = bulk("Al", cubic=True)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "EXCHANGE_CORRELATION: GGA_PBE" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(xc="pbe", directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "EXCHANGE_CORRELATION: GGA_PBE" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(xc="lda", directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "EXCHANGE_CORRELATION: LDA_PZ" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(xc="lda", directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "EXCHANGE_CORRELATION: LDA_PZ" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(xc="rpbe", directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "EXCHANGE_CORRELATION: GGA_RPBE" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(xc="pbesol", directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "EXCHANGE_CORRELATION: GGA_PBEsol" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(xc="pbe0", directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "EXCHANGE_CORRELATION: PBE0" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(xc="hf", directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "EXCHANGE_CORRELATION: HF" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(xc="hse", directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "EXCHANGE_CORRELATION: HSE" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(xc="hse03", directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "EXCHANGE_CORRELATION: HSE" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(xc="vdw-df", directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "EXCHANGE_CORRELATION: vdWDF1" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(xc="vdw-df2", directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "EXCHANGE_CORRELATION: vdWDF2" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(xc="scan", directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "EXCHANGE_CORRELATION: SCAN" in filecontent
+
+    
+
+
 def test_conflict_param():
     from sparc.calculator import SPARC
     from ase.build import bulk
