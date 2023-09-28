@@ -5,7 +5,7 @@ from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
 import subprocess
 
 from .io import SparcBundle
-from .utils import _find_default_sparc, h2gpts
+from .utils import _find_default_sparc, h2gpts, deprecated
 from warnings import warn, warn_explicit
 from .api import SparcAPI
 import datetime
@@ -25,22 +25,6 @@ sparc_python_inputs = [
 
 
 defaultAPI = SparcAPI()
-
-
-def deprecated(message):
-    def decorator(func):
-        def new_func(*args, **kwargs):
-            warn(
-                "Function {} is deprecated sparc-dft-api >= v0.2! {}".format(
-                    func.__name__, message
-                ),
-                category=DeprecationWarning,
-            )
-            return func(*args, **kwargs)
-
-        return new_func
-
-    return decorator
 
 
 class SPARC(FileIOCalculator):

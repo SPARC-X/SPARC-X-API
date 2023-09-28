@@ -27,7 +27,7 @@ from .sparc_parsers.atoms import dict_to_atoms, atoms_to_dict
 from .sparc_parsers.pseudopotential import copy_psp_file, parse_psp8_header
 from .common import psp_dir as default_psp_dir
 from .download_data import is_psp_download_complete
-from .utils import string2index
+from .utils import string2index, deprecated
 
 from ase.calculators.singlepoint import SinglePointDFTCalculator
 from ase.units import Hartree
@@ -670,8 +670,9 @@ def write_sparc(filename, images, **kwargs):
     sb._write_ion_and_inpt(atoms, **kwargs)
     return
 
-# TODO: make deprecated warning
-def read_sparc_ion(filename, **kwargs):
+
+@deprecated("Reading individual .ion is not recommended. Please use read_sparc instead.")
+def read_ion(filename, **kwargs):
     """Parse an .ion file inside the SPARC bundle using a wrapper around SparcBundle
     The reader works only when other files (.inpt) exist.
 
@@ -682,7 +683,8 @@ def read_sparc_ion(filename, **kwargs):
     atoms = sb._read_ion_and_inpt()
     return atoms
 
-def write_sparc_ion(filename, atoms, **kwargs):
+@deprecated("Writing individual .ion file is not recommended. Please use write_sparc instead.")
+def write_ion(filename, atoms, **kwargs):
     """Write .ion and .inpt files using the SparcBundle wrapper.
 
     This is only for backward compatibility
@@ -693,39 +695,35 @@ def write_sparc_ion(filename, atoms, **kwargs):
     sb._write_ion_and_inpt(atoms, **kwargs)
     return atoms
 
-def read_sparc_static(filename, index=-1, **kwargs):
+
+def read_static(filename, index=-1, **kwargs):
     """Parse a .static file bundle using a wrapper around SparcBundle
     The reader works only when other files (.ion, .inpt) exist.
     """
     parent_dir = Path(filename).parent
     sb = SparcBundle(directory=parent_dir)
-    atoms_or_images = sb.convert_to_ase(
-        index=index, **kwargs
-    )
+    atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
     return atoms_or_images
 
-def read_sparc_geopt(filename, index=-1, **kwargs):
+
+def read_geopt(filename, index=-1, **kwargs):
     """Parse a .geopt file bundle using a wrapper around SparcBundle
     The reader works only when other files (.ion, .inpt) exist.
     """
     parent_dir = Path(filename).parent
     sb = SparcBundle(directory=parent_dir)
-    atoms_or_images = sb.convert_to_ase(
-        index=index, **kwargs
-    )
+    atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
     return atoms_or_images
 
-def read_sparc_aimd(filename, index=-1, **kwargs):
+
+def read_aimd(filename, index=-1, **kwargs):
     """Parse a .static file bundle using a wrapper around SparcBundle
     The reader works only when other files (.ion, .inpt) exist.
     """
     parent_dir = Path(filename).parent
     sb = SparcBundle(directory=parent_dir)
-    atoms_or_images = sb.convert_to_ase(
-        index=index, **kwargs
-    )
+    atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
     return atoms_or_images
-
 
 
 def register_ase_io_sparc(name="sparc"):
@@ -831,33 +829,27 @@ def register_ase_io_sparc(name="sparc"):
                 )
     # Add additional formats including .ion (r/w), .static, .geopt, .aimd
     F(
-        "sparc-ion",
+        "ion",
         desc="SPARC .ion file",
         module="sparc",
         code="1S",
         ext="ion",
     )
     F(
-        "sparc-static",
+        "static",
         desc="SPARC single point results",
         module="sparc",
         code="+S",
-        ext="static"
+        ext="static",
     )
     F(
-        "sparc-geopt",
+        "geopt",
         desc="SPARC geometric optimization results",
         module="sparc",
         code="+S",
-        ext="geopt"
+        ext="geopt",
     )
-    F(
-        "sparc-aimd",
-        desc="SPARC AIMD results",
-        module="sparc",
-        code="+S",
-        ext="aimd"
-    )
+    F("aimd", desc="SPARC AIMD results", module="sparc", code="+S", ext="aimd")
 
     # TODO: remove print options as it may be redundant
-    print("Successfully registered sparc format with ase.io!")
+    print("Successfully registered sparc formats with ase.io!")
