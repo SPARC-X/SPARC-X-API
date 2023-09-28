@@ -3,7 +3,24 @@
 import os
 import shutil
 import numpy as np
+from warnings import warn
 from typing import Union, List, Optional
+
+
+def deprecated(message):
+    def decorator(func):
+        def new_func(*args, **kwargs):
+            warn(
+                "Function {} is deprecated sparc-dft-api >= v0.2! {}".format(
+                    func.__name__, message
+                ),
+                category=DeprecationWarning,
+            )
+            return func(*args, **kwargs)
+
+        return new_func
+
+    return decorator
 
 
 def string2index(string: str) -> Union[int, slice, str]:

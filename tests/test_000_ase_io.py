@@ -178,9 +178,31 @@ def test_sparc_read_auto(monkeypatch, fs):
     assert atoms.get_chemical_formula() == "Al"
 
 
-def test_ase_io_filetype():
-    """If hacked ase.io.formats.filetype correctly recognized sparc format"""
+def test_ase_io_filetype(fs):
+    """If hacked ase.io.formats.filetype correctly recognized sparc format
+
+    Due to the implementation of ase.io.formats, single file tests should be
+    done on non-empty files
+    """
     import sparc
     from ase.io.formats import filetype
 
+    fs.create_dir("test.sparc")
+    fs.create_file("test.sparc/test.ion")
+    fs.create_file("test.sparc/test.static")
+    fs.create_file("test.sparc/test.geopt")
+    fs.create_file("test.sparc/test.aimd")
+    with open("test.sparc/test.ion", "w") as fd:
+        fd.write("\n")
+    with open("test.sparc/test.static", "w") as fd:
+        fd.write("\n")
+    with open("test.sparc/test.geopt", "w") as fd:
+        fd.write("\n")
+    with open("test.sparc/test.aimd", "w") as fd:
+        fd.write("\n")
+
     assert filetype("test.sparc") == "sparc"
+    assert filetype("test.sparc/test.ion") == "ion"
+    assert filetype("test.sparc/test.static") == "static"
+    assert filetype("test.sparc/test.geopt") == "geopt"
+    assert filetype("test.sparc/test.aimd") == "aimd"

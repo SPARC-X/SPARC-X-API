@@ -27,7 +27,7 @@ from .sparc_parsers.atoms import dict_to_atoms, atoms_to_dict
 from .sparc_parsers.pseudopotential import copy_psp_file, parse_psp8_header
 from .common import psp_dir as default_psp_dir
 from .download_data import is_psp_download_complete
-from .utils import string2index
+from .utils import string2index, deprecated
 
 from ase.calculators.singlepoint import SinglePointDFTCalculator
 from ase.units import Hartree
@@ -671,6 +671,61 @@ def write_sparc(filename, images, **kwargs):
     return
 
 
+@deprecated("Reading individual .ion is not recommended. Please use read_sparc instead.")
+def read_ion(filename, **kwargs):
+    """Parse an .ion file inside the SPARC bundle using a wrapper around SparcBundle
+    The reader works only when other files (.inpt) exist.
+
+    The returned Atoms object of read_ion method only contains the initial positions
+    """
+    parent_dir = Path(filename).parent
+    sb = SparcBundle(directory=parent_dir)
+    atoms = sb._read_ion_and_inpt()
+    return atoms
+
+@deprecated("Writing individual .ion file is not recommended. Please use write_sparc instead.")
+def write_ion(filename, atoms, **kwargs):
+    """Write .ion and .inpt files using the SparcBundle wrapper.
+
+    This is only for backward compatibility
+    """
+    label = Path(filename).with_suffix("").name
+    parent_dir = Path(filename).parent
+    sb = SparcBundle(directory=parent_dir, label=label)
+    sb._write_ion_and_inpt(atoms, **kwargs)
+    return atoms
+
+
+def read_static(filename, index=-1, **kwargs):
+    """Parse a .static file bundle using a wrapper around SparcBundle
+    The reader works only when other files (.ion, .inpt) exist.
+    """
+    parent_dir = Path(filename).parent
+    sb = SparcBundle(directory=parent_dir)
+    atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
+    return atoms_or_images
+
+
+def read_geopt(filename, index=-1, **kwargs):
+    """Parse a .geopt file bundle using a wrapper around SparcBundle
+    The reader works only when other files (.ion, .inpt) exist.
+    """
+    parent_dir = Path(filename).parent
+    sb = SparcBundle(directory=parent_dir)
+    atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
+    return atoms_or_images
+
+
+def read_aimd(filename, index=-1, **kwargs):
+    """Parse a .static file bundle using a wrapper around SparcBundle
+    The reader works only when other files (.ion, .inpt) exist.
+    """
+    parent_dir = Path(filename).parent
+    sb = SparcBundle(directory=parent_dir)
+    atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
+    return atoms_or_images
+
+
 def register_ase_io_sparc(name="sparc"):
     """
     Monkey patching the ase.io and ase.io.formats
@@ -772,6 +827,29 @@ def register_ase_io_sparc(name="sparc"):
                     "Atomatic format inference for sparc is not correctly registered. "
                     "You may need to use format=sparc in ase.io.read and ase.io.write. "
                 )
+    # Add additional formats including .ion (r/w), .static, .geopt, .aimd
+    F(
+        "ion",
+        desc="SPARC .ion file",
+        module="sparc",
+        code="1S",
+        ext="ion",
+    )
+    F(
+        "static",
+        desc="SPARC single point results",
+        module="sparc",
+        code="+S",
+        ext="static",
+    )
+    F(
+        "geopt",
+        desc="SPARC geometric optimization results",
+        module="sparc",
+        code="+S",
+        ext="geopt",
+    )
+    F("aimd", desc="SPARC AIMD results", module="sparc", code="+S", ext="aimd")
 
     # TODO: remove print options as it may be redundant
-    print("Successfully registered sparc format with ase.io!")
+    print("Successfully registered sparc formats with ase.io!")
