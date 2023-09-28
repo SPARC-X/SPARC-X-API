@@ -58,8 +58,8 @@ jobs:
         # A coverage test badge
         anybadge --value=$COVPERCENT --file=badges/coverage.svg coverage
         # A version badge
-        PIPVER=`pip show sparc-dft-api | grep Version | cut -d ' ' -f2`
-        anybadge --value=$PIPVER --file=badges/package.svg -l sparc-dft-api
+        PIPVER=`pip show sparc-x-api | grep Version | cut -d ' ' -f2`
+        anybadge --value=$PIPVER --file=badges/package.svg -l sparc-x-api
     - name: Manually add git badges
       run: |
         # Assuming a badges branch already exists!
