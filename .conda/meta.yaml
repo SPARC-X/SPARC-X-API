@@ -12,7 +12,7 @@ source:
 
 build:
   noarch: python
-  # Install sparc-dft-api and include the psp files
+  # Install and include the psp files
   script: "{{ PYTHON }} -m pip install . --no-deps -vv && cd .. && {{ PYTHON }} -m sparc.download_data"
   entry_points:
     - "sparc-ase = sparc.cli:main"

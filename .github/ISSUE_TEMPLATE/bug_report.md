@@ -13,7 +13,7 @@ A concise description of the problem.
 **To Reproduce**
 Provide a minimal list of settings / codes to help us debug, such as
 - Python version
-- Version (git commit hash) of `sparc-dft-api`
+- Version (git commit hash) of `SPARC-X-API`
 - `SPARC` C-code version (see the SPARC .out file header)
 - Your platform and architecture
  

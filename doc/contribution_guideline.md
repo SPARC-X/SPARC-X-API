@@ -1,5 +1,5 @@
 ## Submitting issues and pull requests
-We welcome users of SPARC and its python-API to submit issues and pull requests via github.
+We welcome users of SPARC-X and SPARC-X-API to submit issues and pull requests via github.
 When reporting a bug, please make sure to include the following information:
 
 - `SPARC` version (if available. Should look like "Month Day, Year" in the `.out` file)
@@ -18,7 +18,7 @@ a copy of the latest pseudopotential files.
 
 ```python
 git clone https://github.com/SPARC-X/SPARC-X-API.git
-pip install -e "sparc-dft-api[test]"
+pip install -e "sparc-x-api[test]"
 python -m sparc.download_data
 ```
 
@@ -43,7 +43,7 @@ python -m pytest -svv tests/test_all_dft.py
 ### Adding examples
 
 All examples are listed in `examples/` directory. Please add examples that are important
-for demonstrating the functionalities of `sparc-dft-api` while the calculations can be
+for demonstrating the functionalities of `SPARC-X-API` while the calculations can be
 finished using moderate computating power (e.g. a few minutes with 4 CPU cores).
 
 The examples can have the name in the format `ex[Number]-[purpose].py`.

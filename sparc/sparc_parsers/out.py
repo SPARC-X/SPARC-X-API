@@ -246,4 +246,4 @@ def _write_out(
     fileobj,
     data_dict,
 ):
-    raise NotImplementedError("Writing output file from python-api not supported!")
+    raise NotImplementedError("Writing output file from SPARC-X-API not supported!")

@@ -281,7 +281,7 @@ short [MD trajectory](tests/outputs/NH3_sort_lbfgs_opt.sparc).
 
 <img width="1200" alt="image" src="https://github.com/alchem0x2A/SPARC-X-API/assets/6829706/e72329ff-7194-4819-94f8-486ef2218844">
 
-### 5. Units used in `SPARC-X-API`
+### 5. Parameters and units used in `SPARC-X-API`
 
 In the SPARC DFT code, all input parameters conventionally employ atomic units, such as Hartree and Bohr. Conversely, ASE objects (like `Atoms.positions`, `Atoms.cell`, `Atoms.get_potential_energy()`) utilize eV/Angstrom units.
 

@@ -590,7 +590,7 @@ class SPARC(FileIOCalculator):
             command = self.command
         msg = (
             "\n" + "*" * 80 + "\n"
-            f"SPARC program started by sparc-python-api at {now}\n"
+            f"SPARC program started by SPARC-X-API at {now}\n"
             f"command: {command}\n"
         )
         if self.log is None:
