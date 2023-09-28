@@ -1,6 +1,6 @@
-## Major changes from `sparc-dft-api` [v0.1](https://github.com/SPARC-X/sparc-dft-api/tree/eac557f214b402122a506f88f38c7a8767283503)
+## Major changes from `SPARC-X-API` [v0.1](https://github.com/SPARC-X/SPARC-X-API/tree/eac557f214b402122a506f88f38c7a8767283503)
 
-`sparc-dft-api` has been heavily refactored in v1.0. If you're using legacy Python codes
+`SPARC-X-API` has been heavily refactored in v1.0. If you're using legacy Python codes
 that are written under v0.1 API, there are a few major changes that require your attention:
 
 1. Support for single `.ion` file format is deprecated. Instead, `v0.2` API treats the whole SPARC directory as a bundle format. Please use `read_sparc` and `write_sparc` methods for basic file I/O instead.

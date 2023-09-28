@@ -2,8 +2,8 @@
 We welcome users of SPARC and its python-API to submit issues and pull requests via github.
 When reporting a bug, please make sure to include the following information:
 
-- SPARC version (if available. Should look like "Month Day, Year" in the `.out` file)
-- `sparc-python-api` version or commit hash
+- `SPARC` version (if available. Should look like "Month Day, Year" in the `.out` file)
+- `SPARC-X-API` version or commit hash
 - Minimal example for reproducing the error
 - Error trace message
 
@@ -17,7 +17,7 @@ Pip installation from github's master branch (or your own fork), and download
 a copy of the latest pseudopotential files.
 
 ```python
-git clone https://github.com/SPARC-X/sparc-dft-api.git
+git clone https://github.com/SPARC-X/SPARC-X-API.git
 pip install -e "sparc-dft-api[test]"
 python -m sparc.download_data
 ```
@@ -50,7 +50,7 @@ The examples can have the name in the format `ex[Number]-[purpose].py`.
 
 ### Code structure
 
-Below is a brief overview of the modules in `sparc-dft-api` with simple explanations
+Below is a brief overview of the modules in `SPARC-X-API` with simple explanations
 ```
 sparc
 ├── __init__.py
@@ -95,8 +95,8 @@ Please make sure to exclude any computationally-heavy tests from the step "Test 
 
 The CI workflow contains a coverage report step based on the unit test
 and generates a [coverage
-badge](https://github.com/SPARC-X/sparc-dft-api/blob/badges/badges/coverage.svg)
+badge](https://github.com/SPARC-X/SPARC-X-API/blob/badges/badges/coverage.svg)
 on the [`badges`
-branch](https://github.com/SPARC-X/sparc-dft-api/tree/badges).
+branch](https://github.com/SPARC-X/SPARC-X-API/tree/badges).
 
 For repo maintainers, please make sure the `badges` branch is present and **do not merge to this branch**.
