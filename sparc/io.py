@@ -691,7 +691,7 @@ def write_ion(filename, atoms, **kwargs):
     """
     label = Path(filename).with_suffix("").name
     parent_dir = Path(filename).parent
-    sb = SparcBundle(directory=parent_dir, label=label)
+    sb = SparcBundle(directory=parent_dir, label=label, mode="w")
     sb._write_ion_and_inpt(atoms, **kwargs)
     return atoms
 
