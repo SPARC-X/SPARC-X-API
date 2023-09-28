@@ -314,9 +314,39 @@ unit system:
 | `gpts`         | Explicit grid points |   `gpts=[10, 10, 10]` | `FD_GRID: 10 10 10` |
 | `kpts`         | Kpoint mesh          |   `kpts=[3, 3, 3]`    | `KPOINT_GRID: 3 3 3` |
 | `convergence`  | Dict of convergence criteria (see below) |  | |
-|                | `energy`  eV/atom         | `convergence={"energy": 1e-4}` | `SCF_ENERGY_ACC: 3e-6` |
-|                | `forces`  eV/Å            | `convergence={"forces": 1e-2}` | `TOL_RELAX: 2e-4` |
+|                | `energy`  eV/atom         | `convergence={"energy": 1e-4}` | `TOL_SCF: 3e-6` |
+|                | `relax` (forces)  eV/Å            | `convergence={"relax": 1e-2}` | `TOL_RELAX: 2e-4` |
 |                | `density` e/atom          | `convergence={`density`: 1e-6}`| `TOL_PSEUDOCHARGE: 1e-6` |
+
+Users from other DFT codes can easily port their ASE codes to `SPARC-X-API` using the special parameters with minimal modification:
+
+Example 1: VASP vs SPARC
+
+```python
+# Using VASP
+from ase.calculators.vasp import Vasp
+calc = Vasp(xc="rpbe", kpts=(9, 9, 9), directory="vasp-calc")
+```
+vs
+```python
+# Using SPARC
+from sparc.calculator import SPARC
+calc = SPARC(xc="rpbe", kpts=(9, 9, 9), directory="sparc-calc.sparc")
+```
+
+Example 2: GPAW (another real-space DFT code) vs SPARC
+```python
+# Using GPAW
+from gpaw import GPAW
+calc = GPAW(xc="PBE", kpts=(9, 9, 9), h=0.25, directory="vasp-calc", convergence={"energy": 1.e-4})
+```
+vs
+```python
+# Using SPARC
+from sparc.calculator import SPARC
+calc = SPARC(xc="PBE", kpts=(9, 9, 9), h=0.25, directory="sparc-calc.sparc", convergence={"energy": 1.e-4})
+```
+
 
 
 ## Troubleshooting

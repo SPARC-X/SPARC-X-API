@@ -560,10 +560,10 @@ class SPARC(FileIOCalculator):
             tol_e = convergence.get("energy", None)
             if tol_e:
                 # TOL SCF: Ha / atom <--> energy tol: eV / atom
-                converted_sparc_params["SCF_ENERGY_ACC"] = tol_e / Hartree
+                converted_sparc_params["TOL_SCF"] = tol_e / Hartree
 
             # TODO: per AJ's suggestion, better change forces to relaxation
-            tol_f = convergence.get("forces", None)
+            tol_f = convergence.get("relax", None)
             if tol_f:
                 # TOL SCF: Ha / Bohr <--> energy tol: Ha / Bohr
                 converted_sparc_params["TOL_RELAX"] = tol_f / Hartree * Bohr
