@@ -37,6 +37,11 @@ jobs:
         pip install -e ".[test]"
         # Download the external psp data
         python -m sparc.download_data
+    - name: Download SPARC output files to SPARC-master
+      run: |
+        wget https://github.com/SPARC-X/SPARC/archive/refs/heads/master.zip
+        unzip master.zip
+        export SPARC_TESTS_DIR="./SPARC-master/tests"
     - name: Test with pytest
       run: |
         # python -m pytest -svv tests/ --cov=sparc --cov-report=json --cov-report=html
@@ -46,6 +51,7 @@ jobs:
         COVERAGE=`cat coverage.json | jq .totals.percent_covered | xargs printf '%.*f' 0`
         echo "Current coverage is $COVERAGE"
         echo "COVPERCENT=$COVERAGE" >> $GITHUB_ENV
+        
     - name: Lint with flake8
       run: |
         echo $CONDA_PREFIX
