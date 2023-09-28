@@ -48,9 +48,7 @@ def test_default_psp(monkeypatch):
     def _fake_psp_check(directory):
         return True
 
-    monkeypatch.setattr(
-        sparc_io_bundle, "is_psp_download_complete", _fake_psp_check
-    )
+    monkeypatch.setattr(sparc_io_bundle, "is_psp_download_complete", _fake_psp_check)
 
     from sparc.io import SparcBundle
     from sparc.common import psp_dir as default_psp_dir
@@ -69,9 +67,7 @@ def test_bundle_label():
     sb.label == "Cu_FCC"
     assert sb._indir(".ion").name == "Cu_FCC.ion"
 
-    sb = SparcBundle(
-        directory=test_output_dir / "Cu_FCC.sparc", label="Something"
-    )
+    sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc", label="Something")
     sb.label == "Something"
 
     assert sb._indir(ext=".ion").name == "Something.ion"
@@ -121,9 +117,7 @@ def test_read_ion_inpt():
         * Bohr,
     ).all()
 
-    sb = SparcBundle(
-        directory=test_output_dir / "AlSi_primitive_quick_relax.sparc"
-    )
+    sb = SparcBundle(directory=test_output_dir / "AlSi_primitive_quick_relax.sparc")
     atoms = sb._read_ion_and_inpt()
     assert atoms.get_chemical_formula() == "AlSi"
 
@@ -132,9 +126,7 @@ def test_read_ion_inpt():
     assert atoms.get_chemical_formula() == "Fe2"
     assert tuple(atoms.get_initial_magnetic_moments()) == (1.0, 1.0)
 
-    sb = SparcBundle(
-        directory=test_output_dir / "TiO2_orthogonal_quick_md.sparc"
-    )
+    sb = SparcBundle(directory=test_output_dir / "TiO2_orthogonal_quick_md.sparc")
     atoms = sb._read_ion_and_inpt()
     assert atoms.get_chemical_formula() == "O4Ti2"
 

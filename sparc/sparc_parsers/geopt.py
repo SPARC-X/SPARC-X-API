@@ -40,9 +40,7 @@ def _read_geopt(fileobj):
 
     # find the index for all atom type lines. They should be at the
     # top of their block
-    step_bounds = [i for i, x in enumerate(data) if ":RELAXSTEP:" in x] + [
-        len(data)
-    ]
+    step_bounds = [i for i, x in enumerate(data) if ":RELAXSTEP:" in x] + [len(data)]
     raw_geopt_blocks = [
         data[start:end] for start, end in zip(step_bounds[:-1], step_bounds[1:])
     ]
@@ -59,9 +57,7 @@ def _read_geopt_step(raw_step_text):
     """
     header, body = raw_step_text[0], raw_step_text[1:]
     if ":RELAXSTEP:" not in header:
-        raise ValueError(
-            "Wrong geopt format! The :RELAXSTEP: label is missing."
-        )
+        raise ValueError("Wrong geopt format! The :RELAXSTEP: label is missing.")
     # Geopt file uses 1-indexed step names, convert to 0-indexed
     step = int(header.split(":RELAXSTEP:")[-1]) - 1
     print("Step ", step)
@@ -138,6 +134,4 @@ def _write_geopt(
     fileobj,
     data_dict,
 ):
-    raise NotImplementedError(
-        "Writing geopt file from python-api not supported!"
-    )
+    raise NotImplementedError("Writing geopt file from python-api not supported!")

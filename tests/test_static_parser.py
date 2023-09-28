@@ -39,13 +39,9 @@ Stress (GPa):
     static_dict = data_dict["static"]
     assert "atoms" in static_dict
     assert tuple(static_dict["atoms"]["symbols"]) == ("Fe", "Fe")
-    assert np.isclose(
-        static_dict["free energy"], -2.283157353113279e02 * Hartree
-    )
+    assert np.isclose(static_dict["free energy"], -2.283157353113279e02 * Hartree)
     assert static_dict["forces"].shape == (2, 3)
-    assert np.isclose(
-        static_dict["forces"][0, 0], 8.0738249305e-01 * Hartree / Bohr
-    )
+    assert np.isclose(static_dict["forces"][0, 0], 8.0738249305e-01 * Hartree / Bohr)
     assert static_dict["stress"].shape == (6,)
 
 

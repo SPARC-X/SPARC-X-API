@@ -22,7 +22,7 @@ class SPARCDocParser(object):
     def __init__(
         self,
         directory=".",
-        main_file="Manual.tex",
+        main_file="Manual*.tex",
         intro_file="Introduction.tex",
         params_from_intro=True,
         parse_version=True,
@@ -34,7 +34,9 @@ class SPARCDocParser(object):
             |---- Manual.tex
                   |---- Introduction.tex
                         |---- {Section}.tex
-        TODO: include the parameters for SQ / HT calculations
+
+        For parameters additional to the standard SPARC options, such as the SQ / cyclix
+        options, we merge the dict from the sub-dirs
 
         Arguments:
         `doc_root`: root directory to the LaTeX files, may look like `SPARC/doc/.LaTeX`
@@ -44,18 +46,23 @@ class SPARCDocParser(object):
         `parse_date`: get the SPARC version by date
         """
         self.root = Path(directory)
-        self.main_file = self.root / main_file
-        if not self.main_file.is_file():
-            raise FileNotFoundError(f"Main file {main_file} is missing!")
+        self.main_file = self.find_main_file(main_file)
         self.intro_file = self.root / intro_file
         if not self.intro_file.is_file():
-            raise FileNotFoundError(
-                f"Introduction file {intro_file} is missing!"
-            )
+            raise FileNotFoundError(f"Introduction file {intro_file} is missing!")
         self.include_files = self.get_include_files()
         self.params_from_intro = params_from_intro
         self.parse_version(parse_version)
         self.parse_parameters()
+
+    def find_main_file(self, main_file_pattern):
+        """Find the matching name for the main-file, e.g. Manual.tex or Manual_cyclix.tex"""
+        candidates = list(self.root.glob(main_file_pattern))
+        if len(candidates) != 1:
+            raise FileNotFoundError(
+                f"Main file {main_file_pattern} is missing or more than 1 exists!"
+            )
+        return candidates[0]
 
     def get_include_files(self):
         """Get a list of included LaTeX files from Manual.tex"""
@@ -101,9 +108,7 @@ class SPARCDocParser(object):
             self.version = None
             return
         date_str = match[0].strip().replace(",", " ")
-        date_version = datetime.strptime(date_str, "%b %d %Y").strftime(
-            "%Y.%m.%d"
-        )
+        date_version = datetime.strptime(date_str, "%b %d %Y").strftime("%Y.%m.%d")
         self.version = date_version
         return
 
@@ -176,9 +181,9 @@ class SPARCDocParser(object):
         )
         pattern_block = r"\\begin\{block\}\{(.*?)\}([\s\S]*?)\\end\{block\}"
         pattern_line = r"\\hyperlink\{(.*?)\}{\\texttt\{(.*?)\}\}"
-        text_params = re.findall(
-            pattern_params, text_intro, re.DOTALL | re.MULTILINE
-        )[0]
+        text_params = re.findall(pattern_params, text_intro, re.DOTALL | re.MULTILINE)[
+            0
+        ]
         parameter_categories = []
         parameter_dict = {}
         for match in re.findall(pattern_block, text_params):
@@ -202,9 +207,7 @@ class SPARCDocParser(object):
                     label, symbol = match[0].strip(), convert_tex_parameter(
                         match[1].strip()
                     )
-                    parameter_dict[cat].append(
-                        {"label": label, "symbol": symbol}
-                    )
+                    parameter_dict[cat].append({"label": label, "symbol": symbol})
         return parameter_categories, parameter_dict
 
     def __parse_all_included_files(self):
@@ -247,7 +250,7 @@ class SPARCDocParser(object):
 
         return
 
-    def to_json(self, indent=False):
+    def to_dict(self):
         """Output a json string from current document parser
 
         Arguments:
@@ -260,15 +263,29 @@ class SPARCDocParser(object):
         doc["other_parameters"] = {
             k: v for k, v in sorted(self.other_parameters.items())
         }
-        doc["data_types"] = list(
-            set([p["type"] for p in self.parameters.values()])
-        )
-        json_string = json.dumps(doc, indent=indent)
-        return json_string
+        doc["data_types"] = list(set([p["type"] for p in self.parameters.values()]))
+        # json_string = json.dumps(doc, indent=indent)
+        return doc
 
     @classmethod
-    def from_directory(cls, directory=".", **kwargs):
-        return cls(directory=directory, **kwargs)
+    def json_from_directory(cls, directory=".", include_subdirs=True, **kwargs):
+        """Recursively add parameters from all Manual files"""
+        root_dict = cls(directory=directory, **kwargs).to_dict()
+        if include_subdirs:
+            for sub_manual_tex in directory.glob("*/Manual*.tex"):
+                subdir = sub_manual_tex.parent
+                try:
+                    sub_dict = cls(directory=subdir, parse_version=False).to_dict()
+                except FileNotFoundError:
+                    print(subdir)
+                    continue
+                # We only merge the parameters that have not appeared in the main
+                # manual. TODO: maybe assign repeating parameters to a different section?
+                for param, param_desc in sub_dict["parameters"].items():
+                    if param not in root_dict["parameters"]:
+                        root_dict["parameters"][param] = param_desc
+        json_string = json.dumps(root_dict, indent=True)
+        return json_string
 
 
 def convert_tex_parameter(text):
@@ -323,9 +340,7 @@ def convert_tex_default(text, desired_type=None):
         text = text.replace(m, r)
     text = re.sub(r"\n+", "\n", text)
     # Remove all comment lines
-    text = "\n".join(
-        [l for l in text.splitlines() if not l.lstrip().startswith("%")]
-    )
+    text = "\n".join([l for l in text.splitlines() if not l.lstrip().startswith("%")])
 
     # print(text)
     converted = None
@@ -367,9 +382,7 @@ def convert_comment(text):
         text = text.replace(m, r)
     text = re.sub(r"\n+", "\n", text)
     # Remove all comment lines
-    text = "\n".join(
-        [l for l in text.splitlines() if not l.lstrip().startswith("%")]
-    )
+    text = "\n".join([l for l in text.splitlines() if not l.lstrip().startswith("%")])
     return text
 
 
@@ -468,9 +481,7 @@ def sanitize_default(param_dict):
     sanitized_dict = param_dict.copy()
     original_default = sanitized_dict["default"]
     sanitized_dict["default_remark"] = original_default
-    converted_default = convert_tex_default(
-        original_default, param_dict["type"]
-    )
+    converted_default = convert_tex_default(original_default, param_dict["type"])
     sanitized_dict["default"] = converted_default
     return sanitized_dict
 
@@ -503,9 +514,7 @@ def sanitize_type(param_dict):
         sanitized_type = origin_type
 
     # Pass 2, test if int values are arrays
-    if (origin_type in ["int", "integer", "double"]) and (
-        sanitized_type is None
-    ):
+    if (origin_type in ["int", "integer", "double"]) and (sanitized_type is None):
         if "int" in origin_type:
             origin_type = "integer"
         # Test if the value from example is a single value or array
@@ -513,9 +522,7 @@ def sanitize_type(param_dict):
             example_value = param_dict["example"].split(":")[1]
             default = param_dict["default"]
             _array_test = is_array(example_value)
-            _bool_test = contain_only_bool(example_value) and contain_only_bool(
-                default
-            )
+            _bool_test = contain_only_bool(example_value) and contain_only_bool(default)
         except Exception as e:
             warn(
                 f"Array conversion failed for {example_value}, ignore."
@@ -535,9 +542,7 @@ def sanitize_type(param_dict):
     if sanitized_type is None:
         # Currently there is only one NPT_NH_QMASS has this type
         # TODO: think of a way to format a mixed array?
-        warn(
-            f"Type of {symbol} if not standard digit or array, mark as others."
-        )
+        warn(f"Type of {symbol} if not standard digit or array, mark as others.")
         sanitized_type = "other"
         # TODO: how about provide a true / false type?
     sanitized_dict["type"] = sanitized_type
@@ -556,12 +561,18 @@ if __name__ == "__main__":
         help="Output file name (json-formatted)",
     )
     argp.add_argument(
+        "--include-subdirs",
+        action="store_true",
+        help="Parse manual parameters from subdirs",
+    )
+    argp.add_argument(
         "root", help="Root directory of the latex files"
     )  # root directory of the LaTeX files
     args = argp.parse_args()
     output = Path(args.output).with_suffix(".json")
-    parser = SPARCDocParser(directory=Path(args.root))
-    json_string = parser.to_json(indent=True)
+    json_string = SPARCDocParser.json_from_directory(
+        directory=Path(args.root), include_subdirs=args.include_subdirs
+    )
     with open(output, "w", encoding="utf8") as fd:
         fd.write(json_string)
     print(f"SPARC parameter specifications written to {output}!")

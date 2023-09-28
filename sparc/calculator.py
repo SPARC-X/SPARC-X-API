@@ -5,7 +5,7 @@ from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
 import subprocess
 
 from .io import SparcBundle
-from .utils import _find_default_sparc, h2gpts
+from .utils import _find_default_sparc, h2gpts, deprecated
 from warnings import warn, warn_explicit
 from .api import SparcAPI
 import datetime
@@ -25,22 +25,6 @@ sparc_python_inputs = [
 
 
 defaultAPI = SparcAPI()
-
-
-def deprecated(message):
-    def decorator(func):
-        def new_func(*args, **kwargs):
-            warn(
-                "Function {} is deprecated sparc-dft-api >= v0.2! {}".format(
-                    func.__name__, message
-                ),
-                category=DeprecationWarning,
-            )
-            return func(*args, **kwargs)
-
-        return new_func
-
-    return decorator
 
 
 class SPARC(FileIOCalculator):
@@ -177,9 +161,7 @@ class SPARC(FileIOCalculator):
         # A few hard-written rules. Wrapping should only affect the position
         if "positions" in system_changes:
             atoms_copy.wrap()
-            new_system_changes = FileIOCalculator.check_state(
-                self, atoms_copy, tol=tol
-            )
+            new_system_changes = FileIOCalculator.check_state(self, atoms_copy, tol=tol)
             # TODO: make sure such check only happens for PBC
             # the position is wrapped, accept as the same structure
             if "positions" not in new_system_changes:
@@ -220,16 +202,16 @@ class SPARC(FileIOCalculator):
             self.command = command_env
         return f"{self.command} {extras}"
 
-    def calculate(
-        self, atoms=None, properties=["energy"], system_changes=all_changes
-    ):
+    def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         """Perform a calculation step"""
-        # For v1.0.0, we'll only allow pbc=True to make ourselves easier
-        # TODO: need to have more flexible support for pbc types and check_state
-        if not all(atoms.pbc):
-            raise NotImplementedError(
-                "Non-pbc atoms input has not been tested in the api. Please use pbc=True for now."
-            )
+        # Check if the user accidentally provides atoms unit cell without vacuum
+
+        if atoms and np.any(atoms.cell.cellpar()[:3] == 0):
+            # TODO: choose a better error name
+            msg = "Cannot setup SPARC calculation because at least one of the lattice dimension is zero!"
+            if any([bc_ is False for bc_ in atoms.pbc]):
+                msg += " Please add a vacuum in the non-periodic direction of your input structure."
+            raise ValueError(msg)
         Calculator.calculate(self, atoms, properties, system_changes)
         self.write_input(self.atoms, properties, system_changes)
         self.execute()
@@ -248,7 +230,15 @@ class SPARC(FileIOCalculator):
                     self.atoms.get_initial_magnetic_moments()
                 )
 
-            # atoms = self.atoms.copy()
+    def get_stress(self, atoms=None):
+        """Warn user the dimensionality change when using stress"""
+        if "stress_equiv" in self.results:
+            raise NotImplementedError(
+                "You're requesting stress in a low-dimensional system. Please use `calc.results['stress_equiv']` instead!"
+            )
+        return super().get_stress(atoms)
+
+        # atoms = self.atoms.copy()
 
     # def update_atoms(self, atoms):
     #     """Update atoms after calculation if the positions are changed
@@ -284,9 +274,7 @@ class SPARC(FileIOCalculator):
             )
 
         # Rule 2: LATVEC_SCALE, CELL
-        if ("LATVEC_SCALE" in input_parameters) and (
-            "CELL" in input_parameters
-        ):
+        if ("LATVEC_SCALE" in input_parameters) and ("CELL" in input_parameters):
             # TODO: change to ExclusionParameterError
             raise ValueError(
                 "LATVEC_SCALE and CELL cannot be specified simultaneously!"
@@ -296,12 +284,7 @@ class SPARC(FileIOCalculator):
         # LATVEC, LATVEC_SCALE or CELL
         # TODO: make sure the rule makes sense for molecules
         if atoms is not None:
-            if any(
-                [
-                    p in input_parameters
-                    for p in ["LATVEC", "LATVEC_SCALE", "CELL"]
-                ]
-            ):
+            if any([p in input_parameters for p in ["LATVEC", "LATVEC_SCALE", "CELL"]]):
                 raise ValueError(
                     "When passing an ase atoms object, LATVEC, LATVEC_SCALE or CELL cannot be set simultaneously!"
                 )
@@ -317,10 +300,7 @@ class SPARC(FileIOCalculator):
                 raise ValueError(f"Parameter {param} is not provided.")
         # At least one from ECUT, MESH_SPACING and FD_GRID must be provided
         if not any(
-            [
-                param in input_parameters
-                for param in ("ECUT", "MESH_SPACING", "FD_GRID")
-            ]
+            [param in input_parameters for param in ("ECUT", "MESH_SPACING", "FD_GRID")]
         ):
             raise ValueError(
                 "You should provide at least one of ECUT, MESH_SPACING or FD_GRID."
@@ -395,10 +375,7 @@ class SPARC(FileIOCalculator):
         errorcode = self.proc.returncode
 
         if errorcode > 0:
-            msg = (
-                f"SPARC failed with command {command}"
-                f"with error code {errorcode}"
-            )
+            msg = f"SPARC failed with command {command}" f"with error code {errorcode}"
             raise RuntimeError(msg)
 
         return
@@ -416,9 +393,7 @@ class SPARC(FileIOCalculator):
         """Parse from the SparcBundle"""
         # TODO: try use cache?
         # self.sparc_bundle.read_raw_results()
-        last = self.sparc_bundle.convert_to_ase(
-            indices=-1, include_all_files=False
-        )
+        last = self.sparc_bundle.convert_to_ase(indices=-1, include_all_files=False)
         self.atoms = last.copy()
         self.results.update(last.calc.results)
 
@@ -497,13 +472,37 @@ class SPARC(FileIOCalculator):
         params = self.special_params.copy()
 
         # xc --> EXCHANGE_CORRELATION
-        # TODO: more XC options
         if "xc" in params:
             xc = params.pop("xc")
             if xc.lower() == "pbe":
                 converted_sparc_params["EXCHANGE_CORRELATION"] = "GGA_PBE"
             elif xc.lower() == "lda":
-                converted_sparc_params["EXCHANGE_CORRELATION"] = "LDA_PW"
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "LDA_PZ"
+            elif xc.lower() == "rpbe":
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "GGA_RPBE"
+            elif xc.lower() == "pbesol":
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "GGA_PBEsol"
+            elif xc.lower() == "pbe0":
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "PBE0"
+            elif xc.lower() == "hf":
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "HF"
+            # backward compatibility for HSE03. Note HSE06 is not supported yet
+            elif (xc.lower() == "hse") or (xc.lower() == "hse03"):
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "HSE"
+            # backward compatibility for VASP-style XCs
+            elif (
+                (xc.lower() == "vdwdf1")
+                or (xc.lower() == "vdw-df")
+                or (xc.lower() == "vdw-df1")
+            ):
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "vdWDF1"
+            elif (xc.lower() == "vdwdf2") or (xc.lower() == "vdw-df2"):
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "vdWDF2"
+            elif xc.lower() == "scan":
+                converted_sparc_params["EXCHANGE_CORRELATION"] = "SCAN"
+            else:
+                # TODO: alternative exception
+                raise ValueError(f"xc keyword value {xc} is invalid!")
 
         # h --> gpts
         if "h" in params:
@@ -517,10 +516,7 @@ class SPARC(FileIOCalculator):
                     "Must have an active atoms object to convert h --> gpts!"
                 )
             if any(
-                [
-                    p in self.valid_params
-                    for p in ("FD_GRID", "ECUT", "MESH_SPACING")
-                ]
+                [p in self.valid_params for p in ("FD_GRID", "ECUT", "MESH_SPACING")]
             ):
                 warn(
                     "You have specified one of FD_GRID, ECUT or MESH_SPACING, "
@@ -538,9 +534,7 @@ class SPARC(FileIOCalculator):
                 converted_sparc_params["FD_GRID"] = gpts
             else:
                 # TODO: customize error
-                raise ValueError(
-                    f"Input parameter gpts has invalid value {gpts}"
-                )
+                raise ValueError(f"Input parameter gpts has invalid value {gpts}")
 
         # kpts
         if "kpts" in params:
@@ -550,9 +544,7 @@ class SPARC(FileIOCalculator):
                 converted_sparc_params["KPOINT_GRID"] = kpts
             else:
                 # TODO: customize error
-                raise ValueError(
-                    f"Input parameter kpts has invalid value {kpts}"
-                )
+                raise ValueError(f"Input parameter kpts has invalid value {kpts}")
 
         # nbands
         if "nbands" in params:
@@ -563,9 +555,7 @@ class SPARC(FileIOCalculator):
                 converted_sparc_params["NSTATES"] = nbands
             else:
                 # TODO: customize error
-                raise ValueError(
-                    f"Input parameter nbands has invalid value {nbands}"
-                )
+                raise ValueError(f"Input parameter nbands has invalid value {nbands}")
 
         # convergence is a dict
         if "convergence" in params:
@@ -573,10 +563,10 @@ class SPARC(FileIOCalculator):
             tol_e = convergence.get("energy", None)
             if tol_e:
                 # TOL SCF: Ha / atom <--> energy tol: eV / atom
-                converted_sparc_params["SCF_ENERGY_ACC"] = tol_e / Hartree
+                converted_sparc_params["TOL_SCF"] = tol_e / Hartree
 
             # TODO: per AJ's suggestion, better change forces to relaxation
-            tol_f = convergence.get("forces", None)
+            tol_f = convergence.get("relax", None)
             if tol_f:
                 # TOL SCF: Ha / Bohr <--> energy tol: Ha / Bohr
                 converted_sparc_params["TOL_RELAX"] = tol_f / Hartree * Bohr
@@ -620,9 +610,7 @@ class SPARC(FileIOCalculator):
     def interpret_kpoint_input(self, atoms, **kwargs):
         return None
 
-    @deprecated(
-        "Please use SPARC.set instead for setting downsampling parameter"
-    )
+    @deprecated("Please use SPARC.set instead for setting downsampling parameter")
     def interpret_downsampling_input(self, atoms, **kwargs):
         return None
 

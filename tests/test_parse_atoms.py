@@ -1,5 +1,9 @@
 import pytest
 import numpy as np
+from pathlib import Path
+
+curdir = Path(__file__).parent
+test_output_dir = curdir / "outputs"
 
 
 def test_atoms2dict():
@@ -26,9 +30,7 @@ def test_atoms2dict():
     mol1.set_initial_charges([0.1] * 8)
     with pytest.warns(UserWarning, match="initial charges"):
         # Charge cannot be written
-        adict = atoms_to_dict(
-            mol1, sort=False, direct=True, comments=["Ethane"]
-        )
+        adict = atoms_to_dict(mol1, sort=False, direct=True, comments=["Ethane"])
 
     # Spin
     mol2 = mol.copy()
@@ -219,3 +221,25 @@ def test_relax_from_constraint():
     with pytest.warns(UserWarning, match="only support freezing entire"):
         # Freezing diagonal is not possible
         assert relax_from_constraint(FixedPlane(0, [1, 1, 1])) == {}
+
+
+def test_atoms_pbc_conversion():
+    from sparc.sparc_parsers.atoms import atoms_to_dict
+    from ase.build import molecule, bulk, mx2
+
+    h2 = molecule("H2")
+    sparc_dict = atoms_to_dict(h2)
+
+    assert sparc_dict["inpt"]["params"]["BC"] == "D D D"
+    h2.pbc = True
+
+    sparc_dict = atoms_to_dict(h2)
+    assert sparc_dict["inpt"]["params"]["BC"] == "P P P"
+
+    al = bulk("Al", cubic=True)
+    sparc_dict = atoms_to_dict(al)
+    assert sparc_dict["inpt"]["params"]["BC"] == "P P P"
+
+    mos2 = mx2("MoS2")
+    sparc_dict = atoms_to_dict(mos2)
+    assert sparc_dict["inpt"]["params"]["BC"] == "P P D"

@@ -93,24 +93,6 @@ old_atoms.get_potential_energy()
 ```
 
 
-### Special inputs for `sparc.SPARC` calculator
-
-The following input parameters have special meaning in `sparc.SPARC` calculator,
-they are consistent with definitions in other ASE calculators and uses Å / eV / GPa / fs 
-unit system:
-
-| parameter name | meaning                         | example        | equivalent `SPARC` input |
-|----------------|---------------------------------|----------------|--------------------------|
-| `xc`           | Exchange-correlation functional | `xc=pbe` | `EXCHANGE_CORRELATION: GGA_PBE` |
-| `h`            | Real grid spacing    (Å)           | `h=0.2`        | `FD_GRID: Nx Ny Nz`  (calculated values)         |
-| `gpts`         | Explicit grid points |   `gpts=[10, 10, 10]` | `FD_GRID: 10 10 10` |
-| `kpts`         | Kpoint mesh          |   `kpts=[3, 3, 3]`    | `KPOINT_GRID: 3 3 3` |
-| `convergence`  | Dict of convergence criteria (see below) |  | |
-|                | `energy`  eV/atom         | `convergence={"energy": 1e-4}` | `SCF_ENERGY_ACC: 3e-6` |
-|                | `forces`  eV/Å            | `convergence={"forces": 1e-2}` | `TOL_RELAX: 2e-4` |
-|                | `density` e/atom          | `convergence={`density`: 1e-6}`| `TOL_PSEUDOCHARGE: 1e-6` |
-
-*WIP*: support more advanced settings like D3, HSE and DFT+U in `xc` settings
 
 ### Rules for input parameters in `sparc.SPARC` calculator
 

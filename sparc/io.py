@@ -27,7 +27,7 @@ from .sparc_parsers.atoms import dict_to_atoms, atoms_to_dict
 from .sparc_parsers.pseudopotential import copy_psp_file, parse_psp8_header
 from .common import psp_dir as default_psp_dir
 from .download_data import is_psp_download_complete
-from .utils import string2index
+from .utils import string2index, deprecated
 
 from ase.calculators.singlepoint import SinglePointDFTCalculator
 from ase.units import Hartree
@@ -270,9 +270,7 @@ class SparcBundle:
         """
         # Find the max output index
         # TODO: move this into another function
-        last_out = sorted(
-            self.directory.glob(f"{self.label}.out*"), reverse=True
-        )
+        last_out = sorted(self.directory.glob(f"{self.label}.out*"), reverse=True)
         # No output file, only ion / inpt
         if len(last_out) == 0:
             self.last_image = -1
@@ -343,9 +341,7 @@ class SparcBundle:
                 self.sorting = sorting
             else:
                 # Compare stored sorting
-                assert (
-                    tuple(self.sorting["sort"]) == tuple(sorting["sort"])
-                ) and (
+                assert (tuple(self.sorting["sort"]) == tuple(sorting["sort"])) and (
                     tuple(self.sorting["resort"]) == tuple(sorting["resort"])
                 ), "Sorting information changed!"
         return results_dict
@@ -367,17 +363,11 @@ class SparcBundle:
         # print("RAW RES: ", raw_results)
         for entry in raw_results:
             if "static" in entry:
-                calc_results, images = self._extract_static_results(
-                    entry, index=":"
-                )
+                calc_results, images = self._extract_static_results(entry, index=":")
             elif "geopt" in entry:
-                calc_results, images = self._extract_geopt_results(
-                    entry, index=":"
-                )
+                calc_results, images = self._extract_geopt_results(entry, index=":")
             elif "aimd" in entry:
-                calc_results, images = self._extract_aimd_results(
-                    entry, index=":"
-                )
+                calc_results, images = self._extract_aimd_results(entry, index=":")
             else:
                 calc_results, images = None, [self.init_atoms.copy()]
 
@@ -406,9 +396,7 @@ class SparcBundle:
             # Simply copy the results?
             sp.results.update(res)
             sp.name = "sparc"
-            sp.kpts = (
-                raw_results["inpt"].get("params", {}).get("KPOINT_GRID", None)
-            )
+            sp.kpts = raw_results["inpt"].get("params", {}).get("KPOINT_GRID", None)
             # There may be a better way handling the parameters...
             sp.parameters = raw_results["inpt"].get("params", {})
             sp.raw_parameters = {
@@ -442,6 +430,9 @@ class SparcBundle:
         if "stress" in static_results:
             calc_results["stress"] = static_results["stress"]
 
+        if "stress_equiv" in static_results:
+            calc_results["stress_equiv"] = static_results["stress_equiv"]
+
         atoms = self.init_atoms.copy()
         if "atoms" in static_results:
             atoms_dict = static_results["atoms"]
@@ -449,9 +440,7 @@ class SparcBundle:
             # TODO: Check naming, is it coord_frac or scaled_positions?
             if "coord_frac" in atoms_dict:
                 # TODO: check if set_scaled_positions requires constraint?
-                atoms.set_scaled_positions(
-                    atoms_dict["coord_frac"][self.resort]
-                )
+                atoms.set_scaled_positions(atoms_dict["coord_frac"][self.resort])
             elif "coord" in atoms_dict:
                 atoms.set_positions(
                     atoms_dict["coord"][self.resort], apply_constraint=False
@@ -552,13 +541,11 @@ class SparcBundle:
             partial_result = {}
             atoms = self.init_atoms.copy()
             if "total energy per atom" in result:
-                partial_result["energy"] = result[
-                    "total energy per atom"
-                ] * len(atoms)
+                partial_result["energy"] = result["total energy per atom"] * len(atoms)
             if "free energy per atom" in result:
-                partial_result["free energy"] = result[
-                    "free energy per atom"
-                ] * len(atoms)
+                partial_result["free energy"] = result["free energy per atom"] * len(
+                    atoms
+                )
 
             if "forces" in result:
                 # The forces are already re-sorted!
@@ -566,9 +553,7 @@ class SparcBundle:
 
             # Modify the atoms in-place
             if "positions" not in result:
-                raise ValueError(
-                    "Cannot have aimd without positions information!"
-                )
+                raise ValueError("Cannot have aimd without positions information!")
 
             atoms.set_positions(
                 result["positions"][self.resort], apply_constraint=False
@@ -679,13 +664,71 @@ def write_sparc(filename, images, **kwargs):
         atoms = images
     elif isinstance(images, list):
         if len(images) > 1:
-            raise ValueError(
-                "SPARC format only supports writing one atoms object!"
-            )
+            raise ValueError("SPARC format only supports writing one atoms object!")
         atoms = images[0]
     sb = SparcBundle(directory=filename, mode="w")
     sb._write_ion_and_inpt(atoms, **kwargs)
     return
+
+
+@deprecated(
+    "Reading individual .ion is not recommended. Please use read_sparc instead."
+)
+def read_ion(filename, **kwargs):
+    """Parse an .ion file inside the SPARC bundle using a wrapper around SparcBundle
+    The reader works only when other files (.inpt) exist.
+
+    The returned Atoms object of read_ion method only contains the initial positions
+    """
+    parent_dir = Path(filename).parent
+    sb = SparcBundle(directory=parent_dir)
+    atoms = sb._read_ion_and_inpt()
+    return atoms
+
+
+@deprecated(
+    "Writing individual .ion file is not recommended. Please use write_sparc instead."
+)
+def write_ion(filename, atoms, **kwargs):
+    """Write .ion and .inpt files using the SparcBundle wrapper.
+
+    This is only for backward compatibility
+    """
+    label = Path(filename).with_suffix("").name
+    parent_dir = Path(filename).parent
+    sb = SparcBundle(directory=parent_dir, label=label, mode="w")
+    sb._write_ion_and_inpt(atoms, **kwargs)
+    return atoms
+
+
+def read_static(filename, index=-1, **kwargs):
+    """Parse a .static file bundle using a wrapper around SparcBundle
+    The reader works only when other files (.ion, .inpt) exist.
+    """
+    parent_dir = Path(filename).parent
+    sb = SparcBundle(directory=parent_dir)
+    atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
+    return atoms_or_images
+
+
+def read_geopt(filename, index=-1, **kwargs):
+    """Parse a .geopt file bundle using a wrapper around SparcBundle
+    The reader works only when other files (.ion, .inpt) exist.
+    """
+    parent_dir = Path(filename).parent
+    sb = SparcBundle(directory=parent_dir)
+    atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
+    return atoms_or_images
+
+
+def read_aimd(filename, index=-1, **kwargs):
+    """Parse a .static file bundle using a wrapper around SparcBundle
+    The reader works only when other files (.ion, .inpt) exist.
+    """
+    parent_dir = Path(filename).parent
+    sb = SparcBundle(directory=parent_dir)
+    atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
+    return atoms_or_images
 
 
 def register_ase_io_sparc(name="sparc"):
@@ -735,9 +778,7 @@ def register_ase_io_sparc(name="sparc"):
     # Step 1: patch the ase.io.sparc module
     try:
         entry_points = next(
-            ep
-            for ep in pkg_resources.iter_entry_points("ase.io")
-            if ep.name == "sparc"
+            ep for ep in pkg_resources.iter_entry_points("ase.io") if ep.name == "sparc"
         )
         _monkey_mod = entry_points.load()
     except Exception as e:
@@ -791,6 +832,29 @@ def register_ase_io_sparc(name="sparc"):
                     "Atomatic format inference for sparc is not correctly registered. "
                     "You may need to use format=sparc in ase.io.read and ase.io.write. "
                 )
+    # Add additional formats including .ion (r/w), .static, .geopt, .aimd
+    F(
+        "ion",
+        desc="SPARC .ion file",
+        module="sparc",
+        code="1S",
+        ext="ion",
+    )
+    F(
+        "static",
+        desc="SPARC single point results",
+        module="sparc",
+        code="+S",
+        ext="static",
+    )
+    F(
+        "geopt",
+        desc="SPARC geometric optimization results",
+        module="sparc",
+        code="+S",
+        ext="geopt",
+    )
+    F("aimd", desc="SPARC AIMD results", module="sparc", code="+S", ext="aimd")
 
     # TODO: remove print options as it may be redundant
-    print("Successfully registered sparc format with ase.io!")
+    print("Successfully registered sparc formats with ase.io!")

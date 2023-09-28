@@ -30,22 +30,29 @@ jobs:
     - name: Install dependencies
       run: |
         # mamba install -c conda-forge ase>=3.22 pymatgen flake8 pytest
-        mamba install -c alchem0x2a sparc
+        mamba install -c conda-forge sparc-x
         # pip install pyfakefs
     - name: Install package
       run: |
         pip install -e ".[test]"
         # Download the external psp data
         python -m sparc.download_data
+    - name: Download SPARC output files to SPARC-master
+      run: |
+        wget https://github.com/SPARC-X/SPARC/archive/refs/heads/master.zip
+        unzip master.zip
     - name: Test with pytest
       run: |
         # python -m pytest -svv tests/ --cov=sparc --cov-report=json --cov-report=html
+        export SPARC_TESTS_DIR="./SPARC-master/tests"
+        export ASE_SPARC_COMMAND="mpirun -n 1 sparc"
         coverage run -a -m pytest -svv tests/
         coverage json --omit="tests/*.py"
         coverage html --omit="tests/*.py"
         COVERAGE=`cat coverage.json | jq .totals.percent_covered | xargs printf '%.*f' 0`
         echo "Current coverage is $COVERAGE"
         echo "COVPERCENT=$COVERAGE" >> $GITHUB_ENV
+        
     - name: Lint with flake8
       run: |
         echo $CONDA_PREFIX
@@ -58,8 +65,8 @@ jobs:
         # A coverage test badge
         anybadge --value=$COVPERCENT --file=badges/coverage.svg coverage
         # A version badge
-        PIPVER=`pip show sparc-dft-api | grep Version | cut -d ' ' -f2`
-        anybadge --value=$PIPVER --file=badges/package.svg -l sparc-dft-api
+        PIPVER=`pip show sparc-x-api | grep Version | cut -d ' ' -f2`
+        anybadge --value=$PIPVER --file=badges/package.svg -l sparc-x-api
     - name: Manually add git badges
       run: |
         # Assuming a badges branch already exists!

@@ -132,9 +132,7 @@ COORD:                       # coordinates follows
         fd.write(ion_content)
 
     data_dict = _read_ion("test.ion")
-    assert all(
-        ["ASE-SORT" not in line for line in data_dict["ion"]["comments"]]
-    )
+    assert all(["ASE-SORT" not in line for line in data_dict["ion"]["comments"]])
     assert tuple(data_dict["ion"]["sorting"]["sort"]) == (4, 0, 1, 2, 3)
     assert tuple(data_dict["ion"]["sorting"]["resort"]) == (1, 2, 3, 4, 0)
 
