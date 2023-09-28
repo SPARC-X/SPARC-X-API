@@ -1,7 +1,7 @@
 # `SPARC-X-API`: A Python API for the SPARC-X DFT Code
-[![Package](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/package.svg)](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/package.svg)
-[![Coverage](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)
-[![Unit tests](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml/badge.svg)](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml)
+[![Package](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/package.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/package.svg)
+[![Coverage](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/coverage.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/coverage.svg)
+[![Unit tests](https://github.com/SPARC-X/SPARC-X-API/actions/workflows/installation_test.yml/badge.svg)](https://github.com/SPARC-X/SPARC-X-API/actions/workflows/installation_test.yml)
 
 `SPARC-X-API` is an [ASE](https://wiki.fysik.dtu.dk/ase/)-compatible Python API for the density functional theory (DFT) code [SPARC](https://github.com/SPARC-X/SPARC). It offers:
 
@@ -23,14 +23,14 @@ which includes the pseudopotential files:
 # Change 'sparc-env' to your desired name if needed
 conda create -n sparc-env
 conda activate sparc-env
-conda install -c alchem0x2a sparc-x-api
+conda install -c alchem0x2a sparc-dft-api
 ```
 
 On Linux platforms (x86_64, aarch64), you can also install the
 precompiled `sparc` DFT binaries alongside the API:
 
 ```bash
-conda install -c alchem0x2a sparc
+conda install -c conda-forge sparc-x
 conda activate sparc-env   # Re-activate to have the env variables effective
 ```
 
@@ -281,7 +281,7 @@ short [MD trajectory](tests/outputs/NH3_sort_lbfgs_opt.sparc).
 
 <img width="1200" alt="image" src="https://github.com/alchem0x2A/SPARC-X-API/assets/6829706/e72329ff-7194-4819-94f8-486ef2218844">
 
-### 5. Units used in `SPARC-X-API`
+### 5. Parameters and units used in `SPARC-X-API`
 
 In the SPARC DFT code, all input parameters conventionally employ atomic units, such as Hartree and Bohr. Conversely, ASE objects (like `Atoms.positions`, `Atoms.cell`, `Atoms.get_potential_energy()`) utilize eV/Angstrom units.
 

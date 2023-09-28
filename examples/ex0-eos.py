@@ -1,4 +1,4 @@
-"""A simple example using sparc-dft-api to calculate the equation of state of bulk Al.
+"""A simple example using SPARC-X-API to calculate the equation of state of bulk Al.
 
 Example taken from GPAW's tutorial:
 https://wiki.fysik.dtu.dk/gpaw/tutorialsexercises/structureoptimization/lattice_constants/lattice_constants.html

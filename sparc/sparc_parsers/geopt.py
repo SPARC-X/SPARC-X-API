@@ -134,4 +134,4 @@ def _write_geopt(
     fileobj,
     data_dict,
 ):
-    raise NotImplementedError("Writing geopt file from python-api not supported!")
+    raise NotImplementedError("Writing geopt file from SPARC-X-API not supported!")

@@ -1,4 +1,4 @@
-"""Download the pseudopotential and other related files after sparc-python-api is installed
+"""Download the pseudopotential and other related files after sparc-x-api is installed
 
 Run:
 

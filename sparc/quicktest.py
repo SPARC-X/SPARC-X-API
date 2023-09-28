@@ -140,7 +140,7 @@ def main():
         cprint(
             "\nSome of the tests failed! Please refer to the following resources: \n"
             "1. SPARC's documentation: https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf \n"
-            "2. Python API documentation: https://github.com/SPARC-X/sparc-dft-api/wiki\n",
+            "2. Python API documentation: https://github.com/alchem0x2A/SPARC-X-API/blob/master/README.md\n",
             color="FAIL",
         )
 

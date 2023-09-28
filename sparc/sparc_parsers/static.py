@@ -190,4 +190,4 @@ def _write_static(
     fileobj,
     data_dict,
 ):
-    raise NotImplementedError("Writing static file from python-api not supported!")
+    raise NotImplementedError("Writing static file from SPARC-X-API not supported!")

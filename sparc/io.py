@@ -151,7 +151,7 @@ class SparcBundle:
             else:
                 warn(
                     (
-                        "PSP directory bundled with sparc-dft-api is broken! "
+                        "PSP directory bundled with SPARC-X-API is broken! "
                         "Please use `sparc.download_data` to re-download them!"
                     )
                 )
