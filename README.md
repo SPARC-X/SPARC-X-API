@@ -3,7 +3,7 @@
 [![Coverage](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)](https://raw.githubusercontent.com/alchem0x2A/sparc-dft-api/badges/badges/coverage.svg)
 [![Unit tests](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml/badge.svg)](https://github.com/alchem0x2A/sparc-dft-api/actions/workflows/installation_test.yml)
 
-`sparc-dft-api` is an [ASE](https://wiki.fysik.dtu.dk/ase/)-compatible Python API for the density functional theory (DFT) code [SPARC](https://github.com/SPARC-X/SPARC). It offers:
+`SPARC-X-API` is an [ASE](https://wiki.fysik.dtu.dk/ase/)-compatible Python API for the density functional theory (DFT) code [SPARC](https://github.com/SPARC-X/SPARC). It offers:
 
 1. ASE-compatible I/O format for SPARC files
 2. A JSON API interfacing with SPARC's C-code for parameter validation and conversion
@@ -310,7 +310,6 @@ unit system:
 |                |                                 | `xc=vdwdf1` or `xc=vdw-df` | `EXCHANGE_CORRELATION: vdWDF1` |
 |                |                                 | `xc=vdwdf2` or `xc=vdw-df2` | `EXCHANGE_CORRELATION: vdWDF2` |
 |                |                                 | `xc=scan` | `EXCHANGE_CORRELATION: SCAN` |
-|----------------|---------------------------------|----------------|--------------------------|
 | `h`            | Real grid spacing    (Å)           | `h=0.2`        | `FD_GRID: Nx Ny Nz`  (nearest int value)         |
 | `gpts`         | Explicit grid points |   `gpts=[10, 10, 10]` | `FD_GRID: 10 10 10` |
 | `kpts`         | Kpoint mesh          |   `kpts=[3, 3, 3]`    | `KPOINT_GRID: 3 3 3` |
@@ -318,7 +317,6 @@ unit system:
 |                | `energy`  eV/atom         | `convergence={"energy": 1e-4}` | `SCF_ENERGY_ACC: 3e-6` |
 |                | `forces`  eV/Å            | `convergence={"forces": 1e-2}` | `TOL_RELAX: 2e-4` |
 |                | `density` e/atom          | `convergence={`density`: 1e-6}`| `TOL_PSEUDOCHARGE: 1e-6` |
-|----------------|---------------------------------|----------------|--------------------------|
 
 
 ## Troubleshooting
