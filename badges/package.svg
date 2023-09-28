@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="132" height="20">
+<svg xmlns="http://www.w3.org/2000/svg" width="122" height="20">
     <linearGradient id="b" x2="0" y2="100%">
         <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
         <stop offset="1" stop-opacity=".1"/>
     </linearGradient>
     <mask id="anybadge_1">
-        <rect width="132" height="20" rx="3" fill="#fff"/>
+        <rect width="122" height="20" rx="3" fill="#fff"/>
     </mask>
     <g mask="url(#anybadge_1)">
-        <path fill="#555" d="M0 0h91v20H0z"/>
-        <path fill="#4c1" d="M91 0h41v20H91z"/>
-        <path fill="url(#b)" d="M0 0h132v20H0z"/>
+        <path fill="#555" d="M0 0h81v20H0z"/>
+        <path fill="#4c1" d="M81 0h41v20H81z"/>
+        <path fill="url(#b)" d="M0 0h122v20H0z"/>
     </g>
     <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
-        <text x="46.5" y="15" fill="#010101" fill-opacity=".3">sparc-dft-api</text>
-        <text x="45.5" y="14">sparc-dft-api</text>
+        <text x="41.5" y="15" fill="#010101" fill-opacity=".3">sparc-x-api</text>
+        <text x="40.5" y="14">sparc-x-api</text>
     </g>
     <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
-        <text x="112.5" y="15" fill="#010101" fill-opacity=".3">1.0.0</text>
-        <text x="111.5" y="14">1.0.0</text>
+        <text x="102.5" y="15" fill="#010101" fill-opacity=".3">1.0.0</text>
+        <text x="101.5" y="14">1.0.0</text>
     </g>
 </svg>
