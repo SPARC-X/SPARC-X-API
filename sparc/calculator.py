@@ -486,11 +486,15 @@ class SPARC(FileIOCalculator):
                 converted_sparc_params["EXCHANGE_CORRELATION"] = "PBE0"
             elif xc.lower() == "hf":
                 converted_sparc_params["EXCHANGE_CORRELATION"] = "HF"
-            # backward compatibility for HSE03. Note HSE06 is not supported yet 
+            # backward compatibility for HSE03. Note HSE06 is not supported yet
             elif (xc.lower() == "hse") or (xc.lower() == "hse03"):
                 converted_sparc_params["EXCHANGE_CORRELATION"] = "HSE"
             # backward compatibility for VASP-style XCs
-            elif (xc.lower() == "vdwdf1") or (xc.lower() == "vdw-df") or (xc.lower() == "vdw-df1"):
+            elif (
+                (xc.lower() == "vdwdf1")
+                or (xc.lower() == "vdw-df")
+                or (xc.lower() == "vdw-df1")
+            ):
                 converted_sparc_params["EXCHANGE_CORRELATION"] = "vdWDF1"
             elif (xc.lower() == "vdwdf2") or (xc.lower() == "vdw-df2"):
                 converted_sparc_params["EXCHANGE_CORRELATION"] = "vdWDF2"
@@ -499,7 +503,6 @@ class SPARC(FileIOCalculator):
             else:
                 # TODO: alternative exception
                 raise ValueError(f"xc keyword value {xc} is invalid!")
-        
 
         # h --> gpts
         if "h" in params:

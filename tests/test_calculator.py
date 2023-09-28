@@ -39,6 +39,7 @@ def test_h_parameter():
 def test_xc_parameter():
     from sparc.calculator import SPARC
     from ase.build import bulk
+
     atoms = bulk("Al", cubic=True)
     with tempfile.TemporaryDirectory() as tmpdir:
         calc = SPARC(directory=tmpdir)
@@ -117,8 +118,6 @@ def test_xc_parameter():
         calc.write_input(atoms)
         filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
         assert "EXCHANGE_CORRELATION: SCAN" in filecontent
-
-    
 
 
 def test_conflict_param():

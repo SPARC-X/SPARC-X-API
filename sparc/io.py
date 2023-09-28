@@ -671,7 +671,9 @@ def write_sparc(filename, images, **kwargs):
     return
 
 
-@deprecated("Reading individual .ion is not recommended. Please use read_sparc instead.")
+@deprecated(
+    "Reading individual .ion is not recommended. Please use read_sparc instead."
+)
 def read_ion(filename, **kwargs):
     """Parse an .ion file inside the SPARC bundle using a wrapper around SparcBundle
     The reader works only when other files (.inpt) exist.
@@ -683,7 +685,10 @@ def read_ion(filename, **kwargs):
     atoms = sb._read_ion_and_inpt()
     return atoms
 
-@deprecated("Writing individual .ion file is not recommended. Please use write_sparc instead.")
+
+@deprecated(
+    "Writing individual .ion file is not recommended. Please use write_sparc instead."
+)
 def write_ion(filename, atoms, **kwargs):
     """Write .ion and .inpt files using the SparcBundle wrapper.
 

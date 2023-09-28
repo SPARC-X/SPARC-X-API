@@ -30,7 +30,7 @@ jobs:
     - name: Install dependencies
       run: |
         # mamba install -c conda-forge ase>=3.22 pymatgen flake8 pytest
-        mamba install -c alchem0x2a sparc
+        mamba install -c conda-forge sparc-x
         # pip install pyfakefs
     - name: Install package
       run: |
@@ -45,6 +45,7 @@ jobs:
       run: |
         # python -m pytest -svv tests/ --cov=sparc --cov-report=json --cov-report=html
         export SPARC_TESTS_DIR="./SPARC-master/tests"
+        export ASE_SPARC_COMMAND="mpirun -n 1 sparc"
         coverage run -a -m pytest -svv tests/
         coverage json --omit="tests/*.py"
         coverage html --omit="tests/*.py"
