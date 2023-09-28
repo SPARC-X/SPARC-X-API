@@ -19,6 +19,7 @@ def test_read_all_tests():
 
     skipped_names = []
     tests_dir = os.environ.get("SPARC_TESTS_DIR", "")
+    print(f"Current test dir is {tests_dir}")
     if len(tests_dir) == 0:
         pytest.skip(allow_module_level=True)
 
