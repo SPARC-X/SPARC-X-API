@@ -5,18 +5,27 @@ and run using standard python libaries. This may be useful for cases like
 conda build and CI where not all dependencies are present
 """
 
+
 def _missing_deps_func(*args, **kwargs):
     raise ImportError("Importing fails for ase / numpy!")
 
+
 class SPARCMissingDeps:
     def __init__(self, *args, **kwargs):
-        raise ImportError("Cannot initialize sparc.SPARC because the required dependencies (ase and numpy) are not available.")
+        raise ImportError(
+            "Cannot initialize sparc.SPARC because the required dependencies (ase and numpy) are not available."
+        )
 
     def __getattr__(self, name):
-        raise ImportError(f"Cannot access '{name}' on sparc.SPARC because the required dependencies (ase and numpy) are not available.")
+        raise ImportError(
+            f"Cannot access '{name}' on sparc.SPARC because the required dependencies (ase and numpy) are not available."
+        )
+
+
 try:
     import ase
     import numpy
+
     _import_complete = True
 except ImportError:
     _import_complete = False
@@ -25,6 +34,7 @@ if _import_complete:
     from .io import read_sparc, write_sparc
     from .io import register_ase_io_sparc
     from .calculator import SPARC
+
     register_ase_io_sparc()
 else:
     # If importing is not complete, any code trying to directly import
@@ -32,4 +42,3 @@ else:
     read_sparc = _missing_deps_func
     write_sparc = _missing_deps_func
     SPARC = SPARCMissingDeps
-    
