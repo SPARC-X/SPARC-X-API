@@ -11,9 +11,7 @@ def deprecated(message):
     def decorator(func):
         def new_func(*args, **kwargs):
             warn(
-                "Function {} is deprecated! {}".format(
-                    func.__name__, message
-                ),
+                "Function {} is deprecated! {}".format(func.__name__, message),
                 category=DeprecationWarning,
             )
             return func(*args, **kwargs)
