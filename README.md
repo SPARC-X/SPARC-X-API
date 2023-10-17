@@ -23,7 +23,7 @@ which includes the pseudopotential files:
 # Change 'sparc-env' to your desired name if needed
 conda create -n sparc-env
 conda activate sparc-env
-conda install -c alchem0x2a sparc-dft-api
+conda install -c conda-forge sparc-x-api
 ```
 
 On Linux platforms (x86_64, aarch64), you can also install the
@@ -33,8 +33,6 @@ precompiled `sparc` DFT binaries alongside the API:
 conda install -c conda-forge sparc-x
 conda activate sparc-env   # Re-activate to have the env variables effective
 ```
-
-*Note: Packaging of SPARC-X-API on conda-forge is in progress.*
 
 ### 2. Manual installation from source with `pip`
 
