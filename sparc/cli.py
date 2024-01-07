@@ -4,8 +4,9 @@ def main(
     hook=None,
     args=None,
 ):
-    import sparc
     from ase.cli.main import main
+
+    import sparc
 
     main(prog=prog, description=description, hook=hook, args=args)
 

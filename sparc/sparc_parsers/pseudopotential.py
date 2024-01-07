@@ -7,13 +7,14 @@ The first
 
 """
 
-import re
 import os
-import numpy as np
-from pathlib import Path
-from ase.data import atomic_names, chemical_symbols
-from warnings import warn
+import re
 import shutil
+from pathlib import Path
+from warnings import warn
+
+import numpy as np
+from ase.data import atomic_names, chemical_symbols
 
 
 class NotPSP8Format(Exception):

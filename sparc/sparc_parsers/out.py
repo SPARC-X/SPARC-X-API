@@ -7,20 +7,18 @@ This file has been heavily modified since SPARC 0.1
 
 TODO: more descriptions about this file io parser
 """
+import re
+from datetime import datetime
 from warnings import warn
 
 import numpy as np
-from ase.units import Bohr, Hartree, GPa
-
+from ase.units import Bohr, GPa, Hartree
 
 # Safe wrappers for both string and fd
 from ase.utils import reader, writer
 
-from .utils import read_block_input, bisect_and_strip
-
 from ..api import SparcAPI
-import re
-from datetime import datetime
+from .utils import bisect_and_strip, read_block_input
 
 # TODO: should allow user to select the api
 defaultAPI = SparcAPI()

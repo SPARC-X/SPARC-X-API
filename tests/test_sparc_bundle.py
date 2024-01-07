@@ -1,8 +1,9 @@
-import pytest
-import numpy as np
-from pathlib import Path
 import os
 import tempfile
+from pathlib import Path
+
+import numpy as np
+import pytest
 
 curdir = Path(__file__).parent
 test_psp_dir = curdir / "psps"
@@ -50,8 +51,8 @@ def test_default_psp(monkeypatch):
 
     monkeypatch.setattr(sparc_io_bundle, "is_psp_download_complete", _fake_psp_check)
 
-    from sparc.io import SparcBundle
     from sparc.common import psp_dir as default_psp_dir
+    from sparc.io import SparcBundle
 
     os.environ.pop("SPARC_PP_PATH", None)
     os.environ.pop("SPARC_PSP_PATH", None)
@@ -82,8 +83,9 @@ def test_bundle_label():
 
 def test_read_ion_inpt():
     """Test ion and inpt read"""
+    from ase.units import Angstrom, Bohr
+
     from sparc.io import SparcBundle
-    from ase.units import Bohr, Angstrom
 
     sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc")
     atoms = sb._read_ion_and_inpt()
@@ -133,9 +135,10 @@ def test_read_ion_inpt():
 
 def test_write_ion_inpt(fs):
     """Same example as in test_parse_atoms but try writing inpt and atoms"""
-    from sparc.io import SparcBundle
-    from ase.units import Bohr, Angstrom
     from ase.build import bulk
+    from ase.units import Angstrom, Bohr
+
+    from sparc.io import SparcBundle
 
     fs.create_dir("test.sparc")
     # data_dict = {
@@ -210,9 +213,10 @@ def test_write_ion_inpt(fs):
 
 def test_write_ion_inpt_real():
     """Same example as in test_parse_atoms but try writing inpt and atoms"""
-    from sparc.io import SparcBundle
-    from ase.units import Bohr, Angstrom
     from ase.build import bulk
+    from ase.units import Angstrom, Bohr
+
+    from sparc.io import SparcBundle
 
     # Even without SPARC_PP_PATH, the psp files should exist
     os.environ.pop("SPARC_PP_PATH", None)
@@ -229,9 +233,10 @@ def test_write_ion_inpt_real():
 
 
 def test_bundle_diff_label(fs):
-    from sparc.io import SparcBundle
-    from ase.units import Bohr, Angstrom
     from ase.build import bulk
+    from ase.units import Angstrom, Bohr
+
+    from sparc.io import SparcBundle
 
     fs.create_dir("test.sparc")
     atoms = bulk("Cu") * [4, 4, 4]
@@ -251,10 +256,11 @@ def test_bundle_diff_label(fs):
 
 
 def test_bundle_write_multi(fs):
-    from sparc.io import write_sparc, read_sparc
-    from ase.build import bulk
-    from ase.io import write, read
     import numpy as np
+    from ase.build import bulk
+    from ase.io import read, write
+
+    from sparc.io import read_sparc, write_sparc
 
     fs.create_dir("test.sparc")
     atoms = bulk("Cu") * [4, 4, 4]
@@ -290,9 +296,10 @@ def test_bundle_psp():
 
 def test_bundle_reuse_sorting():
     """sort=True should reuse the sorting information from bundle"""
-    from sparc.io import SparcBundle
     import tempfile
     from pathlib import Path
+
+    from sparc.io import SparcBundle
 
     sb = SparcBundle(test_output_dir / "Cu_FCC.sparc")
     init_atoms = sb.convert_to_ase()
@@ -318,11 +325,13 @@ def test_bundle_nh3():
     Order of atoms in SPARC ion file is H, H, H, N
     Make sure the constraint is aso correct
     """
-    from sparc.io import SparcBundle
     import tempfile
     from pathlib import Path
+
     from ase.build import molecule
     from ase.constraints import FixAtoms
+
+    from sparc.io import SparcBundle
 
     nh3 = molecule("NH3", cell=(6, 6, 6))
     nh3.constraints = [FixAtoms([0])]

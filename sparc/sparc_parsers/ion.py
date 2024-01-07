@@ -7,6 +7,7 @@ This file has been heavily modified since SPARC 0.1
 
 TODO: more descriptions about this file io parser
 """
+import textwrap
 from warnings import warn
 
 import numpy as np
@@ -15,15 +16,13 @@ from ase.units import Bohr
 # Safe wrappers for both string and fd
 from ase.utils import reader, writer
 
-from .utils import (
-    strip_comments,
-    bisect_and_strip,
-    read_block_input,
-    make_reverse_mapping,
-)
-
 from ..api import SparcAPI
-import textwrap
+from .utils import (
+    bisect_and_strip,
+    make_reverse_mapping,
+    read_block_input,
+    strip_comments,
+)
 
 # TODO: should allow user to select the api
 defaultAPI = SparcAPI()

@@ -108,8 +108,9 @@ COORD_FRAC:                   # fractional coordinates (in lattice vector basis)
 
 
 def test_make_reverse_mapping():
-    from sparc.sparc_parsers.utils import make_reverse_mapping
     import numpy as np
+
+    from sparc.sparc_parsers.utils import make_reverse_mapping
 
     # By applying the reverse mapping function twice, it should go back original
     for i in range(5):

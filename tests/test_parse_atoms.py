@@ -1,15 +1,17 @@
-import pytest
-import numpy as np
 from pathlib import Path
+
+import numpy as np
+import pytest
 
 curdir = Path(__file__).parent
 test_output_dir = curdir / "outputs"
 
 
 def test_atoms2dict():
-    from sparc.sparc_parsers.atoms import atoms_to_dict
-    from ase.constraints import FixAtoms
     from ase.build import molecule
+    from ase.constraints import FixAtoms
+
+    from sparc.sparc_parsers.atoms import atoms_to_dict
 
     mol = molecule("C2H6", pbc=True, cell=[10, 10, 10])
 
@@ -62,10 +64,11 @@ def test_atoms2dict():
 
 
 def test_dict2atoms():
-    from sparc.sparc_parsers.atoms import dict_to_atoms
-    from ase.constraints import FixAtoms
     from ase.build import molecule
-    from ase.units import Bohr, Angstrom
+    from ase.constraints import FixAtoms
+    from ase.units import Angstrom, Bohr
+
+    from sparc.sparc_parsers.atoms import dict_to_atoms
 
     data_dict = {
         "ion": {
@@ -189,11 +192,12 @@ def test_constraint_from_relax():
 
 
 def test_relax_from_constraint():
-    from sparc.sparc_parsers.atoms import (
-        relax_from_constraint,
-        relax_from_all_constraints,
-    )
     from ase.constraints import FixAtoms, FixedLine, FixedPlane, Hookean
+
+    from sparc.sparc_parsers.atoms import (
+        relax_from_all_constraints,
+        relax_from_constraint,
+    )
 
     cons = [FixAtoms([0, 1, 2, 3])]
     assert (~np.array(relax_from_all_constraints(cons, 4))).all()
@@ -224,8 +228,9 @@ def test_relax_from_constraint():
 
 
 def test_atoms_pbc_conversion():
+    from ase.build import bulk, molecule, mx2
+
     from sparc.sparc_parsers.atoms import atoms_to_dict
-    from ase.build import molecule, bulk, mx2
 
     h2 = molecule("H2")
     sparc_dict = atoms_to_dict(h2)

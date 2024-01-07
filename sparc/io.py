@@ -8,30 +8,29 @@ ase.io.trajectory
 
 """
 import os
-
 from pathlib import Path
-
-# from .sparc_parsers.ion import read_ion, write_ion
-
 from warnings import warn
+
+import numpy as np
+from ase.atoms import Atoms
+from ase.calculators.singlepoint import SinglePointDFTCalculator
+from ase.units import GPa, Hartree
+
+from .common import psp_dir as default_psp_dir
+from .download_data import is_psp_download_complete
+from .sparc_parsers.aimd import _read_aimd
+from .sparc_parsers.atoms import atoms_to_dict, dict_to_atoms
+from .sparc_parsers.geopt import _read_geopt
+from .sparc_parsers.inpt import _read_inpt, _write_inpt
 
 # various io formatters
 from .sparc_parsers.ion import _read_ion, _write_ion
-from .sparc_parsers.inpt import _read_inpt, _write_inpt
-from .sparc_parsers.static import _read_static
-from .sparc_parsers.geopt import _read_geopt
-from .sparc_parsers.aimd import _read_aimd
 from .sparc_parsers.out import _read_out
-
-from .sparc_parsers.atoms import dict_to_atoms, atoms_to_dict
 from .sparc_parsers.pseudopotential import copy_psp_file, parse_psp8_header
-from .common import psp_dir as default_psp_dir
-from .download_data import is_psp_download_complete
-from .utils import string2index, deprecated
+from .sparc_parsers.static import _read_static
+from .utils import deprecated, string2index
 
-from ase.calculators.singlepoint import SinglePointDFTCalculator
-from ase.units import Hartree
-from ase.atoms import Atoms
+# from .sparc_parsers.ion import read_ion, write_ion
 
 
 class SparcBundle:
@@ -507,6 +506,32 @@ class SparcBundle:
                         "Please check your setup ad output files."
                     )
                 atoms.set_cell(result["ase_cell"], scale_atoms=True)
+
+            # Unlike low-dimensional stress in static calculations, we need to convert
+            # stress_1d stress_2d to stress_equiv using the non-period cell dimension(s)
+            # This has to be done when the actual cell information is loaded
+            if "stress_1d" in result:
+                stress_1d = result["stress_1d"]
+                assert (
+                    np.count_nonzero(atoms.pbc) == 1
+                ), "Dimension of stress and PBC mismatch!"
+                for i, bc in enumerate(atoms.pbc):
+                    if not bc:
+                        stress_1d /= atoms.cell.cellpar()[i]
+                stress_equiv = stress_1d
+                partial_result["stress_equiv"] = stress_equiv
+
+            if "stress_2d" in result:
+                stress_2d = result["stress_2d"]
+                assert (
+                    np.count_nonzero(atoms.pbc) == 2
+                ), "Dimension of stress and PBC mismatch!"
+                for i, bc in enumerate(atoms.pbc):
+                    if not bc:
+                        stress_2d /= atoms.cell.cellpar()[i]
+                stress_equiv = stress_2d
+                partial_result["stress_equiv"] = stress_equiv
+
             calc_results.append(partial_result)
             ase_images.append(atoms)
 
@@ -747,10 +772,10 @@ def register_ase_io_sparc(name="sparc"):
     the develope version of ase provides a much more powerful
     register mechanism, we can wait.
     """
-    from ase.io.formats import define_io_format as F
-    from ase.io.formats import ioformats
-    from ase.io.formats import filetype as _old_filetype
     from ase.io import formats as hacked_formats
+    from ase.io.formats import define_io_format as F
+    from ase.io.formats import filetype as _old_filetype
+    from ase.io.formats import ioformats
 
     def _new_filetype(filename, read=True, guess=True):
         """A hacked solution for the auto format recovery"""
@@ -766,9 +791,10 @@ def register_ase_io_sparc(name="sparc"):
                     return "sparc"
             return _old_filetype(filename, read, guess)
 
-    import pkg_resources
     import sys
     from warnings import warn
+
+    import pkg_resources
 
     name = name.lower()
     if name in ioformats.keys():
@@ -819,8 +845,9 @@ def register_ase_io_sparc(name="sparc"):
         )
         return
 
-    from ase.io import read
     import tempfile
+
+    from ase.io import read
 
     with tempfile.TemporaryDirectory(suffix=".sparc") as tmpdir:
         try:

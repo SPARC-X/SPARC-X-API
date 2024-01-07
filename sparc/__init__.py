@@ -31,9 +31,8 @@ except ImportError:
     _import_complete = False
 
 if _import_complete:
-    from .io import read_sparc, write_sparc
-    from .io import register_ase_io_sparc
     from .calculator import SPARC
+    from .io import read_sparc, register_ase_io_sparc, write_sparc
 
     register_ase_io_sparc()
 else:

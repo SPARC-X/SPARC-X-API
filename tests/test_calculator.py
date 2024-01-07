@@ -1,12 +1,14 @@
-import pytest
-from pathlib import Path
 import tempfile
+from pathlib import Path
+
+import pytest
 
 
 def test_h_parameter():
     """Parameter h will be overwritten by any of FD_GRID, MESH_SPACING, ECUT"""
-    from sparc.calculator import SPARC
     from ase.build import bulk
+
+    from sparc.calculator import SPARC
 
     atoms = bulk("Al", cubic=True)
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -37,8 +39,9 @@ def test_h_parameter():
 
 
 def test_xc_parameter():
-    from sparc.calculator import SPARC
     from ase.build import bulk
+
+    from sparc.calculator import SPARC
 
     atoms = bulk("Al", cubic=True)
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -121,8 +124,9 @@ def test_xc_parameter():
 
 
 def test_conflict_param():
-    from sparc.calculator import SPARC
     from ase.build import bulk
+
+    from sparc.calculator import SPARC
 
     atoms = bulk("Al", cubic=True)
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -139,8 +143,9 @@ def test_conflict_param():
 
 
 def test_cell_param():
-    from sparc.calculator import SPARC
     from ase.build import bulk
+
+    from sparc.calculator import SPARC
 
     atoms = bulk("Al", cubic=True)
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -151,8 +156,9 @@ def test_cell_param():
 
 
 def test_unknown_params():
-    from sparc.calculator import SPARC
     from ase.build import bulk
+
+    from sparc.calculator import SPARC
 
     atoms = bulk("Al", cubic=True)
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -161,8 +167,9 @@ def test_unknown_params():
 
 
 def test_label():
-    from sparc.calculator import SPARC
     from ase.build import bulk
+
+    from sparc.calculator import SPARC
 
     atoms = bulk("Al", cubic=True)
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -174,9 +181,11 @@ def test_label():
 
 def test_cache_results():
     # Test if the calculation results are cached (same structure)
-    from sparc.calculator import SPARC
-    from ase.build import molecule
     from pathlib import Path
+
+    from ase.build import molecule
+
+    from sparc.calculator import SPARC
 
     nh3 = molecule("NH3", cell=(8, 8, 8), pbc=True)
     nh3.rattle()

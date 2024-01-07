@@ -7,13 +7,14 @@ Created on Wed Mar  1 15:32:31 EST 2023
 
 Tian Tian (alchem0x2a@gmail.com)
 """
-import re
 import json
-from pathlib import Path
-from warnings import warn
-import numpy as np
+import re
 from copy import copy
 from datetime import datetime
+from pathlib import Path
+from warnings import warn
+
+import numpy as np
 
 
 class SPARCDocParser(object):

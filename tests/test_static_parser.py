@@ -1,7 +1,8 @@
-import pytest
-import numpy as np
-from pathlib import Path
 import os
+from pathlib import Path
+
+import numpy as np
+import pytest
 from ase.units import Bohr, Hartree
 
 curdir = Path(__file__).parent
@@ -50,7 +51,7 @@ def test_static_parser_missing_fields(fs):
 
     # Pyfakefs requires following line to add the external data folders
     fs.add_real_directory(repo_dir)
-    from sparc.sparc_parsers.static import _read_static, _add_cell_info
+    from sparc.sparc_parsers.static import _add_cell_info, _read_static
 
     fs.create_file("test.static")
     with open("test.static", "w") as fd:
@@ -88,7 +89,7 @@ def test_static_parser_no_atoms(fs):
 
     # Pyfakefs requires following line to add the external data folders
     fs.add_real_directory(repo_dir)
-    from sparc.sparc_parsers.static import _read_static, _add_cell_info
+    from sparc.sparc_parsers.static import _add_cell_info, _read_static
 
     fs.create_file("test.static")
     with open("test.static", "w") as fd:

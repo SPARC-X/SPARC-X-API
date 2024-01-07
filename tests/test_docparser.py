@@ -1,8 +1,9 @@
 """Test for SPARC doc parser
 """
-import pytest
-from pathlib import Path
 import os
+from pathlib import Path
+
+import pytest
 
 curdir = Path(__file__).parent
 test_doc_dir = curdir / "sparc-latex-doc-202302"
@@ -114,8 +115,9 @@ def test_include_files():
 
 def test_json():
     """json formatter"""
-    from sparc.docparser import SPARCDocParser
     import json
+
+    from sparc.docparser import SPARCDocParser
 
     sp = SPARCDocParser(test_doc_dir)
     # json_string = sp.to_json()
@@ -141,8 +143,9 @@ def test_class_load():
 
 
 def test_text2value():
-    from sparc.docparser import text2value
     import numpy as np
+
+    from sparc.docparser import text2value
 
     assert text2value("P P P", desired_type=None) == "P P P"
     assert text2value("1.0 None 1.0", desired_type="integer") is None

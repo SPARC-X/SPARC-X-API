@@ -3,8 +3,9 @@ or otherwise the test_import_orderX may fail.
 
 It is recommended that the file name of this test not to be changed, or run this test separatedly.
 """
-import pytest
 from pathlib import Path
+
+import pytest
 
 curdir = Path(__file__).parent
 test_psp_dir = curdir / "psps"
@@ -40,9 +41,10 @@ def test_import_order1():
 
 def test_import_order2():
     """import ase after sparc"""
-    import sparc
     import ase
     from ase.io.formats import ioformats
+
+    import sparc
 
     assert "sparc" in ioformats.keys()
     from ase.io import sparc
@@ -60,12 +62,14 @@ def test_sparc_fake_write_exp(monkeypatch):
         print("I'm the fake writer")
         pass
 
-    import sparc
     from pathlib import Path
 
+    import sparc
+
     monkeypatch.setattr(sparc, "write_sparc", fake_write_sparc)
-    from sparc import write_sparc
     from ase.build import bulk
+
+    from sparc import write_sparc
 
     al = bulk("Al")
     # Both string and PosixPath should work
@@ -82,9 +86,11 @@ def test_sparc_fake_write(monkeypatch):
         print("I'm the fake writer")
         pass
 
-    import sparc
     from pathlib import Path
+
     from ase.io import sparc as _sparc
+
+    import sparc
 
     monkeypatch.setattr(sparc, "write_sparc", fake_write_sparc)
     monkeypatch.setattr(_sparc, "write_sparc", fake_write_sparc)
@@ -99,9 +105,11 @@ def test_sparc_fake_read_exp(monkeypatch, fs):
     """Baseline test. Make a fake read_sparc method
     to makesure the sparc.read_sparc register works
     """
-    import sparc
     from pathlib import Path
+
     from ase.io import sparc as _sparc
+
+    import sparc
 
     def fake_read_sparc(filename, *args, **kwargs):
         print("I'm the fake reader")
@@ -127,9 +135,11 @@ def test_sparc_fake_read(monkeypatch, fs):
     """Baseline test. Make a fake read_sparc method
     to makesure the ase.io register works
     """
-    import sparc
     from pathlib import Path
+
     from ase.io import sparc as _sparc
+
+    import sparc
 
     def fake_read_sparc(filename, *args, **kwargs):
         print("I'm the fake reader")
@@ -154,9 +164,11 @@ def test_sparc_fake_read(monkeypatch, fs):
 
 def test_sparc_read_auto(monkeypatch, fs):
     """Same version of the fake read but with automatic format discover"""
-    import sparc
     from pathlib import Path
+
     from ase.io import sparc as _sparc
+
+    import sparc
 
     def fake_read_sparc(filename, *args, **kwargs):
         print("I'm the fake reader")
@@ -184,8 +196,9 @@ def test_ase_io_filetype(fs):
     Due to the implementation of ase.io.formats, single file tests should be
     done on non-empty files
     """
-    import sparc
     from ase.io.formats import filetype
+
+    import sparc
 
     fs.create_dir("test.sparc")
     fs.create_file("test.sparc/test.ion")

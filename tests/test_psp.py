@@ -1,6 +1,7 @@
-import pytest
 import os
 from pathlib import Path
+
+import pytest
 
 curdir = Path(__file__).parent
 psp_dir = curdir / "psps"
@@ -28,10 +29,7 @@ def test_parse_psp8_header_valid():
 
 def test_parse_psp8_header_invalid():
     """Test invalid psp8 header"""
-    from sparc.sparc_parsers.pseudopotential import (
-        parse_psp8_header,
-        NotPSP8Format,
-    )
+    from sparc.sparc_parsers.pseudopotential import NotPSP8Format, parse_psp8_header
 
     text = """Cl    ONCVPSP-4.0.1  r_core=   1.45370   2.30420
      11.0000      9.0000      200312    zatom,zion,pspd
@@ -48,8 +46,7 @@ def test_parse_psp8_header_invalid():
 
 def test_parse_psp8_wrong_format():
     """Test a upf header"""
-    from sparc.sparc_parsers.pseudopotential import parse_psp8_header
-    from sparc.sparc_parsers.pseudopotential import NotPSP8Format
+    from sparc.sparc_parsers.pseudopotential import NotPSP8Format, parse_psp8_header
 
     text = """<UPF version="2.0.1">
   <PP_INFO>
@@ -75,9 +72,11 @@ def test_parse_psp8_wrong_format():
 
 def test_pseudo_infer():
     """Test pseudopotential inferring"""
-    from sparc.sparc_parsers.pseudopotential import infer_pseudo_path
-    from sparc.sparc_parsers.pseudopotential import NoMatchingPseudopotential
-    from sparc.sparc_parsers.pseudopotential import MultiplePseudoPotentialFiles
+    from sparc.sparc_parsers.pseudopotential import (
+        MultiplePseudoPotentialFiles,
+        NoMatchingPseudopotential,
+        infer_pseudo_path,
+    )
 
     with pytest.raises(NoMatchingPseudopotential):
         infer_pseudo_path("As", ".")
@@ -93,9 +92,11 @@ def test_pseudo_infer():
 
 def test_pseudo_find_and_mapping():
     """Test psp find with infer or direct mapping"""
-    from sparc.sparc_parsers.pseudopotential import find_pseudo_path
-    from sparc.sparc_parsers.pseudopotential import NoMatchingPseudopotential
-    from sparc.sparc_parsers.pseudopotential import MultiplePseudoPotentialFiles
+    from sparc.sparc_parsers.pseudopotential import (
+        MultiplePseudoPotentialFiles,
+        NoMatchingPseudopotential,
+        find_pseudo_path,
+    )
 
     with pytest.raises(NoMatchingPseudopotential):
         find_pseudo_path("Hg", search_path=None, pseudopotential_mapping={})
@@ -152,10 +153,13 @@ def test_pseudo_find_and_mapping():
 
 def test_copy_psp():
     """Copy psp"""
-    from sparc.sparc_parsers.pseudopotential import copy_psp_file
-    from sparc.sparc_parsers.pseudopotential import NoMatchingPseudopotential
-    from sparc.sparc_parsers.pseudopotential import MultiplePseudoPotentialFiles
     import tempfile
+
+    from sparc.sparc_parsers.pseudopotential import (
+        MultiplePseudoPotentialFiles,
+        NoMatchingPseudopotential,
+        copy_psp_file,
+    )
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
