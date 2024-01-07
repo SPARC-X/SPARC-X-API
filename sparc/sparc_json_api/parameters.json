@@ -1179,7 +1179,7 @@
   "NPT_SCALE_CONSTRAINTS": {
    "symbol": "NPT_SCALE_CONSTRAINTS",
    "label": "NPT_SCALE_CONSTRAINTS",
-   "type": "integer",
+   "type": "string",
    "default": null,
    "unit": "No unit",
    "example": "NPT_SCALE_CONSTRAINTS: 12",
