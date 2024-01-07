@@ -468,7 +468,6 @@ class SparcBundle:
             _images = geopt_results[string2index(index)]
 
         ase_images = []
-        # import pdb; pdb.set_trace()
         for result in _images:
             atoms = self.init_atoms.copy()
             partial_result = {}

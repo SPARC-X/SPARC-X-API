@@ -55,3 +55,17 @@ def test_geopt_parser_relax2():
         assert "stress" in step
         assert "cell" in step
         assert "latvec" in step
+
+
+def test_geopt_low_dim_stress():
+    from sparc.sparc_parsers.geopt import _read_geopt
+
+    data_dict = _read_geopt(
+        test_output_dir / "Alloy_geopt_ppd_bc.sparc" / "SPARC.geopt"
+    )
+    geopt_steps = data_dict["geopt"]
+    for i, step in enumerate(geopt_steps):
+        assert i == step.get("step", -1)
+        assert "stress_2d" in step
+        assert "stress" not in step
+        assert "cell" in step
