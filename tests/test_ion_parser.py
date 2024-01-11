@@ -1,6 +1,7 @@
-import pytest
-from pathlib import Path
 import os
+from pathlib import Path
+
+import pytest
 
 curdir = Path(__file__).parent
 test_output_dir = curdir / "outputs"
@@ -8,8 +9,9 @@ test_output_dir = curdir / "outputs"
 
 def test_read_write_ion(fs):
     """Test basic read write"""
-    from sparc.sparc_parsers.ion import _read_ion, _write_ion
     from copy import copy, deepcopy
+
+    from sparc.sparc_parsers.ion import _read_ion, _write_ion
 
     fs.create_file("test.ion")
     ion_content = """#=========================
@@ -86,8 +88,9 @@ COORD:                       # coordinates follows
 
 def test_read_write_ion_w_sort(fs):
     """Test basic read write"""
-    from sparc.sparc_parsers.ion import _read_ion, _write_ion
     from copy import copy, deepcopy
+
+    from sparc.sparc_parsers.ion import _read_ion, _write_ion
 
     fs.create_file("test.ion")
     ion_content = """#=========================
@@ -142,9 +145,10 @@ COORD:                       # coordinates follows
 
 
 def test_ion_coord_conversion():
-    from sparc.sparc_parsers.ion import _ion_coord_to_ase_pos
-    from ase.units import Bohr, Angstrom
     import numpy as np
+    from ase.units import Angstrom, Bohr
+
+    from sparc.sparc_parsers.ion import _ion_coord_to_ase_pos
 
     data_dict1 = {
         "ion": {
@@ -258,10 +262,7 @@ def test_ion_coord_conversion():
 
 
 def test_read_sort():
-    from sparc.sparc_parsers.ion import (
-        _read_sort_comment,
-        InvalidSortingComment,
-    )
+    from sparc.sparc_parsers.ion import InvalidSortingComment, _read_sort_comment
 
     comments = [
         "=========================",

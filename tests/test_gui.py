@@ -1,9 +1,10 @@
-import pytest
-import numpy as np
-from pathlib import Path
 import os
-from ase.units import Bohr, Hartree, kB, eV
+from pathlib import Path
 from subprocess import run
+
+import numpy as np
+import pytest
+from ase.units import Bohr, Hartree, eV, kB
 
 curdir = Path(__file__).parent
 test_output_dir = curdir / "outputs"

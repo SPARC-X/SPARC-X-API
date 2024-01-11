@@ -10,16 +10,13 @@ TODO: more descriptions about this file io parser
 from warnings import warn
 
 import numpy as np
-from ase.units import Bohr, Hartree, GPa, fs, AUT, Angstrom
+from ase.units import AUT, Angstrom, Bohr, GPa, Hartree, fs
 
 # Safe wrappers for both string and fd
 from ase.utils import reader, writer
 
-from .utils import (
-    strip_comments,
-)
-
 from ..api import SparcAPI
+from .utils import strip_comments
 
 # TODO: should allow user to select the api
 defaultAPI = SparcAPI()
@@ -132,9 +129,20 @@ def _read_aimd_step(raw_aimd_text):
             name = "entropy*T per atom"
             value = float(raw_value) * Hartree
         elif header_name == "STRESS":
-            # Don't do the volume conversion now
-            name = "stress"
-            value = raw_value * GPa
+            # Same rule as STRESS in geopt
+            # no conversion to Voigt form yet
+            dim = raw_value.shape[0]
+            if dim == 3:
+                name = "stress"
+                value = raw_value * GPa
+            elif dim == 2:
+                name = "stress_2d"
+                value = raw_value * Hartree / Bohr ** 2
+            elif dim == 1:
+                name = "stress_1d"
+                value = raw_value * Hartree / Bohr
+            else:
+                raise ValueError("Incorrect stress matrix dimension!")
         elif header_name == "STRIO":
             # Don't do the volume conversion now
             name = "stress (ion-kinetic)"

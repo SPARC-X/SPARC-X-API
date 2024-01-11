@@ -1,8 +1,9 @@
-import pytest
-import numpy as np
-from pathlib import Path
 import os
 import tempfile
+from pathlib import Path
+
+import numpy as np
+import pytest
 from ase.units import Hartree
 
 curdir = Path(__file__).parent

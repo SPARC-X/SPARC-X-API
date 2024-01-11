@@ -1,10 +1,10 @@
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 def test_sparc_api():
-    from sparc.api import SparcAPI
-    from sparc.api import default_json_api
+    from sparc.api import SparcAPI, default_json_api
 
     # the default api should always exist
     assert default_json_api.is_file()
@@ -35,8 +35,9 @@ def test_other_data():
 
 
 def test_api_validate():
-    from sparc.api import SparcAPI
     import numpy as np
+
+    from sparc.api import SparcAPI
 
     sis = SparcAPI()
     # Integer
@@ -84,8 +85,9 @@ def test_api_validate():
 
 def test_api_validate_all_defaults():
     """All defaults given in the examples should be valid!"""
-    from sparc.api import SparcAPI
     import numpy as np
+
+    from sparc.api import SparcAPI
 
     sis = SparcAPI()
     for param, pd in sis.parameters.items():
@@ -96,8 +98,9 @@ def test_api_validate_all_defaults():
 
 def test_api_convert_string():
     """Test if read string makes sense"""
-    from sparc.api import SparcAPI
     import numpy as np
+
+    from sparc.api import SparcAPI
 
     sis = SparcAPI()
     # Integer
@@ -137,8 +140,9 @@ def test_api_convert_string():
 
 def test_api_write_string():
     """Test if writing string from value makes sense"""
-    from sparc.api import SparcAPI
     import numpy as np
+
+    from sparc.api import SparcAPI
 
     sis = SparcAPI()
     # Integer

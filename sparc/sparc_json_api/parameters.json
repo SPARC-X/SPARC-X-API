@@ -1,5 +1,5 @@
 {
- "sparc_version": "2023.09.05",
+ "sparc_version": "2023.10.31",
  "categories": [
   "system",
   "scf",
@@ -7,6 +7,7 @@
   "stress calculation",
   "qmd",
   "structural relaxation",
+  "band structure",
   "print options",
   "parallelization options"
  ],
@@ -40,6 +41,21 @@
    "description_raw": "Atomic type symbol.",
    "remark_raw": "The atomic type symbol can be attached with a number, e.g., Fe1 and Fe2. This feature is useful if one needs to provide two different pseudopotential files (\\hyperlink{PSEUDO_POT}{\\texttt{PSEUDO\\_POT}}) for the same element.",
    "category": "system"
+  },
+  "BAND_STRUCTURE": {
+   "symbol": "BAND_STRUCTURE",
+   "label": "BAND_STRUCTURE",
+   "type": "integer",
+   "default": 0,
+   "unit": "No unit",
+   "example": "BAND_STRUCTURE: 1",
+   "description": "Flag for calculation of the band structure.",
+   "remark": "",
+   "allow_bool_input": true,
+   "default_remark": "0",
+   "description_raw": "Flag for calculation of the band structure.",
+   "remark_raw": "%",
+   "category": "band structure"
   },
   "BC": {
    "symbol": "BC",
@@ -540,6 +556,21 @@
    "remark": "",
    "category": "scf"
   },
+  "INPUT_DENS_FILE": {
+   "symbol": "INPUT_DENS_FILE",
+   "label": "INPUT_DENS_FILE",
+   "type": "string",
+   "default": null,
+   "unit": "No unit",
+   "example": "INPUT_DENS_FILE: Si.dens Si.densUp Si.densDwn",
+   "description": "The name of the input density file(s) in cube format.",
+   "remark": "For spin-unpolarized systems, only the total density file is required. For spin-polarized systems, three density files are required, which are the total electron density, spin-up density, and spin-down density, respectively.",
+   "allow_bool_input": false,
+   "default_remark": "None",
+   "description_raw": "The name of the input density file(s) in cube format.",
+   "remark_raw": "For spin-unpolarized systems, only the total density file is required. For spin-polarized systems, three density files are required, which are the total electron density, spin-up density, and spin-down density, respectively.",
+   "category": "band structure"
+  },
   "ION_TEMP": {
    "symbol": "ION_TEMP",
    "label": "ION_TEMP",
@@ -633,6 +664,36 @@
    "description_raw": "Shift of k-points with respect to k-point grid containing $\\Gamma$-point.",
    "remark_raw": "The shift is in reduced coordinates.",
    "category": "system"
+  },
+  "KPT_PATHS": {
+   "symbol": "KPT_PATHS",
+   "label": "KPT_PATHS",
+   "type": "double array",
+   "default": null,
+   "unit": "No unit",
+   "example": "KPT_PATHS: 2\n0.0 0.0 0.0 \n# Gamma\n0.5 0.5 0.5 \n# A\n0.5 0.5 0.5 \n# A\n0.5 0.5 0.0 \n# M",
+   "description": "The k-point paths (high-symmetry lines) for band structure calculations.  It starts with the total number of high-symmetry lines, followed by fractional coordinates indicating the start and end points of each line.",
+   "allow_bool_input": false,
+   "default_remark": "None",
+   "description_raw": "The k-point paths (high-symmetry lines) for band structure calculations.  It starts with the total number of high-symmetry lines, followed by fractional coordinates indicating the start and end points of each line.",
+   "remark_raw": "",
+   "remark": "",
+   "category": "band structure"
+  },
+  "KPT_PER_LINE": {
+   "symbol": "KPT_PER_LINE",
+   "label": "KPT_PER_LINE",
+   "type": "integer",
+   "default": 10,
+   "unit": "No unit",
+   "example": "KPT_PER_LINE: 15",
+   "description": "The number of k-points on each high-symmetry line.",
+   "remark": "This value accounts for both endpoints of the high-symmetry line.",
+   "allow_bool_input": false,
+   "default_remark": "10",
+   "description_raw": "The number of k-points on each high-symmetry line.",
+   "remark_raw": "This value accounts for both endpoints of the high-symmetry line.",
+   "category": "band structure"
   },
   "LATVEC": {
    "symbol": "LATVEC",
@@ -837,10 +898,10 @@
    "default": "NVT_NH",
    "unit": "No unit",
    "example": "MD_METHOD: NVE",
-   "description": "Type of QMD to be performed. Currently, NVE (microcanonical ensemble), NVT_NH (canonical ensemble with Nose-Hoover thermostat), NVK_G (isokinetic ensemble with Gaussian thermostat), NPT_NH (isothermal-isobaric ensemble with Nose-Hoover thermostat) and NPT_NP (isothermal-isobaric ensemble with Nose-Poincare thermostat) are supported",
+   "description": "Type of QMD to be performed. Currently, NVE (microcanonical ensemble), NVT_NH (canonical ensemble with Nose-Hoover thermostat), NVK_G (isokinetic ensemble with Gaussian thermostat), NPT_NH (isothermal-isobaric ensemble with Nose-Hoover thermostat) and NPT_NP (isothermal-isobaric ensemble with Nose-Poincare thermostat) are supported.",
    "allow_bool_input": false,
    "default_remark": "NVT\\_NH",
-   "description_raw": "Type of QMD to be performed. Currently, NVE (microcanonical ensemble), NVT\\_NH (canonical ensemble with Nose-Hoover thermostat), NVK\\_G (isokinetic ensemble with Gaussian thermostat), NPT\\_NH (isothermal-isobaric ensemble with Nose-Hoover thermostat) and NPT\\_NP (isothermal-isobaric ensemble with Nose-Poincare thermostat) are supported",
+   "description_raw": "Type of QMD to be performed. Currently, NVE (microcanonical ensemble), NVT\\_NH (canonical ensemble with Nose-Hoover thermostat), NVK\\_G (isokinetic ensemble with Gaussian thermostat), NPT\\_NH (isothermal-isobaric ensemble with Nose-Hoover thermostat) and NPT\\_NP (isothermal-isobaric ensemble with Nose-Poincare thermostat) are supported.",
    "remark_raw": "",
    "remark": "",
    "category": "qmd"
@@ -1115,6 +1176,21 @@
    "remark_raw": "Applicable to NPT\\_NP \\hyperlink{MD_METHOD}{\\texttt{MD\\_METHOD}} only.\nProgram will exit if NPT\\_NP is selected but NPT\\_NP\\_BMASS is not input",
    "category": "qmd"
   },
+  "NPT_SCALE_CONSTRAINTS": {
+   "symbol": "NPT_SCALE_CONSTRAINTS",
+   "label": "NPT_SCALE_CONSTRAINTS",
+   "type": "string",
+   "default": null,
+   "unit": "No unit",
+   "example": "NPT_SCALE_CONSTRAINTS: 12",
+   "description": "Set the scale constraint for lattice vectors in NPT_NP. The length ratio between the designated lattice vector keeps constant in NPT_NP thermostat. For example, if ``12'' is set, then the length ratio between 1st and 2nd lattice vectors will keep constant.",
+   "remark": "Applicable to orthogonal system using NPT_NP MD_METHOD only.\nThere are 4 types of available constraints. ``12'' or ``21''; ``13'' or ``31''; ``23'' or ``32''; ``123'' or ``132'' or ``213'' or ``231'' or ``312'' or ``321''.",
+   "allow_bool_input": false,
+   "default_remark": "none",
+   "description_raw": "Set the scale constraint for lattice vectors in NPT\\_NP. The length ratio between the designated lattice vector keeps constant in NPT\\_NP thermostat. For example, if ``12'' is set, then the length ratio between 1st and 2nd lattice vectors will keep constant.",
+   "remark_raw": "Applicable to orthogonal system using NPT\\_NP \\hyperlink{MD_METHOD}{\\texttt{MD\\_METHOD}} only.\n\nThere are 4 types of available constraints. ``12'' or ``21''; ``13'' or ``31''; ``23'' or ``32''; ``123'' or ``132'' or ``213'' or ``231'' or ``312'' or ``321''.",
+   "category": "qmd"
+  },
   "NPT_SCALE_VECS": {
    "symbol": "NPT_SCALE_VECS",
    "label": "NPT_SCALE_VECS",
@@ -1122,12 +1198,12 @@
    "default": 1,
    "unit": "No unit",
    "example": "NPT_SCALE_VECS: 2",
-   "description": "Specify which lattice vectors can be rescaled in NPT-NH",
-   "remark": "Only numbers 1, 2 and 3 can be accepted. For example, if `` 2 3\" is the input, the cell will only expand or shrink in the directions of lattice vector 2 and lattice vector 3. Only NPT-NH can specify the rescaled vector",
+   "description": "Specify which lattice vectors can be rescaled in NPT_NH and NPT_NP. The cell will only expand or shrink in the specified directions.\nRescaled vectors can be specified for orthogonal systems if NPT_NP thermostat is used.",
+   "remark": "Only three numbers 1, 2 and 3 can be accepted. For example, if ``2 3'' is the input, the cell will only expand or shrink in the directions of lattice vector 2 and lattice vector 3.\nIf it is set in NPT_NH, the expansion or shrinkage on designated lattice vector will try to keep the total pressure to oscillate near the target pressure.\nIf it is set in NPT_NP, the expansion or shrinkage on designated lattice vector will only try to keep the normal stress at their direction to oscillate near the target pressure.",
    "allow_bool_input": false,
    "default_remark": "1 2 3",
-   "description_raw": "Specify which lattice vectors can be rescaled in NPT-NH",
-   "remark_raw": "Only numbers 1, 2 and 3 can be accepted. For example, if `` 2 3\" is the input, the cell will only expand or shrink in the directions of lattice vector 2 and lattice vector 3. Only NPT-NH can specify the rescaled vector",
+   "description_raw": "Specify which lattice vectors can be rescaled in NPT\\_NH and NPT\\_NP. The cell will only expand or shrink in the specified directions.\n\nRescaled vectors can be specified for orthogonal systems if NPT\\_NP thermostat is used.",
+   "remark_raw": "Only three numbers 1, 2 and 3 can be accepted. For example, if ``2 3'' is the input, the cell will only expand or shrink in the directions of lattice vector 2 and lattice vector 3.\n\nIf it is set in NPT\\_NH, the expansion or shrinkage on designated lattice vector will try to keep the total pressure to oscillate near the target pressure.\n\nIf it is set in NPT\\_NP, the expansion or shrinkage on designated lattice vector will only try to keep the normal stress at their direction to oscillate near the target pressure.",
    "category": "qmd"
   },
   "NP_BAND_PARAL": {
@@ -1668,11 +1744,11 @@
    "unit": "No unit",
    "example": "RHO_TRIGGER: 5",
    "description": "The number of times Chebyshev filtering is repeated before updating the electron density in the very first SCF iteration.",
-   "remark": "Values smaller than the default value of 4 can result in a significant increase in the number of SCF\niterations. Larger values can sometimes reduce the number of SCF iterations. For non-collinear spin calculation, default is 6 otherwise 4.",
+   "remark": "Values smaller than the default value of 4 can result in a significant increase in the number of SCF\niterations. Larger values can sometimes reduce the number of SCF iterations. For non-collinear spin calculation, default is 6 otherwise 4. For band structure calculations, default is 10.",
    "allow_bool_input": false,
-   "default_remark": "4 or 6",
+   "default_remark": "4, 6, or 10",
    "description_raw": "The number of times Chebyshev filtering is repeated before updating the electron density in the very first SCF iteration.",
-   "remark_raw": "Values smaller than the default value of 4 can result in a significant increase in the number of SCF\niterations. Larger values can sometimes reduce the number of SCF iterations. For non-collinear spin calculation, default is 6 otherwise 4.",
+   "remark_raw": "Values smaller than the default value of 4 can result in a significant increase in the number of SCF\niterations. Larger values can sometimes reduce the number of SCF iterations. For non-collinear spin calculation, default is 6 otherwise 4. For band structure calculations, default is 10.",
    "category": "scf"
   },
   "SCF_ENERGY_ACC": {
@@ -2025,11 +2101,11 @@
  },
  "other_parameters": {},
  "data_types": [
+  "double array",
+  "other",
   "integer array",
   "string",
-  "double",
-  "other",
   "integer",
-  "double array"
+  "double"
  ]
 }

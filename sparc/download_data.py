@@ -5,15 +5,15 @@ Run:
 python -m sparc.download_data
 """
 
-from pathlib import Path
+import hashlib
+import shutil
 import tempfile
+import zipfile
+from io import BytesIO
+from pathlib import Path
 
 # import urllib.request
 from urllib.request import urlopen
-import zipfile
-from io import BytesIO
-import shutil
-import hashlib
 
 from .common import psp_dir
 

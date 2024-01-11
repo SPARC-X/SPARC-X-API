@@ -4,14 +4,14 @@
 
 
 """
-from sparc import SPARC
-
 import numpy as np
 from ase.build import molecule
+from ase.constraints import FixAtoms
 
 # from ase.optimize.lbfgs import LBFGS
 from ase.optimize.bfgs import BFGS
-from ase.constraints import FixAtoms
+
+from sparc import SPARC
 
 nh3 = molecule("NH3", cell=(8, 8, 8), pbc=True)
 # Fix the N center

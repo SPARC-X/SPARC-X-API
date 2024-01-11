@@ -2,9 +2,10 @@
 Submodules like `docparser` `api` and `download_data` should be independent of ase / numpy,
 should such modules are not yet available during processes like conda-forge build
 """
-import pytest
 import sys
+
 import ase
+import pytest
 
 
 def test_download_data(monkeypatch):

@@ -1,13 +1,14 @@
 import os
 from copy import deepcopy as dc
-from sparc.sparc_core import SPARC
-from ase.calculators.calculator import CalculatorSetupError
-from sparc.ion import write_ion, read_ion
-from ase.build import bulk, molecule
-from ase.calculators.calculator import compare_atoms
-from ase.visualize import view
-from ase.constraints import FixAtoms, FixedLine, FixedPlane
+
 import numpy as np
+from ase.build import bulk, molecule
+from ase.calculators.calculator import CalculatorSetupError, compare_atoms
+from ase.constraints import FixAtoms, FixedLine, FixedPlane
+from ase.visualize import view
+
+from sparc.ion import read_ion, write_ion
+from sparc.sparc_core import SPARC
 
 atoms = bulk("NaCl", crystalstructure="rocksalt", a=5) * (2, 1, 1)
 atoms.set_initial_magnetic_moments([1.1] * len(atoms))

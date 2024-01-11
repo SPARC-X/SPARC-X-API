@@ -4,9 +4,8 @@ from ase.units import Bohr
 # Safe wrappers for both string and fd
 from ase.utils import reader, writer
 
-from .utils import strip_comments, read_block_input
-
 from ..api import SparcAPI
+from .utils import read_block_input, strip_comments
 
 defaultAPI = SparcAPI()
 

@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
-from setuptools import find_packages
-from warnings import warn
-from setuptools.command.install import install
 from warnings import warn
 
+from setuptools import find_packages
+from setuptools.command.install import install
 
 test_requires = [
     "pytest",

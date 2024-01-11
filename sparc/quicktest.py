@@ -13,8 +13,9 @@ from .utils import cprint
 
 def import_test():
     cprint("Testing import...", color="COMMENT")
-    import sparc
     from ase.io.formats import ioformats
+
+    import sparc
 
     if "sparc" not in ioformats.keys():
         return False
@@ -27,8 +28,9 @@ def import_test():
 
 def psp_test():
     cprint("Testing pseudo potential path...", color="COMMENT")
-    from sparc.io import SparcBundle
     import tempfile
+
+    from sparc.io import SparcBundle
 
     with tempfile.TemporaryDirectory() as tmpdir:
         sb = SparcBundle(directory=tmpdir)
@@ -66,8 +68,9 @@ def api_test():
 
 def command_test():
     cprint("Testing SPARC command...", color="COMMENT")
-    from sparc.calculator import SPARC
     import tempfile
+
+    from sparc.calculator import SPARC
 
     with tempfile.TemporaryDirectory() as tmpdir:
         calc = SPARC(directory=tmpdir)
@@ -89,9 +92,11 @@ def command_test():
 
 def calc_test():
     cprint("Running simple calculation...", color="COMMENT")
-    from sparc.calculator import SPARC
-    from ase.build import bulk
     import tempfile
+
+    from ase.build import bulk
+
+    from sparc.calculator import SPARC
 
     # 1x Al atoms with super bad calculation condition
     al = bulk("Al", cubic=False)

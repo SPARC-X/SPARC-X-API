@@ -1,6 +1,7 @@
-import pytest
 from pathlib import Path
+
 import numpy as np
+import pytest
 
 curdir = Path(__file__).parent
 test_output_dir = curdir / "outputs"
@@ -37,8 +38,9 @@ def test_read_inpt():
 
 
 def test_write_inpt():
-    from sparc.sparc_parsers.inpt import _read_inpt, _write_inpt
     import tempfile
+
+    from sparc.sparc_parsers.inpt import _read_inpt, _write_inpt
 
     data_dict = _read_inpt(test_output_dir / "Cu_FCC.sparc/Cu_FCC.inpt")
     with tempfile.TemporaryDirectory() as tempdir:
@@ -79,8 +81,9 @@ def test_write_inpt():
 
 
 def test_cell_conversion():
+    from ase.units import Angstrom, Bohr
+
     from sparc.sparc_parsers.inpt import _inpt_cell_to_ase_cell
-    from ase.units import Bohr, Angstrom
 
     # 0. invalid
     # 1. valid, equivalent to LATVEC = diag(1.5, 1.5, 1.5)

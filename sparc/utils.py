@@ -2,9 +2,10 @@
 """
 import os
 import shutil
-import numpy as np
+from typing import List, Optional, Union
 from warnings import warn
-from typing import Union, List, Optional
+
+import numpy as np
 
 
 def deprecated(message):

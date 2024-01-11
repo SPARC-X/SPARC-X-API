@@ -5,8 +5,9 @@ https://wiki.fysik.dtu.dk/gpaw/tutorialsexercises/structureoptimization/lattice_
 """
 import numpy as np
 from ase.build import bulk
-from sparc import SPARC
 from ase.eos import calculate_eos
+
+from sparc import SPARC
 
 
 def main():

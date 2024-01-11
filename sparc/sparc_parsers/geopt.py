@@ -10,16 +10,13 @@ TODO: more descriptions about this file io parser
 from warnings import warn
 
 import numpy as np
-from ase.units import Bohr, Hartree, GPa
+from ase.units import Bohr, GPa, Hartree
 
 # Safe wrappers for both string and fd
 from ase.utils import reader, writer
 
-from .utils import (
-    strip_comments,
-)
-
 from ..api import SparcAPI
+from .utils import strip_comments
 
 # TODO: should allow user to select the api
 defaultAPI = SparcAPI()
@@ -60,7 +57,6 @@ def _read_geopt_step(raw_step_text):
         raise ValueError("Wrong geopt format! The :RELAXSTEP: label is missing.")
     # Geopt file uses 1-indexed step names, convert to 0-indexed
     step = int(header.split(":RELAXSTEP:")[-1]) - 1
-    print("Step ", step)
     bounds = [i for i, x in enumerate(body) if ":" in x] + [len(body)]
     blocks = [body[start:end] for start, end in zip(bounds[:-1], bounds[1:])]
     data = {}
@@ -94,23 +90,33 @@ def _read_geopt_step(raw_step_text):
             name = "latvec"
             value = raw_value * Bohr
         elif "STRESS" in header_name:
-            name = "stress"
-            stress_ev_a3 = raw_value * GPa
-            # TODO: move the type check somewhere else
-            if stress_ev_a3.shape != (3, 3):
-                raise ValueError("Stress from static file is not a 3x3 matrix!")
-            # make the stress in voigt notation
-            # TODO: check the order!
-            value = np.array(
-                [
-                    stress_ev_a3[0, 0],
-                    stress_ev_a3[1, 1],
-                    stress_ev_a3[2, 2],
-                    stress_ev_a3[1, 2],
-                    stress_ev_a3[0, 2],
-                    stress_ev_a3[0, 1],
-                ]
-            )
+            # Stress handling in geopt output can be different
+            # on low-dimensional systems. If the stress matrix is 3x3,
+            # the unit is GPa, while lower dimensional stress matrices
+            # are using Hartree / Bohr**2 or Hartree / Bohr
+            dim = raw_value.shape[0]
+            if dim == 3:
+                name = "stress"
+                stress_ev_a3 = raw_value * GPa
+                # Standard stress value, use Voigt representation
+                value = np.array(
+                    [
+                        stress_ev_a3[0, 0],
+                        stress_ev_a3[1, 1],
+                        stress_ev_a3[2, 2],
+                        stress_ev_a3[1, 2],
+                        stress_ev_a3[0, 2],
+                        stress_ev_a3[0, 1],
+                    ]
+                )
+            elif dim == 2:
+                name = "stress_2d"
+                value = raw_value * Hartree / Bohr**2
+            elif dim == 1:
+                name = "stress_1d"
+                value = raw_value * Hartree / Bohr
+            else:
+                raise ValueError("Incorrect stress matrix dimension!")
         else:
             warn(
                 f"Field {header_name} is not known to geopt! I'll use the results as is."

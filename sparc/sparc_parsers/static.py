@@ -10,16 +10,13 @@ TODO: more descriptions about this file io parser
 from warnings import warn
 
 import numpy as np
-from ase.units import Bohr, Hartree, GPa
+from ase.units import Bohr, GPa, Hartree
 
 # Safe wrappers for both string and fd
 from ase.utils import reader, writer
 
-from .utils import (
-    strip_comments,
-)
-
 from ..api import SparcAPI
+from .utils import strip_comments
 
 # TODO: should allow user to select the api
 defaultAPI = SparcAPI()

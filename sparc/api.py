@@ -1,8 +1,9 @@
 import json
+from io import StringIO
 from pathlib import Path
 from warnings import warn
+
 import numpy as np
-from io import StringIO
 
 curdir = Path(__file__).parent
 # TODO: must clean the api directory

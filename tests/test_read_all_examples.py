@@ -5,12 +5,13 @@ and will only be activated when the environment variable $SPARC_TESTS_DIR is set
 
 The ref
 """
-import pytest
-import numpy as np
-from pathlib import Path
 import os
-import tempfile
 import shutil
+import tempfile
+from pathlib import Path
+
+import numpy as np
+import pytest
 
 skipped_names = [
     "Si2_domain_paral",
@@ -73,7 +74,7 @@ def test_read_all_tests():
 def test_write_all_inputs():
     """Search all .inpt files within the tests dir."""
 
-    from sparc.io import read_sparc, read_ion, write_ion
+    from sparc.io import read_ion, read_sparc, write_ion
     from sparc.sparc_parsers.inpt import _read_inpt
 
     # Skipped tests are to avoid unwanted keywords
@@ -129,10 +130,12 @@ def test_write_all_inputs():
 
 def test_quick_examples():
     """Perform quick tests on selected ref examples"""
-    from sparc.calculator import SPARC
-    from ase.build import molecule
     from pathlib import Path
-    from sparc.io import read_sparc, read_ion, write_ion
+
+    from ase.build import molecule
+
+    from sparc.calculator import SPARC
+    from sparc.io import read_ion, read_sparc, write_ion
     from sparc.sparc_parsers.inpt import _read_inpt
 
     dummy_calc = SPARC()
