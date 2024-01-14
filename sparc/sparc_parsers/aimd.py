@@ -137,7 +137,7 @@ def _read_aimd_step(raw_aimd_text):
                 value = raw_value * GPa
             elif dim == 2:
                 name = "stress_2d"
-                value = raw_value * Hartree / Bohr ** 2
+                value = raw_value * Hartree / Bohr**2
             elif dim == 1:
                 name = "stress_1d"
                 value = raw_value * Hartree / Bohr
