@@ -25,6 +25,7 @@ postprocess_items = {
     "TOL_POISSON": {"type": "double"},
 }
 
+sparc_repo_url = "https://github.com/SPARC-X/SPARC"
 
 class SPARCDocParser(object):
     """Use regex to parse LaTeX doc to python API"""
@@ -305,6 +306,24 @@ class SPARCDocParser(object):
         json_string = json.dumps(root_dict, indent=True)
         return json_string
 
+    @classmethod
+    def json_from_repo(cls, url=sparc_repo_url, version="master",
+                       include_subdirs=True, **kwargs):
+        """Download the source code from git and use json_from_directory to parse
+        """
+        import tempfile
+        from subprocess import run
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+            download_dir = tmpdir / "SPARC"
+            download_cmds = ["git", "clone", "--depth", "1", str(url), "SPARC"]
+            run(download_cmds, cwd=tmpdir)
+            json_string = cls.json_from_directory(directory=download_dir / "doc" / ".LaTeX",
+                                                  include_subdirs=include_subdirs,
+                                                  **kwargs)
+        return json_string
+            
+
 
 def convert_tex_parameter(text):
     """Conver a TeX string to non-escaped name (for parameter only)"""
@@ -584,7 +603,7 @@ if __name__ == "__main__":
         help="Parse manual parameters from subdirs",
     )
     argp.add_argument(
-        "root", help="Root directory of the latex files"
+        "root", nargs="?", help="Root directory of the latex files"
     )  # root directory of the LaTeX files
     args = argp.parse_args()
     output = Path(args.output).with_suffix(".json")
