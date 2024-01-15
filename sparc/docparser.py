@@ -25,7 +25,8 @@ postprocess_items = {
     "TOL_POISSON": {"type": "double"},
 }
 
-sparc_repo_url = "https://github.com/SPARC-X/SPARC"
+sparc_repo_url = "https://github.com/SPARC-X/SPARC.git"
+
 
 class SPARCDocParser(object):
     """Use regex to parse LaTeX doc to python API"""
@@ -307,22 +308,24 @@ class SPARCDocParser(object):
         return json_string
 
     @classmethod
-    def json_from_repo(cls, url=sparc_repo_url, version="master",
-                       include_subdirs=True, **kwargs):
-        """Download the source code from git and use json_from_directory to parse
-        """
+    def json_from_repo(
+        cls, url=sparc_repo_url, version="master", include_subdirs=True, **kwargs
+    ):
+        """Download the source code from git and use json_from_directory to parse"""
         import tempfile
         from subprocess import run
+
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
             download_dir = tmpdir / "SPARC"
             download_cmds = ["git", "clone", "--depth", "1", str(url), "SPARC"]
             run(download_cmds, cwd=tmpdir)
-            json_string = cls.json_from_directory(directory=download_dir / "doc" / ".LaTeX",
-                                                  include_subdirs=include_subdirs,
-                                                  **kwargs)
+            json_string = cls.json_from_directory(
+                directory=download_dir / "doc" / ".LaTeX",
+                include_subdirs=include_subdirs,
+                **kwargs,
+            )
         return json_string
-            
 
 
 def convert_tex_parameter(text):
@@ -602,14 +605,34 @@ if __name__ == "__main__":
         action="store_true",
         help="Parse manual parameters from subdirs",
     )
+    argp.add_argument("--git", action="store_true")
     argp.add_argument(
-        "root", nargs="?", help="Root directory of the latex files"
-    )  # root directory of the LaTeX files
+        "--version",
+        default="master",
+        help="Version of the doc. Only works when using git repo",
+    )
+    argp.add_argument(
+        "root",
+        nargs="?",
+        help=(
+            "Root of the SPARC doc LaTeX files, or remote git repo link. If not provided and --git is enables, use the default github repo"
+        ),
+    )
+
     args = argp.parse_args()
     output = Path(args.output).with_suffix(".json")
-    json_string = SPARCDocParser.json_from_directory(
-        directory=Path(args.root), include_subdirs=args.include_subdirs
-    )
+    if args.git:
+        if args.root is None:
+            root = sparc_repo_url
+        else:
+            root = args.root
+        json_string = SPARCDocParser.json_from_repo(
+            url=root, version=args.version, include_subdirs=args.include_subdirs
+        )
+    else:
+        json_string = SPARCDocParser.json_from_directory(
+            directory=Path(args.root), include_subdirs=args.include_subdirs
+        )
     with open(output, "w", encoding="utf8") as fd:
         fd.write(json_string)
     print(f"SPARC parameter specifications written to {output}!")
