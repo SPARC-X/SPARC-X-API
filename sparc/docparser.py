@@ -320,6 +320,11 @@ class SPARCDocParser(object):
             download_dir = tmpdir / "SPARC"
             download_cmds = ["git", "clone", "--depth", "1", str(url), "SPARC"]
             run(download_cmds, cwd=tmpdir)
+            if version not in ["master", "HEAD"]:
+                fetch_cmds = ["git", "fetch", "--depth", "1", str(version)]
+                run(fetch_cmds, cwd=download_dir)
+                checkout_cmds = ["git", "checkout", str(version)]
+                run(checkout_cmds, cwd=download_dir)
             json_string = cls.json_from_directory(
                 directory=download_dir / "doc" / ".LaTeX",
                 include_subdirs=include_subdirs,
