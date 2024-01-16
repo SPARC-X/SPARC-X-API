@@ -61,7 +61,7 @@ jobs:
         flake8 sparc/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: SPARC API version
       run: |
-        python -c "from sparc.api import SparcAPI; import os; ver=SparcAPI('parameters.json').sparc_version; os.system(f'echo API_VERSION={ver} >> $GITHUB_ENV')"
+        python -c "from sparc.api import SparcAPI; import os; ver=SparcAPI().sparc_version; os.system(f'echo API_VERSION={ver} >> $GITHUB_ENV')"
     - name: Create badges
       run: |
         mkdir -p badges/

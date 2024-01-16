@@ -35,7 +35,7 @@ jobs:
         python -m sparc.docparser --git --include-subdirs
     - name: Env variable for api version
       run: |
-        python -c "from sparc.api import SparcAPI; import os; ver=SparcAPI().sparc_version; os.system(f'echo API_VERSION={ver} >> $GITHUB_ENV')"
+        python -c "from sparc.api import SparcAPI; import os; ver=SparcAPI('parameters.json').sparc_version; os.system(f'echo API_VERSION={ver} >> $GITHUB_ENV')"
     - name: Test if json api is newer than current
       id: probe
       run: |
