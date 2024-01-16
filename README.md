@@ -2,6 +2,7 @@
 [![Package](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/package.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/package.svg)
 [![Coverage](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/coverage.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/coverage.svg)
 [![Unit tests](https://github.com/SPARC-X/SPARC-X-API/actions/workflows/installation_test.yml/badge.svg)](https://github.com/SPARC-X/SPARC-X-API/actions/workflows/installation_test.yml)
+[![JSON-API](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/api_version.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/api_version.svg)
 
 `SPARC-X-API` is an [ASE](https://wiki.fysik.dtu.dk/ase/)-compatible Python API for the density functional theory (DFT) code [SPARC](https://github.com/SPARC-X/SPARC). It offers:
 
