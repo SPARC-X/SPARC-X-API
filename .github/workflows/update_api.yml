@@ -1,0 +1,69 @@
+name: Update JSON API (recurring job)
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  schedule:
+    - cron: '0 0 * * *' # Runs every day at midnight
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    defaults:
+      run:
+        shell: bash -l {0}
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        python-version: "3.10"
+        mamba-version: "*"
+        channels: conda-forge,alchem0x2a,defaults
+        channel-priority: true
+        activate-environment: sparc-api-test
+    - name: Install package
+      run: |
+        pip install -e ".[test]"
+    - name: Generate json api from github master
+      run: |
+        python -m sparc.docparser --git --include-subdirs
+    - name: Test if json api is newer than current
+      id: probe
+      run: |
+        python .github/workflows/api_version_probe.py || echo "::set-output name=update_needed::true"
+      continue-on-error: true
+    - name: Create Pull Request
+      if: steps.compare_versions.outputs.update_needed == 'true'
+      run: |
+        mv parameters.json sparc/sparc_json_api/
+        gh pr create --title "[PR Bot] New JSON API version" -R alchem0x2a/SPARC-X-API
+    - name: Create badges
+      run: |
+        mkdir -p badges/
+        # A coverage test badge
+        anybadge --value=$COVPERCENT --file=badges/coverage.svg coverage
+        # A version badge
+        PIPVER=`pip show sparc-x-api | grep Version | cut -d ' ' -f2`
+        anybadge --value=$PIPVER --file=badges/package.svg -l sparc-x-api
+    - name: Manually add git badges
+      run: |
+        # Assuming a badges branch already exists!
+        rm -rf /tmp/*.svg && cp badges/*.svg /tmp/
+        git fetch
+        git switch badges || { echo "Could not check out badges branch. Have you created it on remote?"; exit 1; }
+        git pull
+        cp /tmp/*.svg badges/ && git add -f badges/*.svg && rm -rf /tmp/*.svg
+        git config --global user.email "alchem0x2a@gmail.com"
+        git config --global user.name "Github Action Bot (badges only)"
+        git commit -m "Update badges from run ${RID}" || true
+        git push -u origin badges || true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        RID: ${{ github.run_id }}
+    
