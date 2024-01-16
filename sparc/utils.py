@@ -138,8 +138,10 @@ def locate_api(json_file=None, doc_path=None):
         return api
 
     if doc_path is None:
-        doc_path = os.environ.get("SPARC_DOC_PATH", None)
-
+        doc_root = os.environ.get("SPARC_DOC_PATH", None)
+        if doc_root is not None:
+            doc_path = Path(doc_root) / ".LaTeX"
+    
     if doc_path is not None:
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
