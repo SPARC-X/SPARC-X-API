@@ -28,7 +28,7 @@ from .sparc_parsers.ion import _read_ion, _write_ion
 from .sparc_parsers.out import _read_out
 from .sparc_parsers.pseudopotential import copy_psp_file, parse_psp8_header
 from .sparc_parsers.static import _read_static
-from .utils import deprecated, string2index
+from .utils import deprecated, string2index, locate_api
 
 # from .sparc_parsers.ion import read_ion, write_ion
 defaultAPI = SparcAPI()
@@ -676,7 +676,9 @@ def read_sparc(filename, index=-1, include_all_files=False, **kwargs):
     with embedded calculator result.
 
     """
-    sb = SparcBundle(directory=filename)
+    # We rely on minimal api version choose, i.e. default or set from env
+    api = locate_api()
+    sb = SparcBundle(directory=filename, validator=api)
     atoms_or_images = sb.convert_to_ase(
         index=index, include_all_files=include_all_files, **kwargs
     )
@@ -693,7 +695,8 @@ def write_sparc(filename, images, **kwargs):
         if len(images) > 1:
             raise ValueError("SPARC format only supports writing one atoms object!")
         atoms = images[0]
-    sb = SparcBundle(directory=filename, mode="w")
+    api = locate_api()
+    sb = SparcBundle(directory=filename, mode="w", validator=api)
     sb._write_ion_and_inpt(atoms, **kwargs)
     return
 
@@ -707,8 +710,9 @@ def read_ion(filename, **kwargs):
 
     The returned Atoms object of read_ion method only contains the initial positions
     """
+    api = locate_api()
     parent_dir = Path(filename).parent
-    sb = SparcBundle(directory=parent_dir)
+    sb = SparcBundle(directory=parent_dir, validator=api)
     atoms = sb._read_ion_and_inpt()
     return atoms
 
@@ -723,7 +727,8 @@ def write_ion(filename, atoms, **kwargs):
     """
     label = Path(filename).with_suffix("").name
     parent_dir = Path(filename).parent
-    sb = SparcBundle(directory=parent_dir, label=label, mode="w")
+    api = locate_api()
+    sb = SparcBundle(directory=parent_dir, label=label, mode="w", validator=api)
     sb._write_ion_and_inpt(atoms, **kwargs)
     return atoms
 
@@ -733,7 +738,8 @@ def read_static(filename, index=-1, **kwargs):
     The reader works only when other files (.ion, .inpt) exist.
     """
     parent_dir = Path(filename).parent
-    sb = SparcBundle(directory=parent_dir)
+    api = locate_api()
+    sb = SparcBundle(directory=parent_dir, validator=api)
     atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
     return atoms_or_images
 
@@ -743,7 +749,8 @@ def read_geopt(filename, index=-1, **kwargs):
     The reader works only when other files (.ion, .inpt) exist.
     """
     parent_dir = Path(filename).parent
-    sb = SparcBundle(directory=parent_dir)
+    api = locate_api()
+    sb = SparcBundle(directory=parent_dir, validator=api)
     atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
     return atoms_or_images
 
@@ -753,7 +760,8 @@ def read_aimd(filename, index=-1, **kwargs):
     The reader works only when other files (.ion, .inpt) exist.
     """
     parent_dir = Path(filename).parent
-    sb = SparcBundle(directory=parent_dir)
+    api = locate_api()
+    sb = SparcBundle(directory=parent_dir, validator=api)
     atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
     return atoms_or_images
 
