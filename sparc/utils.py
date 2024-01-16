@@ -1,11 +1,19 @@
 """Utilities that are loosely related to core sparc functionalities
 """
 import os
+import io
+import tempfile
 import shutil
+from pathlib import Path
 from typing import List, Optional, Union
 from warnings import warn
 
+
 import numpy as np
+
+from .api import SparcAPI
+from .docparser import SPARCDocParser
+
 
 
 def deprecated(message):
@@ -118,3 +126,29 @@ def cprint(content, color=None, bold=False, underline=False, **kwargs):
 
     print(output, **kwargs)
     return
+
+def locate_api(json_file=None, doc_path=None):
+    """Find the default api in the following order
+    1) User-provided json file path
+    2) User-provided path to the doc
+    3) If none of the above is provided, try to use SPARC_DOC_PATH
+    4) Fallback to the as-shipped json api
+    """
+    if json_file is not None:
+        api = SparcAPI(json_file)
+        return api
+    
+    if doc_path is None:
+        doc_path = os.environ.get("SPARC_DOC_PATH", None)
+        
+    if doc_path is not None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+            tmpfile = tmpdir / "parameters.json"
+            with open(tmpfile, "w") as fd:
+                fd.write(SPARCDocParser.json_from_directory(doc_path))
+            api = SparcAPI(tmpfile)
+        return api
+
+    api = SparcAPI()
+    return api
