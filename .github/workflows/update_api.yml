@@ -49,7 +49,7 @@ jobs:
         git checkout -b api_version
         mv parameters.json sparc/sparc_json_api/
         gh pr create -B master --title "[PR Bot] New JSON API version ${API_VERSION}" \
-         --body "Merge new JSON API version ${API_VERSION} into master" -R alchem0x2a/SPARC-X-API
+         --head ${{ github.run_id }} --body "Merge new JSON API version ${API_VERSION} into master" -R alchem0x2a/SPARC-X-API
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     # - name: Create badges
