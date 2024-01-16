@@ -52,9 +52,8 @@ jobs:
         mv parameters.json sparc/sparc_json_api/
         git add sparc/sparc_json_api/parameters.json
         git commit -m "Add new json api version ${API_VERSION}"
-        git push --set-upstream origin ${{ github.run_id }}
-        gh pr create --base master --title "[PR Bot] New JSON API version ${API_VERSION}" \
-         --head ${{ github.run_id }} --body "Merge new JSON API version ${API_VERSION} into master" -R alchem0x2a/SPARC-X-API
+        git push --set-upstream origin api_version
+        gh pr create --base master --title "[PR Bot] New JSON API version ${API_VERSION}"  --body "Merge new JSON API version ${API_VERSION} into master" -R alchem0x2a/SPARC-X-API
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     # - name: Create badges
