@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-linux:
+  update-api:
     defaults:
       run:
         shell: bash -l {0}
@@ -35,7 +35,7 @@ jobs:
         python -m sparc.docparser --git --include-subdirs
     - name: Env variable for api version
       run: |
-        echo "API_VERSION=$(python -c "from sparc.api import SparcAPI; print(SparcAPI('parameters.json').sparc_version))" >> $GITHUB_ENV
+        python -c "from sparc.api import SparcAPI; import os; ver=SparcAPI('parameters.json').sparc_version); os.system(f'echo API_VERSION={ver} >> $GITHUB_ENV')"
     - name: Test if json api is newer than current
       id: probe
       run: |
@@ -44,6 +44,7 @@ jobs:
     - name: Create Pull Request
       if: steps.compare_versions.outputs.update_needed == 'true'
       run: |
+        echo "New version is ${API_VERSION}"
         git checkout -b api_version
         mv parameters.json sparc/sparc_json_api/
         gh pr create -B master --title "[PR Bot] New JSON API version ${API_VERSION}" -R alchem0x2a/SPARC-X-API
