@@ -39,10 +39,11 @@ jobs:
     - name: Test if json api is newer than current
       id: probe
       run: |
-        python .github/workflows/api_version_probe.py || echo "::set-output name=update_needed::true"
+        echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
+        python .github/workflows/api_version_probe.py || echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
       continue-on-error: true
     - name: Create Pull Request
-      if: steps.compare_versions.outputs.update_needed == 'true'
+      if: ${{ env.UPDATE_NEEDED }} == 'true'
       run: |
         echo "New version is ${API_VERSION}"
         git checkout -b api_version
