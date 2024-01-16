@@ -141,15 +141,20 @@ def locate_api(json_file=None, doc_path=None):
         doc_root = os.environ.get("SPARC_DOC_PATH", None)
         if doc_root is not None:
             doc_path = Path(doc_root) / ".LaTeX"
+    else:
+        doc_path = Path(doc_path)    
     
-    if doc_path is not None:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmpdir = Path(tmpdir)
-            tmpfile = tmpdir / "parameters.json"
-            with open(tmpfile, "w") as fd:
-                fd.write(SPARCDocParser.json_from_directory(doc_path))
-            api = SparcAPI(tmpfile)
-        return api
+    if (doc_path is not None) and doc_path.is_dir():
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpdir = Path(tmpdir)
+                tmpfile = tmpdir / "parameters.json"
+                with open(tmpfile, "w") as fd:
+                    fd.write(SPARCDocParser.json_from_directory(doc_path, include_subdirs=True))
+                    api = SparcAPI(tmpfile)
+            return api
+        except Exception:
+            pass
 
     api = SparcAPI()
     return api

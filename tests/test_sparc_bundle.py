@@ -195,30 +195,33 @@ def test_bundle_diff_label(fs):
         sp = SparcBundle(directory="test.sparc", mode="r")
 
 
-def test_bundle_write_multi(fs):
+def test_bundle_write_multi():
     import numpy as np
     from ase.build import bulk
     from ase.io import read, write
 
     from sparc.io import read_sparc, write_sparc
 
-    fs.create_dir("test.sparc")
-    atoms = bulk("Cu") * [4, 4, 4]
-    images = [atoms]
-    write_sparc("test.sparc", atoms)
-    write_sparc("test.sparc", images)
-    write("test.sparc", atoms, format="sparc")
-    write("test.sparc", images, format="sparc")
-    images.append(atoms.copy())
-    with pytest.raises(Exception):
-        write_sparc("test.sparc", images)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        testbundle = tmpdir / "test.sparc"
+        os.makedirs(testbundle, exist_ok=True)
+        atoms = bulk("Cu") * [4, 4, 4]
+        images = [atoms]
+        write_sparc(testbundle, atoms)
+        write_sparc(testbundle, images)
+        write(testbundle, atoms, format="sparc")
+        write(testbundle, images, format="sparc")
+        images.append(atoms.copy())
+        with pytest.raises(Exception):
+            write_sparc(testbundle, images)
 
-    with pytest.raises(Exception):
-        write("test.sparc", images, format="sparc")
+        with pytest.raises(Exception):
+            write(testbundle, images, format="sparc")
 
-    atoms2 = read_sparc("test.sparc")
-    atoms2 = read("test.sparc", format="sparc")
-    assert np.isclose(atoms.positions, atoms2.positions).all()
+        atoms2 = read_sparc(testbundle)
+        atoms2 = read(testbundle, format="sparc")
+        assert np.isclose(atoms.positions, atoms2.positions).all()
 
 
 def test_bundle_psp():
