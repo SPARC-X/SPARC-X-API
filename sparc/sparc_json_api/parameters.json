@@ -1,5 +1,5 @@
 {
- "sparc_version": "2023.01.31",
+ "sparc_version": "2023.10.31",
  "categories": [
   "system",
   "scf",
@@ -1993,21 +1993,6 @@
    "remark": "",
    "category": "qmd"
   },
-  "TWIST_ANGLE": {
-   "symbol": "TWIST_ANGLE",
-   "label": "TWIST_ANGLE",
-   "type": "double",
-   "default": 0.0,
-   "unit": "rad/Bohr",
-   "example": "TWIST_ANGLE: 0.0045",
-   "description": "External twist per unit length applied on the nanotube.",
-   "remark": "If using helical symmetry (D C H), we also have to add the intrinsic twist.",
-   "allow_bool_input": false,
-   "default_remark": "0",
-   "description_raw": "External twist per unit length applied on the nanotube.",
-   "remark_raw": "If using helical symmetry (D C H), we also have to add the intrinsic twist.",
-   "category": "cyclix"
-  },
   "NP_DOMAIN_SQ_PARAL": {
    "symbol": "NP_DOMAIN_SQ_PARAL",
    "label": "NP_DOMAIN_SQ_PARAL",
@@ -2097,15 +2082,30 @@
    "remark_raw": "",
    "remark": "",
    "category": "spectral quadrature"
+  },
+  "TWIST_ANGLE": {
+   "symbol": "TWIST_ANGLE",
+   "label": "TWIST_ANGLE",
+   "type": "double",
+   "default": 0.0,
+   "unit": "rad/Bohr",
+   "example": "TWIST_ANGLE: 0.0045",
+   "description": "External twist per unit length applied on the nanotube.",
+   "remark": "If using helical symmetry (D C H), we also have to add the intrinsic twist.",
+   "allow_bool_input": false,
+   "default_remark": "0",
+   "description_raw": "External twist per unit length applied on the nanotube.",
+   "remark_raw": "If using helical symmetry (D C H), we also have to add the intrinsic twist.",
+   "category": "cyclix"
   }
  },
  "other_parameters": {},
  "data_types": [
+  "double",
   "double array",
-  "other",
-  "integer array",
-  "string",
   "integer",
-  "double"
+  "integer array",
+  "other",
+  "string"
  ]
 }
