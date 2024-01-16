@@ -46,6 +46,7 @@ jobs:
         # python -m pytest -svv tests/ --cov=sparc --cov-report=json --cov-report=html
         export SPARC_TESTS_DIR="./SPARC-master/tests"
         export ASE_SPARC_COMMAND="mpirun -n 1 sparc"
+        export SPARC_DOC_PATH="./SPARC-master/doc"
         coverage run -a -m pytest -svv tests/
         coverage json --omit="tests/*.py"
         coverage html --omit="tests/*.py"
