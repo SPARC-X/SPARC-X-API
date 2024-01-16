@@ -46,7 +46,7 @@ jobs:
         fi
       continue-on-error: true
     - name: Create Pull Request
-      if: ${{ env.UPDATE_NEEDED }} == 'true'
+      if: env.UPDATE_NEEDED == true
       run: |
         git config --global user.email "alchem0x2a@gmail.com"
         git config --global user.name "Github Action Bot"
