@@ -1,0 +1,62 @@
+name: Update JSON API (recurring job)
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  schedule:
+    - cron: '0 0 * * *' # Runs every day at midnight
+  workflow_dispatch:
+
+jobs:
+  update-api:
+    defaults:
+      run:
+        shell: bash -l {0}
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        python-version: "3.10"
+        mamba-version: "*"
+        channels: conda-forge,alchem0x2a,defaults
+        channel-priority: true
+        activate-environment: sparc-api-test
+    - name: Install package
+      run: |
+        pip install -e ".[test]"
+    - name: Generate json api from github master
+      run: |
+        python -m sparc.docparser --git --include-subdirs
+    - name: Env variable for api version
+      run: |
+        python -c "from sparc.api import SparcAPI; import os; ver=SparcAPI('parameters.json').sparc_version; os.system(f'echo API_VERSION={ver} >> $GITHUB_ENV')"
+    - name: Test if json api is newer than current
+      id: probe
+      run: |
+        if python .github/workflows/api_version_probe.py; then
+           echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
+        else
+           echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
+        fi
+      continue-on-error: true
+    - name: Create Pull Request
+      if: env.UPDATE_NEEDED == true
+      run: |
+        git config --global user.email "alchem0x2a@gmail.com"
+        git config --global user.name "Github Action Bot"
+        echo "New version is ${API_VERSION}"
+        git checkout -b api_version
+        mv parameters.json sparc/sparc_json_api/
+        git add sparc/sparc_json_api/parameters.json
+        git commit -m "Add new json api version ${API_VERSION}"
+        git push --set-upstream origin api_version
+        gh pr create --base master --title "[PR Bot] New JSON API version ${API_VERSION}"  --body "Merge new JSON API version ${API_VERSION} into master" -R ${{ github.repository_owner }}/SPARC-X-API
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    

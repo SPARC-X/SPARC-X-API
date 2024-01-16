@@ -59,6 +59,9 @@ jobs:
         conda info
         flake8 sparc/ --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 sparc/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: SPARC API version
+      run: |
+        python -c "from sparc.api import SparcAPI; import os; ver=SparcAPI().sparc_version; os.system(f'echo API_VERSION={ver} >> $GITHUB_ENV')"
     - name: Create badges
       run: |
         mkdir -p badges/
@@ -67,6 +70,8 @@ jobs:
         # A version badge
         PIPVER=`pip show sparc-x-api | grep Version | cut -d ' ' -f2`
         anybadge --value=$PIPVER --file=badges/package.svg -l sparc-x-api
+        # api version badge
+        anybadge --value=${API_VERSION} --file=badges/api_version.svg -l "json-api version"
     - name: Manually add git badges
       run: |
         # Assuming a badges branch already exists!

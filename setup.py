@@ -17,7 +17,7 @@ test_requires = [
 
 setup(
     name="sparc-x-api",
-    version="1.0.1",
+    version="1.0.2",
     python_requires=">=3.8",
     description="Python API for the SPARC DFT Code",
     author="Tian Tian, Ben Comer",
