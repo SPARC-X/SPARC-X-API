@@ -16,14 +16,14 @@ from ase.atoms import Atoms
 from ase.calculators.singlepoint import SinglePointDFTCalculator
 from ase.units import GPa, Hartree
 
+# various io formatters
+from .api import SparcAPI
 from .common import psp_dir as default_psp_dir
 from .download_data import is_psp_download_complete
 from .sparc_parsers.aimd import _read_aimd
 from .sparc_parsers.atoms import atoms_to_dict, dict_to_atoms
 from .sparc_parsers.geopt import _read_geopt
 from .sparc_parsers.inpt import _read_inpt, _write_inpt
-
-# various io formatters
 from .sparc_parsers.ion import _read_ion, _write_ion
 from .sparc_parsers.out import _read_out
 from .sparc_parsers.pseudopotential import copy_psp_file, parse_psp8_header
@@ -31,6 +31,7 @@ from .sparc_parsers.static import _read_static
 from .utils import deprecated, string2index
 
 # from .sparc_parsers.ion import read_ion, write_ion
+defaultAPI = SparcAPI()
 
 
 class SparcBundle:
@@ -67,6 +68,7 @@ class SparcBundle:
         atoms=None,
         label=None,
         psp_dir=None,
+        validator=defaultAPI,
     ):
         self.directory = Path(directory)
         self.mode = mode.lower()
@@ -85,6 +87,7 @@ class SparcBundle:
         # Sorting should be consistent across the whole bundle!
         self.sorting = None
         self.last_image = -1
+        self.validator = validator
 
     def _find_files(self):
         """Find all files matching '{label}.*'"""
@@ -187,8 +190,8 @@ class SparcBundle:
         This method should be rarely used
         """
         f_ion, f_inpt = self._indir(".ion"), self._indir(".inpt")
-        ion_data = _read_ion(f_ion)
-        inpt_data = _read_inpt(f_inpt)
+        ion_data = _read_ion(f_ion, validator=self.validator)
+        inpt_data = _read_inpt(f_inpt, validator=self.validator)
         merged_data = {**ion_data, **inpt_data}
         return dict_to_atoms(merged_data)
 
@@ -254,8 +257,8 @@ class SparcBundle:
                     target_fname = copy_psp_file(origin_psp, target_dir)
                     block["PSEUDO_POT"] = target_fname
 
-        _write_ion(self._indir(".ion"), data_dict)
-        _write_inpt(self._indir(".inpt"), data_dict)
+        _write_ion(self._indir(".ion"), data_dict, validator=self.validator)
+        _write_inpt(self._indir(".inpt"), data_dict, validator=self.validator)
         return
 
     def read_raw_results(self, include_all_files=False):

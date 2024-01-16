@@ -24,17 +24,17 @@ from .utils import (
     strip_comments,
 )
 
-# TODO: should allow user to select the api
-defaultAPI = SparcAPI()
-
 
 class InvalidSortingComment(ValueError):
     def __init__(self, message):
         self.message = message
 
 
+defaultAPI = SparcAPI()
+
+
 @reader
-def _read_ion(fileobj):
+def _read_ion(fileobj, validator=defaultAPI):
     """
     Read information from the .ion file. Note, this method does not return an atoms object,
     but rather return a dict. Thus the label option is not necessary to keep
@@ -54,7 +54,7 @@ def _read_ion(fileobj):
     # find the index for all atom type lines. They should be at the top of their block
     atom_type_bounds = [i for i, x in enumerate(data) if "ATOM_TYPE" in x] + [len(data)]
     atom_blocks = [
-        read_block_input(data[start:end], validator=defaultAPI)
+        read_block_input(data[start:end], validator=validator)
         for start, end in zip(atom_type_bounds[:-1], atom_type_bounds[1:])
     ]
 
@@ -71,6 +71,7 @@ def _read_ion(fileobj):
 def _write_ion(
     fileobj,
     data_dict,
+    validator=defaultAPI,
 ):
     """
     Writes the ion file content from the atom_dict
@@ -133,7 +134,7 @@ def _write_ion(
             if val is None:
                 continue
 
-            val_string = defaultAPI.convert_value_to_string(key, val)
+            val_string = validator.convert_value_to_string(key, val)
             # print(val_string)
             # TODO: make sure 1 line is accepted
             # TODO: write pads to vector lines

@@ -11,7 +11,7 @@ defaultAPI = SparcAPI()
 
 
 @reader
-def _read_inpt(fileobj):
+def _read_inpt(fileobj, validator=defaultAPI):
     contents = fileobj.read()
     # label = get_label(fileobj, ".ion")
     data, comments = strip_comments(contents)
@@ -19,12 +19,12 @@ def _read_inpt(fileobj):
 
     # find the index for all atom type lines. They should be at the
     # top of their block
-    inpt_blocks = read_block_input(data, validator=defaultAPI)
+    inpt_blocks = read_block_input(data, validator=validator)
     return {"inpt": {"params": inpt_blocks, "comments": comments}}
 
 
 @writer
-def _write_inpt(fileobj, data_dict):
+def _write_inpt(fileobj, data_dict, validator=defaultAPI):
     if "inpt" not in data_dict:
         raise ValueError("Your dict does not contain inpt section!")
 
@@ -45,7 +45,7 @@ def _write_inpt(fileobj, data_dict):
     params = inpt_dict["params"]
     for key, val in params.items():
         # TODO: can we add a multiline argument?
-        val_string = defaultAPI.convert_value_to_string(key, val)
+        val_string = validator.convert_value_to_string(key, val)
         if (val_string.count("\n") > 0) or (
             key
             in [
