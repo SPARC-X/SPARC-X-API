@@ -10,7 +10,7 @@ from ase.units import Bohr, GPa, Hartree, eV
 
 from .api import SparcAPI
 from .io import SparcBundle
-from .utils import _find_default_sparc, deprecated, h2gpts
+from .utils import _find_default_sparc, deprecated, h2gpts, locate_api
 
 # Below are a list of ASE-compatible calculator input parameters that are
 # in Angstrom/eV units
@@ -23,7 +23,6 @@ sparc_python_inputs = [
     "gpts",
     "nbands",
 ]
-
 
 defaultAPI = SparcAPI()
 
@@ -54,6 +53,8 @@ class SPARC(FileIOCalculator):
         command=None,
         psp_dir=None,
         log="sparc.log",
+        sparc_json_file=None,
+        sparc_doc_path=None,
         **kwargs,
     ):
         # Initialize the calculator but without restart.
@@ -73,12 +74,14 @@ class SPARC(FileIOCalculator):
         if label is None:
             label = "SPARC" if restart is None else None
 
+        self.validator = locate_api(json_file=sparc_json_file, doc_path=sparc_doc_path)
         self.sparc_bundle = SparcBundle(
             directory=Path(self.directory),
             mode="w",
             atoms=self.atoms,
             label=label,
             psp_dir=psp_dir,
+            validator=self.validator,
         )
 
         # Try restarting from an old calculation and set results
@@ -432,14 +435,15 @@ class SPARC(FileIOCalculator):
 
     def _detect_sparc_version(self):
         """Run a short sparc test to determine which sparc is used"""
-        # TODO: complete the implementation
+        command = self._make_command()
+
         return None
 
     def _sanitize_kwargs(self, kwargs):
         """Convert known parameters from"""
         # print(kwargs)
         # TODO: versioned validator
-        validator = defaultAPI
+        validator = self.validator
         valid_params = {}
         special_params = self.default_params.copy()
         # TODO: how about overwriting the default parameters?
@@ -469,7 +473,7 @@ class SPARC(FileIOCalculator):
         h <--> gpts <--> FD_GRID, only when None of FD_GRID / ECUT or MESH_SPACING is provided
         """
         converted_sparc_params = {}
-        validator = defaultAPI
+        validator = self.validator
         params = self.special_params.copy()
 
         # xc --> EXCHANGE_CORRELATION

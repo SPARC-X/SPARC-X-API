@@ -14,6 +14,7 @@ default_json_api = default_api_dir / "parameters.json"
 class SparcAPI:
     def __init__(self, json_api=None):
         """Initialize the API from a json file"""
+        # TODO: like ase io, adapt to both file and fio
         if json_api is None:
             json_api = Path(default_json_api)
         else:

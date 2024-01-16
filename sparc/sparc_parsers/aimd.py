@@ -18,9 +18,6 @@ from ase.utils import reader, writer
 from ..api import SparcAPI
 from .utils import strip_comments
 
-# TODO: should allow user to select the api
-defaultAPI = SparcAPI()
-
 
 @reader
 def _read_aimd(fileobj):

@@ -290,6 +290,7 @@ class SPARCDocParser(object):
     @classmethod
     def json_from_directory(cls, directory=".", include_subdirs=True, **kwargs):
         """Recursively add parameters from all Manual files"""
+        directory = Path(directory)
         root_dict = cls(directory=directory, **kwargs).to_dict()
         if include_subdirs:
             for sub_manual_tex in directory.glob("*/Manual*.tex"):
