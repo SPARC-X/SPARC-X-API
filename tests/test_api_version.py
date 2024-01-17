@@ -19,8 +19,8 @@ def test_sparc_api(monkeypatch):
     older_ver = locate_api(doc_path=curdir / "sparc-latex-doc-202302").sparc_version
     assert older_ver is None
     # Specify SPARC_DOC_PATH
-    monkeypatch.setenv("SPARC_DOC_PATH",
-        (curdir / "sparc-latex-doc-202302").resolve().as_posix()
+    monkeypatch.setenv(
+        "SPARC_DOC_PATH", (curdir / "sparc-latex-doc-202302").resolve().as_posix()
     )
     older_version = locate_api().sparc_version
     assert older_version is None
@@ -29,8 +29,9 @@ def test_sparc_api(monkeypatch):
 def test_sparc_params():
     if "SPARC_DOC_PATH" not in os.environ:
         pytest.skip(msg="No $SPARC_DOC_PATH set. Skip")
-    
+
     from sparc.utils import locate_api
+
     # Use the default api with SPARC_DOC_PATH
     api = locate_api()
     if api.sparc_version is None:

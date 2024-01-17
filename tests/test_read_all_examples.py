@@ -38,6 +38,7 @@ def test_read_all_tests():
     from sparc.io import read_sparc
     from sparc.utils import locate_api
     import os
+
     print("SPARC_DOC_PATH is: ", os.environ.get("SPARC_DOC_PATH", None))
     api = locate_api()
     print(api.sparc_version)
