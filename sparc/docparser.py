@@ -28,8 +28,31 @@ postprocess_items = {
 sparc_repo_url = "https://github.com/SPARC-X/SPARC.git"
 
 
-class SPARCDocParser(object):
-    """Use regex to parse LaTeX doc to python API"""
+class SparcDocParser(object):
+    """Parses LaTeX documentation of SPARC-X and converts it into a Python API.
+
+    This class extracts parameter information from LaTeX source files,
+    organizing it into a structured format that can be easily used in
+    Python. It supports parsing of version details, parameter types,
+    units, and other relevant information.
+
+    Attributes:
+        version (str): Parsed SPARC version, based on the documentation.
+        parameter_categories (list): Categories of parameters extracted.
+        parameters (dict): Extracted parameters with detailed information.
+        other_parameters (dict): Additional parameters not categorized.
+
+    Methods:
+        find_main_file(main_file_pattern): Finds the main LaTeX file based on a pattern.
+        get_include_files(): Retrieves a list of included LaTeX files.
+        parse_version(parse): Parses and sets the SPARC version.
+        parse_parameters(): Extracts parameters from LaTeX files.
+        postprocess(): Applies hard-coded post-processing to some parameters.
+        to_dict(): Converts parsed information into a dictionary.
+        json_from_directory(directory, include_subdirs, **kwargs): Class method to create JSON from a directory.
+        json_from_repo(url, version, include_subdirs, **kwargs): Class method to create JSON from a repository.
+
+    """
 
     def __init__(
         self,
@@ -50,12 +73,12 @@ class SPARCDocParser(object):
         For parameters additional to the standard SPARC options, such as the SQ / cyclix
         options, we merge the dict from the sub-dirs
 
-        Arguments:
-        `doc_root`: root directory to the LaTeX files, may look like `SPARC/doc/.LaTeX`
-        `main_file`: main LaTeX file for the manual
-        `intro_file`: LaTeX file for the introduction
-        `params_from_intro`: only contain the parameters that can be parsed in `intro_file`
-        `parse_date`: get the SPARC version by date
+        Args:
+            doc_root: root directory to the LaTeX files, may look like `SPARC/doc/.LaTeX`
+            main_file: main LaTeX file for the manual
+            intro_file: LaTeX file for the introduction
+            params_from_intro: only contain the parameters that can be parsed in `intro_file`
+            parse_date: get the SPARC version by date
         """
         self.root = Path(directory)
         self.main_file = self.find_main_file(main_file)
@@ -69,7 +92,18 @@ class SPARCDocParser(object):
         self.postprocess()
 
     def find_main_file(self, main_file_pattern):
-        """Find the matching name for the main-file, e.g. Manual.tex or Manual_cyclix.tex"""
+        """
+        Finds the main LaTeX file that matches the given pattern, e.g. Manual.tex or Manual_cyclix.te
+        
+        Args:
+            main_file_pattern (str): Pattern to match the main LaTeX file name.
+
+        Returns:
+            Path: Path to the main LaTeX file.
+
+        Raises:
+            FileNotFoundError: If no or multiple files match the pattern.
+        """
         candidates = list(self.root.glob(main_file_pattern))
         if len(candidates) != 1:
             raise FileNotFoundError(
@@ -78,7 +112,12 @@ class SPARCDocParser(object):
         return candidates[0]
 
     def get_include_files(self):
-        """Get a list of included LaTeX files from Manual.tex"""
+        """
+        Retrieves a list of LaTeX files included in the main LaTeX document, e.g.  Manual.tex.
+
+        Returns:
+            list: A list of paths to the included LaTeX files.
+        """
         pattern = r"\\begin\{document\}(.*?)\\end\{document\}"
         text = open(self.main_file, "r", encoding="utf8").read()
         # Only the first begin/end document will be matched
@@ -100,7 +139,18 @@ class SPARCDocParser(object):
         return include_files
 
     def parse_version(self, parse=True):
-        """Get the version (format "YYYY.MM.DD" of SPARC) from C-source file, if possible"""
+        """
+        Parses and sets the SPARC version based on the C-source file, if possible.
+        The date for the SPARC code is parsed from initialization.c in the "YYYY.MM.DD"
+        format.
+
+        Args:
+            parse (bool): Whether to parse the version from the documentation.
+
+        Sets:
+            self.version (str): The parsed version in 'YYYY.MM.DD' format or None,
+                                if either parse=False, or the C-source code is missing
+        """
         if parse is False:
             self.version = None
             return
@@ -128,13 +178,14 @@ class SPARCDocParser(object):
     def __parse_parameter_from_frame(self, frame):
         """Parse the parameters from a single LaTeX frame
 
-        Arguments:
-        `frame`: a string containing the LaTeX frame (e.g. \begin{frame} ... \end{frame})
-
-        fields are:
-        name: TOL_POISSON
-        type: Double | Integer | String | Character | Double array
-        unit: specified in the doc
+        Args:
+            frame (str): a string containing the LaTeX frame (e.g. \\begin{frame} ... \\end{frame})
+                  
+        Returns:
+            dict: a key-value paired dict parsed from the frame. Some field names include:
+                  name: TOL_POISSON
+                  type: Double | Integer | String | Character | Double array
+                  unit: specified in the doc
         """
         pattern_label = r"\\texttt\{(.*?)\}.*?\\label\{(.*?)\}"
         pattern_block = r"\\begin\{block\}\{(.*?)\}([\s\S]*?)\\end\{block\}"
@@ -174,7 +225,7 @@ class SPARCDocParser(object):
         """Extract all the frames that aren't commented in the text
 
         Arguments:
-        `text`: LaTeX text
+            text (str): Full LaTeX text 
         """
         pattern_frame = r"\\begin\{frame\}(.*?)\\end\{frame\}"
         matches = re.findall(pattern_frame, text, re.DOTALL | re.MULTILINE)
@@ -632,11 +683,11 @@ if __name__ == "__main__":
             root = sparc_repo_url
         else:
             root = args.root
-        json_string = SPARCDocParser.json_from_repo(
+        json_string = SparcDocParser.json_from_repo(
             url=root, version=args.version, include_subdirs=args.include_subdirs
         )
     else:
-        json_string = SPARCDocParser.json_from_directory(
+        json_string = SparcDocParser.json_from_directory(
             directory=Path(args.root), include_subdirs=args.include_subdirs
         )
     with open(output, "w", encoding="utf8") as fd:

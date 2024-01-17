@@ -11,7 +11,7 @@ from warnings import warn
 import numpy as np
 
 from .api import SparcAPI
-from .docparser import SPARCDocParser
+from .docparser import SparcDocParser
 
 
 def deprecated(message):
@@ -150,7 +150,7 @@ def locate_api(json_file=None, doc_path=None):
                 tmpdir = Path(tmpdir)
                 tmpfile = tmpdir / "parameters.json"
                 with open(tmpfile, "w") as fd:
-                    fd.write(SPARCDocParser.json_from_directory(doc_path, include_subdirs=True))
+                    fd.write(SparcDocParser.json_from_directory(doc_path, include_subdirs=True))
                     api = SparcAPI(tmpfile)
             return api
         except Exception:

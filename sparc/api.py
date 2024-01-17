@@ -6,15 +6,33 @@ from warnings import warn
 import numpy as np
 
 curdir = Path(__file__).parent
-# TODO: must clean the api directory
 default_api_dir = curdir / "sparc_json_api"
 default_json_api = default_api_dir / "parameters.json"
 
 
 class SparcAPI:
+    """
+    An interface to the parameter settings in SPARC-X calculator. User can use the
+    SparcAPI instance to validate and translate parameters that matches a certain
+    version of the SPARC-X code.
+
+    Attributes:
+        sparc_version (str): Version of SPARC.
+        categories (dict): Categories of parameters.
+        parameters (dict): Detailed parameters information.
+        other_parameters (dict): Additional parameters.
+        data_types (dict): Supported data types.
+
+    Methods:
+        get_parameter_dict(parameter): Retrieves dictionary for a specific parameter.
+        help_info(parameter): Provides detailed information about a parameter.
+        validate_input(parameter, input): Validates user input against the expected parameter type.
+        convert_string_to_value(parameter, string): Converts string input to the appropriate data type.
+        convert_value_to_string(parameter, value): Converts a value to a string representation.
+    """
     def __init__(self, json_api=None):
-        """Initialize the API from a json file"""
-        # TODO: like ase io, adapt to both file and fio
+        """
+        """
         if json_api is None:
             json_api = Path(default_json_api)
         else:
@@ -26,9 +44,20 @@ class SparcAPI:
         self.parameters = json_data["parameters"]
         self.other_parameters = json_data["other_parameters"]
         self.data_types = json_data["data_types"]
-        # TODO: Make a parameters by categories
 
     def get_parameter_dict(self, parameter):
+        """
+        Retrieves the dictionary for a specified parameter.
+
+        Args:
+            parameter (str): The name of the parameter.
+        
+        Returns:
+            dict: Dictionary containing details of the parameter.
+
+        Raises:
+            KeyError: If the parameter is not known to the SPARC version.
+        """
         parameter = parameter.upper()
         if parameter not in self.parameters.keys():
             raise KeyError(
@@ -37,6 +66,15 @@ class SparcAPI:
         return self.parameters[parameter]
 
     def help_info(self, parameter):
+	"""
+	Provides a detailed information string for a given parameter.
+
+	Args:
+	    parameter (str): The name of the parameter to get information for.
+
+	Returns:
+            str: A formatted string with detailed information about the parameter.
+	"""
         pdict = self.get_parameter_dict(parameter)
         message = "\n".join(
             [
@@ -57,14 +95,19 @@ class SparcAPI:
         return message
 
     def validate_input(self, parameter, input):
-        """Give a string for a parameter,
-        determine if the input follows the type
+	"""
+	Validates if the given input is appropriate for the specified parameter's type.
 
-        input can be either a string or a 'direct' data type,
-        like python float or numpy float
+	Args:
+            parameter (str): The name of the parameter.
+            input: The input to validate, can be of various types (string, int, float, numpy types).
 
-        TODO: there are many exceptions in array types, should enumerate
-        """
+        Returns:
+            bool: True if input is valid, False otherwise.
+
+	Raises:
+            ValueError: If the data type of the parameter is not supported.
+	"""
         is_input_string = isinstance(input, str)
         pdict = self.get_parameter_dict(parameter)
         dtype = pdict["type"]
@@ -97,7 +140,6 @@ class SparcAPI:
                 except Exception:
                     return False
         elif "array" in dtype:
-            # import pdb; pdb.set_trace()
             if is_input_string:
                 if ("." in input) and ("integer" in dtype):
                     warn(
@@ -109,7 +151,6 @@ class SparcAPI:
                         )
                     )
                 try:
-                    # import pdb; pdb.set_trace()
                     arr = np.genfromtxt(input.splitlines(), dtype=float, ndmin=1)
                     # In valid input with nan
                     if np.isnan(arr).any():
@@ -131,14 +172,24 @@ class SparcAPI:
                 except Exception:
                     arr = np.array(0.0)
             return len(arr.shape) > 0
-        # elif dtype == "other":
-        #     # Any "other"-type inputs should be provided only using string
-        #     return is_input_string
         else:
             raise ValueError(f"Data type {dtype} is not supported!")
 
     def convert_string_to_value(self, parameter, string):
-        """Convert a string input into valie parameter type"""
+       """
+       Converts a string input to the appropriate value type of the parameter.
+       
+       Args:
+           parameter (str): The name of the parameter.
+           string (str): The string input to convert.
+
+       Returns:
+           The converted value, type depends on parameter's expected type.
+
+       Raises:
+           TypeError: If the input is not a string.
+           ValueError: If the string is not a valid input for the parameter.
+       """
 
         # Special case, the string may be a multiline string-array!
         if isinstance(string, list):
@@ -189,7 +240,19 @@ class SparcAPI:
         return value
 
     def convert_value_to_string(self, parameter, value):
-        """Convert a valid value for the paramter to string for writing"""
+        """
+	Converts a value to its string representation based on the parameter type.
+
+	Args:
+            parameter (str): The name of the parameter.
+            value: The value to convert.
+
+	Returns:
+            str: The string representation of the value.
+
+	Raises:
+            ValueError: If the value is not valid for the parameter.
+	"""
 
         is_input_string = isinstance(value, str)
         if not self.validate_input(parameter, value):
@@ -224,6 +287,16 @@ class SparcAPI:
 
 
 def _array_to_string(arr, format):
+    """
+    Converts an array to a string representation based on the specified format.
+
+    Args:
+        arr (array): The array to convert.
+        format (str): The format type ('integer array', 'double array', etc.).
+
+    Returns:
+        str: String representation of the array.
+    """
     arr = np.array(arr)
     if arr.ndim == 1:
         arr = arr.reshape(1, -1)
