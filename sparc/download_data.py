@@ -24,10 +24,15 @@ all_psp8_checksum = "5ef42c4a81733a90b0e080b771c5a73a"
 
 
 def download_psp(sparc_tag=sparc_tag, psp_dir=psp_dir):
-    """Download the external PSPs into the sparc/psp folder"""
+    """Download the external PSPs into the sparc/psp folder
+
+    Arguments:
+        sparc_tag (str): Commit hash or git tag for the psp files
+        psp_dir (str or PosixPath): Directory to download the psp files
+    """
     if is_psp_download_complete():
         print("PSPs have been successfully downloaded!")
-        return True
+        return
     download_url = sparc_source_url.format(sparc_tag=sparc_tag)
     print(f"Download link: {download_url}")
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -47,11 +52,20 @@ def download_psp(sparc_tag=sparc_tag, psp_dir=psp_dir):
                         shutil.copy(pspf, psp_dir)
     if not is_psp_download_complete(psp_dir):
         raise RuntimeError(f"Files downloaded to {psp_dir} have different checksums!")
-    return True
+    return
 
 
 def checksum_all(psp_dir=psp_dir, extension="*.psp8"):
-    """Checksum all the files under the psp_dir"""
+    """Checksum all the files under the psp_dir to make sure the psp8 files
+    are the same as intended
+
+    Arguments:
+        psp_dir (str or PosixPath): Directory for the psp files
+        extension (str): Search pattern for the psp files, either '.psp', '.psp8' or '.pot'
+
+    Returns:
+        str: Checksum for all the files concatenated
+    """
     checker = hashlib.md5()
     psp_dir = Path(psp_dir)
     # Use sorted to make sure file order is correct

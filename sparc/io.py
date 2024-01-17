@@ -14,7 +14,6 @@ from warnings import warn
 import numpy as np
 from ase.atoms import Atoms
 from ase.calculators.singlepoint import SinglePointDFTCalculator
-from ase.units import GPa, Hartree
 
 # various io formatters
 from .api import SparcAPI
@@ -28,7 +27,7 @@ from .sparc_parsers.ion import _read_ion, _write_ion
 from .sparc_parsers.out import _read_out
 from .sparc_parsers.pseudopotential import copy_psp_file, parse_psp8_header
 from .sparc_parsers.static import _read_static
-from .utils import deprecated, string2index, locate_api
+from .utils import deprecated, locate_api, string2index
 
 # from .sparc_parsers.ion import read_ion, write_ion
 defaultAPI = SparcAPI()
@@ -43,20 +42,43 @@ class SparcBundle:
     Currently the write method only supports 1 image, while read method support reading
     atoms results in following conditions
 
-    1) No calculation (minimal): .ion + .inpt file --> 1 image 2)
-    Single point calculation: .ion + .inpt + .out + .static --> 1
-    image with calc 3) Multiple SP calculations: chain all
+    1) No calculation (minimal): .ion + .inpt file --> 1 image
+    2) Single point calculation: .ion + .inpt + .out + .static --> 1
+    image with calc
+    3) Multiple SP calculations: chain all
     .out{digits} and .static{digitis} outputs 4) Relaxation: read from
     .geopt and .out (supporting chaining) 5) AIMD: read from .aimd and
     .out (support chaining)
 
 
-    Currently, the bundle object is intended to be used for one-time
-    read / write
+    Attributes:
+        directory (Path): Path to the directory containing SPARC files.
+        mode (str): File access mode ('r', 'w', or 'a').
+        label (str): Name of the main SPARC file.
+        init_atoms (Atoms): Initial atomic configuration.
+        init_inputs (dict): Initial input parameters.
+        psp_data (dict): Pseudopotential data.
+        raw_results (dict): Raw results from SPARC calculations.
+        psp_dir (Path): Directory containing pseudopotentials.
+        sorting (list): Sort order for atoms.
+        last_image (int): Index of the last image in a series of calculations.
+        validator (SparcAPI): API validator for SPARC calculations.
 
-    TODO: multiple occurance support
-    TODO: archive support
-
+    Methods:
+        __find_psp_dir(psp_dir=None): Finds the directory for SPARC pseudopotentials.
+        _find_files(): Finds all files matching the bundle label.
+        _make_label(label=None): Infers or sets the label for the SPARC bundle.
+        _indir(ext, label=None, occur=0, d_format="{:02d}"): Finds a file with a specific extension in the bundle.
+        _read_ion_and_inpt(): Reads .ion and .inpt files together.
+        _write_ion_and_inpt(): Writes .ion and .inpt files to the bundle.
+        _read_results_from_index(index, d_format="{:02d}"): Reads results from a specific calculation index.
+        _make_singlepoint(calc_results, images, raw_results): Converts results and images to SinglePointDFTCalculators.
+        _extract_static_results(raw_results, index=":"): Extracts results from static calculations.
+        _extract_geopt_results(raw_results, index=":"): Extracts results from geometric optimization calculations.
+        _extract_aimd_results(raw_results, index=":"): Extracts results from AIMD calculations.
+        convert_to_ase(index=-1, include_all_files=False, **kwargs): Converts raw results to ASE Atoms with calculators.
+        read_raw_results(include_all_files=False): Parses all files in the bundle and merges results.
+        read_psp_info(): Parses pseudopotential information from the inpt file.
     """
 
     psp_env = ["SPARC_PSP_PATH", "SPARC_PP_PATH"]
@@ -70,6 +92,22 @@ class SparcBundle:
         psp_dir=None,
         validator=defaultAPI,
     ):
+        """
+        Initializes a SparcBundle for accessing SPARC calculation data.
+
+        Args:
+            directory (str or Path): The path to the directory containing the SPARC files.
+            mode (str, optional): The file access mode. Can be 'r' (read), 'w' (write), or 'a' (append). Defaults to 'r'.
+            atoms (Atoms, optional): The initial atomic configuration. Only relevant in write mode.
+            label (str, optional): A custom label for the bundle. If None, the label is inferred from the directory or files.
+            psp_dir (str or Path, optional): Path to the directory containing pseudopotentials. If None, the path is inferred.
+            validator (SparcAPI, optional): An instance of SparcAPI for validating and parsing SPARC parameters. Defaults to a default SparcAPI instance.
+
+        Raises:
+            AssertionError: If an invalid mode is provided.
+            ValueError: If multiple .ion files are found and no label is specified.
+            Warning: If no .ion file is found in read-mode, or illegal characters are in the label.
+        """
         self.directory = Path(directory)
         self.mode = mode.lower()
         assert self.mode in (
@@ -77,8 +115,7 @@ class SparcBundle:
             "w",
             "a",
         ), f"Invalid mode {self.mode}! Must one of 'r', 'w' or 'a'"
-        self.label = self._make_label(label)  # name of the main sparc file
-        # TODO: assigning atoms here is probably not useful!
+        self.label = self._make_label(label)
         self.init_atoms = atoms.copy() if atoms is not None else None
         self.init_inputs = {}
         self.psp_data = {}
@@ -99,8 +136,10 @@ class SparcBundle:
         Special cases if label is None:
         1. read mode --> get the ion file name
         2. write mode --> infer from the directory
+
+        Arguments:
+            label (str or None): Label to be used to write the .ion, .inpt files
         """
-        # TODO: more sensible naming for name?
         prefix = self.directory.resolve().with_suffix("").name
 
         illegal_chars = '\\/:*?"<>|'
@@ -112,7 +151,6 @@ class SparcBundle:
             # read
             match_ion = list(self.directory.glob("*.ion"))
             if len(match_ion) > 1:
-                # TODO: customize error msg
                 raise ValueError(
                     "Cannot read sparc bundle with multiple ion files without specifying the label!"
                 )
@@ -139,6 +177,12 @@ class SparcBundle:
         2. $SPARC_PSP_PATH
         3. $SPARC_PP_PATH
         4. psp bundled with sparc-api
+
+        Arguments:
+            psp_dir (str or PosixPath or None): the specific directory to search the psp files.
+                                                Each element can only have 1 psp file under psp_dir
+        Returns:
+            PosixPath: Location of psp files
         """
         if psp_dir is not None:
             return Path(psp_dir)
@@ -170,10 +214,17 @@ class SparcBundle:
             return None
 
     def _indir(self, ext, label=None, occur=0, d_format="{:02d}"):
-        """Find the file with {label}.{ext} under current dir
-
+        """Find the file with {label}.{ext} under current dir,
         if label is None, use the default
-        # TODO: how about recursive?
+
+        Arguments:
+            ext (str): Extension of file, e.g. '.ion' or 'ion'
+            label (str or None): Label for the file. If None, use the parent directory name for searching
+            occur (int): Occurance index of the file, if occur > 0, search for files with suffix like 'SPARC.out_01'
+            d_format (str): Format for the index
+
+        Returns:
+            PosixPath: Path to the target file under self.directory
         """
         label = self.label if label is None else label
         if not ext.startswith("."):
@@ -185,9 +236,10 @@ class SparcBundle:
         return target
 
     def _read_ion_and_inpt(self):
-        """Read the ion and inpt files together
+        """Read the ion and inpt files together to obtain basic atomstic data.
 
-        This method should be rarely used
+        Returns:
+            Atoms: atoms object from .ion and .inpt file
         """
         f_ion, f_inpt = self._indir(".ion"), self._indir(".inpt")
         ion_data = _read_ion(f_ion, validator=self.validator)
@@ -218,6 +270,17 @@ class SparcBundle:
         there will only be .ion writing the positions and .inpt
         writing a minimal cell information
 
+        Args:
+            atoms (Atoms, optional): The Atoms object to write. If None, uses initialized atoms associated with SparcBundle.
+            label (str, optional): Custom label for the written files.
+            direct (bool, optional): If True, writes positions in direct coordinates.
+            sort (bool, optional): If True, sorts atoms before writing.
+            ignore_constraints (bool, optional): If True, ignores constraints on atoms.
+            wrap (bool, optional): If True, wraps atoms into the unit cell.
+            **kwargs: Additional keyword arguments for writing.
+
+        Raises:
+            ValueError: If the bundle is not in write mode.
         """
         if self.mode != "w":
             raise ValueError(
@@ -225,7 +288,6 @@ class SparcBundle:
             )
         os.makedirs(self.directory, exist_ok=True)
         atoms = self.atoms.copy() if atoms is None else atoms.copy()
-        # TODO: make the parameter more explicit
         pseudopotentials = kwargs.pop("pseudopotentials", {})
 
         if sort:
@@ -244,9 +306,7 @@ class SparcBundle:
         )
         merged_inputs = input_parameters.copy()
         merged_inputs.update(kwargs)
-        # TODO: special input param handling
         data_dict["inpt"]["params"].update(merged_inputs)
-        # TODO: label
 
         # If copy_psp, change the PSEUDO_POT field and copy the files
         if copy_psp:
@@ -265,13 +325,17 @@ class SparcBundle:
         """Parse all files using the given self.label.
         The results are merged dict from all file formats
 
-        Argument all_files: True --> include all files (out, out_01,
-        out_02, etc) when all files are included, output is a list of
-        dicts; otherwise a single dict
+        Arguments:
+            include_all_files (bool): Whether to include output files with different suffices
+                                      If true: include all files (e.g. SPARC.out, SPARC.out_01,
+                                      SPARC.out_02, etc).
+        Returns:
+            dict or List: Dict containing all raw results. Only some of them will appear in the calculator's results
 
+        Sets:
+            self.raw_results (dict or List): the same as the return value
         """
         # Find the max output index
-        # TODO: move this into another function
         last_out = sorted(self.directory.glob(f"{self.label}.out*"), reverse=True)
         # No output file, only ion / inpt
         if len(last_out) == 0:
@@ -283,8 +347,6 @@ class SparcBundle:
             else:
                 self.last_image = int(suffix.split("_")[1])
         self.num_calculations = self.last_image + 1
-
-        # print(self.last_image, self.num_calculations)
 
         if include_all_files:
             results = [
@@ -298,12 +360,9 @@ class SparcBundle:
 
         if include_all_files:
             init_raw_results = self.raw_results[0]
-            # self.sorting = self.raw_results[0]["ion"]["sorting"]
         else:
             init_raw_results = self.raw_results.copy()
-            # self.sorting = self.raw_results["ion"]["sorting"]
 
-        # TODO: init is actually last!
         self.init_atoms = dict_to_atoms(init_raw_results)
         self.init_inputs = {
             "ion": init_raw_results["ion"],
@@ -314,7 +373,16 @@ class SparcBundle:
 
     def _read_results_from_index(self, index, d_format="{:02d}"):
         """Read the results from one calculation index, and return a
-        single raw result dict"""
+        single raw result dict
+
+        Arguments:
+            index (int): Index of image to return the results
+            d_format (str): Format for the index suffix
+
+        Returns:
+            dict: Results for single image
+
+        """
         results_dict = {}
 
         for ext in ("ion", "inpt"):
@@ -329,7 +397,6 @@ class SparcBundle:
                 results_dict.update(data_dict)
 
         # Must have files: ion, inpt
-        # TODO: make another function to check sanity
         if ("ion" not in results_dict) or ("inpt" not in results_dict):
             raise RuntimeError(
                 "Either ion or inpt files are missing from the bundle! "
@@ -352,7 +419,12 @@ class SparcBundle:
         """Read the raw results from the bundle and create atoms with
         single point calculators
 
-        TODO: what to do about the indices?
+        Arguments:
+            index (int or str): Index or slice of the image(s) to convert. Uses the same format as ase.io.read
+            include_all_files (bool): If true, also read results with indexed suffices
+
+        Returns:
+            Atoms or List[Atoms]: ASE-atoms or images with single point results
 
         """
         # Convert to images!
@@ -362,7 +434,6 @@ class SparcBundle:
         else:
             raw_results = list(rs)
         res_images = []
-        # print("RAW RES: ", raw_results)
         for entry in raw_results:
             if "static" in entry:
                 calc_results, images = self._extract_static_results(entry, index=":")
@@ -390,6 +461,14 @@ class SparcBundle:
         The calculator also takes parameters from ion, inpt that exist
         in self.raw_results
 
+        Arguments:
+            calc_results (List): Calculation results for all images
+            images (List): Corresponding Atoms images
+            raw_results (List): Full raw results dict to obtain additional information
+
+        Returns:
+            List(Atoms): ASE-atoms images with single point calculators attached
+
         """
         converted_images = []
         for res, _atoms in zip(calc_results, images):
@@ -416,6 +495,13 @@ class SparcBundle:
         position from static file first, then fallback from ion + inpt
 
         Note: make all energy / forces resorted!
+
+        Arguments:
+            raw_results (dict): Raw results parsed from self.read_raw_results
+            index (str or int): Index or slice of images
+
+        Returns:
+            List[results], List[Atoms]
 
         """
         # TODO: implement the multi-file static
@@ -455,6 +541,13 @@ class SparcBundle:
         value atoms: ASE atoms object The priority is to parse
         position from static file first, then fallback from ion + inpt
 
+        Arguments:
+            raw_results (dict): Raw results parsed from self.read_raw_results
+            index (str or int): Index or slice of images
+
+        Returns:
+            List[results], List[Atoms]
+
         """
         # print("RAW_RES:  ", raw_results)
         geopt_results = raw_results.get("geopt", [])
@@ -476,11 +569,9 @@ class SparcBundle:
             partial_result = {}
             if "energy" in result:
                 partial_result["energy"] = result["energy"]
-                # TODO: shall we distinguish?
                 partial_result["free energy"] = result["energy"]
 
             if "forces" in result:
-                # TODO: what about non-sorted calculations
                 partial_result["forces"] = result["forces"][self.resort]
 
             if "stress" in result:
@@ -547,6 +638,13 @@ class SparcBundle:
         We probably want more information for the AIMD calculations,
         but I'll keep them for now
 
+        Arguments:
+            raw_results (dict): Raw results parsed from self.read_raw_results
+            index (str or int): Index or slice of images
+
+        Returns:
+            List[results], List[Atoms]
+
         """
         aimd_results = raw_results.get("aimd", [])
         calc_results = []
@@ -586,9 +684,6 @@ class SparcBundle:
                 result["positions"][self.resort], apply_constraint=False
             )
 
-            # TODO: need to get an example for NPT MD to set Cell
-            # TODO: need to set stress information
-
             if "velocities" in result:
                 atoms.set_velocities(result["velocities"][self.resort])
 
@@ -596,32 +691,9 @@ class SparcBundle:
             calc_results.append(partial_result)
         return calc_results, ase_images
 
-    # def get_ionic_steps(self, raw_results):
-    #     """Get last ionic step dict from raw results"""
-    #     out_results = raw_results.get("out", {})
-    #     ionic_steps = out_results.get("ionic_steps", [])
-    #     return ionic_steps
-
-    # def _extract_output_results(self, raw_results):
-    #     """Extract extra information from results, need to be more polished
-    #     (maybe move to calculator?)
-    #     """
-    #     last_step = self.get_ionic_step(raw_results)[-1]
-    #     if "fermi level" in last_step:
-    #         value = last_step["fermi level"]["value"]
-    #         unit = last_step["fermi level"]["unit"]
-    #         if unit.lower() == "ev":
-    #             self.results["fermi"] = value
-    #         # Should rarely happen, but keep it here!
-    #         elif unit.lower() == "hartree":
-    #             self.results["fermi"] = value * Hartree
-    #         else:
-    #             raise ValueError("Wrong unit in Fermi!")
-    #     return
-
     @property
     def sort(self):
-        """wrap the self.sorting dict. If sorting information does not exist,
+        """Wrap the self.sorting dict. If sorting information does not exist,
         use the default slicing
         """
 
@@ -635,7 +707,7 @@ class SparcBundle:
 
     @property
     def resort(self):
-        """wrap the self.sorting dict. If sorting information does not exist,
+        """Wrap the self.sorting dict. If sorting information does not exist,
         use the default slicing
         """
 
@@ -675,6 +747,15 @@ def read_sparc(filename, index=-1, include_all_files=False, **kwargs):
     """Parse a SPARC bundle, return an Atoms object or list of Atoms (image)
     with embedded calculator result.
 
+    Arguments:
+        filename (str or PosixPath): Filename to the sparc bundle
+        index (int or str): Index or slice of the images, following the ase.io.read convention
+        include_all_files (bool): If true, parse all output files with indexed suffices
+        **kwargs: Additional parameters
+
+    Returns:
+       Atoms or List[Atoms]
+
     """
     # We rely on minimal api version choose, i.e. default or set from env
     api = locate_api()
@@ -688,6 +769,11 @@ def read_sparc(filename, index=-1, include_all_files=False, **kwargs):
 def write_sparc(filename, images, **kwargs):
     """Write sparc file. Images can only be Atoms object
     or list of length 1
+
+    Arguments:
+        filename (str or PosixPath): Filename to the output sparc directory
+        images (Atoms or List(Atoms)): Atoms object to be written. Only supports writting 1 Atoms
+        **kwargs: Additional parameters
     """
     if isinstance(images, Atoms):
         atoms = images
@@ -702,13 +788,21 @@ def write_sparc(filename, images, **kwargs):
 
 
 @deprecated(
-    "Reading individual .ion is not recommended. Please use read_sparc instead."
+    "Reading individual .ion file is not recommended. Please use read_sparc instead."
 )
 def read_ion(filename, **kwargs):
     """Parse an .ion file inside the SPARC bundle using a wrapper around SparcBundle
     The reader works only when other files (.inpt) exist.
 
     The returned Atoms object of read_ion method only contains the initial positions
+
+    Arguments:
+        filename (str or PosixPath): Filename to the .ion file
+        index (int or str): Index or slice of the images, following the ase.io.read convention
+        **kwargs: Additional parameters
+
+    Returns:
+       Atoms or List[Atoms]
     """
     api = locate_api()
     parent_dir = Path(filename).parent
@@ -721,9 +815,14 @@ def read_ion(filename, **kwargs):
     "Writing individual .ion file is not recommended. Please use write_sparc instead."
 )
 def write_ion(filename, atoms, **kwargs):
-    """Write .ion and .inpt files using the SparcBundle wrapper.
+    """Write .ion file using the SparcBundle wrapper. This method will also create the .inpt file
 
     This is only for backward compatibility
+
+    Arguments:
+        filename (str or PosixPath): Filename to the .ion file
+        atoms (Atoms): atoms to be written
+        **kwargs: Additional parameters
     """
     label = Path(filename).with_suffix("").name
     parent_dir = Path(filename).parent
@@ -733,9 +832,20 @@ def write_ion(filename, atoms, **kwargs):
     return atoms
 
 
+@deprecated(
+    "Reading individual .static file is not recommended. Please use read_sparc instead."
+)
 def read_static(filename, index=-1, **kwargs):
     """Parse a .static file bundle using a wrapper around SparcBundle
     The reader works only when other files (.ion, .inpt) exist.
+
+    Arguments:
+        filename (str or PosixPath): Filename to the .static file
+        index (int or str): Index or slice of the images, following the ase.io.read convention
+        **kwargs: Additional parameters
+
+    Returns:
+       Atoms or List[Atoms]
     """
     parent_dir = Path(filename).parent
     api = locate_api()
@@ -744,9 +854,20 @@ def read_static(filename, index=-1, **kwargs):
     return atoms_or_images
 
 
+@deprecated(
+    "Reading individual .geopt file is not recommended. Please use read_sparc instead."
+)
 def read_geopt(filename, index=-1, **kwargs):
     """Parse a .geopt file bundle using a wrapper around SparcBundle
     The reader works only when other files (.ion, .inpt) exist.
+
+    Arguments:
+        filename (str or PosixPath): Filename to the .geopt file
+        index (int or str): Index or slice of the images, following the ase.io.read convention
+        **kwargs: Additional parameters
+
+    Returns:
+       Atoms or List[Atoms]
     """
     parent_dir = Path(filename).parent
     api = locate_api()
@@ -755,9 +876,20 @@ def read_geopt(filename, index=-1, **kwargs):
     return atoms_or_images
 
 
+@deprecated(
+    "Reading individual .aimd file is not recommended. Please use read_sparc instead."
+)
 def read_aimd(filename, index=-1, **kwargs):
     """Parse a .static file bundle using a wrapper around SparcBundle
     The reader works only when other files (.ion, .inpt) exist.
+
+    Arguments:
+        filename (str or PosixPath): Filename to the .aimd file
+        index (int or str): Index or slice of the images, following the ase.io.read convention
+        **kwargs: Additional parameters
+
+    Returns:
+       Atoms or List[Atoms]
     """
     parent_dir = Path(filename).parent
     api = locate_api()

@@ -1,8 +1,8 @@
 import os
-from packaging import version
 from pathlib import Path
 
 import pytest
+from packaging import version
 
 curdir = Path(__file__).parent
 
@@ -18,4 +18,3 @@ def test_sparc_api():
     # Version not detected since src not presented
     older_ver = locate_api(doc_path=curdir / "sparc-latex-doc-202302").sparc_version
     assert older_ver is None
-

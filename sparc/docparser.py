@@ -94,7 +94,7 @@ class SparcDocParser(object):
     def find_main_file(self, main_file_pattern):
         """
         Finds the main LaTeX file that matches the given pattern, e.g. Manual.tex or Manual_cyclix.te
-        
+
         Args:
             main_file_pattern (str): Pattern to match the main LaTeX file name.
 
@@ -180,7 +180,7 @@ class SparcDocParser(object):
 
         Args:
             frame (str): a string containing the LaTeX frame (e.g. \\begin{frame} ... \\end{frame})
-                  
+
         Returns:
             dict: a key-value paired dict parsed from the frame. Some field names include:
                   name: TOL_POISSON
@@ -610,7 +610,7 @@ def contain_only_bool(text):
 
 def sanitize_description(param_dict):
     """Sanitize the description and remark field
-    
+
     Arguments:
         param_dict (dict): Raw dict for one parameter entry
 
