@@ -225,7 +225,9 @@ class SparcDocParser(object):
         """Extract all the frames that aren't commented in the text
 
         Arguments:
-            text (str): Full LaTeX text 
+            text (str): Full LaTeX text
+        Returns:
+            list: Matched LaTeX Beamer frame fragments
         """
         pattern_frame = r"\\begin\{frame\}(.*?)\\end\{frame\}"
         matches = re.findall(pattern_frame, text, re.DOTALL | re.MULTILINE)
@@ -235,9 +237,9 @@ class SparcDocParser(object):
         """Parse the introduction file
 
         Returns:
-        `parameter_dict`: dictionary using the parameter category as the main key
-                          (following order in Introduction.tex)
-        `parameter_categories`: list of categories
+            parameter_dict (dict): dictionary using the parameter category as the main key
+                            (following order in Introduction.tex)
+            parameter_categories (list): list of categories
         """
         text_intro = open(self.intro_file, "r", encoding="utf8").read()
         pattern_params = (
@@ -275,7 +277,10 @@ class SparcDocParser(object):
         return parameter_categories, parameter_dict
 
     def __parse_all_included_files(self):
-        """Pop up all known parameters from included files,"""
+        """Pop up all known parameters from included files
+        Returns:
+            dict: All known parameters from included files
+        """
         all_params = {}
         for f in self.include_files:
             # Do not parse intro file since it's waste of time
@@ -291,7 +296,13 @@ class SparcDocParser(object):
         return all_params
 
     def parse_parameters(self):
-        """The actual thing for parsing parameters"""
+        """The actual thing for parsing parameters
+
+        Sets:
+            parameters (dict): All parsed parameters
+            parameter_categoris (list): List of categories
+            other_parameters (dict): Any parameters that are not included in the categories
+        """
         parameter_categories, parameter_dict = self.__parse_intro_file()
         all_params = self.__parse_all_included_files()
         self.parameter_categories = parameter_categories
@@ -311,21 +322,20 @@ class SparcDocParser(object):
         for param_details in all_params.values():
             symbol = param_details["symbol"]
             self.other_parameters[symbol] = param_details
-
         return
 
     def postprocess(self):
-        """Use the hardcoded parameter correction dict to fix some issues"""
+        """Use the hardcoded dict prostprocess_items to fix some issues"""
         for param, fix in postprocess_items.items():
             if param in self.parameters:
                 self.parameters[param].update(**fix)
         return
 
     def to_dict(self):
-        """Output a json string from current document parser
+        """Output a json dict from current document parser
 
-        Arguments:
-        `indent`: whether to make the json string pretty
+        Returns:
+            dict: All API schemes in dict
         """
         doc = {}
         doc["sparc_version"] = self.version
@@ -335,12 +345,18 @@ class SparcDocParser(object):
             k: v for k, v in sorted(self.other_parameters.items())
         }
         doc["data_types"] = sorted(set([p["type"] for p in self.parameters.values()]))
-        # json_string = json.dumps(doc, indent=indent)
         return doc
 
     @classmethod
     def json_from_directory(cls, directory=".", include_subdirs=True, **kwargs):
-        """Recursively add parameters from all Manual files"""
+        """
+        Recursively add parameters from all Manual files
+        Arguments:
+            directory (str or PosixPath): The directory to the LaTeX files, e.g. <sparc-root>/doc/.LaTeX
+            include_subdirs (bool): If true, also parse the manual files in submodules, e.g. cyclix, highT
+        Returns:
+            str: Formatted json-string of the API
+        """
         directory = Path(directory)
         root_dict = cls(directory=directory, **kwargs).to_dict()
         if include_subdirs:
@@ -351,8 +367,6 @@ class SparcDocParser(object):
                 except FileNotFoundError:
                     print(subdir)
                     continue
-                # We only merge the parameters that have not appeared in the main
-                # manual. TODO: maybe assign repeating parameters to a different section?
                 for param, param_desc in sub_dict["parameters"].items():
                     if param not in root_dict["parameters"]:
                         root_dict["parameters"][param] = param_desc
@@ -363,7 +377,15 @@ class SparcDocParser(object):
     def json_from_repo(
         cls, url=sparc_repo_url, version="master", include_subdirs=True, **kwargs
     ):
-        """Download the source code from git and use json_from_directory to parse"""
+        """
+        Download the source code from git and use json_from_directory to parse
+        Arguments:
+            url (str): URL for the repository of SPARC, default is "https://github.com/SPARC-X/SPARC.git"
+            version (str): Git version or commit hash of the SPARC repo
+            include_subdirs (bool): If true, also parse the manual files in submodules, e.g. cyclix, highT
+        Returns:
+            str: Formatted json-string of the API
+        """
         import tempfile
         from subprocess import run
 
@@ -386,7 +408,13 @@ class SparcDocParser(object):
 
 
 def convert_tex_parameter(text):
-    """Conver a TeX string to non-escaped name (for parameter only)"""
+    """
+    Conver a TeX string to non-escaped name (for parameter only)
+    Arguments:
+        text (str): Parameter name in LaTeX format
+    Returns:
+        str: Text with sanitized parameter
+    """
     return text.strip().replace("\_", "_")
 
 
@@ -394,6 +422,10 @@ def convert_tex_example(text):
     """Convert TeX codes of examples as much as possible
     The examples follow the format
     SYMBOL: values (may contain new lines)
+    Arguments:
+        text (str): Single or multiline LaTeX contents
+    Returns:
+        str: Sanitized literal text
     """
     mapper = {"\\texttt{": "", "\_": "_", "}": "", "\\": "\n"}
     new_text = copy(text)
@@ -420,6 +452,13 @@ def convert_tex_default(text, desired_type=None):
     1. Remove all surrounding text modifiers (texttt)
     2. Remove all symbol wrappers $
     3. Convert value to single or array
+
+    Arguments:
+        text (str): Raw text string for value
+        desired_type (str or None): Data type to be converted to. If None, preserve the string format
+
+    Returns:
+        converted: Value converted from raw text
     """
     mapper = {
         "\\texttt{": "",
@@ -461,6 +500,12 @@ def convert_tex_default(text, desired_type=None):
 def convert_comment(text):
     """Used to remove TeX-specific commands in description and remarks
     as much as possible
+
+    Arguments:
+        text (str): Raw LaTeX code for the comment section in manual
+
+    Returns:
+        str: Sanitized plain text
     """
     mapper = {
         "\\texttt{": "",
@@ -484,6 +529,16 @@ def convert_comment(text):
 
 
 def text2value(text, desired_type):
+    """Convert raw text to a desired type
+
+    Arguments:
+        text (str): Text contents for the value
+        desired_type (str): Target data type from 'string', 'integer',
+                            'integer array', 'double', 'double array',
+                            'bool', 'bool array'
+    Returns:
+        converted: Value converted to the desired type
+    """
     if desired_type is None:
         return text
     desired_type = desired_type.lower()
@@ -554,7 +609,15 @@ def contain_only_bool(text):
 
 
 def sanitize_description(param_dict):
-    """Sanitize the description and remark field"""
+    """Sanitize the description and remark field
+    
+    Arguments:
+        param_dict (dict): Raw dict for one parameter entry
+
+    Returns:
+        dict: Sanitized parameter dict with comment, remark and description
+              converted to human-readable formats
+    """
     sanitized_dict = param_dict.copy()
 
     original_desc = sanitized_dict["description"]
