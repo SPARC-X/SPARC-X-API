@@ -151,7 +151,7 @@ def locate_api(json_file=None, doc_path=None):
                             Path(doc_path), include_subdirs=True
                         )
                     )
-                    api = SparcAPI(tmpfile)
+                api = SparcAPI(tmpfile)
             return api
         except Exception:
             pass

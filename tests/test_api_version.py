@@ -24,3 +24,19 @@ def test_sparc_api():
     )
     older_version = locate_api().sparc_version
     assert older_version is None
+
+
+def test_sparc_params():
+    if "SPARC_DOC_PATH" not in os.environ:
+        pytest.skip(msg="No $SPARC_DOC_PATH set. Skip")
+    
+    from sparc.utils import locate_api
+    # Use the default api with SPARC_DOC_PATH
+    api = locate_api()
+    if api.sparc_version is None:
+        pytest.skip(msg="SPARC version not known. skip")
+
+    if version.parse(api.sparc_version) > version.parse("2023.09.01"):
+        assert "NPT_SCALE_VECS" in api.parameters
+        assert "NPT_SCALE_CONSTRAINTS" in api.parameters
+        assert "TWIST_ANGLE" in api.parameters
