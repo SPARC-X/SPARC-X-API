@@ -36,7 +36,11 @@ def test_read_all_tests():
     """Search all .inpt files within the tests dir."""
 
     from sparc.io import read_sparc
-
+    from sparc.utils import locate_api
+    import os
+    print("SPARC_DOC_PATH is: ", os.environ.get("SPARC_DOC_PATH", None))
+    api = locate_api()
+    print(api.sparc_version)
     skipped_names = []
     tests_dir = os.environ.get("SPARC_TESTS_DIR", "")
     print(f"Current test dir is {tests_dir}")
