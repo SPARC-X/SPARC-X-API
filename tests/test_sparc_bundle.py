@@ -20,20 +20,20 @@ def test_bundle_psp(monkeypatch):
 
     from sparc.io import SparcBundle
 
-    os.environ.pop("SPARC_PP_PATH", None)
-    os.environ.pop("SPARC_PSP_PATH", None)
+    monkeypatch.delenv("SPARC_PP_PATH", raising=False)
+    monkeypatch.delenv("SPARC_PSP_PATH", raising=False)
     sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc")
 
     with pytest.warns(UserWarning, match="re-download"):
         sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc", mode="w")
     assert sb.psp_dir is None
 
-    os.environ["SPARC_PP_PATH"] = test_psp_dir.as_posix()
+    monkeypatch.setenv("SPARC_PP_PATH", test_psp_dir.as_posix())
     sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc")
     assert sb.psp_dir.resolve() == test_psp_dir.resolve()
 
     # SPARC_PSP_PATH has higher priority
-    os.environ["SPARC_PSP_PATH"] = test_psp_dir.parent.as_posix()
+    monkeypatch.setenv("SPARC_PSP_PATH", test_psp_dir.parent.as_posix())
     sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc")
     assert sb.psp_dir.resolve() == test_psp_dir.parent.resolve()
 
@@ -54,8 +54,8 @@ def test_default_psp(monkeypatch):
     from sparc.common import psp_dir as default_psp_dir
     from sparc.io import SparcBundle
 
-    os.environ.pop("SPARC_PP_PATH", None)
-    os.environ.pop("SPARC_PSP_PATH", None)
+    monkeypatch.delenv("SPARC_PP_PATH", raising=False)
+    monkeypatch.delenv("SPARC_PSP_PATH", raising=False)
     sb = SparcBundle(directory=test_output_dir / "Cu_FCC.sparc")
     assert Path(sb.psp_dir).resolve() == Path(default_psp_dir).resolve()
 
@@ -151,7 +151,7 @@ def test_write_ion_inpt(fs):
     # Copy psp should have the psps available
 
 
-def test_write_ion_inpt_real():
+def test_write_ion_inpt_real(monkeypatch):
     """Same example as in test_parse_atoms but try writing inpt and atoms"""
     from ase.build import bulk
     from ase.units import Angstrom, Bohr
@@ -159,8 +159,8 @@ def test_write_ion_inpt_real():
     from sparc.io import SparcBundle
 
     # Even without SPARC_PP_PATH, the psp files should exist
-    os.environ.pop("SPARC_PP_PATH", None)
-    os.environ.pop("SPARC_PSP_PATH", None)
+    monkeypatch.delenv("SPARC_PP_PATH", raising=False)
+    monkeypatch.delenv("SPARC_PSP_PATH", raising=False)
 
     atoms = bulk("Cu") * [4, 4, 4]
     with tempfile.TemporaryDirectory() as tmpdir:
