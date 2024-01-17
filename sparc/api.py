@@ -30,9 +30,9 @@ class SparcAPI:
         convert_string_to_value(parameter, string): Converts string input to the appropriate data type.
         convert_value_to_string(parameter, value): Converts a value to a string representation.
     """
+
     def __init__(self, json_api=None):
-        """
-        """
+        """ """
         if json_api is None:
             json_api = Path(default_json_api)
         else:
@@ -51,7 +51,7 @@ class SparcAPI:
 
         Args:
             parameter (str): The name of the parameter.
-        
+
         Returns:
             dict: Dictionary containing details of the parameter.
 
@@ -66,15 +66,14 @@ class SparcAPI:
         return self.parameters[parameter]
 
     def help_info(self, parameter):
-	"""
-	Provides a detailed information string for a given parameter.
+        """Provides a detailed information string for a given parameter.
 
-	Args:
-	    parameter (str): The name of the parameter to get information for.
+        Args:
+            parameter (str): The name of the parameter to get information for.
 
-	Returns:
+        Returns:
             str: A formatted string with detailed information about the parameter.
-	"""
+        """
         pdict = self.get_parameter_dict(parameter)
         message = "\n".join(
             [
@@ -95,19 +94,19 @@ class SparcAPI:
         return message
 
     def validate_input(self, parameter, input):
-	"""
-	Validates if the given input is appropriate for the specified parameter's type.
+        """
+        Validates if the given input is appropriate for the specified parameter's type.
 
-	Args:
+        Args:
             parameter (str): The name of the parameter.
             input: The input to validate, can be of various types (string, int, float, numpy types).
 
         Returns:
             bool: True if input is valid, False otherwise.
 
-	Raises:
+        Raises:
             ValueError: If the data type of the parameter is not supported.
-	"""
+        """
         is_input_string = isinstance(input, str)
         pdict = self.get_parameter_dict(parameter)
         dtype = pdict["type"]
@@ -176,20 +175,20 @@ class SparcAPI:
             raise ValueError(f"Data type {dtype} is not supported!")
 
     def convert_string_to_value(self, parameter, string):
-       """
-       Converts a string input to the appropriate value type of the parameter.
-       
-       Args:
-           parameter (str): The name of the parameter.
-           string (str): The string input to convert.
+        """
+        Converts a string input to the appropriate value type of the parameter.
 
-       Returns:
-           The converted value, type depends on parameter's expected type.
+        Args:
+            parameter (str): The name of the parameter.
+            string (str): The string input to convert.
 
-       Raises:
-           TypeError: If the input is not a string.
-           ValueError: If the string is not a valid input for the parameter.
-       """
+        Returns:
+            The converted value, type depends on parameter's expected type.
+
+        Raises:
+            TypeError: If the input is not a string.
+            ValueError: If the string is not a valid input for the parameter.
+        """
 
         # Special case, the string may be a multiline string-array!
         if isinstance(string, list):
@@ -241,18 +240,18 @@ class SparcAPI:
 
     def convert_value_to_string(self, parameter, value):
         """
-	Converts a value to its string representation based on the parameter type.
+        Converts a value to its string representation based on the parameter type.
 
-	Args:
+        Args:
             parameter (str): The name of the parameter.
             value: The value to convert.
 
-	Returns:
+        Returns:
             str: The string representation of the value.
 
-	Raises:
+        Raises:
             ValueError: If the value is not valid for the parameter.
-	"""
+        """
 
         is_input_string = isinstance(value, str)
         if not self.validate_input(parameter, value):
