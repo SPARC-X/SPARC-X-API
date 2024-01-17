@@ -207,3 +207,36 @@ def test_cache_results():
         energy = nh3.get_potential_energy()
         static_files = list(Path(tmpdir).glob("*.static*"))
         assert len(static_files) == 1
+
+
+def test_sparc_version():
+    from pathlib import Path
+
+    from ase.build import molecule
+
+    from sparc.calculator import SPARC
+
+    h2 = molecule("H2", cell=[6, 6, 6], pbc=False)
+    dummy_calc = SPARC()
+    try:
+        cmd = dummy_calc._make_command()
+    except EnvironmentError:
+        print("Skip test since no sparc command found")
+        return
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(
+            h=0.3, kpts=(1, 1, 1), xc="pbe", print_forces=True, directory=tmpdir
+        )
+        version = calc.detect_sparc_version()
+        assert version is not None
+        assert calc.directory == Path(tmpdir)
+        assert calc.sparc_version is None
+        calc1 = SPARC(
+            h=0.3,
+            kpts=(1, 1, 1),
+            xc="pbe",
+            print_forces=True,
+            directory=tmpdir,
+            check_version=True,
+        )
+        assert calc1.sparc_version is not None

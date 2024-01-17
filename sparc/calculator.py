@@ -1,10 +1,12 @@
 import datetime
 import os
 import subprocess
+import tempfile
 from pathlib import Path
 from warnings import warn, warn_explicit
 
 import numpy as np
+from ase.atoms import Atoms
 from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
 from ase.units import Bohr, GPa, Hartree, eV
 
@@ -28,8 +30,8 @@ defaultAPI = SparcAPI()
 
 
 class SPARC(FileIOCalculator):
-    """Calculator interface to the SPARC codes via the FileIOCalculator
-    """
+    """Calculator interface to the SPARC codes via the FileIOCalculator"""
+
     implemented_properties = ["energy", "forces", "fermi", "stress"]
     name = "sparc"
     ase_objtype = "sparc_calculator"  # For JSON storage
@@ -52,12 +54,13 @@ class SPARC(FileIOCalculator):
         log="sparc.log",
         sparc_json_file=None,
         sparc_doc_path=None,
+        check_version=False,
         **kwargs,
     ):
         """
         Initialize the SPARC calculator similar to FileIOCalculator. The validator uses the JSON API guessed
         from sparc_json_file or sparc_doc_path.
-        
+
         Arguments:
             restart (str or None): Path to the directory for restarting a calculation. If None, starts a new calculation.
             directory (str or Path): Directory for SPARC calculation files.
@@ -68,6 +71,7 @@ class SPARC(FileIOCalculator):
             log (str, optional): Name of the log file.
             sparc_json_file (str, optional): Path to a JSON file with SPARC parameters.
             sparc_doc_path (str, optional): Path to the SPARC doc LaTeX code for parsing parameters.
+            check_version (bool): Check if SPARC and document versions match
             **kwargs: Additional keyword arguments to set up the calculator.
         """
         FileIOCalculator.__init__(
@@ -97,13 +101,14 @@ class SPARC(FileIOCalculator):
         # Try restarting from an old calculation and set results
         self._restart(restart=restart)
 
-        # TODO: Run a short test to return version of SPARC's binary
-        self.sparc_version = self._detect_sparc_version()
-
         # Sanitize the kwargs by converting lower -- > upper
         # and perform type check
         self.valid_params, self.special_params = self._sanitize_kwargs(kwargs)
         self.log = self.directory / log if log is not None else None
+        if check_version:
+            self.sparc_version = self.detect_sparc_version()
+        else:
+            self.sparc_version = None
 
     @property
     def directory(self):
@@ -212,7 +217,6 @@ class SPARC(FileIOCalculator):
 
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         """Perform a calculation step"""
-
         # Check if the user accidentally provides atoms unit cell without vacuum
         if atoms and np.any(atoms.cell.cellpar()[:3] == 0):
             msg = "Cannot setup SPARC calculation because at least one of the lattice dimension is zero!"
@@ -377,8 +381,6 @@ class SPARC(FileIOCalculator):
         self.atoms = last.copy()
         self.results.update(last.calc.results)
 
-        # self._extract_out_results()
-
     def _restart(self, restart=None):
         """Reload the input parameters and atoms from previous calculation.
 
@@ -409,13 +411,37 @@ class SPARC(FileIOCalculator):
         """Extra get-method for Fermi level, if calculated"""
         return self.results.get("fermi", None)
 
-    def _detect_sparc_version(self):
-        """Run a short sparc test to determine which sparc is used
-        TODO: This function should be implemented
-        """
-        command = self._make_command()
-
-        return None
+    def detect_sparc_version(self):
+        """Run a short sparc test to determine which sparc is used"""
+        try:
+            cmd = self._make_command()
+        except EnvironmentError:
+            return None
+        print("Running a short calculation to determine SPARC version....")
+        # check_version must be set to False to avoid recursive calling
+        new_calc = SPARC(
+            command=self.command, psp_dir=self.sparc_bundle.psp_dir, check_version=False
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            new_calc.set(xc="pbe", h=0.3, kpts=(1, 1, 1), maxit_scf=1, directory=tmpdir)
+            atoms = Atoms(["H"], positions=[[0.0, 0.0, 0.0]], cell=[2, 2, 2], pbc=False)
+            try:
+                new_calc.calculate(atoms)
+                version = new_calc.raw_results["out"]["sparc_version"]
+            except Exception as e:
+                print("Error handling simple calculation: ", e)
+                version = None
+        # Warning information about version mismatch between binary and JSON API
+        # only when both are not None
+        if (version is None) and (self.validator.sparc_version is not None):
+            if version != self.validator.sparc_version:
+                warn(
+                    (
+                        f"SPARC binary version {version} does not match JSON API version {self.validator.sparc_version}. "
+                        "You can set $SPARC_DOC_PATH to the SPARC documentation location."
+                    )
+                )
+        return version
 
     def _sanitize_kwargs(self, kwargs):
         """Convert known parameters from"""
