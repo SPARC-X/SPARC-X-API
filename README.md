@@ -120,10 +120,21 @@ schema used by the API at sparc.sparc_json_api.default_json_api
 ```
 
 The schema file is generated from SPARC's LaTeX documentation.  In
-upcoming releases of `SPARC-X-API`, we're aiming to provide users
-the flexibility to use their own custom schema files. This would be
+upcoming releases of `SPARC-X-API`, we're aiming to provide users the
+flexibility to use their own custom schema files. This would be
 particularly useful for those who might be testing a development
-branch of SPARC.
+branch of SPARC. By default, the JSON schema is packaged under
+`sparc/sparc_json_api` directory. If you have another version of SPARC
+source code, you can set the environment variable `$SPARC_DOC_PATH` to
+the directory containing the LaTeX codes for the documentation, such
+as `<SPARC-source-code-root>/doc/.LaTeX`. If you obtain `sparc-x` from
+the conda method as mentioned above, By default, the JSON schema is
+packaged under `sparc/sparc_json_api` directory. If you have another
+version of SPARC source code, you can set the environment variable
+`$SPARC_DOC_PATH` is automatically set to
+`<conda-env-root>/share/doc/sparc/.LaTeX`. Setting up the environment
+variable `$SPARC_DOC_PATH` helps loading the correct JSON schame that
+is compatible with your SPARC binary code.
 
 ### C) SPARC Command Configuration
 

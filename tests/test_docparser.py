@@ -11,31 +11,31 @@ test_doc_dir = curdir / "sparc-latex-doc-202302"
 
 def test_docparser_init_wrong(fs):
     """Mimic situations where docparser inits at wrong file structure"""
-    from sparc.docparser import SPARCDocParser
+    from sparc.docparser import SparcDocParser
 
     # Case 1: not a doc structure
     with pytest.raises(FileNotFoundError):
-        sp = SPARCDocParser("/tmp")
+        sp = SparcDocParser("/tmp")
 
     # Case 2: missing manual
     fs.create_dir(".LaTeX")
     fs.create_file(".LaTeX/Manual.tex")
     with pytest.raises(FileNotFoundError):
-        sp = SPARCDocParser(".LaTeX")
+        sp = SparcDocParser(".LaTeX")
 
     # Case 3: missing manual
     fs.create_file(".LaTeX/Introduction.tex")
     with pytest.raises(Exception):
-        sp = SPARCDocParser(".LaTeX")
+        sp = SparcDocParser(".LaTeX")
 
 
 def test_docparser_init_working():
     """Mimic a working doc parser"""
-    from sparc.docparser import SPARCDocParser
+    from sparc.docparser import SparcDocParser
 
     # Should work
     assert test_doc_dir.is_dir()
-    sp = SPARCDocParser(directory=test_doc_dir)
+    sp = SparcDocParser(directory=test_doc_dir)
 
     assert all([f.name != "SQ.tex" for f in sp.include_files])
     # No source code, date version will be None
@@ -49,7 +49,7 @@ def test_docparser_init_working():
 
 def test_version_parser(fs, monkeypatch):
     """Only parse version"""
-    from sparc.docparser import SPARCDocParser
+    from sparc.docparser import SparcDocParser
 
     content_init_c = """void write_output_init(SPARC_OBJ *pSPARC) {
     int i, j, nproc, count;
@@ -94,8 +94,8 @@ def test_version_parser(fs, monkeypatch):
     def mock_init(self):
         self.root = Path("doc/.LaTeX")
 
-    monkeypatch.setattr(SPARCDocParser, "__init__", mock_init)
-    sp = SPARCDocParser()
+    monkeypatch.setattr(SparcDocParser, "__init__", mock_init)
+    sp = SparcDocParser()
     with open("src/initialization.c", "w") as fd:
         fd.write(content_init_c)
     sp.parse_version(parse=False)
@@ -106,9 +106,9 @@ def test_version_parser(fs, monkeypatch):
 
 def test_include_files():
     """Test only include files"""
-    from sparc.docparser import SPARCDocParser
+    from sparc.docparser import SparcDocParser
 
-    sp = SPARCDocParser(test_doc_dir)
+    sp = SparcDocParser(test_doc_dir)
     with pytest.warns(UserWarning):
         sp.get_include_files()
 
@@ -117,9 +117,9 @@ def test_json():
     """json formatter"""
     import json
 
-    from sparc.docparser import SPARCDocParser
+    from sparc.docparser import SparcDocParser
 
-    sp = SPARCDocParser(test_doc_dir)
+    sp = SparcDocParser(test_doc_dir)
     # json_string = sp.to_json()
     loaded = sp.to_dict()
     assert all(
@@ -137,9 +137,9 @@ def test_json():
 
 
 def test_class_load():
-    from sparc.docparser import SPARCDocParser
+    from sparc.docparser import SparcDocParser
 
-    sp = SPARCDocParser.json_from_directory(test_doc_dir)
+    sp = SparcDocParser.json_from_directory(test_doc_dir)
 
 
 def test_text2value():

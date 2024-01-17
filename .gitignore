@@ -773,3 +773,10 @@ al-eos-sparc.traj
 examples/ex1-ase/
 /SPARC-master/
 /master.zip
+/*.ion
+/*.static
+/*.out*
+/*.static*
+/*.inpt*
+/*.log
+/*.psp8

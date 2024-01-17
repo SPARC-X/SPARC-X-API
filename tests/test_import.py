@@ -26,4 +26,4 @@ def test_docparser(monkeypatch):
     monkeypatch.setitem(sys.modules, "ase", None)
     with pytest.raises(ImportError):
         import ase
-    from sparc.docparser import SPARCDocParser
+    from sparc.docparser import SparcDocParser
