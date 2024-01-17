@@ -28,15 +28,12 @@ defaultAPI = SparcAPI()
 
 
 class SPARC(FileIOCalculator):
-    # TODO: magmom should be a possible input
+    """Calculator interface to the SPARC codes via the FileIOCalculator
+    """
     implemented_properties = ["energy", "forces", "fermi", "stress"]
     name = "sparc"
     ase_objtype = "sparc_calculator"  # For JSON storage
     special_inputs = sparc_python_inputs
-
-    # A "minimal" set of parameters that user can call plug-and-use
-    # like atoms.calc = SPARC()
-    # TODO: should we provide a minimal example for each system?
     default_params = {
         "xc": "pbe",
         "kpts": (1, 1, 1),
@@ -57,9 +54,22 @@ class SPARC(FileIOCalculator):
         sparc_doc_path=None,
         **kwargs,
     ):
-        # Initialize the calculator but without restart.
-        # Do not pass the label to the parent FileIOCalculator class to avoid issue
-        # Handle old restart file separatedly since we rely on the sparc_bundle to work
+        """
+        Initialize the SPARC calculator similar to FileIOCalculator. The validator uses the JSON API guessed
+        from sparc_json_file or sparc_doc_path.
+        
+        Arguments:
+            restart (str or None): Path to the directory for restarting a calculation. If None, starts a new calculation.
+            directory (str or Path): Directory for SPARC calculation files.
+            label (str, optional): Custom label for identifying calculation files.
+            atoms (Atoms, optional): ASE Atoms object representing the system to be calculated.
+            command (str, optional): Command to execute SPARC. If None, it will be determined automatically.
+            psp_dir (str or Path, optional): Directory containing pseudopotentials.
+            log (str, optional): Name of the log file.
+            sparc_json_file (str, optional): Path to a JSON file with SPARC parameters.
+            sparc_doc_path (str, optional): Path to the SPARC doc LaTeX code for parsing parameters.
+            **kwargs: Additional keyword arguments to set up the calculator.
+        """
         FileIOCalculator.__init__(
             self,
             restart=None,
@@ -87,13 +97,11 @@ class SPARC(FileIOCalculator):
         # Try restarting from an old calculation and set results
         self._restart(restart=restart)
 
-        # Run a short test to return version of SPARC's binary
-        # TODO: sparc_version should allow both read from results / short stdout
+        # TODO: Run a short test to return version of SPARC's binary
         self.sparc_version = self._detect_sparc_version()
 
         # Sanitize the kwargs by converting lower -- > upper
         # and perform type check
-        # TODO: self.parameter should be the only entry
         self.valid_params, self.special_params = self._sanitize_kwargs(kwargs)
         self.log = self.directory / log if log is not None else None
 
@@ -166,8 +174,6 @@ class SPARC(FileIOCalculator):
         if "positions" in system_changes:
             atoms_copy.wrap()
             new_system_changes = FileIOCalculator.check_state(self, atoms_copy, tol=tol)
-            # TODO: make sure such check only happens for PBC
-            # the position is wrapped, accept as the same structure
             if "positions" not in new_system_changes:
                 system_changes.remove("positions")
         return system_changes
@@ -178,8 +184,6 @@ class SPARC(FileIOCalculator):
 
         Extras will add additional arguments to the self.command,
         e.g. -name, -socket etc
-
-
         """
         if isinstance(extras, (list, tuple)):
             extras = " ".join(extras)
@@ -208,10 +212,9 @@ class SPARC(FileIOCalculator):
 
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         """Perform a calculation step"""
-        # Check if the user accidentally provides atoms unit cell without vacuum
 
+        # Check if the user accidentally provides atoms unit cell without vacuum
         if atoms and np.any(atoms.cell.cellpar()[:3] == 0):
-            # TODO: choose a better error name
             msg = "Cannot setup SPARC calculation because at least one of the lattice dimension is zero!"
             if any([bc_ is False for bc_ in atoms.pbc]):
                 msg += " Please add a vacuum in the non-periodic direction of your input structure."
@@ -241,24 +244,6 @@ class SPARC(FileIOCalculator):
                 "You're requesting stress in a low-dimensional system. Please use `calc.results['stress_equiv']` instead!"
             )
         return super().get_stress(atoms)
-
-        # atoms = self.atoms.copy()
-
-    # def update_atoms(self, atoms):
-    #     """Update atoms after calculation if the positions are changed
-
-    #     Idea taken from Vasp.update_atoms.
-    #     """
-    #     if (self.int_params['ibrion'] is not None
-    #             and self.int_params['nsw'] is not None):
-    #         if self.int_params['ibrion'] > -1 and self.int_params['nsw'] > 0:
-    #             # Update atomic positions and unit cell with the ones read
-    #             # from CONTCAR.
-    #             atoms_sorted = read(self._indir('CONTCAR'))
-    #             atoms.positions = atoms_sorted[self.resort].positions
-    #             atoms.cell = atoms_sorted.cell
-
-    # self.atoms = atoms  # Creates a copy
 
     def _check_input_exclusion(self, input_parameters, atoms=None):
         """Check if mutually exclusive parameters are provided
@@ -327,12 +312,6 @@ class SPARC(FileIOCalculator):
         if "stress" in properties:
             input_parameters["CALC_STRESS"] = True
 
-        # TODO: detect if minimal values are set
-
-        # TODO: system_changes ?
-
-        # TODO: check parameter exclusion
-
         self._check_input_exclusion(input_parameters, atoms=atoms)
         self._check_minimal_input(input_parameters)
 
@@ -355,12 +334,10 @@ class SPARC(FileIOCalculator):
 
     def execute(self):
         """Make the calculation. Note we probably need to use a better handling of background process!"""
-        # TODO: add -socket?
         extras = f"-name {self.label}"
         command = self._make_command(extras=extras)
         self.print_sysinfo(command)
 
-        # TODO: distinguish between normal process
         try:
             if self.log is not None:
                 with open(self.log, "a") as fd:
@@ -395,7 +372,6 @@ class SPARC(FileIOCalculator):
 
     def read_results(self):
         """Parse from the SparcBundle"""
-        # TODO: try use cache?
         # self.sparc_bundle.read_raw_results()
         last = self.sparc_bundle.convert_to_ase(indices=-1, include_all_files=False)
         self.atoms = last.copy()
@@ -434,19 +410,18 @@ class SPARC(FileIOCalculator):
         return self.results.get("fermi", None)
 
     def _detect_sparc_version(self):
-        """Run a short sparc test to determine which sparc is used"""
+        """Run a short sparc test to determine which sparc is used
+        TODO: This function should be implemented
+        """
         command = self._make_command()
 
         return None
 
     def _sanitize_kwargs(self, kwargs):
         """Convert known parameters from"""
-        # print(kwargs)
-        # TODO: versioned validator
         validator = self.validator
         valid_params = {}
         special_params = self.default_params.copy()
-        # TODO: how about overwriting the default parameters?
         # SPARC API is case insensitive
         for key, value in kwargs.items():
             if key in self.special_inputs:
@@ -460,8 +435,6 @@ class SPARC(FileIOCalculator):
                 if validator.validate_input(key, value):
                     valid_params[key] = value
                 else:
-                    # TODO: helper information
-                    # TODO: should we raise exception instead?
                     warn(f"Input parameter {key} does not have a valid value!")
         return valid_params, special_params
 
@@ -506,7 +479,6 @@ class SPARC(FileIOCalculator):
             elif xc.lower() == "scan":
                 converted_sparc_params["EXCHANGE_CORRELATION"] = "SCAN"
             else:
-                # TODO: alternative exception
                 raise ValueError(f"xc keyword value {xc} is invalid!")
 
         # h --> gpts
@@ -528,7 +500,6 @@ class SPARC(FileIOCalculator):
                     "conversion of h to mesh grid is ignored."
                 )
             else:
-                # TODO: is there any limitation for parallelization?
                 gpts = h2gpts(h, atoms.cell)
                 params["gpts"] = gpts
 
@@ -538,7 +509,6 @@ class SPARC(FileIOCalculator):
             if validator.validate_input("FD_GRID", gpts):
                 converted_sparc_params["FD_GRID"] = gpts
             else:
-                # TODO: customize error
                 raise ValueError(f"Input parameter gpts has invalid value {gpts}")
 
         # kpts
@@ -548,7 +518,6 @@ class SPARC(FileIOCalculator):
             if validator.validate_input("KPOINT_GRID", kpts):
                 converted_sparc_params["KPOINT_GRID"] = kpts
             else:
-                # TODO: customize error
                 raise ValueError(f"Input parameter kpts has invalid value {kpts}")
 
         # nbands
@@ -687,21 +656,6 @@ class SPARC(FileIOCalculator):
         converted_estimate = estimate * conversion_dict[units]
         return converted_estimate
 
-    # TODO: update method for static / geopt / aimd
-    def get_scf_steps(self, include_uncompleted_last_step=False):
-        raise NotImplemented
-
-    @deprecated("Use SPARC.get_number_of_ionic_steps instead")
-    def get_geometric_steps(self, include_uncompleted_last_step=False):
-        raise NotImplemented
-
-    def get_runtime(self):
-        raise NotImplemented
-
-    def get_fermi_level(self):
-        raise NotImplemented
-
-    # TODO: update method for static / geopt / aimd
     def get_scf_steps(self, include_uncompleted_last_step=False):
         raise NotImplemented
 
