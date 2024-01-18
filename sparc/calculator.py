@@ -443,6 +443,19 @@ class SPARC(FileIOCalculator):
                 )
         return version
 
+    def detect_socket_compatibility(self):
+        """Test if the sparc binary supports socket mode"""
+        try:
+            cmd = self._make_command()
+        except EnvironmentError:
+            return False
+        with tempfile.TemporaryDirectory() as tmpdir:
+            proc = subprocess.run(cmd, shell=True, cwd=tmpdir, capture_output=True)
+            output = proc.stdout.decode("ascii")
+            compatibility = "-socket" in output
+        return compatibility
+                
+
     def _sanitize_kwargs(self, kwargs):
         """Convert known parameters from"""
         validator = self.validator
