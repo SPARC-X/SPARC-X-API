@@ -123,7 +123,6 @@ def _read_scfs(contents):
 
 
     """
-    # import pdb; pdb.set_trace()
     convergence_info = _get_block_text(contents, r"Self Consistent Field \(SCF.*?\)")
     results_info = _get_block_text(contents, "Energy and force calculation")
 
@@ -229,6 +228,9 @@ def _get_block_text(text, block_name):
 
     the outputs are not line-split
     """
+    # Add the ending separator so matching is possible for partial-complete
+    # .out file from socket calculations
+    text = text + ("=" * 68) + "\n"
     pattern_block = (
         r"[\*=]{50,}\s*?\n\s*?BLOCK_NAME\s*?\n[\*=]{50,}\s*\n(.*?)[\*=]{50,}"
     )
