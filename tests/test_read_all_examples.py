@@ -35,9 +35,10 @@ selected_quick_tests = [
 def test_read_all_tests():
     """Search all .inpt files within the tests dir."""
 
+    import os
+
     from sparc.io import read_sparc
     from sparc.utils import locate_api
-    import os
 
     print("SPARC_DOC_PATH is: ", os.environ.get("SPARC_DOC_PATH", None))
     api = locate_api()

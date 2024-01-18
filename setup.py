@@ -24,11 +24,7 @@ setup(
     author_email="alchem0x2a@gmail.com, ben.comer@gatech.edu",
     url="https://github.com/SPARC-X/SPARC-X-API",
     packages=find_packages(),
-    install_requires=[
-        "ase>=3.22.0",
-        "numpy>=1.22",
-        "packaging>=20.0"
-    ],
+    install_requires=["ase>=3.22.0", "numpy>=1.22", "packaging>=20.0"],
     entry_points={
         "ase.io": [
             "sparc = sparc.io",

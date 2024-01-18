@@ -454,7 +454,6 @@ class SPARC(FileIOCalculator):
             output = proc.stdout.decode("ascii")
             compatibility = "-socket" in output
         return compatibility
-                
 
     def _sanitize_kwargs(self, kwargs):
         """Convert known parameters from"""
