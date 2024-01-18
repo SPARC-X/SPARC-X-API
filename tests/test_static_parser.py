@@ -37,7 +37,7 @@ Stress (GPa):
         )
     data_dict = _read_static("test.static")
     assert "static" in data_dict
-    static_dict = data_dict["static"]
+    static_dict = data_dict["static"][0]
     assert "atoms" in static_dict
     assert tuple(static_dict["atoms"]["symbols"]) == ("Fe", "Fe")
     assert np.isclose(static_dict["free energy"], -2.283157353113279e02 * Hartree)
@@ -68,7 +68,7 @@ Atomic forces (Ha/Bohr):
         )
     data_dict = _read_static("test.static")
     assert "static" in data_dict
-    static_dict = data_dict["static"]
+    static_dict = data_dict["static"][0]
     assert "atoms" in static_dict
     assert "stress" not in static_dict
     assert tuple(static_dict["atoms"]["symbols"]) == ("Al",)
@@ -77,11 +77,11 @@ Atomic forces (Ha/Bohr):
         * 5.656854249492380
         * Bohr
     )
-    new_data_dict = _add_cell_info(data_dict, cell)
+    new_data_dict = _add_cell_info([static_dict], cell)[0]
 
-    assert "coord" in new_data_dict["static"]["atoms"]
-    assert new_data_dict["static"]["atoms"]["coord"].shape == (1, 3)
-    assert np.isclose(new_data_dict["static"]["atoms"]["coord"][0, 0], 0)
+    assert "coord" in new_data_dict["atoms"]
+    assert new_data_dict["atoms"]["coord"].shape == (1, 3)
+    assert np.isclose(new_data_dict["atoms"]["coord"][0, 0], 0)
 
 
 def test_static_parser_no_atoms(fs):
@@ -100,7 +100,7 @@ Total free energy (Ha): -2.212996080865029E+00
         )
     data_dict = _read_static("test.static")
     assert "static" in data_dict
-    static_dict = data_dict["static"]
+    static_dict = data_dict["static"][0]
     assert "atoms" not in static_dict
     assert "stress" not in static_dict
     cell = (
@@ -108,6 +108,6 @@ Total free energy (Ha): -2.212996080865029E+00
         * 5.656854249492380
         * Bohr
     )
-    new_data_dict = _add_cell_info(data_dict, cell)
+    new_data_dict = _add_cell_info([data_dict], cell)[0]
 
-    assert "atoms" not in new_data_dict["static"]
+    assert "atoms" not in new_data_dict
