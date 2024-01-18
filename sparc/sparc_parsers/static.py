@@ -19,7 +19,7 @@ from ..api import SparcAPI
 from .utils import strip_comments
 
 # TODO: should allow user to select the api
-defaultAPI = SparcAPI()
+# defaultAPI = SparcAPI()
 
 
 @reader
@@ -27,19 +27,19 @@ def _read_static(fileobj):
     """
     Read the .static file content
 
-    Each .static file should only host 1 image (as least per now), but the output may vary
+    Each .static file should only host 1 or more images (is socket mode is enabled), but the output may vary
     a lot depending on the flags (e.g. PRINT_ATOMS, PRINT_FORCES etc)
     """
     contents = fileobj.read()
     data, comments = strip_comments(contents)
     # Like .ion file, but split by the separator ":"
-    block_bounds = [i for i, x in enumerate(data) if ":" in x] + [len(data)]
-    # blocks = [read_static_block(data[start:end]) for start, end in zip(block_bounds[:-1], block_bounds[1:])]
-    raw_blocks = [
-        data[start:end] for start, end in zip(block_bounds[:-1], block_bounds[1:])
+    # separator = "*" * 60        # At least this length of stars
+    step_bounds = [i for i, x in enumerate(data) if "Atom positions" in x] + [len(data)]
+    raw_static_steps = [
+        data[start:end] for start, end in zip(step_bounds[:-1], step_bounds[1:])
     ]
-    static_dict = read_static_blocks(raw_blocks)
-    return {"static": static_dict}
+    static_steps = [_read_static_step(step) for step in raw_static_steps]
+    return {"static": static_steps}
 
 
 def _read_static_block(raw_block):
@@ -85,14 +85,29 @@ def _read_static_block(raw_block):
         symbol = header_name.split("of")[1].strip()
         clean_array = value.reshape((-1, 3))
         value = {"value": clean_array, "symbol": symbol}
+    # Exclusive to the socket mode
+    elif "Lattice (Bohr)" in header_name:
+        name = "lattice"
+        value = value.reshape((3, 3))
     else:
         name = header_name.strip()
 
     return {"name": name, "value": value}
 
 
-def read_static_blocks(raw_blocks):
-    """Read all blocks from the static file and compose a dict"""
+def _read_static_step(step):
+    """Parse all the lines in one step and compose a dict containing sanitized blocks
+    Args:
+        step (list): Lines of raw lines in one step
+    """
+    separator = "*" * 60        # Make the separator long enough
+    # Clean up boundary lines
+    data = [line for line in step if ("Atom positions" not in line) and (separator not in line)]
+    block_bounds = [i for i, x in enumerate(data) if ":" in x] + [len(data)]
+    raw_blocks = [
+        data[start:end] for start, end in zip(block_bounds[:-1], block_bounds[1:])
+    ]
+    # import pdb; pdb.set_trace()
     block_dict = {}
     coord_dict = {}
     block_contents = [_read_static_block(block) for block in raw_blocks]
@@ -152,6 +167,8 @@ def read_static_blocks(raw_blocks):
             value = raw_value * Hartree / Bohr
         elif name == "stress_2d":
             value = raw_value * Hartree / (Bohr**2)
+        elif name == "lattice":
+            value = raw_value * Bohr
 
         # Non-frac coord
         if value is not None:
@@ -164,22 +181,30 @@ def read_static_blocks(raw_blocks):
     return block_dict
 
 
-def _add_cell_info(static_dict, cell=None):
-    """When cell information is available, convert
-
-    The cell should already be in angstrom
-
-    1) the cell position from fractional to cartesian
-    2) Anything else?
+def _add_cell_info(static_steps, cell=None):
+    """Use the cell information to convert positions
+    if lattice exists in each step, use it to convert coord_frac
+    else use the external cell (for example from inpt file)
+    Args:
+        static_steps: raw list of steps
+        cell: external lattice information
     """
-    new_dict = static_dict.copy()
-    block_dict = new_dict["static"]
-    if (cell is None) or (block_dict.get("atoms", None) is None):
-        return new_dict
-    coord_frac = block_dict["atoms"]["coord_frac"]
-    coord_cart = np.dot(coord_frac, cell)
-    new_dict["static"]["atoms"]["coord"] = coord_cart
-    return new_dict
+    new_steps = []
+    for step in static_steps:
+        new_step = step.copy()
+        if "lattice" in step:
+            lat = step["lattice"]
+        elif cell is not None:
+            lat = cell
+        else:
+            lat = None
+            
+        if (lat is not None) and (step.get("atoms", None) is not None):
+            coord_frac = new_step["atoms"]["coord_frac"]
+            coord_cart = np.dot(coord_frac, lat)
+            new_step["atoms"]["coord"] = coord_cart
+        new_steps.append(new_step)
+    return new_steps
 
 
 @writer
