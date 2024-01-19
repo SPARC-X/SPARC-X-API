@@ -5,7 +5,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-
 curdir = Path(__file__).parent
 repo_dir = curdir.parent
 test_psp_dir = curdir / "psps"
@@ -135,22 +134,22 @@ def test_read_ion_inpt():
     assert atoms.get_chemical_formula() == "O4Ti2"
 
 
-def test_write_ion_inpt(fs):
+def test_write_ion_inpt():
     """Same example as in test_parse_atoms but try writing inpt and atoms"""
-    fs.add_real_directory(repo_dir)
     from ase.build import bulk
     from ase.units import Angstrom, Bohr
 
     from sparc.io import SparcBundle
 
-    fs.create_dir("test.sparc")
-    atoms = bulk("Cu") * [4, 4, 4]
-    with pytest.raises(ValueError):
-        sp = SparcBundle(directory="test.sparc", mode="r")
-        sp._write_ion_and_inpt(atoms)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        atoms = bulk("Cu") * [4, 4, 4]
+        with pytest.raises(ValueError):
+            sp = SparcBundle(directory=tmpdir, mode="r")
+            sp._write_ion_and_inpt(atoms)
 
-    sp = SparcBundle(directory="test.sparc", mode="w")
-    sp._write_ion_and_inpt(atoms, direct=True, copy_psp=False)
+        sp = SparcBundle(directory=tmpdir, mode="w")
+        sp._write_ion_and_inpt(atoms, direct=True, copy_psp=False)
     # Copy psp should have the psps available
 
 
@@ -175,28 +174,29 @@ def test_write_ion_inpt_real(monkeypatch):
         assert len(list(Path(workdir).glob("*.psp8"))) == 1
 
 
-def test_bundle_diff_label(fs):
-    fs.add_real_directory(repo_dir)
+def test_bundle_diff_label():
     from ase.build import bulk
     from ase.units import Angstrom, Bohr
 
     from sparc.io import SparcBundle
 
-    fs.create_dir("test.sparc")
-    atoms = bulk("Cu") * [4, 4, 4]
-    sp = SparcBundle(directory="test.sparc", mode="w", label="Cu")
-    sp._write_ion_and_inpt(atoms)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
 
-    sp = SparcBundle(directory="test.sparc", mode="r")
-    assert sp.label == "Cu"
-    assert sp.directory.name == "test.sparc"
+        atoms = bulk("Cu") * [4, 4, 4]
+        sp = SparcBundle(directory=tmpdir, mode="w", label="Cu")
+        sp._write_ion_and_inpt(atoms)
 
-    # Write another into the bundle
-    sp = SparcBundle(directory="test.sparc", mode="w", label="Cu1")
-    sp._write_ion_and_inpt(atoms)
+        sp = SparcBundle(directory=tmpdir, mode="r")
+        assert sp.label == "Cu"
+        assert sp.directory.name == tmpdir.name
 
-    with pytest.raises(Exception):
-        sp = SparcBundle(directory="test.sparc", mode="r")
+        # Write another into the bundle
+        sp = SparcBundle(directory=tmpdir, mode="w", label="Cu1")
+        sp._write_ion_and_inpt(atoms)
+
+        with pytest.raises(Exception):
+            sp = SparcBundle(directory=tmpdir, mode="r")
 
 
 def test_bundle_write_multi():

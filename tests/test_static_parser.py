@@ -1,4 +1,5 @@
 import os
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -10,15 +11,16 @@ test_output_dir = curdir / "outputs"
 repo_dir = curdir.parent
 
 
-def test_static_parser(fs):
-    # Pyfakefs requires following line to add the external data folders
-    fs.add_real_directory(repo_dir)
+def test_static_parser():
     from sparc.sparc_parsers.static import _read_static
 
-    fs.create_file("test.static")
-    with open("test.static", "w") as fd:
-        fd.write(
-            """***************************************************************************
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        static_file = tmpdir / "test.static"
+
+        with open(static_file, "w") as fd:
+            fd.write(
+                """***************************************************************************
                             Atom positions                                 
 ***************************************************************************
 Fractional coordinates of Fe:
@@ -32,28 +34,30 @@ Stress (GPa):
  -2.1918863425E+04   1.3932450782E+03  -5.1023512490E+01 
   1.3932450782E+03  -2.1975897437E+04  -1.2676410947E+02 
  -5.1023512490E+01  -1.2676410947E+02  -2.2380745784E+04
-        """
+            """
+            )
+        data_dict = _read_static(static_file)
+        assert "static" in data_dict
+        static_dict = data_dict["static"][0]
+        assert "atoms" in static_dict
+        assert tuple(static_dict["atoms"]["symbols"]) == ("Fe", "Fe")
+        assert np.isclose(static_dict["free energy"], -2.283157353113279e02 * Hartree)
+        assert static_dict["forces"].shape == (2, 3)
+        assert np.isclose(
+            static_dict["forces"][0, 0], 8.0738249305e-01 * Hartree / Bohr
         )
-    data_dict = _read_static("test.static")
-    assert "static" in data_dict
-    static_dict = data_dict["static"][0]
-    assert "atoms" in static_dict
-    assert tuple(static_dict["atoms"]["symbols"]) == ("Fe", "Fe")
-    assert np.isclose(static_dict["free energy"], -2.283157353113279e02 * Hartree)
-    assert static_dict["forces"].shape == (2, 3)
-    assert np.isclose(static_dict["forces"][0, 0], 8.0738249305e-01 * Hartree / Bohr)
-    assert static_dict["stress"].shape == (6,)
+        assert static_dict["stress"].shape == (6,)
 
 
-def test_static_parser_missing_fields(fs):
-    # Pyfakefs requires following line to add the external data folders
-    fs.add_real_directory(repo_dir)
+def test_static_parser_missing_fields():
     from sparc.sparc_parsers.static import _add_cell_info, _read_static
 
-    fs.create_file("test.static")
-    with open("test.static", "w") as fd:
-        fd.write(
-            """***************************************************************************
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        static_file = tmpdir / "test.static"
+        with open(static_file, "w") as fd:
+            fd.write(
+                """***************************************************************************
                             Atom positions                                 
 ***************************************************************************
 Fractional coordinates of Al:
@@ -61,67 +65,68 @@ Fractional coordinates of Al:
 Total free energy (Ha): -2.212996080865029E+00
 Atomic forces (Ha/Bohr):
   0.0000000000E+00   0.0000000000E+00   0.0000000000E+00
-        """
+            """
+            )
+        data_dict = _read_static(static_file)
+        assert "static" in data_dict
+        static_dict = data_dict["static"][0]
+        assert "atoms" in static_dict
+        assert "stress" not in static_dict
+        assert tuple(static_dict["atoms"]["symbols"]) == ("Al",)
+        cell = (
+            np.array([[0.5, 0.5, 0.0], [0.0, 0.5, 0.5], [0.5, 0.0, 0.5]])
+            * 5.656854249492380
+            * Bohr
         )
-    data_dict = _read_static("test.static")
-    assert "static" in data_dict
-    static_dict = data_dict["static"][0]
-    assert "atoms" in static_dict
-    assert "stress" not in static_dict
-    assert tuple(static_dict["atoms"]["symbols"]) == ("Al",)
-    cell = (
-        np.array([[0.5, 0.5, 0.0], [0.0, 0.5, 0.5], [0.5, 0.0, 0.5]])
-        * 5.656854249492380
-        * Bohr
-    )
-    new_data_dict = _add_cell_info([static_dict], cell)[0]
+        new_data_dict = _add_cell_info([static_dict], cell)[0]
 
-    assert "coord" in new_data_dict["atoms"]
-    assert new_data_dict["atoms"]["coord"].shape == (1, 3)
-    assert np.isclose(new_data_dict["atoms"]["coord"][0, 0], 0)
+        assert "coord" in new_data_dict["atoms"]
+        assert new_data_dict["atoms"]["coord"].shape == (1, 3)
+        assert np.isclose(new_data_dict["atoms"]["coord"][0, 0], 0)
 
 
-def test_static_parser_no_atoms(fs):
-    # Pyfakefs requires following line to add the external data folders
-    fs.add_real_directory(repo_dir)
+def test_static_parser_no_atoms():
     from sparc.sparc_parsers.static import _add_cell_info, _read_static
 
-    fs.create_file("test.static")
-    with open("test.static", "w") as fd:
-        fd.write(
-            """
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        static_file = tmpdir / "test.static"
+        with open(static_file, "w") as fd:
+            fd.write(
+                """
 Total free energy (Ha): -2.212996080865029E+00
-        """
+            """
+            )
+        data_dict = _read_static(static_file)
+        assert "static" in data_dict
+        static_dict = data_dict["static"][0]
+        assert "atoms" not in static_dict
+        assert "stress" not in static_dict
+        cell = (
+            np.array([[0.5, 0.5, 0.0], [0.0, 0.5, 0.5], [0.5, 0.0, 0.5]])
+            * 5.656854249492380
+            * Bohr
         )
-    data_dict = _read_static("test.static")
-    assert "static" in data_dict
-    static_dict = data_dict["static"][0]
-    assert "atoms" not in static_dict
-    assert "stress" not in static_dict
-    cell = (
-        np.array([[0.5, 0.5, 0.0], [0.0, 0.5, 0.5], [0.5, 0.0, 0.5]])
-        * 5.656854249492380
-        * Bohr
-    )
-    new_data_dict = _add_cell_info([data_dict], cell)[0]
+        new_data_dict = _add_cell_info([data_dict], cell)[0]
 
-    assert "atoms" not in new_data_dict
+        assert "atoms" not in new_data_dict
 
 
-def test_static_multi_image_same_cell(fs):
+def test_static_multi_image_same_cell():
     """Read a static file with multiple images (like in socket mode)
 
     In this test, the lattice for each image is the same (ionic relaxation)
     """
-    # Pyfakefs requires following line to add the external data folders
-    fs.add_real_directory(repo_dir)
     from sparc.sparc_parsers.static import _add_cell_info, _read_static
 
     cell = np.array([[4.05, 0.0, 0.0], [0.0, 4.05, 0.0], [0.0, 0.0, 4.05]])
 
-    with open("test.static", "w") as fd:
-        fd.write(
-            """***************************************************************************
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        static_file = tmpdir / "test.static"
+        with open(static_file, "w") as fd:
+            fd.write(
+                """***************************************************************************
                         Atom positions (socket step 1)                    
 ***************************************************************************
 Fractional coordinates of Al:
@@ -187,25 +192,25 @@ Stress (GPa):
  -2.0388752465E+01  -1.3826995208E-01   3.3893431251E-01 
  -1.3826995208E-01   1.0147311461E+01  -6.6073109432E-03 
   3.3893431251E-01  -6.6073109432E-03  -2.2513420091E+01
-            """
-        )
-    data_dict = _read_static("test.static")
-    assert "static" in data_dict
-    assert len(data_dict["static"]) == 3
-    steps = data_dict["static"]
-    for step in steps:
-        assert "atoms" in step
-        assert "coord_frac" in step["atoms"]
-        assert "lattice" in step
-        assert "free energy" in step
-        assert "forces" in step
-        assert "stress" in step
+                """
+            )
+        data_dict = _read_static(static_file)
+        assert "static" in data_dict
+        assert len(data_dict["static"]) == 3
+        steps = data_dict["static"]
+        for step in steps:
+            assert "atoms" in step
+            assert "coord_frac" in step["atoms"]
+            assert "lattice" in step
+            assert "free energy" in step
+            assert "forces" in step
+            assert "stress" in step
 
-        # The lattices are the same
-        assert np.isclose(step["lattice"], cell, 1.0e-6).all()
+            # The lattices are the same
+            assert np.isclose(step["lattice"], cell, 1.0e-6).all()
 
 
-def test_static_multi_image_diff_cell(fs):
+def test_static_multi_image_diff_cell():
     """Read a static file with multiple images (like in socket mode)
 
     In this test, the lattice for each image is different (ionic relaxation)
@@ -216,9 +221,12 @@ def test_static_multi_image_diff_cell(fs):
 
     cell = np.array([[4.05, 0.0, 0.0], [0.0, 4.05, 0.0], [0.0, 0.0, 4.05]])
 
-    with open("test.static", "w") as fd:
-        fd.write(
-            """***************************************************************************
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        static_file = tmpdir / "test.static"
+        with open(static_file, "w") as fd:
+            fd.write(
+                """***************************************************************************
                         Atom positions (socket step 1)                    
 ***************************************************************************
 Fractional coordinates of Al:
@@ -285,19 +293,19 @@ Stress (GPa):
   5.5029845435E-01   8.7131123988E-01  -8.1756988882E-01 
   1.4612463857E+00  -8.1756988882E-01  -3.3530577155E+01
             """
-        )
-    data_dict = _read_static("test.static")
-    assert "static" in data_dict
-    assert len(data_dict["static"]) == 3
-    steps = data_dict["static"]
-    ratios = [1.0, 1.01, 1.02]
-    for i, step in enumerate(steps):
-        assert "atoms" in step
-        assert "coord_frac" in step["atoms"]
-        assert "lattice" in step
-        assert "free energy" in step
-        assert "forces" in step
-        assert "stress" in step
+            )
+        data_dict = _read_static(static_file)
+        assert "static" in data_dict
+        assert len(data_dict["static"]) == 3
+        steps = data_dict["static"]
+        ratios = [1.0, 1.01, 1.02]
+        for i, step in enumerate(steps):
+            assert "atoms" in step
+            assert "coord_frac" in step["atoms"]
+            assert "lattice" in step
+            assert "free energy" in step
+            assert "forces" in step
+            assert "stress" in step
 
-        # The lattices are the same
-        assert np.isclose(step["lattice"], cell * ratios[i], 1.0e-6).all()
+            # The lattices are the same
+            assert np.isclose(step["lattice"], cell * ratios[i], 1.0e-6).all()

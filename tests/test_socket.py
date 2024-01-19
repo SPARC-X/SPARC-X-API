@@ -3,6 +3,10 @@ from pathlib import Path
 
 import pytest
 
+curdir = Path(__file__).parent
+repo_dir = curdir.parent
+
+
 socket_stdout = b"""
 USAGE:
     mpirun -np <nproc> {SPARCROOT}/lib/sparc -name <filename>
