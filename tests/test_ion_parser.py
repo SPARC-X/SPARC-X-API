@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 curdir = Path(__file__).parent
+repo_dir = curdir.parent
 test_output_dir = curdir / "outputs"
 
 

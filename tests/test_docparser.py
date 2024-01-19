@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from sparc.common import repo_dir
 
 curdir = Path(__file__).parent
+repo_dir = curdir.parent
 test_doc_dir = curdir / "sparc-latex-doc-202302"
 
 

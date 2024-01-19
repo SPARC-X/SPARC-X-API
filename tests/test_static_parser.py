@@ -5,10 +5,9 @@ import numpy as np
 import pytest
 from ase.units import Bohr, Hartree
 
-from sparc.common import repo_dir
-
 curdir = Path(__file__).parent
 test_output_dir = curdir / "outputs"
+repo_dir = curdir.parent
 
 
 def test_static_parser(fs):

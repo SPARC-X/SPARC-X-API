@@ -5,9 +5,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from sparc.common import repo_dir
 
 curdir = Path(__file__).parent
+repo_dir = curdir.parent
 test_psp_dir = curdir / "psps"
 test_output_dir = curdir / "outputs"
 
