@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 import pytest
+
 from sparc.common import repo_dir
 
 curdir = Path(__file__).parent

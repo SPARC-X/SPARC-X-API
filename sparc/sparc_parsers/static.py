@@ -32,12 +32,16 @@ def _read_static(fileobj):
     """
     contents = fileobj.read()
     data, comments = strip_comments(contents)
-    # Like .ion file, but split by the separator ":"
-    # separator = "*" * 60        # At least this length of stars
+    # Most static files should containe the Atom positions lines
+    # this can happen for both a single- or multi-image file
     step_bounds = [i for i, x in enumerate(data) if "Atom positions" in x] + [len(data)]
     raw_static_steps = [
         data[start:end] for start, end in zip(step_bounds[:-1], step_bounds[1:])
     ]
+    # In some cases (e.g. PRINT_ATOMS=0), the static file may not contain Atom positions
+    # All existing lines will be regarded as one step
+    if len(raw_static_steps) == 0:
+        raw_static_steps = [data]
     static_steps = [_read_static_step(step) for step in raw_static_steps]
     return {"static": static_steps}
 
@@ -100,9 +104,13 @@ def _read_static_step(step):
     Args:
         step (list): Lines of raw lines in one step
     """
-    separator = "*" * 60        # Make the separator long enough
+    separator = "*" * 60  # Make the separator long enough
     # Clean up boundary lines
-    data = [line for line in step if ("Atom positions" not in line) and (separator not in line)]
+    data = [
+        line
+        for line in step
+        if ("Atom positions" not in line) and (separator not in line)
+    ]
     block_bounds = [i for i, x in enumerate(data) if ":" in x] + [len(data)]
     raw_blocks = [
         data[start:end] for start, end in zip(block_bounds[:-1], block_bounds[1:])
@@ -198,7 +206,7 @@ def _add_cell_info(static_steps, cell=None):
             lat = cell
         else:
             lat = None
-            
+
         if (lat is not None) and (step.get("atoms", None) is not None):
             coord_frac = new_step["atoms"]["coord_frac"]
             coord_cart = np.dot(coord_frac, lat)

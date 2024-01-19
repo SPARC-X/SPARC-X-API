@@ -26,7 +26,7 @@ from .sparc_parsers.inpt import _read_inpt, _write_inpt
 from .sparc_parsers.ion import _read_ion, _write_ion
 from .sparc_parsers.out import _read_out
 from .sparc_parsers.pseudopotential import copy_psp_file, parse_psp8_header
-from .sparc_parsers.static import _read_static, _add_cell_info
+from .sparc_parsers.static import _add_cell_info, _read_static
 from .utils import deprecated, locate_api, string2index
 
 # from .sparc_parsers.ion import read_ion, write_ion
@@ -535,22 +535,26 @@ class SparcBundle:
             if "atoms" in static_results:
                 atoms_dict = static_results["atoms"]
 
-            # The socket mode case. Reset all cell and positions
-            if "lattice" in atoms_dict:
-                lat = atoms_dict["lattice"]
-                atoms.set_cell(lat, scale_atoms=False)
-                if "coord" not in atoms_dict:
-                    raise KeyError("Coordination conversion failed in socket static output!")
-                atoms.set_positions(
-                    atoms_dict["coord"][self.resort], apply_constraint=False
-                )
-            else:               # Do not change cell information (normal static file)
-                if "coord_frac" in atoms_dict:
-                    atoms.set_scaled_positions(atoms_dict["coord_frac"][self.resort])
-                elif "coord" in atoms_dict:
+                # The socket mode case. Reset all cell and positions
+                if "lattice" in atoms_dict:
+                    lat = atoms_dict["lattice"]
+                    atoms.set_cell(lat, scale_atoms=False)
+                    if "coord" not in atoms_dict:
+                        raise KeyError(
+                            "Coordination conversion failed in socket static output!"
+                        )
                     atoms.set_positions(
                         atoms_dict["coord"][self.resort], apply_constraint=False
                     )
+                else:  # Do not change cell information (normal static file)
+                    if "coord_frac" in atoms_dict:
+                        atoms.set_scaled_positions(
+                            atoms_dict["coord_frac"][self.resort]
+                        )
+                    elif "coord" in atoms_dict:
+                        atoms.set_positions(
+                            atoms_dict["coord"][self.resort], apply_constraint=False
+                        )
             ase_images.append(atoms)
             calc_results.append(partial_results)
         return calc_results, ase_images
