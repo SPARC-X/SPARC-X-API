@@ -9,6 +9,7 @@ test_output_dir = curdir / "outputs"
 
 def test_read_write_ion(fs):
     """Test basic read write"""
+    fs.add_real_directory(repo_dir)
     from copy import copy, deepcopy
 
     from sparc.sparc_parsers.ion import _read_ion, _write_ion
@@ -88,6 +89,7 @@ COORD:                       # coordinates follows
 
 def test_read_write_ion_w_sort(fs):
     """Test basic read write"""
+    fs.add_real_directory(repo_dir)
     from copy import copy, deepcopy
 
     from sparc.sparc_parsers.ion import _read_ion, _write_ion

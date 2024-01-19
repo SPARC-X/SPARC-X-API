@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from sparc.common import repo_dir
 
 curdir = Path(__file__).parent
 test_psp_dir = curdir / "psps"
@@ -135,6 +136,7 @@ def test_read_ion_inpt():
 
 def test_write_ion_inpt(fs):
     """Same example as in test_parse_atoms but try writing inpt and atoms"""
+    fs.add_real_directory(repo_dir)
     from ase.build import bulk
     from ase.units import Angstrom, Bohr
 
@@ -173,6 +175,7 @@ def test_write_ion_inpt_real(monkeypatch):
 
 
 def test_bundle_diff_label(fs):
+    fs.add_real_directory(repo_dir)
     from ase.build import bulk
     from ase.units import Angstrom, Bohr
 

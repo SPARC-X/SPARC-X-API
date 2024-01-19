@@ -4,14 +4,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 from ase.units import Bohr, Hartree
+from sparc.common import repo_dir
 
 curdir = Path(__file__).parent
 test_output_dir = curdir / "outputs"
 
 
 def test_static_parser(fs):
-    from sparc.common import repo_dir
-
     # Pyfakefs requires following line to add the external data folders
     fs.add_real_directory(repo_dir)
     from sparc.sparc_parsers.static import _read_static
@@ -47,8 +46,6 @@ Stress (GPa):
 
 
 def test_static_parser_missing_fields(fs):
-    from sparc.common import repo_dir
-
     # Pyfakefs requires following line to add the external data folders
     fs.add_real_directory(repo_dir)
     from sparc.sparc_parsers.static import _add_cell_info, _read_static
@@ -85,8 +82,6 @@ Atomic forces (Ha/Bohr):
 
 
 def test_static_parser_no_atoms(fs):
-    from sparc.common import repo_dir
-
     # Pyfakefs requires following line to add the external data folders
     fs.add_real_directory(repo_dir)
     from sparc.sparc_parsers.static import _add_cell_info, _read_static

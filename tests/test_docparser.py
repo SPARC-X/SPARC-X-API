@@ -4,12 +4,14 @@ import os
 from pathlib import Path
 
 import pytest
+from sparc.common import repo_dir
 
 curdir = Path(__file__).parent
 test_doc_dir = curdir / "sparc-latex-doc-202302"
 
 
 def test_docparser_init_wrong(fs):
+    fs.add_real_directory(repo_dir)
     """Mimic situations where docparser inits at wrong file structure"""
     from sparc.docparser import SparcDocParser
 
@@ -49,6 +51,7 @@ def test_docparser_init_working():
 
 def test_version_parser(fs, monkeypatch):
     """Only parse version"""
+    fs.add_real_directory(repo_dir)
     from sparc.docparser import SparcDocParser
 
     content_init_c = """void write_output_init(SPARC_OBJ *pSPARC) {
