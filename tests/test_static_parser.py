@@ -215,7 +215,6 @@ def test_static_multi_image_diff_cell():
 
     In this test, the lattice for each image is different (ionic relaxation)
     """
-    # Pyfakefs requires following line to add the external data folders
     from sparc.sparc_parsers.static import _add_cell_info, _read_static
 
     cell = np.array([[4.05, 0.0, 0.0], [0.0, 4.05, 0.0], [0.0, 0.0, 4.05]])
@@ -308,3 +307,81 @@ Stress (GPa):
 
             # The lattices are the same
             assert np.isclose(step["lattice"], cell * ratios[i], 1.0e-6).all()
+
+
+def test_static_incomplete():
+    """Read a multi-image static file that is broken
+    due to abrupt stop
+
+    In this test, the lattice for each image is different (ionic relaxation)
+    """
+    from sparc.sparc_parsers.static import _add_cell_info, _read_static
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        content = """***************************************************************************
+                        Atom positions (socket step 1)                    
+***************************************************************************
+Fractional coordinates of Al:
+      0.0435568469       0.0098804247       0.0241663704
+      0.0553306963       0.5461125432       0.4758696815
+      0.5234589728      -0.0037372148       0.4974513852
+      0.5101382346       0.5035566321       0.0359079877
+Lattice (Bohr):
+  7.6533908096E+00   0.0000000000E+00   0.0000000000E+00 
+  0.0000000000E+00   7.6533908096E+00   0.0000000000E+00 
+  0.0000000000E+00   0.0000000000E+00   7.6533908096E+00 
+Total free energy (Ha): -9.041897494881022E+00
+Atomic forces (Ha/Bohr):
+ -6.3263659031E-03   4.1224440526E-03  -9.7573144850E-03
+ -1.1198940888E-02  -9.4391853227E-03   1.3724648407E-02
+  7.1551844772E-03   6.8108726360E-03   8.1322760704E-03
+  1.0370122314E-02  -1.4941313660E-03  -1.2099609992E-02
+Stress (GPa): 
+ -1.2943266261E+01  -7.3004908368E-01   1.0042725771E+00 
+ -7.3004908368E-01  -1.3976465176E+01   5.9432479567E-01 
+  1.0042725771E+00   5.9432479567E-01  -8.2525500281E+00
+***************************************************************************
+                        Atom positions (socket step 2)                    
+***************************************************************************
+Fractional coordinates of Al:
+      0.0401072938      -0.0151050963      -0.0130412790
+     -0.0264930519       0.5213680889       0.4431718840
+      0.5430817728      -0.0187952321       0.5078775086
+      0.4938427062       0.5361014296      -0.0508676716
+Lattice (Bohr):
+  7.6533908096E+00   0.0000000000E+00   0.0000000000E+00 
+  0.0000000000E+00   7.6533908096E+00   0.0000000000E+00 
+  0.0000000000E+00   0.0000000000E+00   7.6533908096E+00 
+Total free energy (Ha): -9.039359835390405E+00
+Atomic forces (Ha/Bohr):
+ -5.6420435958E-03   1.2313126326E-02  -2.8998717685E-03
+  9.5779301732E-03  -1.1726647745E-02   5.8218036947E-03
+ -7.0526004868E-03   1.5921660989E-02  -1.0900664252E-02
+  3.1167139094E-03  -1.6508139571E-02   7.9787323255E-03
+Stress (GPa): 
+ -1.1079730116E+01   2.1369400165E+00  -5.5506801999E-01 
+  2.1369400165E+00  -2.4342715311E+01   1.9045396297E+00 
+ -5.5506801999E-01   1.9045396297E+00  -3.7041195294E+00
+***************************************************************************
+                        Atom positions (socket step 3)                    
+***************************************************************************
+Fractional coordinates of Al:
+     -0.0102903160      -0.0013893037      -0.0527455827
+      0.0405005136       0.4557176395       0.4792161136
+      0.5124168247      -0.0307478543       0.4738777235
+      0.4775553679       0.5136161481       0.0565977284
+Lattice (Bohr):
+  7.6533908096E+00   0.0000000000E+00   0.0000000000E+00 
+  0.0000000000E+00   7.6533908096E+00   0.0000000000E+00 
+  0.0000000000E+00   0.0000000000E+00   7.6533908096E+00
+        """
+        static_file = tmpdir / "test.static"
+        with open(static_file, "w") as fd:
+            fd.write(content)
+        data_dict = _read_static(static_file)
+        steps = data_dict["static"]
+        assert len(steps) == 3
+        assert "free energy" not in steps[2]
+        assert "forces" not in steps[2]
+        assert "stress" not in steps[2]

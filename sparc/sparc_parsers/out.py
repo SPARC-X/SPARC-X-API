@@ -126,16 +126,28 @@ def _read_scfs(contents):
     convergence_info = _get_block_text(contents, r"Self Consistent Field \(SCF.*?\)")
     results_info = _get_block_text(contents, "Energy and force calculation")
 
-    if len(convergence_info) != len(results_info):
-        # TODO: change to another exception name
+    # Should not happen
+    if len(convergence_info) > len(results_info) + 1:
         raise ValueError(
-            "Error, length of convergence information and energy calculation are different!"
+            "Error, length of convergence information and energy calculation mismatch!"
         )
+    elif len(convergence_info) == len(results_info) + 1:
+        warn("Last ionic SCF has not finished! The results may be incomplete")
+    else:
+        pass
+
+    # Stick to the convergence information as the main section
     n_steps = len(convergence_info)
     steps = []
-    for i, step in enumerate(zip(convergence_info, results_info)):
+    # for i, step in enumerate(zip(convergence_info, results_info)):
+    for i in range(n_steps):
+        conv = convergence_info[i]
+        # Solution for incomplete calculations
+        if i >= len(results_info):
+            res = ""  # Empty lines
+        else:
+            res = results_info[i]
         current_step = {"scf_step": i}
-        conv, res = step
         # TODO: add support for convergence fields
         conv_lines = conv.splitlines()
         # conv_header is normally 4-column table
@@ -148,7 +160,6 @@ def _read_scfs(contents):
         for lino, line in enumerate(conv_lines):
             if "Total number of SCF:" not in line:
                 continue
-            # import pdb; pdb.set_trace()
             scf_num = int(line.split(":")[-1])
             conv_array = np.genfromtxt(
                 [
