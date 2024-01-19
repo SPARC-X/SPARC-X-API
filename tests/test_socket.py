@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 curdir = Path(__file__).parent
+test_output_dir = curdir / "outputs"
 repo_dir = curdir.parent
 
 
@@ -101,3 +102,41 @@ def test_socket_compat(monkeypatch):
     # Mock a socket sparc binary stdout
     monkeypatch.setattr("subprocess.run", mock_socket_run)
     assert calc.detect_socket_compatibility() is True
+
+def test_socket_read_same_cell():
+    """Test parsing multi-image static files from socket"""
+    from sparc.io import read_sparc
+    from ase.io import read
+    import numpy as np
+    bundle = test_output_dir / "Al_socket_bfgs.sparc"
+    # References from standard socket output
+    ref_images = read(bundle / "sparc-socket.traj", ":")
+    cell0 = ref_images[0].cell
+    parsed_images = read_sparc(bundle, ":")
+    assert len(ref_images) == len(parsed_images)
+    for r_img, p_img in zip(ref_images, parsed_images):
+        assert np.isclose(r_img.positions, p_img.positions, 1.e-4).all()
+        assert np.isclose(r_img.cell, p_img.cell, 1.e-4).all()
+        assert np.isclose(cell0, p_img.cell, 1.e-4).all()
+        assert np.isclose(r_img.get_potential_energy(), p_img.get_potential_energy(), 1.e-4)
+        assert np.isclose(r_img.get_forces(), p_img.get_forces(), 1.e-4).all()
+
+
+def test_socket_read_diff_cell():
+    """Test parsing multi-image static files from socket. The volumes of the cells change"""
+    from sparc.io import read_sparc
+    import numpy as np
+    bundle = test_output_dir / "Al_socket_volchange.sparc"
+    parsed_images = read_sparc(bundle, ":")
+    assert len(parsed_images) == 10
+    cell0 = parsed_images[0].cell
+
+    for i, p_img in enumerate(parsed_images):
+        bundle_ref = bundle / "single-points" / f"sp_image{i:02d}"
+        r_img = read_sparc(bundle_ref)
+        p_img.wrap()
+        assert np.isclose(r_img.positions, p_img.positions, 1.e-4).all()
+        assert np.isclose(r_img.cell, p_img.cell, 1.e-4).all()
+        assert np.isclose(cell0, p_img.cell, 1.e-4).all()
+        assert np.isclose(r_img.get_potential_energy(), p_img.get_potential_energy(), 1.e-4)
+        assert np.isclose(r_img.get_forces(), p_img.get_forces(), 1.e-4).all()
