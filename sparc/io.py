@@ -468,7 +468,7 @@ class SparcBundle:
         SinglePointDFTCalculators
 
         The calculator also takes parameters from ion, inpt that exist
-        in self.raw_results
+        in self.raw_results.
 
         Arguments:
             calc_results (List): Calculation results for all images
@@ -483,7 +483,7 @@ class SparcBundle:
         for res, _atoms in zip(calc_results, images):
             atoms = _atoms.copy()
             sp = SinglePointDFTCalculator(atoms)
-            # Simply copy the results?
+            # Res can be empty at this point, leading to incomplete calc
             sp.results.update(res)
             sp.name = "sparc"
             sp.kpts = raw_results["inpt"].get("params", {}).get("KPOINT_GRID", None)

@@ -153,3 +153,22 @@ def test_socket_read_diff_cell():
         assert np.isclose(r_img.positions, p_img.positions, 1.0e-4).all()
         assert np.isclose(r_img.cell, p_img.cell, 1.0e-4).all()
         assert np.isclose(cell0 * ratios[i], p_img.cell, 1.0e-4).all()
+
+
+def test_socket_incomplete():
+    """Test an incomplete socket calculation output
+    The test sample is problematic, but for the purpose of demonstrating
+    reading incomplete files should be enough
+    """
+    from sparc.io import read_sparc
+
+    bundle = test_output_dir / "H2O_socket_incomplete.sparc"
+    parsed_images = read_sparc(bundle, ":")
+    assert len(parsed_images) == 4
+    for i in range(3):
+        assert parsed_images[i].get_potential_energy() is not None
+        assert parsed_images[i].get_forces() is not None
+    with pytest.raises(Exception):
+        parsed_images[3].get_potential_energy()
+    with pytest.raises(Exception):
+        parsed_images[3].get_forces()
