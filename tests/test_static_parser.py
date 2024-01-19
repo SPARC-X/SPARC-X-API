@@ -216,7 +216,6 @@ def test_static_multi_image_diff_cell():
     In this test, the lattice for each image is different (ionic relaxation)
     """
     # Pyfakefs requires following line to add the external data folders
-    fs.add_real_directory(repo_dir)
     from sparc.sparc_parsers.static import _add_cell_info, _read_static
 
     cell = np.array([[4.05, 0.0, 0.0], [0.0, 4.05, 0.0], [0.0, 0.0, 4.05]])
