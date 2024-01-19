@@ -508,6 +508,7 @@ class SparcBundle:
         calc_results = []
         # Use extra lattice information to construct the positions
         cell = self.init_atoms.cell
+        # import pdb; pdb.set_trace()
         static_results = _add_cell_info(static_results, cell)
 
         if isinstance(index, int):
@@ -532,12 +533,14 @@ class SparcBundle:
                 partial_results["stress_equiv"] = static_results["stress_equiv"]
 
             atoms = self.init_atoms.copy()
+            # import pdb; pdb.set_trace()
             if "atoms" in static_results:
                 atoms_dict = static_results["atoms"]
 
                 # The socket mode case. Reset all cell and positions
-                if "lattice" in atoms_dict:
-                    lat = atoms_dict["lattice"]
+                # Be careful,
+                if "lattice" in static_results:
+                    lat = static_results["lattice"]
                     atoms.set_cell(lat, scale_atoms=False)
                     if "coord" not in atoms_dict:
                         raise KeyError(

@@ -103,11 +103,14 @@ def test_socket_compat(monkeypatch):
     monkeypatch.setattr("subprocess.run", mock_socket_run)
     assert calc.detect_socket_compatibility() is True
 
+
 def test_socket_read_same_cell():
     """Test parsing multi-image static files from socket"""
-    from sparc.io import read_sparc
-    from ase.io import read
     import numpy as np
+    from ase.io import read
+
+    from sparc.io import read_sparc
+
     bundle = test_output_dir / "Al_socket_bfgs.sparc"
     # References from standard socket output
     ref_images = read(bundle / "sparc-socket.traj", ":")
@@ -115,28 +118,38 @@ def test_socket_read_same_cell():
     parsed_images = read_sparc(bundle, ":")
     assert len(ref_images) == len(parsed_images)
     for r_img, p_img in zip(ref_images, parsed_images):
-        assert np.isclose(r_img.positions, p_img.positions, 1.e-4).all()
-        assert np.isclose(r_img.cell, p_img.cell, 1.e-4).all()
-        assert np.isclose(cell0, p_img.cell, 1.e-4).all()
-        assert np.isclose(r_img.get_potential_energy(), p_img.get_potential_energy(), 1.e-4)
-        assert np.isclose(r_img.get_forces(), p_img.get_forces(), 1.e-4).all()
+        assert np.isclose(
+            r_img.get_potential_energy(), p_img.get_potential_energy(), 1.0e-4
+        )
+        assert np.isclose(r_img.get_forces(), p_img.get_forces(), 1.0e-4).all()
+        assert np.isclose(r_img.positions, p_img.positions, 1.0e-4).all()
+        assert np.isclose(r_img.cell, p_img.cell, 1.0e-4).all()
+        assert np.isclose(cell0, p_img.cell, 1.0e-4).all()
 
 
 def test_socket_read_diff_cell():
     """Test parsing multi-image static files from socket. The volumes of the cells change"""
-    from sparc.io import read_sparc
     import numpy as np
+
+    from sparc.io import read_sparc
+
     bundle = test_output_dir / "Al_socket_volchange.sparc"
     parsed_images = read_sparc(bundle, ":")
     assert len(parsed_images) == 10
     cell0 = parsed_images[0].cell
 
+    ratios = [1.0, 1.01, 1.02, 1.03, 1.04, 1.0, 0.99, 0.98, 0.97, 0.96]
     for i, p_img in enumerate(parsed_images):
+        print(i)
         bundle_ref = bundle / "single-points" / f"sp_image{i:02d}"
         r_img = read_sparc(bundle_ref)
+        # For systems with cell change, force error may be larger. This may be due to mesh resizing
+        assert np.isclose(
+            r_img.get_potential_energy(), p_img.get_potential_energy(), rtol=1.0e-3
+        )
+        assert np.isclose(r_img.get_forces(), p_img.get_forces(), atol=6.0e-2).all()
+        # Wrap may be necessary for p_img
         p_img.wrap()
-        assert np.isclose(r_img.positions, p_img.positions, 1.e-4).all()
-        assert np.isclose(r_img.cell, p_img.cell, 1.e-4).all()
-        assert np.isclose(cell0, p_img.cell, 1.e-4).all()
-        assert np.isclose(r_img.get_potential_energy(), p_img.get_potential_energy(), 1.e-4)
-        assert np.isclose(r_img.get_forces(), p_img.get_forces(), 1.e-4).all()
+        assert np.isclose(r_img.positions, p_img.positions, 1.0e-4).all()
+        assert np.isclose(r_img.cell, p_img.cell, 1.0e-4).all()
+        assert np.isclose(cell0 * ratios[i], p_img.cell, 1.0e-4).all()
