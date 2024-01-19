@@ -7,7 +7,9 @@ ase.io.vasp
 ase.io.trajectory
 
 """
+import itertools
 import os
+import re
 from pathlib import Path
 from warnings import warn
 
@@ -336,7 +338,14 @@ class SparcBundle:
             self.raw_results (dict or List): the same as the return value
         """
         # Find the max output index
-        last_out = sorted(self.directory.glob(f"{self.label}.out*"), reverse=True)
+        out_files = self.directory.glob(f"{self.label}.out*")
+        valid_out_files = [
+            f
+            for f in out_files
+            if (re.fullmatch(r"^\.out(?:_\d+)?$", f.suffix) is not None)
+        ]
+        # Combine and sort the file lists
+        last_out = sorted(valid_out_files, reverse=True)
         # No output file, only ion / inpt
         if len(last_out) == 0:
             self.last_image = -1
