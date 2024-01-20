@@ -55,6 +55,7 @@ class SPARC(FileIOCalculator):
         sparc_json_file=None,
         sparc_doc_path=None,
         check_version=False,
+        keep_old_files=False,
         **kwargs,
     ):
         """
@@ -72,6 +73,9 @@ class SPARC(FileIOCalculator):
             sparc_json_file (str, optional): Path to a JSON file with SPARC parameters.
             sparc_doc_path (str, optional): Path to the SPARC doc LaTeX code for parsing parameters.
             check_version (bool): Check if SPARC and document versions match
+            keep_old_files (bool): Whether older SPARC output files should be preserved.
+                                   If True, SPARC program will rewrite the output files
+                                   with suffix like .out_01, .out_02 etc
             **kwargs: Additional keyword arguments to set up the calculator.
         """
         FileIOCalculator.__init__(
@@ -109,6 +113,7 @@ class SPARC(FileIOCalculator):
             self.sparc_version = self.detect_sparc_version()
         else:
             self.sparc_version = None
+        self.keep_old_files = keep_old_files
 
     @property
     def directory(self):
@@ -300,9 +305,10 @@ class SPARC(FileIOCalculator):
             )
 
     def write_input(self, atoms, properties=[], system_changes=[]):
-        """Create input files via SparcBundle"""
-        # import pdb; pdb.set_trace()
-        # print("Calling the properties: ", properties)
+        """Create input files via SparcBundle
+        Will use the self.keep_old_files options to keep old output files
+        like .out_01, .out_02 etc
+        """
         FileIOCalculator.write_input(self, atoms, properties, system_changes)
 
         converted_params = self._convert_special_params(atoms=atoms)
@@ -335,6 +341,16 @@ class SPARC(FileIOCalculator):
             comment="",
             input_parameters=input_parameters,
         )
+
+        output_patterns = [".out", ".static", ".eigen", ".aimd", "geopt"]
+        # We just remove the output files, in case the user has psp files manually copied
+        if self.keep_old_files is False:
+            for f in self.directory.glob("*"):
+                if (f.is_file()) and any(
+                    [f.suffix.startswith(p) for p in output_patterns]
+                ):
+                    os.remove(f)
+        return
 
     def execute(self):
         """Make the calculation. Note we probably need to use a better handling of background process!"""

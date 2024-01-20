@@ -240,3 +240,49 @@ def test_sparc_version():
             check_version=True,
         )
         assert calc1.sparc_version is not None
+
+
+def test_sparc_overwrite_files():
+    """Check if keep_old_files option works"""
+    from pathlib import Path
+
+    from ase.build import molecule
+    from ase.optimize import BFGS
+
+    from sparc.calculator import SPARC
+
+    h2 = molecule("H2", cell=[6, 6, 6], pbc=False)
+    h2.center()
+    dummy_calc = SPARC()
+    try:
+        cmd = dummy_calc._make_command()
+    except EnvironmentError:
+        print("Skip test since no sparc command found")
+        return
+
+    # Default, keep_old_file=False, only 1 static file
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        calc = SPARC(
+            h=0.3, kpts=(1, 1, 1), xc="pbe", directory=tmpdir, keep_old_files=False
+        )
+        atoms = h2.copy()
+        atoms.calc = calc
+        opt = BFGS(atoms)
+        opt.run(fmax=2.0)
+        assert len(list(tmpdir.glob("*.static*"))) == 1
+        assert len(list(tmpdir.glob("*.out*"))) == 1
+
+    # Default, keep_old_file=True, multiple files
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        calc = SPARC(
+            h=0.3, kpts=(1, 1, 1), xc="pbe", directory=tmpdir, keep_old_files=True
+        )
+        atoms = h2.copy()
+        atoms.calc = calc
+        opt = BFGS(atoms)
+        opt.run(fmax=2.0)
+        # On ase 3.22 with default BFGS parameters, it taks 6 steps
+        assert len(list(tmpdir.glob("*.static*"))) > 3
+        assert len(list(tmpdir.glob("*.out*"))) > 3

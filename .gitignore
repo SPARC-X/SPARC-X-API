@@ -780,3 +780,5 @@ examples/ex1-ase/
 /*.inpt*
 /*.log
 /*.psp8
+/test-1/
+/test-2/
