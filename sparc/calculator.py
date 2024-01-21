@@ -9,10 +9,19 @@ import numpy as np
 from ase.atoms import Atoms
 from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
 from ase.units import Bohr, GPa, Hartree, eV
+# from ase.calculators.socketio import SocketServer, SocketClient
+
+
+import random
+import string
+
+
+
 
 from .api import SparcAPI
 from .io import SparcBundle
 from .utils import _find_default_sparc, deprecated, h2gpts, locate_api
+from .socketio import SPARCProtocol, SPARCSocketClient, SPARCSocketServer
 
 # Below are a list of ASE-compatible calculator input parameters that are
 # in Angstrom/eV units
@@ -26,8 +35,25 @@ sparc_python_inputs = [
     "nbands",
 ]
 
-defaultAPI = SparcAPI()
+# The socket mode in SPARC calculator uses a relay-based mechanism
+# Several scenarios:
+# 1) use_socket = False --> Turn off all socket communications. SPARC runs from cold-start
+# 2) use_socket = True, port < 0 --> Only connect the sparc binary using ephemeral unix socket. Interface appears as if it is a normal calculator
+# 3) use_socket = True, port > 0 --> Use an out-going socket to relay information
+# 4) use_socket = True, server_only = True --> Act as a SocketServer
+# We do not support outgoing unix socket because the limited user cases
+default_socket_params = {
+    "use_socket": False,        # Main switch to use socket or not
+    "host": "localhost",        # Name of the socket host (only outgoing)
+    "port": -1,                 # Port number of the outgoing socket
+    "allow_restart": True,      # If True, allow the socket server to restart
+}
 
+#TODO: maybe better move to socketio
+def generate_random_socket_name(prefix="sparc_", length=6):
+    """Generate a random socket name with the given prefix and a specified length of random hex characters."""
+    random_chars = ''.join(random.choices(string.hexdigits.lower(), k=length))
+    return prefix + random_chars
 
 class SPARC(FileIOCalculator):
     """Calculator interface to the SPARC codes via the FileIOCalculator"""
@@ -56,6 +82,7 @@ class SPARC(FileIOCalculator):
         sparc_doc_path=None,
         check_version=False,
         keep_old_files=False,
+        socket_params=default_socket_params,
         **kwargs,
     ):
         """
@@ -92,7 +119,8 @@ class SPARC(FileIOCalculator):
         if label is None:
             label = "SPARC" if restart is None else None
 
-        self.validator = locate_api(json_file=sparc_json_file, doc_path=sparc_doc_path)
+        self.validator = locate_api(json_file=sparc_json_file,
+                                    doc_path=sparc_doc_path)
         self.sparc_bundle = SparcBundle(
             directory=Path(self.directory),
             mode="w",
@@ -115,6 +143,47 @@ class SPARC(FileIOCalculator):
             self.sparc_version = None
         self.keep_old_files = keep_old_files
 
+        # Partially update the socket params, so that when setting use_socket = True,
+        # User can directly use the socket client
+        self.socket_params = default_socket_params.copy()
+        self.socket_params.update(**socket_params)
+
+        # TODO: check parameter compatibility with socket params
+        self.process = None
+        self.pid = None
+
+        # Initialize the socket settings
+        self.in_socket = None
+        self.out_socket = None
+        self.ensure_socket()
+
+    def ensure_socket(self):
+        if not self.use_socket:
+            return
+        if self.in_socket is None:
+            # self.in_socket is actually a SocketServer
+            socket_name = generate_random_socket_name()
+            print(f"Creating a socket server with name {socket_name}")
+            self.in_socket = SPARCSocketServer(unixsocket=socket_name)
+        # TODO: add the outbound socket client
+        # TODO: we may need to check an actual socket server at host:port?!
+        # At this stage, we will need to wait the actual client to join
+        
+
+    @property
+    def use_socket(self):
+        return self.socket_params["use_socket"]
+
+    @property
+    def in_socket_filename(self):
+        # The actual socket name for inbound socket
+        # Return name as /tmp/ipi_sparc_<hex>
+        if self.in_socket is None:
+            return ""
+        else:
+            return self.in_socket.socket_filename
+            
+        
     @property
     def directory(self):
         if hasattr(self, "sparc_bundle"):
@@ -220,6 +289,9 @@ class SPARC(FileIOCalculator):
             self.command = command_env
         return f"{self.command} {extras}"
 
+    
+
+    # TODO: are the properties implemented correctly?
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         """Perform a calculation step"""
         # Check if the user accidentally provides atoms unit cell without vacuum
@@ -245,6 +317,40 @@ class SPARC(FileIOCalculator):
                 atoms.set_initial_magnetic_moments(
                     self.atoms.get_initial_magnetic_moments()
                 )
+    
+    def _calculate_with_socket(self, atoms=None, properties=["energy"], system_changes=all_changes):
+        """Perform one socket single point calculation
+        """
+        # TODO: remove duplicate information to another section
+        if atoms and np.any(atoms.cell.cellpar()[:3] == 0):
+            msg = "Cannot setup SPARC calculation because at least one of the lattice dimension is zero!"
+            if any([bc_ is False for bc_ in atoms.pbc]):
+                msg += " Please add a vacuum in the non-periodic direction of your input structure."
+            raise ValueError(msg)
+        Calculator.calculate(self, atoms, properties, system_changes)
+        # Ensure there is at least a SPARC process & socket component
+        # TODO: wrap them up in another function
+        if self.process is None:
+            self.write_input(atoms)
+            cmds = self._make_command(extras=f"-socket {self.in_socket_filename}:unix -name {self.label}")
+            self.process = subprocess.Popen(cmds, shell=True,
+                                            cwd=self.directory,
+                                            universal_newlines=True,
+                                            bufsize=0)
+            self.pid = self.process.pid
+        # Do one calculation
+        # TODO make sure sorting is actually there?!
+        ret = self.in_socket.calculate(atoms)
+        print(ret)
+        # self.in_socket.calculate(atoms[self.sort])
+        # self._ensure_socket_process(atoms)
+        # Do one step with socket
+        # TODO: wrap them up in another function
+        # self._execute_socket_step()
+        # The results are parsed from file outputs (.static + .out)
+        self.read_results()     #
+        # TODO: depending on the context, transfer data to the outgoing socket
+        return
 
     def get_stress(self, atoms=None):
         """Warn user the dimensionality change when using stress"""
@@ -353,7 +459,7 @@ class SPARC(FileIOCalculator):
         return
 
     def execute(self):
-        """Make the calculation. Note we probably need to use a better handling of background process!"""
+        """Make a normal SPARC calculation without socket. Note we probably need to use a better handling of background process!"""
         extras = f"-name {self.label}"
         command = self._make_command(extras=extras)
         self.print_sysinfo(command)
@@ -361,11 +467,11 @@ class SPARC(FileIOCalculator):
         try:
             if self.log is not None:
                 with open(self.log, "a") as fd:
-                    self.proc = subprocess.run(
+                    self.process = subprocess.run(
                         command, shell=True, cwd=self.directory, stdout=fd
                     )
             else:
-                self.proc = subprocess.run(
+                self.process = subprocess.run(
                     command, shell=True, cwd=self.directory, stdout=None
                 )
         except OSError as err:
@@ -373,7 +479,7 @@ class SPARC(FileIOCalculator):
             raise EnvironmentError(msg) from err
 
         # We probably don't want to wait the
-        errorcode = self.proc.returncode
+        errorcode = self.process.returncode
 
         if errorcode > 0:
             msg = f"SPARC failed with command {command}" f"with error code {errorcode}"
