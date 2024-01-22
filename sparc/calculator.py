@@ -286,9 +286,16 @@ class SPARC(FileIOCalculator):
         return f"{self.command} {extras}"
 
     # TODO: are the properties implemented correctly?
-    def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
+    def calculate(self, atoms=None,
+                  properties=["energy"],
+                  system_changes=all_changes):
         """Perform a calculation step"""
         # Check if the user accidentally provides atoms unit cell without vacuum
+        if self.use_socket:
+            self._calculate_with_socket(atoms=atoms,
+                                        properties=properties,
+                                        system_changes=system_changes)
+            return
         if atoms and np.any(atoms.cell.cellpar()[:3] == 0):
             msg = "Cannot setup SPARC calculation because at least one of the lattice dimension is zero!"
             if any([bc_ is False for bc_ in atoms.pbc]):
@@ -336,7 +343,8 @@ class SPARC(FileIOCalculator):
             self.pid = self.process.pid
         # Do one calculation
         # TODO make sure sorting is actually there?!
-        ret = self.in_socket.calculate(atoms)
+        # TODO: check if sorting is present, or is it new atoms?
+        ret = self.in_socket.calculate(atoms[self.sort])
         print(ret)
         # self.in_socket.calculate(atoms[self.sort])
         # self._ensure_socket_process(atoms)
