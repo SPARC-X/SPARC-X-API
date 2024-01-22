@@ -171,7 +171,9 @@ class SPARC(FileIOCalculator, IOContext):
             print(f"Creating a socket server with name {socket_name}")
             self.in_socket = SPARCSocketServer(
                 unixsocket=socket_name,
-                log=self.openfile(self._indir("socket.log"), mode="w"),
+                # TODO: make the log fd persistent
+                log=self.openfile(self._indir(ext=".log",
+                                              label="socket"), mode="w"),
             )
         # TODO: add the outbound socket client
         # TODO: we may need to check an actual socket server at host:port?!
@@ -230,6 +232,7 @@ class SPARC(FileIOCalculator, IOContext):
         else:
             self._label = label
 
+    # TODO: make sure sparc_bundle does have sorting
     @property
     def sort(self):
         """Like Vasp calculator
@@ -237,6 +240,7 @@ class SPARC(FileIOCalculator, IOContext):
         """
         return self.sparc_bundle.sorting["sort"]
 
+    # TODO: make sure sparc_bundle does have sorting
     @property
     def resort(self):
         """Like Vasp calculator
@@ -343,7 +347,23 @@ class SPARC(FileIOCalculator, IOContext):
             if any([bc_ is False for bc_ in atoms.pbc]):
                 msg += " Please add a vacuum in the non-periodic direction of your input structure."
             raise ValueError(msg)
+        # import pdb; pdb.set_trace()
         Calculator.calculate(self, atoms, properties, system_changes)
+        # TODO: make pbc also checked
+        if "numbers" in system_changes:
+            if not self.socket_params["allow_restart"]:
+                raise RuntimeError("Chemical symbols of input atoms have changed! Please set socket_params['allow_restart'] = True if you want to continue")
+            # TODO: wrap the closing in another function
+            if self.process is not None:
+                print("Chemical formula changed. Restarting socket process")
+                self.in_socket.close()
+                self.in_socket = None
+                # TODO: how about cleaning up old process and socket file?
+                self.ensure_socket()
+                # TODO: make sure old process exits
+                self.process = None
+                self.pid = None
+        # print(system_changes, properties)
         # Ensure there is at least a SPARC process & socket component
         # TODO: wrap them up in another function
         if self.process is None:
@@ -352,6 +372,7 @@ class SPARC(FileIOCalculator, IOContext):
                 raise RuntimeError(
                     "Your sparc binary is not compiled with socket support!"
                 )
+            # TODO: better way to wrap the sorting reset
             self.write_input(atoms)
             cmds = self._make_command(
                 extras=f"-socket {self.in_socket_filename}:unix -name {self.label}"
@@ -447,7 +468,7 @@ class SPARC(FileIOCalculator, IOContext):
 
     def write_input(self, atoms, properties=[], system_changes=[]):
         """Create input files via SparcBundle
-        Will use the self.keep_old_files options to keep old output files
+        Will use the self.keep_sold_files options to keep old output files
         like .out_01, .out_02 etc
         """
         FileIOCalculator.write_input(self, atoms, properties, system_changes)
@@ -466,6 +487,8 @@ class SPARC(FileIOCalculator, IOContext):
         self._check_input_exclusion(input_parameters, atoms=atoms)
         self._check_minimal_input(input_parameters)
 
+        # TODO: make sure the sorting reset is justified (i.e. what about restarting?)
+        self.sparc_bundle.sorting = None
         self.sparc_bundle._write_ion_and_inpt(
             atoms=atoms,
             label=self.label,
