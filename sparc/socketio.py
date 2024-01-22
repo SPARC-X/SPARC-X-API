@@ -53,6 +53,11 @@ class SPARCProtocol(IPIProtocol):
 class SPARCSocketServer(SocketServer):
     """We only implement the unix socket version due to simplicity"""
 
+    def __init__(
+        self, port=None, unixsocket=None, timeout=None, log=None  # launch_client=None,
+    ):
+        super().__init__(port=port, unixsocket=unixsocket, timeout=timeout, log=log)
+
     # TODO: guard cases for non-unix sockets
     @property
     def socket_filename(self):

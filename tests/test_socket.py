@@ -172,3 +172,34 @@ def test_socket_incomplete():
         parsed_images[3].get_potential_energy()
     with pytest.raises(Exception):
         parsed_images[3].get_forces()
+
+
+def test_socket_param_calculator():
+    """Test if socket settings are correct"""
+    from sparc.calculator import SPARC
+
+    # Default use_socket is False
+    calc = SPARC()
+    assert calc.use_socket is False
+
+    # CASE 1: use alias to switch on socket mode
+    calc = SPARC(use_socket=True)
+    assert calc.use_socket
+    assert calc.socket_params["use_socket"]
+    assert calc.socket_params["host"] == "localhost"
+    assert calc.socket_params["port"] == -1
+    assert calc.socket_params["server_only"] is False
+
+    # CASE 2: just use socket params. socket params
+    # have higher priority
+    calc = SPARC(socket_params=dict(use_socket=True))
+    assert calc.use_socket
+
+    # CASE 3: partial change socket params
+    calc = SPARC(socket_params=dict(host="server"))
+    assert calc.use_socket is False
+
+    # CASE 4: partial change socket params
+    calc = SPARC(use_socket=True, socket_params=dict(host="server"))
+    assert calc.use_socket is True
+    assert calc.socket_params["host"] == "server"

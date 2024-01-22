@@ -11,6 +11,7 @@ import numpy as np
 from ase.atoms import Atoms
 from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
 from ase.units import Bohr, GPa, Hartree, eV
+from ase.utils import IOContext
 
 from .api import SparcAPI
 from .io import SparcBundle
@@ -44,6 +45,7 @@ default_socket_params = {
     "host": "localhost",  # Name of the socket host (only outgoing)
     "port": -1,  # Port number of the outgoing socket
     "allow_restart": True,  # If True, allow the socket server to restart
+    "server_only": False,  # Start the calculator as a server
 }
 
 
@@ -54,7 +56,7 @@ def generate_random_socket_name(prefix="sparc_", length=6):
     return prefix + random_chars
 
 
-class SPARC(FileIOCalculator):
+class SPARC(FileIOCalculator, IOContext):
     """Calculator interface to the SPARC codes via the FileIOCalculator"""
 
     implemented_properties = ["energy", "forces", "fermi", "stress"]
@@ -81,7 +83,8 @@ class SPARC(FileIOCalculator):
         sparc_doc_path=None,
         check_version=False,
         keep_old_files=False,
-        socket_params=default_socket_params,
+        use_socket=False,
+        socket_params={},
         **kwargs,
     ):
         """
@@ -102,6 +105,8 @@ class SPARC(FileIOCalculator):
             keep_old_files (bool): Whether older SPARC output files should be preserved.
                                    If True, SPARC program will rewrite the output files
                                    with suffix like .out_01, .out_02 etc
+            use_socket (bool): Main switch for the socket mode. Alias for socket_params["use_socket"]
+            socket_params (dict): Parameters to control the socket behavior. Please check default_socket_params
             **kwargs: Additional keyword arguments to set up the calculator.
         """
         FileIOCalculator.__init__(
@@ -144,6 +149,8 @@ class SPARC(FileIOCalculator):
         # Partially update the socket params, so that when setting use_socket = True,
         # User can directly use the socket client
         self.socket_params = default_socket_params.copy()
+        # Everything in argument socket_params will overwrite
+        self.socket_params.update(use_socket=use_socket)
         self.socket_params.update(**socket_params)
 
         # TODO: check parameter compatibility with socket params
@@ -162,7 +169,10 @@ class SPARC(FileIOCalculator):
             # self.in_socket is actually a SocketServer
             socket_name = generate_random_socket_name()
             print(f"Creating a socket server with name {socket_name}")
-            self.in_socket = SPARCSocketServer(unixsocket=socket_name)
+            self.in_socket = SPARCSocketServer(
+                unixsocket=socket_name,
+                log=self.openfile(self._indir("socket.log"), mode="w"),
+            )
         # TODO: add the outbound socket client
         # TODO: we may need to check an actual socket server at host:port?!
         # At this stage, we will need to wait the actual client to join
@@ -170,6 +180,12 @@ class SPARC(FileIOCalculator):
     @property
     def use_socket(self):
         return self.socket_params["use_socket"]
+
+    def _indir(self, ext, label=None, occur=0, d_format="{:02d}"):
+        # TODO: what if no sparcbundle
+        return self.sparc_bundle._indir(
+            ext=ext, label=label, occur=occur, d_format=d_format
+        )
 
     @property
     def in_socket_filename(self):
@@ -286,15 +302,13 @@ class SPARC(FileIOCalculator):
         return f"{self.command} {extras}"
 
     # TODO: are the properties implemented correctly?
-    def calculate(self, atoms=None,
-                  properties=["energy"],
-                  system_changes=all_changes):
+    def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         """Perform a calculation step"""
         # Check if the user accidentally provides atoms unit cell without vacuum
         if self.use_socket:
-            self._calculate_with_socket(atoms=atoms,
-                                        properties=properties,
-                                        system_changes=system_changes)
+            self._calculate_with_socket(
+                atoms=atoms, properties=properties, system_changes=system_changes
+            )
             return
         if atoms and np.any(atoms.cell.cellpar()[:3] == 0):
             msg = "Cannot setup SPARC calculation because at least one of the lattice dimension is zero!"
@@ -333,19 +347,36 @@ class SPARC(FileIOCalculator):
         # Ensure there is at least a SPARC process & socket component
         # TODO: wrap them up in another function
         if self.process is None:
+            if self.detect_socket_compatibility() is not True:
+                # TODO: change exception eype
+                raise RuntimeError(
+                    "Your sparc binary is not compiled with socket support!"
+                )
             self.write_input(atoms)
             cmds = self._make_command(
                 extras=f"-socket {self.in_socket_filename}:unix -name {self.label}"
             )
+            # Use the IOContext class's lazy context manager
+            # TODO what if self.log is None
+            fd_log = self.openfile(self.log)
             self.process = subprocess.Popen(
-                cmds, shell=True, cwd=self.directory, universal_newlines=True, bufsize=0
+                cmds,
+                shell=True,
+                stdout=fd_log,
+                stderr=fd_log,
+                cwd=self.directory,
+                universal_newlines=True,
+                bufsize=0,
             )
             self.pid = self.process.pid
+        print("ATOMS:  ", atoms)
+        print("SELF-ATOMS:  ", self.atoms)
         # Do one calculation
         # TODO make sure sorting is actually there?!
         # TODO: check if sorting is present, or is it new atoms?
         ret = self.in_socket.calculate(atoms[self.sort])
-        print(ret)
+        # TODO: check ret results if they match the file results
+        # print(ret)
         # self.in_socket.calculate(atoms[self.sort])
         # self._ensure_socket_process(atoms)
         # Do one step with socket
