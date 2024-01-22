@@ -52,6 +52,21 @@ class SPARCSocketServer(SocketServer):
     def socket_filename(self):
         return self.serversocket.getsockname()
 
+    def _accept(self):
+        """Use the SPARCProtocol instead"""
+        super()._accept()
+        old_protocol = self.protocol
+        self.protocol = SPARCProtocol(self.clientsocket,
+                                      txt=old_protocol.log)
+        return
+
 
 class SPARCSocketClient(SocketClient):
-    pass
+    def __init__(self, host='localhost', port=None,
+                 unixsocket=None, timeout=None, log=None, comm=None):
+        """Reload the socket client and use SPARCProtocol"""
+        super().__init__(host=host, port=port, unixsocket=unixsocket,
+                         timeout=timeout, log=log, comm=comm)
+        sock = self.protocol.socket
+        self.protocol = SPARCProtocol(sock, txt=log)
+
