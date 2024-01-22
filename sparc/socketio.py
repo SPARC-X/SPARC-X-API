@@ -1,22 +1,27 @@
 """A i-PI compatible socket protocol implemented in SPARC
 """
-import numpy as np
 import os
 import socket
-from ase.calculators.socketio import IPIProtocol, SocketServer, SocketClient
-from ase.calculators.socketio import actualunixsocketname
+
+import numpy as np
+from ase.calculators.socketio import (
+    IPIProtocol,
+    SocketClient,
+    SocketServer,
+    actualunixsocketname,
+)
 
 
 class SPARCProtocol(IPIProtocol):
-    """Extending the i-PI protocol to support extra routines
-    """
+    """Extending the i-PI protocol to support extra routines"""
+
     def send_string(self, msg, msglen=None):
-        self.log('  send string', repr(msg))
+        self.log("  send string", repr(msg))
         # assert msg in self.statements, msg
         if msglen is None:
             msglen = len(msg)
         assert msglen >= len(msg)
-        msg = msg.encode('ascii').ljust(msglen)
+        msg = msg.encode("ascii").ljust(msglen)
         self.send(msglen, np.int32)
         self.socket.sendall(msg)
         return
@@ -32,9 +37,9 @@ class SPARCProtocol(IPIProtocol):
         msg = self.status()
         # TODO: see how NEEDINIT works
         # if msg == 'NEEDINIT':
-            # self.sendinit()
-            # msg = self.status()
-        assert msg == 'READY', msg
+        # self.sendinit()
+        # msg = self.status()
+        assert msg == "READY", msg
         # Send message
         self.sendmsg("SETPARAM")
         # Send name
@@ -44,10 +49,11 @@ class SPARCProtocol(IPIProtocol):
         # After this step, socket client should return READY
         return
 
-    
+
 class SPARCSocketServer(SocketServer):
     """We only implement the unix socket version due to simplicity"""
-    #TODO: guard cases for non-unix sockets
+
+    # TODO: guard cases for non-unix sockets
     @property
     def socket_filename(self):
         return self.serversocket.getsockname()
@@ -56,17 +62,30 @@ class SPARCSocketServer(SocketServer):
         """Use the SPARCProtocol instead"""
         super()._accept()
         old_protocol = self.protocol
-        self.protocol = SPARCProtocol(self.clientsocket,
-                                      txt=old_protocol.log)
+        # Swap the protocol
+        if old_protocol:
+            self.protocol = SPARCProtocol(self.clientsocket, txt=self.log)
         return
 
 
 class SPARCSocketClient(SocketClient):
-    def __init__(self, host='localhost', port=None,
-                 unixsocket=None, timeout=None, log=None, comm=None):
+    def __init__(
+        self,
+        host="localhost",
+        port=None,
+        unixsocket=None,
+        timeout=None,
+        log=None,
+        comm=None,
+    ):
         """Reload the socket client and use SPARCProtocol"""
-        super().__init__(host=host, port=port, unixsocket=unixsocket,
-                         timeout=timeout, log=log, comm=comm)
+        super().__init__(
+            host=host,
+            port=port,
+            unixsocket=unixsocket,
+            timeout=timeout,
+            log=log,
+            comm=comm,
+        )
         sock = self.protocol.socket
         self.protocol = SPARCProtocol(sock, txt=log)
-

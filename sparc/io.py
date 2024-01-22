@@ -32,7 +32,7 @@ from .sparc_parsers.static import _add_cell_info, _read_static
 from .utils import deprecated, locate_api, string2index
 
 # from .sparc_parsers.ion import read_ion, write_ion
-defaultAPI = SparcAPI()
+defaultAPI = locate_api()
 
 
 class SparcBundle:
@@ -321,6 +321,9 @@ class SparcBundle:
 
         _write_ion(self._indir(".ion"), data_dict, validator=self.validator)
         _write_inpt(self._indir(".inpt"), data_dict, validator=self.validator)
+        # Update the sorting information
+        ion_dict = _read_ion(self._indir(".ion"))["ion"]
+        self.sorting = ion_dict.get("sorting", None)
         return
 
     def read_raw_results(self, include_all_files=False):

@@ -150,6 +150,10 @@ def test_write_ion_inpt():
 
         sp = SparcBundle(directory=tmpdir, mode="w")
         sp._write_ion_and_inpt(atoms, direct=True, copy_psp=False)
+        assert sp.sorting is not None
+        print(sp.sorting)
+        assert np.isclose(sp.sorting["sort"], np.arange(0, 64)).all()
+        assert np.isclose(sp.sorting["resort"], np.arange(0, 64)).all()
     # Copy psp should have the psps available
 
 
@@ -286,9 +290,13 @@ def test_bundle_nh3():
         tmpdir = Path(tmpdir)
         sb = SparcBundle(directory=tmpdir, mode="w")
         sb._write_ion_and_inpt(atoms=nh3)
+        assert sb.sorting is not None
+        assert tuple(sb.sorting["sort"]) == (1, 2, 3, 0)
+        assert tuple(sb.sorting["resort"]) == (3, 0, 1, 2)
         # Read back, the sorting should remain the same
         sb2 = SparcBundle(directory=tmpdir, mode="r")
         atoms = sb2.convert_to_ase()
+        assert tuple(sb2.sorting["sort"]) == (1, 2, 3, 0)
         assert tuple(sb2.sorting["resort"]) == (3, 0, 1, 2)
         assert tuple(atoms.get_chemical_symbols()) == ("N", "H", "H", "H")
         assert atoms.constraints[0].index[0] == 0

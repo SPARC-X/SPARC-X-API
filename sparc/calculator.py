@@ -1,5 +1,7 @@
 import datetime
 import os
+import random
+import string
 import subprocess
 import tempfile
 from pathlib import Path
@@ -9,19 +11,14 @@ import numpy as np
 from ase.atoms import Atoms
 from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
 from ase.units import Bohr, GPa, Hartree, eV
-# from ase.calculators.socketio import SocketServer, SocketClient
-
-
-import random
-import string
-
-
-
 
 from .api import SparcAPI
 from .io import SparcBundle
-from .utils import _find_default_sparc, deprecated, h2gpts, locate_api
 from .socketio import SPARCProtocol, SPARCSocketClient, SPARCSocketServer
+from .utils import _find_default_sparc, deprecated, h2gpts, locate_api
+
+# from ase.calculators.socketio import SocketServer, SocketClient
+
 
 # Below are a list of ASE-compatible calculator input parameters that are
 # in Angstrom/eV units
@@ -43,17 +40,19 @@ sparc_python_inputs = [
 # 4) use_socket = True, server_only = True --> Act as a SocketServer
 # We do not support outgoing unix socket because the limited user cases
 default_socket_params = {
-    "use_socket": False,        # Main switch to use socket or not
-    "host": "localhost",        # Name of the socket host (only outgoing)
-    "port": -1,                 # Port number of the outgoing socket
-    "allow_restart": True,      # If True, allow the socket server to restart
+    "use_socket": False,  # Main switch to use socket or not
+    "host": "localhost",  # Name of the socket host (only outgoing)
+    "port": -1,  # Port number of the outgoing socket
+    "allow_restart": True,  # If True, allow the socket server to restart
 }
 
-#TODO: maybe better move to socketio
+
+# TODO: maybe better move to socketio
 def generate_random_socket_name(prefix="sparc_", length=6):
     """Generate a random socket name with the given prefix and a specified length of random hex characters."""
-    random_chars = ''.join(random.choices(string.hexdigits.lower(), k=length))
+    random_chars = "".join(random.choices(string.hexdigits.lower(), k=length))
     return prefix + random_chars
+
 
 class SPARC(FileIOCalculator):
     """Calculator interface to the SPARC codes via the FileIOCalculator"""
@@ -119,8 +118,7 @@ class SPARC(FileIOCalculator):
         if label is None:
             label = "SPARC" if restart is None else None
 
-        self.validator = locate_api(json_file=sparc_json_file,
-                                    doc_path=sparc_doc_path)
+        self.validator = locate_api(json_file=sparc_json_file, doc_path=sparc_doc_path)
         self.sparc_bundle = SparcBundle(
             directory=Path(self.directory),
             mode="w",
@@ -168,7 +166,6 @@ class SPARC(FileIOCalculator):
         # TODO: add the outbound socket client
         # TODO: we may need to check an actual socket server at host:port?!
         # At this stage, we will need to wait the actual client to join
-        
 
     @property
     def use_socket(self):
@@ -182,8 +179,7 @@ class SPARC(FileIOCalculator):
             return ""
         else:
             return self.in_socket.socket_filename
-            
-        
+
     @property
     def directory(self):
         if hasattr(self, "sparc_bundle"):
@@ -289,8 +285,6 @@ class SPARC(FileIOCalculator):
             self.command = command_env
         return f"{self.command} {extras}"
 
-    
-
     # TODO: are the properties implemented correctly?
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         """Perform a calculation step"""
@@ -317,10 +311,11 @@ class SPARC(FileIOCalculator):
                 atoms.set_initial_magnetic_moments(
                     self.atoms.get_initial_magnetic_moments()
                 )
-    
-    def _calculate_with_socket(self, atoms=None, properties=["energy"], system_changes=all_changes):
-        """Perform one socket single point calculation
-        """
+
+    def _calculate_with_socket(
+        self, atoms=None, properties=["energy"], system_changes=all_changes
+    ):
+        """Perform one socket single point calculation"""
         # TODO: remove duplicate information to another section
         if atoms and np.any(atoms.cell.cellpar()[:3] == 0):
             msg = "Cannot setup SPARC calculation because at least one of the lattice dimension is zero!"
@@ -332,11 +327,12 @@ class SPARC(FileIOCalculator):
         # TODO: wrap them up in another function
         if self.process is None:
             self.write_input(atoms)
-            cmds = self._make_command(extras=f"-socket {self.in_socket_filename}:unix -name {self.label}")
-            self.process = subprocess.Popen(cmds, shell=True,
-                                            cwd=self.directory,
-                                            universal_newlines=True,
-                                            bufsize=0)
+            cmds = self._make_command(
+                extras=f"-socket {self.in_socket_filename}:unix -name {self.label}"
+            )
+            self.process = subprocess.Popen(
+                cmds, shell=True, cwd=self.directory, universal_newlines=True, bufsize=0
+            )
             self.pid = self.process.pid
         # Do one calculation
         # TODO make sure sorting is actually there?!
@@ -348,7 +344,7 @@ class SPARC(FileIOCalculator):
         # TODO: wrap them up in another function
         # self._execute_socket_step()
         # The results are parsed from file outputs (.static + .out)
-        self.read_results()     #
+        self.read_results()  #
         # TODO: depending on the context, transfer data to the outgoing socket
         return
 
