@@ -28,6 +28,7 @@ def test_h_parameter():
         calc = SPARC(h=0.2, ECUT=25, directory=tmpdir)
         calc.write_input(atoms)
         filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "MESH_SPACING:" not in filecontent
         assert "FD_GRID:" not in filecontent
         assert "ECUT:" in filecontent
 
@@ -36,6 +37,17 @@ def test_h_parameter():
         calc.write_input(atoms)
         filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
         assert "FD_GRID: 25 25 25" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(gpts=[25, 25, 25], directory=tmpdir)
+        calc.write_input(atoms)
+        filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
+        assert "FD_GRID: 25 25 25" in filecontent
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(h=0.25, gpts=[25, 25, 25], directory=tmpdir)
+        with pytest.raises(Exception):
+            calc.write_input(atoms)
 
 
 def test_xc_parameter():

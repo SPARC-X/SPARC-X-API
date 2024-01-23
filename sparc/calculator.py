@@ -66,7 +66,7 @@ class SPARC(FileIOCalculator, IOContext):
     default_params = {
         "xc": "pbe",
         "kpts": (1, 1, 1),
-        "h": 0.25,  # Angstrom
+        "h": 0.25,  # Angstrom equivalent to MESH_SPACING = 0.47
     }
 
     def __init__(
@@ -172,8 +172,7 @@ class SPARC(FileIOCalculator, IOContext):
             self.in_socket = SPARCSocketServer(
                 unixsocket=socket_name,
                 # TODO: make the log fd persistent
-                log=self.openfile(self._indir(ext=".log",
-                                              label="socket"), mode="w"),
+                log=self.openfile(self._indir(ext=".log", label="socket"), mode="w"),
             )
         # TODO: add the outbound socket client
         # TODO: we may need to check an actual socket server at host:port?!
@@ -352,7 +351,9 @@ class SPARC(FileIOCalculator, IOContext):
         # TODO: make pbc also checked
         if "numbers" in system_changes:
             if not self.socket_params["allow_restart"]:
-                raise RuntimeError("Chemical symbols of input atoms have changed! Please set socket_params['allow_restart'] = True if you want to continue")
+                raise RuntimeError(
+                    "Chemical symbols of input atoms have changed! Please set socket_params['allow_restart'] = True if you want to continue"
+                )
             # TODO: wrap the closing in another function
             if self.process is not None:
                 print("Chemical formula changed. Restarting socket process")
@@ -396,6 +397,7 @@ class SPARC(FileIOCalculator, IOContext):
         # TODO make sure sorting is actually there?!
         # TODO: check if sorting is present, or is it new atoms?
         ret = self.in_socket.calculate(atoms[self.sort])
+        print(ret)
         # TODO: check ret results if they match the file results
         # print(ret)
         # self.in_socket.calculate(atoms[self.sort])
@@ -640,9 +642,15 @@ class SPARC(FileIOCalculator, IOContext):
         validator = self.validator
         valid_params = {}
         special_params = self.default_params.copy()
+        # User input gpts will overwrite default h
+        # but user cannot put h and gpts both
+        if "gpts" in kwargs:
+            special_params.pop("h", None)
         # SPARC API is case insensitive
         for key, value in kwargs.items():
             if key in self.special_inputs:
+                # Special case: ignore h when gpts provided
+
                 special_params[key] = value
             else:
                 key = key.upper()
@@ -862,7 +870,8 @@ class SPARC(FileIOCalculator, IOContext):
             spin_factor = 1
 
         if "MESH_SPACING" in kwargs:
-            kwargs["h"] = kwargs.pop("MESH_SPACING")
+            # MESH_SPACING: Bohr; h: angstrom
+            kwargs["h"] = kwargs.pop("MESH_SPACING") / Bohr
         npoints = np.product(self.interpret_grid_input(atoms, **kwargs))
 
         kpt_grid = self.interpret_kpoint_input(atoms, **kwargs)
