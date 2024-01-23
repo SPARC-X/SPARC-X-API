@@ -253,6 +253,8 @@ class SPARC(FileIOCalculator, IOContext):
         so we add a zero magmoms to the atoms for comparison if it does not exist.
 
         reading a result from the .out file has only precision up to 10 digits
+
+        
         """
         atoms_copy = atoms.copy()
         if "initial_magmoms" not in atoms_copy.arrays:
@@ -262,7 +264,10 @@ class SPARC(FileIOCalculator, IOContext):
                 ]
                 * len(atoms_copy)
             )
-        # First we check for default changes
+
+        # TODO: 0. check pbc
+
+        # TODO: 1. check position wrap in different BC settings
         system_changes = FileIOCalculator.check_state(self, atoms_copy, tol=tol)
         # A few hard-written rules. Wrapping should only affect the position
         if "positions" in system_changes:
@@ -308,17 +313,17 @@ class SPARC(FileIOCalculator, IOContext):
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         """Perform a calculation step"""
         # Check if the user accidentally provides atoms unit cell without vacuum
-        if self.use_socket:
-            self._calculate_with_socket(
-                atoms=atoms, properties=properties, system_changes=system_changes
-            )
-            return
         if atoms and np.any(atoms.cell.cellpar()[:3] == 0):
             msg = "Cannot setup SPARC calculation because at least one of the lattice dimension is zero!"
             if any([bc_ is False for bc_ in atoms.pbc]):
                 msg += " Please add a vacuum in the non-periodic direction of your input structure."
             raise ValueError(msg)
         Calculator.calculate(self, atoms, properties, system_changes)
+        if self.use_socket:
+            self._calculate_with_socket(
+                atoms=atoms, properties=properties, system_changes=system_changes
+            )
+            return
         self.write_input(self.atoms, properties, system_changes)
         self.execute()
         self.read_results()
@@ -341,30 +346,7 @@ class SPARC(FileIOCalculator, IOContext):
     ):
         """Perform one socket single point calculation"""
         # TODO: remove duplicate information to another section
-        if atoms and np.any(atoms.cell.cellpar()[:3] == 0):
-            msg = "Cannot setup SPARC calculation because at least one of the lattice dimension is zero!"
-            if any([bc_ is False for bc_ in atoms.pbc]):
-                msg += " Please add a vacuum in the non-periodic direction of your input structure."
-            raise ValueError(msg)
-        # import pdb; pdb.set_trace()
-        Calculator.calculate(self, atoms, properties, system_changes)
-        # TODO: make pbc also checked
-        if "numbers" in system_changes:
-            if not self.socket_params["allow_restart"]:
-                raise RuntimeError(
-                    "Chemical symbols of input atoms have changed! Please set socket_params['allow_restart'] = True if you want to continue"
-                )
-            # TODO: wrap the closing in another function
-            if self.process is not None:
-                print("Chemical formula changed. Restarting socket process")
-                self.in_socket.close()
-                self.in_socket = None
-                # TODO: how about cleaning up old process and socket file?
-                self.ensure_socket()
-                # TODO: make sure old process exits
-                self.process = None
-                self.pid = None
-        # print(system_changes, properties)
+        print(system_changes)
         # Ensure there is at least a SPARC process & socket component
         # TODO: wrap them up in another function
         if self.process is None:
@@ -374,6 +356,42 @@ class SPARC(FileIOCalculator, IOContext):
                     "Your sparc binary is not compiled with socket support!"
                 )
             # TODO: better way to wrap the sorting reset
+            self.write_input(atoms)
+            cmds = self._make_command(
+                extras=f"-socket {self.in_socket_filename}:unix -name {self.label}"
+            )
+            # Use the IOContext class's lazy context manager
+            # TODO what if self.log is None
+            fd_log = self.openfile(self.log)
+            self.process = subprocess.Popen(
+                cmds,
+                shell=True,
+                stdout=fd_log,
+                stderr=fd_log,
+                cwd=self.directory,
+                universal_newlines=True,
+                bufsize=0,
+            )
+            self.pid = self.process.pid
+        elif ("numbers" in system_changes) or ("pbc" in system_changes):
+            if not self.socket_params["allow_restart"]:
+                raise RuntimeError(
+                    (
+                    f"Input atoms have changes {system_changes} and the "
+                    "calculator needs to be restarted!\n"
+                    "Please set socket_params['allow_restart'] = True "
+                    "if you want to continue"
+                    )
+                )
+            # TODO: wrap the closing in another function
+            print("Atoms chemical formula and/or pbc changed. Restarting the socket process")
+            self.in_socket.close()
+            self.in_socket = None
+            # TODO: how about cleaning up old process and socket file?
+            self.ensure_socket()
+            # TODO: make sure old process exits
+            self.process = None
+            self.pid = None
             self.write_input(atoms)
             cmds = self._make_command(
                 extras=f"-socket {self.in_socket_filename}:unix -name {self.label}"
