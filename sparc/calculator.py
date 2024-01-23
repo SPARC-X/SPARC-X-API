@@ -11,12 +11,15 @@ import numpy as np
 from ase.atoms import Atoms
 from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
 from ase.units import Bohr, GPa, Hartree, eV
+import psutil
+import signal
 from ase.utils import IOContext
 
 from .api import SparcAPI
 from .io import SparcBundle
 from .socketio import SPARCProtocol, SPARCSocketClient, SPARCSocketServer
 from .utils import _find_default_sparc, deprecated, h2gpts, locate_api
+from .utils import time_limit, _find_mpi_process, _get_slurm_jobid, _locate_slurm_step, _slurm_signal
 
 # from ase.calculators.socketio import SocketServer, SocketClient
 
@@ -277,6 +280,7 @@ class SPARC(FileIOCalculator, IOContext):
                 system_changes.remove("positions")
         return system_changes
 
+    
     def _make_command(self, extras=""):
         """Use $ASE_SPARC_COMMAND or self.command to determine the command
         as a last resort, if `sparc` exists in the PATH, use that information
@@ -349,49 +353,29 @@ class SPARC(FileIOCalculator, IOContext):
         print(system_changes)
         # Ensure there is at least a SPARC process & socket component
         # TODO: wrap them up in another function
+        
+        # TODO: merge this part 
         if self.process is None:
             if self.detect_socket_compatibility() is not True:
-                # TODO: change exception eype
                 raise RuntimeError(
                     "Your sparc binary is not compiled with socket support!"
                 )
-            # TODO: better way to wrap the sorting reset
-            self.write_input(atoms)
-            cmds = self._make_command(
-                extras=f"-socket {self.in_socket_filename}:unix -name {self.label}"
-            )
-            # Use the IOContext class's lazy context manager
-            # TODO what if self.log is None
-            fd_log = self.openfile(self.log)
-            self.process = subprocess.Popen(
-                cmds,
-                shell=True,
-                stdout=fd_log,
-                stderr=fd_log,
-                cwd=self.directory,
-                universal_newlines=True,
-                bufsize=0,
-            )
-            self.pid = self.process.pid
-        elif ("numbers" in system_changes) or ("pbc" in system_changes):
-            if not self.socket_params["allow_restart"]:
-                raise RuntimeError(
-                    (
-                    f"Input atoms have changes {system_changes} and the "
-                    "calculator needs to be restarted!\n"
-                    "Please set socket_params['allow_restart'] = True "
-                    "if you want to continue"
+
+        if ("numbers" in system_changes) or ("pbc" in system_changes):
+            if self.process is not None:
+                if not self.socket_params["allow_restart"]:
+                    raise RuntimeError(
+                        (
+                            f"Input atoms have changes {system_changes} and the "
+                            "calculator needs to be restarted!\n"
+                            "Please set socket_params['allow_restart'] = True "
+                            "if you want to continue"
+                        )
                     )
-                )
-            # TODO: wrap the closing in another function
-            print("Atoms chemical formula and/or pbc changed. Restarting the socket process")
-            self.in_socket.close()
-            self.in_socket = None
-            # TODO: how about cleaning up old process and socket file?
+                self.close()
+        
+        if self.process is None:
             self.ensure_socket()
-            # TODO: make sure old process exits
-            self.process = None
-            self.pid = None
             self.write_input(atoms)
             cmds = self._make_command(
                 extras=f"-socket {self.in_socket_filename}:unix -name {self.label}"
@@ -564,6 +548,70 @@ class SPARC(FileIOCalculator, IOContext):
             raise RuntimeError(msg)
 
         return
+
+    def close(self):
+        """Close the socket communication, the SPARC process etc"""
+        if self.in_socket is not None:
+            self.in_socket.close()
+
+        # In most cases if in_socket is closed, the SPARC process should also exit
+        with time_limit(5):
+            ret = self.process.poll()
+        if ret is None:
+            print("Force terminate the sparc process!")
+            self._send_mpi_signal(signal.SIGKILL)
+        else:
+            print(f"SPARC process exists with code {ret}")
+
+        #TODO: check if in_socket should be merged
+        self.in_socket = None
+        self._reset_process()
+
+    def _send_mpi_signal(self, sig):
+        """Send signal to the mpi process within self.process
+        If the process cannot be found, return without affecting the state
+
+        This is a method taken from the vasp_interactive project
+        """
+        try:
+            pid = self.process.pid
+            psutil_proc = psutil.Process(pid)
+        except Exception as e:
+            warn("SPARC process no longer exists. Will reset the calculator.")
+            self._reset_process()
+            return
+
+        if (self.pid == pid) and getattr(self, "mpi_match", None) is not None:
+            match = self.mpi_match
+        else:
+            self.pid = pid
+            match = _find_mpi_process(pid)
+            self.mpi_match = match
+        if (match["type"] is None) or (match["process"] is None):
+            warn(
+                "Cannot find the mpi process or you're using different ompi wrapper. Will not send stop signal to mpi."
+            )
+            return
+        elif match["type"] == "mpi":
+            mpi_process = match["process"]
+            mpi_process.send_signal(sig)
+        elif match["type"] == "slurm":
+            slurm_step = match["process"]
+            _slurm_signal(slurm_step, sig)
+        else:
+            raise ValueError("Unsupported process type!")
+        return
+
+    def _reset_process(self):
+        """Reset the record for process in the calculator.
+        Useful if the process is missing or reset the calculator.
+        """
+        # Reset process tracker
+        self.process = None
+        self.pid = None
+        if hasattr(self, "mpi_match"):
+            self.mpi_match = None
+            self.mpi_state = None
 
     @property
     def raw_results(self):
