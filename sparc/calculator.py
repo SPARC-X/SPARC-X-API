@@ -113,6 +113,10 @@ class SPARC(FileIOCalculator, IOContext):
             socket_params (dict): Parameters to control the socket behavior. Please check default_socket_params
             **kwargs: Additional keyword arguments to set up the calculator.
         """
+        self.validator = locate_api(json_file=sparc_json_file, doc_path=sparc_doc_path)
+        self.valid_params = {}
+        self.special_params = {}
+        self.inpt_state = {}
         FileIOCalculator.__init__(
             self,
             restart=None,
@@ -127,7 +131,6 @@ class SPARC(FileIOCalculator, IOContext):
         if label is None:
             label = "SPARC" if restart is None else None
 
-        self.validator = locate_api(json_file=sparc_json_file, doc_path=sparc_doc_path)
         self.sparc_bundle = SparcBundle(
             directory=Path(self.directory),
             mode="w",
@@ -142,7 +145,8 @@ class SPARC(FileIOCalculator, IOContext):
 
         # Sanitize the kwargs by converting lower -- > upper
         # and perform type check
-        self.valid_params, self.special_params = self._sanitize_kwargs(kwargs)
+
+        # self._sanitize_kwargs(kwargs)
         self.log = self.directory / log if log is not None else None
         if check_version:
             self.sparc_version = self.detect_sparc_version()
@@ -355,16 +359,55 @@ class SPARC(FileIOCalculator, IOContext):
                                   "but atoms positions are out of domain. "
                                   "SPARC calculator cannot continue. "
                                   "Please consider using atoms.center() to reposition your atoms."))
+        # Additionally, we should not allow use to calculate pbc=False with CALC_STRESS=1
+        if all([not bc_ for bc_ in atoms.pbc]): # All Dirichlet
+            calc_stress = self.parameters.get("calc_stress", False)
+            if calc_stress:
+                # TODO: update exception type
+                raise ValueError("Cannot set CALC_STRESS=1 for non-periodic system in SPARC!")
         return
 
     # TODO: are the properties implemented correctly?
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         
         """Perform a calculation step"""
+        # TODO: move to utils
+        def compare_dict(d1, d2):
+            """Helper function to compare dictionaries"""
+            # Use symmetric difference to find keys which aren't shared
+            # for python 2.7 compatibility
+            if set(d1.keys()) ^ set(d2.keys()):
+                return False
+
+            # Check for differences in values
+            for key, value in d1.items():
+                if np.any(value != d2[key]):
+                    return False
+            return True
         # import pdb; pdb.set_trace()
         self.check_input_atoms(atoms)
         Calculator.calculate(self, atoms, properties, system_changes)
-        print("Changes: ", system_changes)
+        _new_inpt_state = self._generate_inpt_state(atoms, properties)
+        _old_inpt_state = self.inpt_state
+        if set(_new_inpt_state.keys()) != set(_old_inpt_state.keys()):
+            system_changes.append("parameters")
+        else:
+            for key, old_val in _old_inpt_state.items():
+                new_val = _new_inpt_state[key]
+                # TODO: clean up bool
+                if isinstance(new_val, (str, bool)):
+                    if new_val != old_val:
+                        system_changes.append("parameters")
+                        break
+                elif isinstance(new_val, (int, float)):
+                    if not np.isclose(new_val, old_val):
+                        system_changes.append("parameters")
+                        break
+                elif isinstance(new_val, (list, np.ndarray)):
+                    if not np.isclose(new_val, old_val).all():
+                        system_changes.append("parameters")
+                        break
+        
         if self.use_socket:
             self._calculate_with_socket(
                 atoms=atoms, properties=properties, system_changes=system_changes
@@ -404,12 +447,12 @@ class SPARC(FileIOCalculator, IOContext):
                     "Your sparc binary is not compiled with socket support!"
                 )
 
-        if ("numbers" in system_changes) or ("pbc" in system_changes):
+        if ("numbers" in system_changes) or ("pbc" in system_changes) or ("parameters" in system_changes):
             if self.process is not None:
                 if not self.socket_params["allow_restart"]:
                     raise RuntimeError(
                         (
-                            f"Input atoms have changes {system_changes} and the "
+                            f"System has changed {system_changes} and the "
                             "calculator needs to be restarted!\n"
                             "Please set socket_params['allow_restart'] = True "
                             "if you want to continue"
@@ -460,7 +503,9 @@ class SPARC(FileIOCalculator, IOContext):
         # self._execute_socket_step()
         # The results are parsed from file outputs (.static + .out)
         self.read_results()  #
-        # TODO: depending on the context, transfer data to the outgoing socket
+        assert np.isclose(ret["energy"], self.results["energy"]), "Energy values from socket communication and output file are different! Please contact the developers."
+        assert np.isclose(ret["forces"][self.resort], self.results["forces"]).all(), "Force values from socket communication and output file are different! Please contact the developers."
+        
         return
 
     def get_stress(self, atoms=None):
@@ -521,13 +566,10 @@ class SPARC(FileIOCalculator, IOContext):
                 "You should provide at least one of ECUT, MESH_SPACING or FD_GRID."
             )
 
-    def write_input(self, atoms, properties=[], system_changes=[]):
-        """Create input files via SparcBundle
-        Will use the self.keep_sold_files options to keep old output files
-        like .out_01, .out_02 etc
+    def _generate_inpt_state(self, atoms, properties=[]):
+        """Return a key:value pair to be written to inpt file
+        This is an immutable dict as the ground truth
         """
-        FileIOCalculator.write_input(self, atoms, properties, system_changes)
-
         converted_params = self._convert_special_params(atoms=atoms)
         input_parameters = converted_params.copy()
         input_parameters.update(self.valid_params)
@@ -541,6 +583,18 @@ class SPARC(FileIOCalculator, IOContext):
 
         self._check_input_exclusion(input_parameters, atoms=atoms)
         self._check_minimal_input(input_parameters)
+        return input_parameters
+        
+        
+    def write_input(self, atoms, properties=[], system_changes=[]):
+        """Create input files via SparcBundle
+        Will use the self.keep_sold_files options to keep old output files
+        like .out_01, .out_02 etc
+        """
+        FileIOCalculator.write_input(self, atoms, properties, system_changes)
+        input_parameters = self._generate_inpt_state(atoms,
+                                                     properties=properties)
+        
 
         # TODO: make sure the sorting reset is justified (i.e. what about restarting?)
         self.sparc_bundle.sorting = None
@@ -569,6 +623,7 @@ class SPARC(FileIOCalculator, IOContext):
                     [f.suffix.startswith(p) for p in output_patterns]
                 ):
                     os.remove(f)
+        self.inpt_state = input_parameters
         return
 
     def execute(self):
@@ -766,32 +821,59 @@ class SPARC(FileIOCalculator, IOContext):
             compatibility = "-socket" in output
         return compatibility
 
-    def _sanitize_kwargs(self, kwargs):
-        """Convert known parameters from"""
+    def set(self, **kwargs):
+        """Overwrite the initial parameters"""
+        self._sanitize_kwargs(**kwargs)
+        set_params = {}
+        set_params.update(self.special_params)
+        set_params.update(self.valid_params)
+        changed = super().set(**set_params)
+        if changed != {}:
+            self.reset()
+        return changed
+
+    def _sanitize_kwargs(self, **kwargs):
+        """Convert known parameters from JSON API"""
         validator = self.validator
-        valid_params = {}
-        special_params = self.default_params.copy()
+        if self.special_params == {}:
+            init = True
+            self.special_params = self.default_params.copy()
+        else:
+            init = False
         # User input gpts will overwrite default h
         # but user cannot put h and gpts both
         if "gpts" in kwargs:
-            special_params.pop("h", None)
+            h = self.special_params.pop("h", None)
+            if (h is not None) and (not init):
+                warn(
+                    "Parameter gpts will overwrite previously set parameter h."
+                )
+        elif "h" in kwargs:
+            gpts = self.special_params.pop("gpts", None)
+            if (gpts is not None) and (not init):
+                warn(
+                    "Parameter h will overwrite previously set parameter gpts."
+                )
+        
+        upper_valid_params = set() # Valid SPARC parameters in upper case
         # SPARC API is case insensitive
         for key, value in kwargs.items():
             if key in self.special_inputs:
                 # Special case: ignore h when gpts provided
 
-                special_params[key] = value
+                self.special_params[key] = value
             else:
                 key = key.upper()
-                if key in valid_params:
+                if key in upper_valid_params:
                     warn(
-                        f"Parameter {key} (case-insentivie) appears multiple times in the calculator setup!"
+                        f"Parameter {key} (case-insentive) appears multiple times!"
                     )
                 if validator.validate_input(key, value):
-                    valid_params[key] = value
+                    self.valid_params[key] = value
+                    upper_valid_params.add(key)
                 else:
-                    warn(f"Input parameter {key} does not have a valid value!")
-        return valid_params, special_params
+                    raise ValueError(f"Value {value} for parameter {key} (case-insensitive) is invalid!")
+        return
 
     def _convert_special_params(self, atoms=None):
         """Convert ASE-compatible parameters to SPARC compatible ones

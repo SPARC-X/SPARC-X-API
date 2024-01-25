@@ -341,7 +341,37 @@ def test_incompat_atoms():
     with pytest.raises(ValueError):
         calc.check_input_atoms(atoms)
     
+def test_calc_param_set():
+    """Test if the set method works
+    """
+    from sparc.calculator import SPARC
 
+    # CASE 1: default params
+    calc = SPARC()
+    assert calc.valid_params == {}
+    assert set(calc.special_params.keys()) == set(["xc", "kpts", "h"])
+
+    calc.set(h=0.22)
+    assert "h" in calc.special_params
+
+    calc.set(gpts=[50, 50, 50])
+    assert "h" not in calc.special_params
+    assert "gpts" in calc.special_params
+
+    calc.set(calc_stress=False)
+    assert "CALC_STRESS" in calc.valid_params
+    assert "CALC_STRESS" in calc.parameters
+
+    with pytest.raises(KeyError):
+        # Invalid parameter
+        calc.set(calc_stres=False)
+
+    with pytest.raises(ValueError):
+        calc.set(calc_stress="ok")
+
+    
+    
+    
     
     
     
