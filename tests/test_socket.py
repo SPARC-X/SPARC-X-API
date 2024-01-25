@@ -203,3 +203,99 @@ def test_socket_param_calculator():
     calc = SPARC(use_socket=True, socket_params=dict(host="server"))
     assert calc.use_socket is True
     assert calc.socket_params["host"] == "server"
+
+
+def test_atoms_system_changes(monkeypatch):
+    """Test if change of atoms will cause socket redraw
+    """
+    from sparc.calculator import SPARC, all_changes
+    from ase.atoms import Atom
+    from ase.build import molecule
+    
+    def mock_calculate(self, atoms=None, properties=["energy"],
+                                   system_changes=all_changes):
+        # Mock implementation
+        self.results['energy'] = 0.0
+        self.results['forces'] = [[0, 0, 0]] * len(atoms)
+        self.atoms = atoms.copy()
+        self.atoms.arrays["initial_magmoms"] = [0, ] * len(atoms)
+
+    monkeypatch.setattr(SPARC, "_calculate_with_socket", mock_calculate)
+    
+    calc = SPARC(use_socket=True)
+    # calc._calculate_with_socket = mock_calculate
+
+    # Case 1: change of positions
+    h2o = molecule("H2O", cell=[6, 6, 6], pbc=True)
+    h2o.calc = calc
+    h2o.get_potential_energy()
+    h2o_new = h2o.copy()
+    h2o_new.rattle()
+    changes = calc.check_state(h2o_new)
+    # h2o_new.calc = calc
+    # h2o_new.get_potential_energy()
+    assert set(changes) == set(["positions"])
+
+    # Case 2: change of positions and cell
+    h2o_new.set_cell([8, 8, 8], scale_atoms=True)
+    changes = calc.check_state(h2o_new)
+    assert set(changes) == set(["positions", "cell"])
+
+    # Case 3: change of pbc
+    h2o_new = h2o.copy()
+    h2o_new.pbc = [False, True, False] # arbitrary change
+    changes = calc.check_state(h2o_new)
+    assert set(changes) == set(["pbc"])
+
+    # Case 4: change of numbers
+    h2o_new = h2o.copy()
+    h2o_new += Atom("H", [5, 5, 5])
+    changes = calc.check_state(h2o_new)
+    assert "numbers" in changes
+
+
+def test_atoms_system_changes_real():
+    """Real system changes test
+    """
+    from sparc.calculator import SPARC, all_changes
+    from ase.build import molecule
+    h2o = molecule("H2O", cell=[6, 6, 6], pbc=True)
+    h2o.center()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        calc = SPARC(use_socket=True, directory="test-change")
+        try:
+            can_run = calc.detect_socket_compatibility()
+        except Exception:
+            can_run = False
+        if not can_run:
+            print("Cannot start a sparc calculation with socket. Skip test")
+            pytest.skip()
+
+        assert calc.in_socket is not None
+        infile0 = calc.in_socket_filename
+        assert infile0.startswith("/tmp/ipi_sparc_")
+        calc.close()
+        assert calc.in_socket is None
+        h2o.calc = calc
+        h2o.get_potential_energy()
+        infile1 = calc.in_socket_filename
+        assert infile0 != infile1
+        assert calc.pid is not None
+        old_pid = calc.pid
+        # Case 1: positions change, same socket process
+        h2o.rattle()
+        h2o.get_potential_energy()
+        assert calc.pid == old_pid
+
+        # Case 2: cell and position change, same socket
+        h2o.set_cell([6.05, 6.05, 6.05], scale_atoms=True)
+        h2o.get_potential_energy()
+        assert calc.pid == old_pid
+
+        # Case 3: pbc change, restart
+        h2o.pbc = [False, False, False]
+        h2o.get_potential_energy()
+        assert calc.pid != old_pid
+    
+        calc.close()

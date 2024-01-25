@@ -14,6 +14,8 @@ import tempfile
 from pathlib import Path
 from typing import List, Optional, Union
 from warnings import warn
+import threading
+import _thread
 
 import numpy as np
 
@@ -192,6 +194,45 @@ def time_limit(seconds):
         yield
     finally:
         signal.alarm(0)
+
+class ProcessReturned(Exception):
+    """Simple class for process that has returned"""
+
+    pass
+
+@contextmanager
+def monitor_process(self, interval=0.1):
+    """Usage:
+    try:
+        with monitor_process(process):
+            do_something()
+    except TimeoutException:
+        raise
+    """
+    def signal_handler(signum, frame):
+        raise ProcessReturned(f"Process {self.process.pid} has returned with exit code {self.process.poll()}!")
+    
+    def check_process():
+        while True:
+            if self.process.poll() is not None:
+                # signal.alarm(0)
+                print("The process has exited")
+                self.in_socket.close()
+                print(self.in_socket)
+                signal(signal.SIGALRM)
+                raise ProcessReturned(f"Process {self.process.pid} has returned with exit code {self.process.poll()}!")
+            time.sleep(interval)
+
+    if self.process is None:
+        raise RuntimeError("No process selected!")
+
+    signal.signal(signal.SIGALRM, signal_handler)
+    monitor = threading.Thread(target=check_process)
+    monitor.start()
+    try:
+        yield
+    finally:
+        monitor.join()
 
 def _find_mpi_process(pid, mpi_program="mpirun", sparc_program="sparc"):
     """Recursively search children processes with PID=pid and return the one

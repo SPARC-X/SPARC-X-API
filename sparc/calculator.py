@@ -19,7 +19,8 @@ from .api import SparcAPI
 from .io import SparcBundle
 from .socketio import SPARCProtocol, SPARCSocketClient, SPARCSocketServer
 from .utils import _find_default_sparc, deprecated, h2gpts, locate_api
-from .utils import time_limit, _find_mpi_process, _get_slurm_jobid, _locate_slurm_step, _slurm_signal
+from .utils import time_limit, _find_mpi_process, _get_slurm_jobid
+from .utils import _locate_slurm_step, _slurm_signal, monitor_process
 
 # from ase.calculators.socketio import SocketServer, SocketClient
 
@@ -158,7 +159,7 @@ class SPARC(FileIOCalculator, IOContext):
 
         # TODO: check parameter compatibility with socket params
         self.process = None
-        self.pid = None
+        # self.pid = None
 
         # Initialize the socket settings
         self.in_socket = None
@@ -166,6 +167,8 @@ class SPARC(FileIOCalculator, IOContext):
         self.ensure_socket()
 
     def ensure_socket(self):
+        if not self.directory.is_dir():
+            os.makedirs(self.directory, exist_ok=True)
         if not self.use_socket:
             return
         if self.in_socket is None:
@@ -176,6 +179,7 @@ class SPARC(FileIOCalculator, IOContext):
                 unixsocket=socket_name,
                 # TODO: make the log fd persistent
                 log=self.openfile(self._indir(ext=".log", label="socket"), mode="w"),
+                parent=self,
             )
         # TODO: add the outbound socket client
         # TODO: we may need to check an actual socket server at host:port?!
@@ -313,16 +317,42 @@ class SPARC(FileIOCalculator, IOContext):
             self.command = command_env
         return f"{self.command} {extras}"
 
-    # TODO: are the properties implemented correctly?
-    def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
-        """Perform a calculation step"""
+    def check_input_atoms(self, atoms):
+        """Check if input atoms are valid for SPARC inputs.
+        Raises:
+            ValueError: if the atoms structure is not suitable for SPARC input file
+        """
         # Check if the user accidentally provides atoms unit cell without vacuum
         if atoms and np.any(atoms.cell.cellpar()[:3] == 0):
             msg = "Cannot setup SPARC calculation because at least one of the lattice dimension is zero!"
-            if any([bc_ is False for bc_ in atoms.pbc]):
+            if any([not bc_ for bc_ in atoms.pbc]):
                 msg += " Please add a vacuum in the non-periodic direction of your input structure."
             raise ValueError(msg)
+        # SPARC only supports orthogonal lattice when Dirichlet BC is used
+        if any([not bc_ for bc_ in atoms.pbc]):
+            if not np.isclose(atoms.cell.angles(), [90.0, 90.0, 90.0], 1.e-4).all():
+                raise ValueError(("SPARC only supports orthogonal lattice when Dirichlet BC is used! "
+                                  "Please modify your atoms structures"))
+        for i, bc_ in enumerate(atoms.pbc):
+            if bc_:
+                continue
+            direction = "xyz"[i]
+            min_pos, max_pos = atoms.positions[:, i].min(), atoms.positions[:, i].max()
+            cell_len = atoms.cell.lengths()[i]
+            if (min_pos < 0) or (max_pos > cell_len):
+                raise ValueError((f"You have Dirichlet BC enabled for {direction}-direction, "
+                                  "but atoms positions are out of domain. "
+                                  "SPARC calculator cannot continue. "
+                                  "Please consider using atoms.center() to reposition your atoms."))
+        return
+
+    # TODO: are the properties implemented correctly?
+    def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
+        """Perform a calculation step"""
+        self.check_input_atoms(atoms)
+        # import pdb; pdb.set_trace()
         Calculator.calculate(self, atoms, properties, system_changes)
+        print("Changes: ", system_changes)
         if self.use_socket:
             self._calculate_with_socket(
                 atoms=atoms, properties=properties, system_changes=system_changes
@@ -333,6 +363,7 @@ class SPARC(FileIOCalculator, IOContext):
         self.read_results()
         # Extra step, copy the atoms back to original atoms, if it's an
         # geopt or aimd calculation
+        # This will not occur for socket calculator because it's using the static files
         if ("geopt" in self.raw_results) or ("aimd" in self.raw_results):
             # Update the parent atoms
             atoms.set_positions(self.atoms.positions, apply_constraint=False)
@@ -392,14 +423,22 @@ class SPARC(FileIOCalculator, IOContext):
                 universal_newlines=True,
                 bufsize=0,
             )
-            self.pid = self.process.pid
+            # self.pid = self.process.pid
         print("ATOMS:  ", atoms)
         print("SELF-ATOMS:  ", self.atoms)
         # Do one calculation
         # TODO make sure sorting is actually there?!
         # TODO: check if sorting is present, or is it new atoms?
+        print(self.in_socket_filename, self.process, self.pid)
+        # with monitor_process(self.process, self.in_socket):
+        # from .utils import check_process
+        # import threading
+        # monitor = threading.Thread(target=lambda : check_process(self.process, self.in_socket))
+        # monitor.start()
+        # with monitor_process(self):
+        # import pdb; pdb.set_trace()
         ret = self.in_socket.calculate(atoms[self.sort])
-        print(ret)
+        # monitor.join()
         # TODO: check ret results if they match the file results
         # print(ret)
         # self.in_socket.calculate(atoms[self.sort])
@@ -554,14 +593,16 @@ class SPARC(FileIOCalculator, IOContext):
         if self.in_socket is not None:
             self.in_socket.close()
 
+        # import pdb; pdb.set_trace()
         # In most cases if in_socket is closed, the SPARC process should also exit
-        with time_limit(5):
-            ret = self.process.poll()
-        if ret is None:
-            print("Force terminate the sparc process!")
-            self._send_mpi_signal(signal.SIGKILL)
-        else:
-            print(f"SPARC process exists with code {ret}")
+        if self.process:
+            with time_limit(5):
+                ret = self.process.poll()
+            if ret is None:
+                print("Force terminate the sparc process!")
+                self._send_mpi_signal(signal.SIGKILL)
+            else:
+                print(f"SPARC process exists with code {ret}")
 
         #TODO: check if in_socket should be merged
         self.in_socket = None
@@ -584,7 +625,7 @@ class SPARC(FileIOCalculator, IOContext):
         if (self.pid == pid) and getattr(self, "mpi_match", None) is not None:
             match = self.mpi_match
         else:
-            self.pid = pid
+            # self.pid = pid
             match = _find_mpi_process(pid)
             self.mpi_match = match
         if (match["type"] is None) or (match["process"] is None):
@@ -608,10 +649,18 @@ class SPARC(FileIOCalculator, IOContext):
         """
         # Reset process tracker
         self.process = None
-        self.pid = None
+        # self.pid = None
         if hasattr(self, "mpi_match"):
             self.mpi_match = None
             self.mpi_state = None
+
+    @property
+    def pid(self):
+        """The pid for the stored process"""
+        if self.process is None:
+            return None
+        else:
+            return self.process.pid
 
     @property
     def raw_results(self):
@@ -700,6 +749,8 @@ class SPARC(FileIOCalculator, IOContext):
         with tempfile.TemporaryDirectory() as tmpdir:
             proc = subprocess.run(cmd, shell=True, cwd=tmpdir, capture_output=True)
             output = proc.stdout.decode("ascii")
+            if "USAGE:" not in output:
+                raise EnvironmentError("Cannot find the sparc executable! Please make sure you have the correct setup")
             compatibility = "-socket" in output
         return compatibility
 
