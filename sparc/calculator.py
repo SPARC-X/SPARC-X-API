@@ -185,6 +185,17 @@ class SPARC(FileIOCalculator, IOContext):
         # TODO: we may need to check an actual socket server at host:port?!
         # At this stage, we will need to wait the actual client to join
 
+    def __enter__(self):
+        """Reset upon entering the context. """
+        self.reset()
+        self.close()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        """Exiting the context manager and reset process"""
+        self.close()
+        return
+
     @property
     def use_socket(self):
         return self.socket_params["use_socket"]
@@ -348,9 +359,10 @@ class SPARC(FileIOCalculator, IOContext):
 
     # TODO: are the properties implemented correctly?
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
+        
         """Perform a calculation step"""
-        self.check_input_atoms(atoms)
         # import pdb; pdb.set_trace()
+        self.check_input_atoms(atoms)
         Calculator.calculate(self, atoms, properties, system_changes)
         print("Changes: ", system_changes)
         if self.use_socket:
