@@ -24,6 +24,7 @@ from .utils import (
     _get_slurm_jobid,
     _locate_slurm_step,
     _slurm_signal,
+    compare_dict,
     deprecated,
     h2gpts,
     locate_api,
@@ -125,7 +126,8 @@ class SPARC(FileIOCalculator, IOContext):
         self.validator = locate_api(json_file=sparc_json_file, doc_path=sparc_doc_path)
         self.valid_params = {}
         self.special_params = {}
-        self.inpt_state = {}
+        self.inpt_state = {}  # Store the inpt file states
+        self.system_state = {}  # Store the system parameters (directory, bundle etc)
         FileIOCalculator.__init__(
             self,
             restart=None,
@@ -137,14 +139,14 @@ class SPARC(FileIOCalculator, IOContext):
         )
 
         # sparc bundle will set the label
-        if label is None:
-            label = "SPARC" if restart is None else None
+        # if label is None:
+        #     label = "SPARC" if restart is None else None
 
         self.sparc_bundle = SparcBundle(
             directory=Path(self.directory),
             mode="w",
             atoms=self.atoms,
-            label=label,
+            label=label,  # The order is tricky here. Use label not self.label
             psp_dir=psp_dir,
             validator=self.validator,
         )
@@ -154,11 +156,11 @@ class SPARC(FileIOCalculator, IOContext):
 
         # self.log = self.directory / log if log is not None else None
         self.log = log
+        self.keep_old_files = keep_old_files
         if check_version:
             self.sparc_version = self.detect_sparc_version()
         else:
             self.sparc_version = None
-        self.keep_old_files = keep_old_files
 
         # Partially update the socket params, so that when setting use_socket = True,
         # User can directly use the socket client
@@ -175,6 +177,71 @@ class SPARC(FileIOCalculator, IOContext):
         self.in_socket = None
         self.out_socket = None
         self.ensure_socket()
+
+    def _compare_system_state(self):
+        """Check if system parameters like command etc have changed
+
+        Returns:
+            bool: True if all parameters are the same otherwise False
+        """
+        old_state = self.system_state.copy()
+        new_state = self._dump_system_state()
+        for key, val in old_state.items():
+            new_val = new_state.pop(key, None)
+            if isinstance(new_val, dict):
+                if not compare_dict(val, new_val):
+                    return False
+            else:
+                if not val == new_val:
+                    return False
+        if new_state == {}:
+            return True
+        else:
+            return False
+
+    def _compare_calc_parameters(self, atoms, properties):
+        """Check if SPARC calculator parameters have changed
+
+        Returns:
+            bool: True if no change, otherwise False
+        """
+        _old_inpt_state = self.inpt_state.copy()
+        _new_inpt_state = self._generate_inpt_state(atoms, properties)
+        result = True
+        if set(_new_inpt_state.keys()) != set(_old_inpt_state.keys()):
+            result = False
+        else:
+            for key, old_val in _old_inpt_state.items():
+                new_val = _new_inpt_state[key]
+                # TODO: clean up bool
+                if isinstance(new_val, (str, bool)):
+                    if new_val != old_val:
+                        result = False
+                        break
+                elif isinstance(new_val, (int, float)):
+                    if not np.isclose(new_val, old_val):
+                        result = False
+                        break
+                elif isinstance(new_val, (list, np.ndarray)):
+                    if not np.isclose(new_val, old_val).all():
+                        result = False
+                        break
+        return result
+
+    def _dump_system_state(self):
+        """Returns a dict with current system parameters
+
+        changing these parameters will cause the calculator to reload
+        especially in the use_socket = True case
+        """
+        system_state = {
+            "label": self.label,
+            "directory": self.directory,
+            "command": self.command,
+            "log": self.log,
+            "socket_params": self.socket_params,
+        }
+        return system_state
 
     def ensure_socket(self):
         if not self.directory.is_dir():
@@ -306,9 +373,6 @@ class SPARC(FileIOCalculator, IOContext):
                 * len(atoms_copy)
             )
 
-        # TODO: 0. check pbc
-
-        # TODO: 1. check position wrap in different BC settings
         system_changes = FileIOCalculator.check_state(self, atoms_copy, tol=tol)
         # A few hard-written rules. Wrapping should only affect the position
         if "positions" in system_changes:
@@ -316,6 +380,10 @@ class SPARC(FileIOCalculator, IOContext):
             new_system_changes = FileIOCalculator.check_state(self, atoms_copy, tol=tol)
             if "positions" not in new_system_changes:
                 system_changes.remove("positions")
+
+        system_state_changed = not self._compare_system_state()
+        if system_state_changed:
+            system_changes.append("system_state")
         return system_changes
 
     def _make_command(self, extras=""):
@@ -399,43 +467,14 @@ class SPARC(FileIOCalculator, IOContext):
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         """Perform a calculation step"""
 
-        # TODO: move to utils
-        def compare_dict(d1, d2):
-            """Helper function to compare dictionaries"""
-            # Use symmetric difference to find keys which aren't shared
-            # for python 2.7 compatibility
-            if set(d1.keys()) ^ set(d2.keys()):
-                return False
-
-            # Check for differences in values
-            for key, value in d1.items():
-                if np.any(value != d2[key]):
-                    return False
-            return True
-
-        # import pdb; pdb.set_trace()
         self.check_input_atoms(atoms)
         Calculator.calculate(self, atoms, properties, system_changes)
-        _new_inpt_state = self._generate_inpt_state(atoms, properties)
-        _old_inpt_state = self.inpt_state
-        if set(_new_inpt_state.keys()) != set(_old_inpt_state.keys()):
+
+        # Extra check for inpt parameters since check_state won't accept properties
+        # inpt should only change when write_inpt is actually called
+        param_changed = not self._compare_calc_parameters(atoms, properties)
+        if param_changed:
             system_changes.append("parameters")
-        else:
-            for key, old_val in _old_inpt_state.items():
-                new_val = _new_inpt_state[key]
-                # TODO: clean up bool
-                if isinstance(new_val, (str, bool)):
-                    if new_val != old_val:
-                        system_changes.append("parameters")
-                        break
-                elif isinstance(new_val, (int, float)):
-                    if not np.isclose(new_val, old_val):
-                        system_changes.append("parameters")
-                        break
-                elif isinstance(new_val, (list, np.ndarray)):
-                    if not np.isclose(new_val, old_val).all():
-                        system_changes.append("parameters")
-                        break
 
         if self.use_socket:
             self._calculate_with_socket(
@@ -464,7 +503,6 @@ class SPARC(FileIOCalculator, IOContext):
         self, atoms=None, properties=["energy"], system_changes=all_changes
     ):
         """Perform one socket single point calculation"""
-        # TODO: remove duplicate information to another section
         print(system_changes)
         # Ensure there is at least a SPARC process & socket component
         # TODO: wrap them up in another function
@@ -476,10 +514,11 @@ class SPARC(FileIOCalculator, IOContext):
                     "Your sparc binary is not compiled with socket support!"
                 )
 
-        if (
-            ("numbers" in system_changes)
-            or ("pbc" in system_changes)
-            or ("parameters" in system_changes)
+        if any(
+            [
+                p in system_changes
+                for p in ("numbers", "pbc", "parameters", "system_state")
+            ]
         ):
             if self.process is not None:
                 if not self.socket_params["allow_restart"]:
@@ -490,6 +529,10 @@ class SPARC(FileIOCalculator, IOContext):
                             "Please set socket_params['allow_restart'] = True "
                             "if you want to continue"
                         )
+                    )
+                else:
+                    print(
+                        f"{system_changes} have changed since last calculation. Restart the socket process."
                     )
                 self.close()
 
@@ -544,7 +587,9 @@ class SPARC(FileIOCalculator, IOContext):
         ).all(), "Force values from socket communication and output file are different! Please contact the developers."
         # For stress information, we make sure that the stress is always present
         if "stress" not in self.results:
-            self.results["stress"] = ret["stress"]
+            stress_from_socket = ret.get("stress", np.zeros(6))
+            self.results["stress"] = stress_from_socket
+        self.system_state = self._dump_system_state()
 
         return
 
@@ -661,6 +706,7 @@ class SPARC(FileIOCalculator, IOContext):
                 ):
                     os.remove(f)
         self.inpt_state = input_parameters
+        self.system_state = self._dump_system_state()
         return
 
     def execute(self):
@@ -896,6 +942,7 @@ class SPARC(FileIOCalculator, IOContext):
         changed = super().set(**set_params)
         if changed != {}:
             self.reset()
+
         return changed
 
     def _sanitize_kwargs(self, **kwargs):

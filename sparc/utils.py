@@ -37,6 +37,20 @@ def deprecated(message):
     return decorator
 
 
+def compare_dict(d1, d2):
+    """Helper function to compare dictionaries"""
+    # Use symmetric difference to find keys which aren't shared
+    # for python 2.7 compatibility
+    if set(d1.keys()) ^ set(d2.keys()):
+        return False
+
+    # Check for differences in values
+    for key, value in d1.items():
+        if np.any(value != d2[key]):
+            return False
+    return True
+
+
 def string2index(string: str) -> Union[int, slice, str]:
     """Convert index string to either int or slice
     This method is a copy of ase.io.formats.string2index
