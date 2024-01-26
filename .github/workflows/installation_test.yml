@@ -88,4 +88,58 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         RID: ${{ github.run_id }}
-    
+        
+  test-socket:
+    defaults:
+      run:
+        shell: bash -l {0}
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        python-version: "3.10"
+        mamba-version: "*"
+        channels: conda-forge,alchem0x2a,defaults
+        channel-priority: true
+        activate-environment: sparc-api-test
+    - name: Install dependencies
+      run: |
+        # mamba install -c conda-forge ase>=3.22 pymatgen flake8 pytest
+        mamba install -c conda-forge make compilers openmpi fftw scalapack
+    - name: Install package
+      run: |
+        pip install -e ".[test]"
+        # Download the external psp data
+        python -m sparc.download_data
+    - name: Download SPARC output files to SPARC-master
+      run: |
+        # TODO: merge to master
+        wget -O SPARC-socket.zip https://codeload.github.com/alchem0x2A/SPARC/zip/refs/heads/socket
+        unzip SPARC-socket.zip
+    - name: Compile SPARC with socket
+      run: |
+        cd SPARC-socket/src
+        make clean
+        make -j2 USE_SOCKET=1 USE_MKL=0 USE_SCALAPACK=1 DEBUG_MODE=1
+    - name: Test with pytest
+      run: |
+        export SPARC_TESTS_DIR="./SPARC-master/tests"
+        export ASE_SPARC_COMMAND="mpirun -n 1 ./SPARC-socket/lib/sparc"
+        export SPARC_DOC_PATH="./SPARC-master/doc/.LaTeX"
+        coverage run -a -m pytest -svv tests/
+        coverage json --omit="tests/*.py"
+        coverage html --omit="tests/*.py"
+        COVERAGE=`cat coverage.json | jq .totals.percent_covered | xargs printf '%.*f' 0`
+        echo "Current coverage is $COVERAGE"
+        echo "COVPERCENT=$COVERAGE" >> $GITHUB_ENV
+        
+    - name: Lint with flake8
+      run: |
+        echo $CONDA_PREFIX
+        conda info
+        flake8 sparc/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 sparc/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
