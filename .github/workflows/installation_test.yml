@@ -109,7 +109,7 @@ jobs:
     - name: Install dependencies
       run: |
         # mamba install -c conda-forge ase>=3.22 pymatgen flake8 pytest
-        mamba install -c conda-forge make compilers openmpi fftw scalapack
+        mamba install -c conda-forge make compilers openmpi fftw scalapack openblas
     - name: Install package
       run: |
         pip install -e ".[test]"
