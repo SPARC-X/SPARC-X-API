@@ -138,9 +138,9 @@ class SPARC(FileIOCalculator, IOContext):
             **kwargs,
         )
 
-        # sparc bundle will set the label
-        # if label is None:
-        #     label = "SPARC" if restart is None else None
+        # sparc bundle will set the label. self.label will be available after the init
+        if label is None:
+            label = "SPARC" if restart is None else None
 
         self.sparc_bundle = SparcBundle(
             directory=Path(self.directory),
@@ -675,6 +675,7 @@ class SPARC(FileIOCalculator, IOContext):
         Will use the self.keep_sold_files options to keep old output files
         like .out_01, .out_02 etc
         """
+        # import pdb; pdb.set_trace()
         FileIOCalculator.write_input(self, atoms, properties, system_changes)
         input_parameters = self._generate_inpt_state(atoms, properties=properties)
 
@@ -1034,10 +1035,10 @@ class SPARC(FileIOCalculator, IOContext):
                     "h and gpts cannot be provided together in SPARC calculator!"
                 )
             h = params.pop("h")
-            if atoms is None:
-                raise ValueError(
-                    "Must have an active atoms object to convert h --> gpts!"
-                )
+            # if atoms is None:
+            #     raise ValueError(
+            #         "Must have an active atoms object to convert h --> gpts!"
+            #     )
             if any(
                 [p in self.valid_params for p in ("FD_GRID", "ECUT", "MESH_SPACING")]
             ):
@@ -1046,8 +1047,10 @@ class SPARC(FileIOCalculator, IOContext):
                     "conversion of h to mesh grid is ignored."
                 )
             else:
-                gpts = h2gpts(h, atoms.cell)
-                params["gpts"] = gpts
+                # gpts = h2gpts(h, atoms.cell)
+                # params["gpts"] = gpts
+                # Use mesh_spacing instead of fd_grid to avoid parameters
+                converted_sparc_params["MESH_SPACING"] = h / Bohr
 
         # gpts --> FD_GRID
         if "gpts" in params:

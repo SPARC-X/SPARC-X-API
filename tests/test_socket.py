@@ -234,26 +234,31 @@ def test_atoms_system_changes(monkeypatch):
     h2o.get_potential_energy()
     h2o_new = h2o.copy()
     h2o_new.rattle()
-    changes = calc.check_state(h2o_new)
+    # We can pop out "system_state" because these are fake calculations
+    changes = set(calc.check_state(h2o_new))
+    changes.discard("system_state")
     # h2o_new.calc = calc
     # h2o_new.get_potential_energy()
     assert set(changes) == set(["positions"])
 
     # Case 2: change of positions and cell
     h2o_new.set_cell([8, 8, 8], scale_atoms=True)
-    changes = calc.check_state(h2o_new)
+    changes = set(calc.check_state(h2o_new))
+    changes.discard("system_state")
     assert set(changes) == set(["positions", "cell"])
 
     # Case 3: change of pbc
     h2o_new = h2o.copy()
     h2o_new.pbc = [False, True, False]  # arbitrary change
-    changes = calc.check_state(h2o_new)
+    changes = set(calc.check_state(h2o_new))
+    changes.discard("system_state")
     assert set(changes) == set(["pbc"])
 
     # Case 4: change of numbers
     h2o_new = h2o.copy()
     h2o_new += Atom("H", [5, 5, 5])
-    changes = calc.check_state(h2o_new)
+    changes = set(calc.check_state(h2o_new))
+    changes.discard("system_state")
     assert "numbers" in changes
 
 
@@ -267,7 +272,7 @@ def test_atoms_system_changes_real():
     h2o.center()
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
-        calc = SPARC(use_socket=True, directory="test-change")
+        calc = SPARC(use_socket=True, directory="test-change", h=0.25)
         try:
             can_run = calc.detect_socket_compatibility()
         except Exception:
@@ -299,6 +304,16 @@ def test_atoms_system_changes_real():
 
         # Case 3: pbc change, restart
         h2o.pbc = [False, False, False]
+        h2o.get_potential_energy()
+        assert calc.pid != old_pid
+
+        # Case 4: change of calc parameters, this will restart
+        calc.set(h=0.27)
+        h2o.get_potential_energy()
+        assert calc.pid != old_pid
+
+        # Case 4: change of system state, will restart
+        calc.set(label="SPARC-1")
         h2o.get_potential_energy()
         assert calc.pid != old_pid
 

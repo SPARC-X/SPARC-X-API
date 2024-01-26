@@ -15,14 +15,14 @@ def test_h_parameter():
         calc = SPARC(h=0.2, directory=tmpdir)
         calc.write_input(atoms)
         filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
-        assert "FD_GRID: 21 21 21" in filecontent
+        assert "MESH_SPACING: 0.37" in filecontent
 
     with tempfile.TemporaryDirectory() as tmpdir:
         calc = SPARC(h=0.2, MESH_SPACING=0.4, directory=tmpdir)
         calc.write_input(atoms)
         filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
         assert "FD_GRID:" not in filecontent
-        assert "MESH_SPACING: 0.4" in filecontent
+        assert "MESH_SPACING: 0.4" in filecontent  # Use SPARC mesh_spacing
 
     with tempfile.TemporaryDirectory() as tmpdir:
         calc = SPARC(h=0.2, ECUT=25, directory=tmpdir)
@@ -37,6 +37,7 @@ def test_h_parameter():
         calc.write_input(atoms)
         filecontent = open(Path(tmpdir) / "SPARC.inpt", "r").read()
         assert "FD_GRID: 25 25 25" in filecontent
+        assert "MESH_GRID:" not in filecontent
 
     with tempfile.TemporaryDirectory() as tmpdir:
         calc = SPARC(gpts=[25, 25, 25], directory=tmpdir)
@@ -46,6 +47,18 @@ def test_h_parameter():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         calc = SPARC(h=0.25, gpts=[25, 25, 25], directory=tmpdir)
+        with pytest.raises(Exception):
+            calc.write_input(atoms)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(mesh_spacing=0.4, gpts=[25, 25, 25], directory=tmpdir)
+        # gpts --> FD_GRID, this is excluded
+        with pytest.raises(Exception):
+            calc.write_input(atoms)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        calc = SPARC(mesh_spacing=0.4, fd_grid=[25, 25, 25], directory=tmpdir)
+        # gpts --> FD_GRID, this is excluded
         with pytest.raises(Exception):
             calc.write_input(atoms)
 
@@ -349,6 +362,7 @@ def test_calc_param_set():
 
     # CASE 1: default params
     calc = SPARC()
+    assert calc.label == "SPARC"  # Non-restart, use default label
     assert calc.valid_params == {}
     assert set(calc.special_params.keys()) == set(["xc", "kpts", "h"])
 
@@ -379,3 +393,51 @@ def test_calc_param_set():
     assert "directory" not in calc.parameters
     assert "log" not in calc.parameters
     assert str(calc.log) == "test/test.log"
+
+
+def test_sparc_param_change():
+    """Change of either inpt_state or system_state would case
+    calculator to reload
+    """
+    from pathlib import Path
+
+    from ase.build import molecule
+    from ase.optimize import BFGS
+
+    from sparc.calculator import SPARC
+
+    h2 = molecule("H2", cell=[6, 6, 6], pbc=False)
+    h2.center()
+    dummy_calc = SPARC()
+    try:
+        cmd = dummy_calc._make_command()
+    except EnvironmentError:
+        print("Skip test since no sparc command found")
+        return
+
+    # Default, keep_old_file=False, only 1 static file
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        calc = SPARC(
+            h=0.3, kpts=(1, 1, 1), xc="pbe", directory=tmpdir, keep_old_files=False
+        )
+        atoms = h2.copy()
+        atoms.calc = calc
+        opt = BFGS(atoms)
+        opt.run(fmax=2.0)
+        assert len(list(tmpdir.glob("*.static*"))) == 1
+        assert len(list(tmpdir.glob("*.out*"))) == 1
+
+    # Default, keep_old_file=True, multiple files
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        calc = SPARC(
+            h=0.3, kpts=(1, 1, 1), xc="pbe", directory=tmpdir, keep_old_files=True
+        )
+        atoms = h2.copy()
+        atoms.calc = calc
+        opt = BFGS(atoms)
+        opt.run(fmax=2.0)
+        # On ase 3.22 with default BFGS parameters, it taks 6 steps
+        assert len(list(tmpdir.glob("*.static*"))) > 3
+        assert len(list(tmpdir.glob("*.out*"))) > 3
