@@ -206,22 +206,25 @@ def test_socket_param_calculator():
 
 
 def test_atoms_system_changes(monkeypatch):
-    """Test if change of atoms will cause socket redraw
-    """
-    from sparc.calculator import SPARC, all_changes
+    """Test if change of atoms will cause socket redraw"""
     from ase.atoms import Atom
     from ase.build import molecule
-    
-    def mock_calculate(self, atoms=None, properties=["energy"],
-                                   system_changes=all_changes):
+
+    from sparc.calculator import SPARC, all_changes
+
+    def mock_calculate(
+        self, atoms=None, properties=["energy"], system_changes=all_changes
+    ):
         # Mock implementation
-        self.results['energy'] = 0.0
-        self.results['forces'] = [[0, 0, 0]] * len(atoms)
+        self.results["energy"] = 0.0
+        self.results["forces"] = [[0, 0, 0]] * len(atoms)
         self.atoms = atoms.copy()
-        self.atoms.arrays["initial_magmoms"] = [0, ] * len(atoms)
+        self.atoms.arrays["initial_magmoms"] = [
+            0,
+        ] * len(atoms)
 
     monkeypatch.setattr(SPARC, "_calculate_with_socket", mock_calculate)
-    
+
     calc = SPARC(use_socket=True)
     # calc._calculate_with_socket = mock_calculate
 
@@ -243,7 +246,7 @@ def test_atoms_system_changes(monkeypatch):
 
     # Case 3: change of pbc
     h2o_new = h2o.copy()
-    h2o_new.pbc = [False, True, False] # arbitrary change
+    h2o_new.pbc = [False, True, False]  # arbitrary change
     changes = calc.check_state(h2o_new)
     assert set(changes) == set(["pbc"])
 
@@ -255,10 +258,11 @@ def test_atoms_system_changes(monkeypatch):
 
 
 def test_atoms_system_changes_real():
-    """Real system changes test
-    """
-    from sparc.calculator import SPARC, all_changes
+    """Real system changes test"""
     from ase.build import molecule
+
+    from sparc.calculator import SPARC, all_changes
+
     h2o = molecule("H2O", cell=[6, 6, 6], pbc=True)
     h2o.center()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -297,5 +301,5 @@ def test_atoms_system_changes_real():
         h2o.pbc = [False, False, False]
         h2o.get_potential_energy()
         assert calc.pid != old_pid
-    
+
         calc.close()

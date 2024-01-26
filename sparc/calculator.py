@@ -1,6 +1,7 @@
 import datetime
 import os
 import random
+import signal
 import string
 import subprocess
 import tempfile
@@ -8,19 +9,27 @@ from pathlib import Path
 from warnings import warn, warn_explicit
 
 import numpy as np
+import psutil
 from ase.atoms import Atoms
 from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
 from ase.units import Bohr, GPa, Hartree, eV
-import psutil
-import signal
 from ase.utils import IOContext
 
 from .api import SparcAPI
 from .io import SparcBundle
 from .socketio import SPARCProtocol, SPARCSocketClient, SPARCSocketServer
-from .utils import _find_default_sparc, deprecated, h2gpts, locate_api
-from .utils import time_limit, _find_mpi_process, _get_slurm_jobid
-from .utils import _locate_slurm_step, _slurm_signal, monitor_process
+from .utils import (
+    _find_default_sparc,
+    _find_mpi_process,
+    _get_slurm_jobid,
+    _locate_slurm_step,
+    _slurm_signal,
+    deprecated,
+    h2gpts,
+    locate_api,
+    monitor_process,
+    time_limit,
+)
 
 # from ase.calculators.socketio import SocketServer, SocketClient
 
@@ -143,11 +152,8 @@ class SPARC(FileIOCalculator, IOContext):
         # Try restarting from an old calculation and set results
         self._restart(restart=restart)
 
-        # Sanitize the kwargs by converting lower -- > upper
-        # and perform type check
-
-        # self._sanitize_kwargs(kwargs)
-        self.log = self.directory / log if log is not None else None
+        # self.log = self.directory / log if log is not None else None
+        self.log = log
         if check_version:
             self.sparc_version = self.detect_sparc_version()
         else:
@@ -190,7 +196,7 @@ class SPARC(FileIOCalculator, IOContext):
         # At this stage, we will need to wait the actual client to join
 
     def __enter__(self):
-        """Reset upon entering the context. """
+        """Reset upon entering the context."""
         self.reset()
         self.close()
         return self
@@ -209,6 +215,19 @@ class SPARC(FileIOCalculator, IOContext):
         return self.sparc_bundle._indir(
             ext=ext, label=label, occur=occur, d_format=d_format
         )
+
+    @property
+    def log(self):
+        return self.directory / self._log
+
+    @log.setter
+    def log(self, log):
+        # Stripe the parent direcoty information
+        if log is not None:
+            self._log = Path(log).name
+        else:
+            self._log = "sparc.log"
+        return
 
     @property
     def in_socket_filename(self):
@@ -276,7 +295,7 @@ class SPARC(FileIOCalculator, IOContext):
 
         reading a result from the .out file has only precision up to 10 digits
 
-        
+
         """
         atoms_copy = atoms.copy()
         if "initial_magmoms" not in atoms_copy.arrays:
@@ -299,7 +318,6 @@ class SPARC(FileIOCalculator, IOContext):
                 system_changes.remove("positions")
         return system_changes
 
-    
     def _make_command(self, extras=""):
         """Use $ASE_SPARC_COMMAND or self.command to determine the command
         as a last resort, if `sparc` exists in the PATH, use that information
@@ -345,9 +363,13 @@ class SPARC(FileIOCalculator, IOContext):
             raise ValueError(msg)
         # SPARC only supports orthogonal lattice when Dirichlet BC is used
         if any([not bc_ for bc_ in atoms.pbc]):
-            if not np.isclose(atoms.cell.angles(), [90.0, 90.0, 90.0], 1.e-4).all():
-                raise ValueError(("SPARC only supports orthogonal lattice when Dirichlet BC is used! "
-                                  "Please modify your atoms structures"))
+            if not np.isclose(atoms.cell.angles(), [90.0, 90.0, 90.0], 1.0e-4).all():
+                raise ValueError(
+                    (
+                        "SPARC only supports orthogonal lattice when Dirichlet BC is used! "
+                        "Please modify your atoms structures"
+                    )
+                )
         for i, bc_ in enumerate(atoms.pbc):
             if bc_:
                 continue
@@ -355,22 +377,28 @@ class SPARC(FileIOCalculator, IOContext):
             min_pos, max_pos = atoms.positions[:, i].min(), atoms.positions[:, i].max()
             cell_len = atoms.cell.lengths()[i]
             if (min_pos < 0) or (max_pos > cell_len):
-                raise ValueError((f"You have Dirichlet BC enabled for {direction}-direction, "
-                                  "but atoms positions are out of domain. "
-                                  "SPARC calculator cannot continue. "
-                                  "Please consider using atoms.center() to reposition your atoms."))
+                raise ValueError(
+                    (
+                        f"You have Dirichlet BC enabled for {direction}-direction, "
+                        "but atoms positions are out of domain. "
+                        "SPARC calculator cannot continue. "
+                        "Please consider using atoms.center() to reposition your atoms."
+                    )
+                )
         # Additionally, we should not allow use to calculate pbc=False with CALC_STRESS=1
-        if all([not bc_ for bc_ in atoms.pbc]): # All Dirichlet
+        if all([not bc_ for bc_ in atoms.pbc]):  # All Dirichlet
             calc_stress = self.parameters.get("calc_stress", False)
             if calc_stress:
                 # TODO: update exception type
-                raise ValueError("Cannot set CALC_STRESS=1 for non-periodic system in SPARC!")
+                raise ValueError(
+                    "Cannot set CALC_STRESS=1 for non-periodic system in SPARC!"
+                )
         return
 
     # TODO: are the properties implemented correctly?
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
-        
         """Perform a calculation step"""
+
         # TODO: move to utils
         def compare_dict(d1, d2):
             """Helper function to compare dictionaries"""
@@ -384,6 +412,7 @@ class SPARC(FileIOCalculator, IOContext):
                 if np.any(value != d2[key]):
                     return False
             return True
+
         # import pdb; pdb.set_trace()
         self.check_input_atoms(atoms)
         Calculator.calculate(self, atoms, properties, system_changes)
@@ -407,7 +436,7 @@ class SPARC(FileIOCalculator, IOContext):
                     if not np.isclose(new_val, old_val).all():
                         system_changes.append("parameters")
                         break
-        
+
         if self.use_socket:
             self._calculate_with_socket(
                 atoms=atoms, properties=properties, system_changes=system_changes
@@ -439,15 +468,19 @@ class SPARC(FileIOCalculator, IOContext):
         print(system_changes)
         # Ensure there is at least a SPARC process & socket component
         # TODO: wrap them up in another function
-        
-        # TODO: merge this part 
+
+        # TODO: merge this part
         if self.process is None:
             if self.detect_socket_compatibility() is not True:
                 raise RuntimeError(
                     "Your sparc binary is not compiled with socket support!"
                 )
 
-        if ("numbers" in system_changes) or ("pbc" in system_changes) or ("parameters" in system_changes):
+        if (
+            ("numbers" in system_changes)
+            or ("pbc" in system_changes)
+            or ("parameters" in system_changes)
+        ):
             if self.process is not None:
                 if not self.socket_params["allow_restart"]:
                     raise RuntimeError(
@@ -459,7 +492,7 @@ class SPARC(FileIOCalculator, IOContext):
                         )
                     )
                 self.close()
-        
+
         if self.process is None:
             self.ensure_socket()
             self.write_input(atoms)
@@ -503,9 +536,16 @@ class SPARC(FileIOCalculator, IOContext):
         # self._execute_socket_step()
         # The results are parsed from file outputs (.static + .out)
         self.read_results()  #
-        assert np.isclose(ret["energy"], self.results["energy"]), "Energy values from socket communication and output file are different! Please contact the developers."
-        assert np.isclose(ret["forces"][self.resort], self.results["forces"]).all(), "Force values from socket communication and output file are different! Please contact the developers."
-        
+        assert np.isclose(
+            ret["energy"], self.results["energy"]
+        ), "Energy values from socket communication and output file are different! Please contact the developers."
+        assert np.isclose(
+            ret["forces"][self.resort], self.results["forces"]
+        ).all(), "Force values from socket communication and output file are different! Please contact the developers."
+        # For stress information, we make sure that the stress is always present
+        if "stress" not in self.results:
+            self.results["stress"] = ret["stress"]
+
         return
 
     def get_stress(self, atoms=None):
@@ -584,17 +624,14 @@ class SPARC(FileIOCalculator, IOContext):
         self._check_input_exclusion(input_parameters, atoms=atoms)
         self._check_minimal_input(input_parameters)
         return input_parameters
-        
-        
+
     def write_input(self, atoms, properties=[], system_changes=[]):
         """Create input files via SparcBundle
         Will use the self.keep_sold_files options to keep old output files
         like .out_01, .out_02 etc
         """
         FileIOCalculator.write_input(self, atoms, properties, system_changes)
-        input_parameters = self._generate_inpt_state(atoms,
-                                                     properties=properties)
-        
+        input_parameters = self._generate_inpt_state(atoms, properties=properties)
 
         # TODO: make sure the sorting reset is justified (i.e. what about restarting?)
         self.sparc_bundle.sorting = None
@@ -671,7 +708,7 @@ class SPARC(FileIOCalculator, IOContext):
             else:
                 print(f"SPARC process exists with code {ret}")
 
-        #TODO: check if in_socket should be merged
+        # TODO: check if in_socket should be merged
         self.in_socket = None
         self._reset_process()
 
@@ -817,12 +854,41 @@ class SPARC(FileIOCalculator, IOContext):
             proc = subprocess.run(cmd, shell=True, cwd=tmpdir, capture_output=True)
             output = proc.stdout.decode("ascii")
             if "USAGE:" not in output:
-                raise EnvironmentError("Cannot find the sparc executable! Please make sure you have the correct setup")
+                raise EnvironmentError(
+                    "Cannot find the sparc executable! Please make sure you have the correct setup"
+                )
             compatibility = "-socket" in output
         return compatibility
 
     def set(self, **kwargs):
         """Overwrite the initial parameters"""
+        # Do not use JSON Schema for these arguments
+        if "label" in kwargs:
+            self.label = kwargs.pop("label")
+
+        if "directory" in kwargs:
+            # str() call to deal with pathlib objects
+            self.directory = str(kwargs.pop("directory"))
+
+        if "log" in kwargs:
+            self.log = kwargs.pop("log")
+
+        if "check_version" in kwargs:
+            self.check_version = bool(kwargs.pop("check_version"))
+
+        if "keep_old_files" in kwargs:
+            self.keep_old_files = kwargs.pop("keep_old_files")
+
+        if "atoms" in kwargs:
+            self.atoms = kwargs.pop("atoms")  # Resets results
+
+        if "command" in kwargs:
+            self.command = kwargs.pop("command")
+
+        # TODO: for now we don't let the user to hot-swap socket
+        if ("use_socket" in kwargs) or ("socket_params" in kwargs):
+            raise NotImplementedError("Hot swapping socket parameter is not supported!")
+
         self._sanitize_kwargs(**kwargs)
         set_params = {}
         set_params.update(self.special_params)
@@ -845,17 +911,13 @@ class SPARC(FileIOCalculator, IOContext):
         if "gpts" in kwargs:
             h = self.special_params.pop("h", None)
             if (h is not None) and (not init):
-                warn(
-                    "Parameter gpts will overwrite previously set parameter h."
-                )
+                warn("Parameter gpts will overwrite previously set parameter h.")
         elif "h" in kwargs:
             gpts = self.special_params.pop("gpts", None)
             if (gpts is not None) and (not init):
-                warn(
-                    "Parameter h will overwrite previously set parameter gpts."
-                )
-        
-        upper_valid_params = set() # Valid SPARC parameters in upper case
+                warn("Parameter h will overwrite previously set parameter gpts.")
+
+        upper_valid_params = set()  # Valid SPARC parameters in upper case
         # SPARC API is case insensitive
         for key, value in kwargs.items():
             if key in self.special_inputs:
@@ -865,14 +927,14 @@ class SPARC(FileIOCalculator, IOContext):
             else:
                 key = key.upper()
                 if key in upper_valid_params:
-                    warn(
-                        f"Parameter {key} (case-insentive) appears multiple times!"
-                    )
+                    warn(f"Parameter {key} (case-insentive) appears multiple times!")
                 if validator.validate_input(key, value):
                     self.valid_params[key] = value
                     upper_valid_params.add(key)
                 else:
-                    raise ValueError(f"Value {value} for parameter {key} (case-insensitive) is invalid!")
+                    raise ValueError(
+                        f"Value {value} for parameter {key} (case-insensitive) is invalid!"
+                    )
         return
 
     def _convert_special_params(self, atoms=None):

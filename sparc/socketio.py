@@ -57,9 +57,13 @@ class SPARCSocketServer(SocketServer):
     """
 
     def __init__(
-            self, port=None, unixsocket=None, timeout=None, log=None,
-            parent=None
-            # launch_client=None,
+        self,
+        port=None,
+        unixsocket=None,
+        timeout=None,
+        log=None,
+        parent=None
+        # launch_client=None,
     ):
         super().__init__(port=port, unixsocket=unixsocket, timeout=timeout, log=log)
         self.parent = parent
@@ -69,7 +73,6 @@ class SPARCSocketServer(SocketServer):
         else:
             self.proc = None
         print(self.proc)
-            
 
     # TODO: guard cases for non-unix sockets
     @property
@@ -82,7 +85,7 @@ class SPARCSocketServer(SocketServer):
             return self.parent.process
         else:
             return None
-        
+
     @proc.setter
     def proc(self, value):
         return

@@ -50,7 +50,6 @@ def test_h_parameter():
             calc.write_input(atoms)
 
 
-
 def test_xc_parameter():
     from ase.build import bulk
 
@@ -300,32 +299,34 @@ def test_sparc_overwrite_files():
         assert len(list(tmpdir.glob("*.static*"))) > 3
         assert len(list(tmpdir.glob("*.out*"))) > 3
 
+
 def test_incompat_atoms():
     """SPARC calculator should capture incorrect atoms positions before writing
     the inputs
     """
-    from ase.build import molecule, bulk
+    from ase.build import bulk, molecule
+
     from sparc.calculator import SPARC
 
     calc = SPARC()
-    
+
     # CASE 1: Zero-length cell
     atoms = molecule("CH4")
     with pytest.raises(ValueError):
         calc.calculate(atoms)
 
     # CASE 2: PBC wrapp back should be valid
-    atoms = molecule("CH4", cell=[6, 6, 6], pbc=True) # some H atoms are below 0
+    atoms = molecule("CH4", cell=[6, 6, 6], pbc=True)  # some H atoms are below 0
     assert atoms.positions[:, 0].min() < 0
     assert calc.check_input_atoms(atoms) is None
 
     # CASE 3: Dirichlet BC and atoms outside domain
-    atoms = molecule("CH4", cell=[6, 6, 6], pbc=False) # some H atoms are below 0
+    atoms = molecule("CH4", cell=[6, 6, 6], pbc=False)  # some H atoms are below 0
     assert atoms.positions[:, 0].min() < 0
     with pytest.raises(ValueError):
         calc.check_input_atoms(atoms)
 
-    atoms.center()              # Centered atoms should be allowed
+    atoms.center()  # Centered atoms should be allowed
     assert calc.check_input_atoms(atoms) is None
 
     atoms.positions[:, 2] += 4  # Move up the z-direction until atoms are out-of-domain
@@ -336,14 +337,14 @@ def test_incompat_atoms():
     atoms = bulk("Al", cubic=False)
     assert atoms.cell.angles()[0] != 90.0
     print(atoms.pbc)
-    assert calc.check_input_atoms(atoms) is None # Primitive cell is ok for pbc=True
-    atoms.pbc = False                            # Unphysical structure, just for checking
+    assert calc.check_input_atoms(atoms) is None  # Primitive cell is ok for pbc=True
+    atoms.pbc = False  # Unphysical structure, just for checking
     with pytest.raises(ValueError):
         calc.check_input_atoms(atoms)
-    
+
+
 def test_calc_param_set():
-    """Test if the set method works
-    """
+    """Test if the set method works"""
     from sparc.calculator import SPARC
 
     # CASE 1: default params
@@ -369,9 +370,12 @@ def test_calc_param_set():
     with pytest.raises(ValueError):
         calc.set(calc_stress="ok")
 
-    
-    
-    
-    
-    
-    
+    calc.set(directory="test")
+    assert calc.directory.name == "test"
+    assert "directory" not in calc.parameters
+
+    # CASE 2: change order of parameters
+    calc = SPARC(xc="pbe", h=0.22, directory="test", log="test.log")
+    assert "directory" not in calc.parameters
+    assert "log" not in calc.parameters
+    assert str(calc.log) == "test/test.log"

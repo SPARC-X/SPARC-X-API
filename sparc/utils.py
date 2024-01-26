@@ -1,23 +1,23 @@
 """Utilities that are loosely related to core sparc functionalities
 """
+import _thread
 import io
 import os
-import time
-import sys
-import psutil
-import signal
 import re
-import subprocess
-from contextlib import contextmanager
 import shutil
+import signal
+import subprocess
+import sys
 import tempfile
+import threading
+import time
+from contextlib import contextmanager
 from pathlib import Path
 from typing import List, Optional, Union
 from warnings import warn
-import threading
-import _thread
 
 import numpy as np
+import psutil
 
 from .api import SparcAPI
 from .docparser import SparcDocParser
@@ -168,12 +168,15 @@ def locate_api(json_file=None, doc_path=None):
     api = SparcAPI()
     return api
 
+
 # Utilities taken from vasp_interactive project
+
 
 class TimeoutException(Exception):
     """Simple class for timeout"""
 
     pass
+
 
 @contextmanager
 def time_limit(seconds):
@@ -195,10 +198,12 @@ def time_limit(seconds):
     finally:
         signal.alarm(0)
 
+
 class ProcessReturned(Exception):
     """Simple class for process that has returned"""
 
     pass
+
 
 @contextmanager
 def monitor_process(self, interval=0.1):
@@ -209,9 +214,12 @@ def monitor_process(self, interval=0.1):
     except TimeoutException:
         raise
     """
+
     def signal_handler(signum, frame):
-        raise ProcessReturned(f"Process {self.process.pid} has returned with exit code {self.process.poll()}!")
-    
+        raise ProcessReturned(
+            f"Process {self.process.pid} has returned with exit code {self.process.poll()}!"
+        )
+
     def check_process():
         while True:
             if self.process.poll() is not None:
@@ -220,7 +228,9 @@ def monitor_process(self, interval=0.1):
                 self.in_socket.close()
                 print(self.in_socket)
                 signal(signal.SIGALRM)
-                raise ProcessReturned(f"Process {self.process.pid} has returned with exit code {self.process.poll()}!")
+                raise ProcessReturned(
+                    f"Process {self.process.pid} has returned with exit code {self.process.poll()}!"
+                )
             time.sleep(interval)
 
     if self.process is None:
@@ -233,6 +243,7 @@ def monitor_process(self, interval=0.1):
         yield
     finally:
         monitor.join()
+
 
 def _find_mpi_process(pid, mpi_program="mpirun", sparc_program="sparc"):
     """Recursively search children processes with PID=pid and return the one
@@ -249,7 +260,9 @@ def _find_mpi_process(pid, mpi_program="mpirun", sparc_program="sparc"):
     try:
         process_list = [psutil.Process(pid)]
     except psutil.NoSuchProcess:
-        warn("Psutil cannot locate the pid. Your sparc program may have already exited.")
+        warn(
+            "Psutil cannot locate the pid. Your sparc program may have already exited."
+        )
         match = {"type": None, "process": None}
         return match
 
@@ -277,6 +290,7 @@ def _find_mpi_process(pid, mpi_program="mpirun", sparc_program="sparc"):
         match["process"] = mpi_candidates[-1]
 
     return match
+
 
 def _get_slurm_jobid():
     jobid = os.environ.get("SLURM_JOB_ID", None)
@@ -338,6 +352,7 @@ def _slurm_signal(stepid, sig=signal.SIGTSTP):
     proc = _run_process(cmds, capture_output=True)
     output = proc.stdout.decode("utf8").split("\n")
     return
+
 
 def _run_process(commands, shell=False, print_cmd=True, cwd=".", capture_output=False):
     """Wrap around subprocess.run
