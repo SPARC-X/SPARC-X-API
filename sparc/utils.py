@@ -220,7 +220,7 @@ class ProcessReturned(Exception):
 
 
 @contextmanager
-def monitor_process(self, interval=0.1):
+def monitor_process(self, interval=1.0):
     """Usage:
     try:
         with monitor_process(process):

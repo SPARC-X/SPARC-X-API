@@ -1,7 +1,9 @@
 """A i-PI compatible socket protocol implemented in SPARC
 """
 import os
+import random
 import socket
+import string
 
 import numpy as np
 from ase.calculators.socketio import (
@@ -10,6 +12,12 @@ from ase.calculators.socketio import (
     SocketServer,
     actualunixsocketname,
 )
+
+
+def generate_random_socket_name(prefix="sparc_", length=6):
+    """Generate a random socket name with the given prefix and a specified length of random hex characters."""
+    random_chars = "".join(random.choices(string.hexdigits.lower(), k=length))
+    return prefix + random_chars
 
 
 class SPARCProtocol(IPIProtocol):

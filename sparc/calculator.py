@@ -1,8 +1,6 @@
 import datetime
 import os
-import random
 import signal
-import string
 import subprocess
 import tempfile
 from pathlib import Path
@@ -17,7 +15,12 @@ from ase.utils import IOContext
 
 from .api import SparcAPI
 from .io import SparcBundle
-from .socketio import SPARCProtocol, SPARCSocketClient, SPARCSocketServer
+from .socketio import (
+    SPARCProtocol,
+    SPARCSocketClient,
+    SPARCSocketServer,
+    generate_random_socket_name,
+)
 from .utils import (
     _find_default_sparc,
     _find_mpi_process,
@@ -31,9 +34,6 @@ from .utils import (
     monitor_process,
     time_limit,
 )
-
-# from ase.calculators.socketio import SocketServer, SocketClient
-
 
 # Below are a list of ASE-compatible calculator input parameters that are
 # in Angstrom/eV units
@@ -61,13 +61,6 @@ default_socket_params = {
     "allow_restart": True,  # If True, allow the socket server to restart
     "server_only": False,  # Start the calculator as a server
 }
-
-
-# TODO: maybe better move to socketio
-def generate_random_socket_name(prefix="sparc_", length=6):
-    """Generate a random socket name with the given prefix and a specified length of random hex characters."""
-    random_chars = "".join(random.choices(string.hexdigits.lower(), k=length))
-    return prefix + random_chars
 
 
 class SPARC(FileIOCalculator, IOContext):
@@ -278,7 +271,6 @@ class SPARC(FileIOCalculator, IOContext):
         return self.socket_params["use_socket"]
 
     def _indir(self, ext, label=None, occur=0, d_format="{:02d}"):
-        # TODO: what if no sparcbundle
         return self.sparc_bundle._indir(
             ext=ext, label=label, occur=occur, d_format=d_format
         )
@@ -339,21 +331,25 @@ class SPARC(FileIOCalculator, IOContext):
         else:
             self._label = label
 
-    # TODO: make sure sparc_bundle does have sorting
     @property
     def sort(self):
         """Like Vasp calculator
         ASE atoms --> sort --> SPARC
         """
-        return self.sparc_bundle.sorting["sort"]
+        if self.sparc_bundle.sorting is None:
+            return None
+        else:
+            return self.sparc_bundle.sorting["sort"]
 
-    # TODO: make sure sparc_bundle does have sorting
     @property
     def resort(self):
         """Like Vasp calculator
         SPARC --> resort --> ASE atoms
         """
-        return self.sparc_bundle.sorting["resort"]
+        if self.sparc_bundle.sorting is None:
+            return None
+        else:
+            return self.sparc_bundle.sorting["resort"]
 
     def check_state(self, atoms, tol=1e-9):
         """Updated check_state method.
@@ -457,13 +453,11 @@ class SPARC(FileIOCalculator, IOContext):
         if all([not bc_ for bc_ in atoms.pbc]):  # All Dirichlet
             calc_stress = self.parameters.get("calc_stress", False)
             if calc_stress:
-                # TODO: update exception type
                 raise ValueError(
                     "Cannot set CALC_STRESS=1 for non-periodic system in SPARC!"
                 )
         return
 
-    # TODO: are the properties implemented correctly?
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         """Perform a calculation step"""
 
@@ -503,10 +497,6 @@ class SPARC(FileIOCalculator, IOContext):
         self, atoms=None, properties=["energy"], system_changes=all_changes
     ):
         """Perform one socket single point calculation"""
-        print(system_changes)
-        # Ensure there is at least a SPARC process & socket component
-        # TODO: wrap them up in another function
-
         # TODO: merge this part
         if self.process is None:
             if self.detect_socket_compatibility() is not True:
@@ -554,30 +544,9 @@ class SPARC(FileIOCalculator, IOContext):
                 universal_newlines=True,
                 bufsize=0,
             )
-            # self.pid = self.process.pid
-        print("ATOMS:  ", atoms)
-        print("SELF-ATOMS:  ", self.atoms)
-        # Do one calculation
-        # TODO make sure sorting is actually there?!
-        # TODO: check if sorting is present, or is it new atoms?
-        print(self.in_socket_filename, self.process, self.pid)
-        # with monitor_process(self.process, self.in_socket):
-        # from .utils import check_process
-        # import threading
-        # monitor = threading.Thread(target=lambda : check_process(self.process, self.in_socket))
-        # monitor.start()
-        # with monitor_process(self):
-        # import pdb; pdb.set_trace()
         ret = self.in_socket.calculate(atoms[self.sort])
-        # monitor.join()
-        # TODO: check ret results if they match the file results
-        # print(ret)
-        # self.in_socket.calculate(atoms[self.sort])
-        # self._ensure_socket_process(atoms)
-        # Do one step with socket
-        # TODO: wrap them up in another function
-        # self._execute_socket_step()
         # The results are parsed from file outputs (.static + .out)
+        # Except for stress, they should be exactly the same as socket returned results
         self.read_results()  #
         assert np.isclose(
             ret["energy"], self.results["energy"]
@@ -613,35 +582,31 @@ class SPARC(FileIOCalculator, IOContext):
             if key in input_parameters:
                 count += 1
         if count > 1:
-            # TODO: change to ExclusionParameterError
             raise ValueError(
                 "ECUT, MESH_SPACING, FD_GRID cannot be specified simultaneously!"
             )
 
         # Rule 2: LATVEC_SCALE, CELL
         if ("LATVEC_SCALE" in input_parameters) and ("CELL" in input_parameters):
-            # TODO: change to ExclusionParameterError
             raise ValueError(
                 "LATVEC_SCALE and CELL cannot be specified simultaneously!"
             )
 
         # When the cell is provided via ase object, we will forbid user to provide
         # LATVEC, LATVEC_SCALE or CELL
-        # TODO: make sure the rule makes sense for molecules
         if atoms is not None:
             if any([p in input_parameters for p in ["LATVEC", "LATVEC_SCALE", "CELL"]]):
                 raise ValueError(
-                    "When passing an ase atoms object, LATVEC, LATVEC_SCALE or CELL cannot be set simultaneously!"
+                    (
+                        "When passing an ase atoms object, LATVEC, LATVEC_SCALE or CELL cannot be set simultaneously! \n"
+                        "Please set atoms.cell instead"
+                    )
                 )
 
     def _check_minimal_input(self, input_parameters):
-        """Check if the minimal input set is satisfied
-
-        TODO: maybe we need to move the minimal set to class default
-        """
+        """Check if the minimal input set is satisfied"""
         for param in ["EXCHANGE_CORRELATION", "KPOINT_GRID"]:
             if param not in input_parameters:
-                # TODO: change to MissingParameterError
                 raise ValueError(f"Parameter {param} is not provided.")
         # At least one from ECUT, MESH_SPACING and FD_GRID must be provided
         if not any(
@@ -932,7 +897,7 @@ class SPARC(FileIOCalculator, IOContext):
         if "command" in kwargs:
             self.command = kwargs.pop("command")
 
-        # TODO: for now we don't let the user to hot-swap socket
+        # For now we don't let the user to hot-swap socket
         if ("use_socket" in kwargs) or ("socket_params" in kwargs):
             raise NotImplementedError("Hot swapping socket parameter is not supported!")
 
@@ -1062,7 +1027,6 @@ class SPARC(FileIOCalculator, IOContext):
 
         # kpts
         if "kpts" in params:
-            # TODO: how about accepting ASE's kpts setting?
             kpts = params.pop("kpts")
             if validator.validate_input("KPOINT_GRID", kpts):
                 converted_sparc_params["KPOINT_GRID"] = kpts
@@ -1077,7 +1041,6 @@ class SPARC(FileIOCalculator, IOContext):
             if validator.validate_input("NSTATES", nbands):
                 converted_sparc_params["NSTATES"] = nbands
             else:
-                # TODO: customize error
                 raise ValueError(f"Input parameter nbands has invalid value {nbands}")
 
         # convergence is a dict
@@ -1088,7 +1051,6 @@ class SPARC(FileIOCalculator, IOContext):
                 # TOL SCF: Ha / atom <--> energy tol: eV / atom
                 converted_sparc_params["TOL_SCF"] = tol_e / Hartree
 
-            # TODO: per AJ's suggestion, better change forces to relaxation
             tol_f = convergence.get("relax", None)
             if tol_f:
                 # TOL SCF: Ha / Bohr <--> energy tol: Ha / Bohr
@@ -1145,9 +1107,8 @@ class SPARC(FileIOCalculator, IOContext):
     def get_pseudopotential_directory(self, pseudo_dir=None, **kwargs):
         return self.sparc_bundle.psp_dir
 
-    # TODO: update method
     def get_nstates(self):
-        return None
+        raise NotImplementedError("Parsing nstates is not yet implemented.")
 
     @deprecated("Please set the variables separatedly")
     def setup_parallel_env(self):
@@ -1157,7 +1118,6 @@ class SPARC(FileIOCalculator, IOContext):
     def generate_command(self):
         return self._make_command(f"-name {self.label}")
 
-    # TODO: update the method!
     def estimate_memory(self, atoms=None, units="GB", **kwargs):
         """
         a function to estimate the amount of memory required to run
@@ -1201,7 +1161,6 @@ class SPARC(FileIOCalculator, IOContext):
         kpt_factor = np.ceil(np.product(kpt_grid) / 2)
 
         # this is a pretty generous over-estimate
-        # TODO: check this function is working
         estimate = 5 * npoints * nstates * kpt_factor * spin_factor * 8  # bytes
         converted_estimate = estimate * conversion_dict[units]
         return converted_estimate
