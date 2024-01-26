@@ -130,7 +130,7 @@ jobs:
       run: |
         ls ./SPARC-socket/lib/sparc
         PWD=$(pwd)
-        export SPARC_TESTS_DIR="${PWD}/SPARC-master/tests"
+        export SPARC_TESTS_DIR="${PWD}/SPARC-socket/tests"
         export ASE_SPARC_COMMAND="mpirun -n 1 ${PWD}/SPARC-socket/lib/sparc"
         export SPARC_DOC_PATH="${PWD}/SPARC-socket/doc/.LaTeX"
         coverage run -a -m pytest -svv tests/
