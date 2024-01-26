@@ -12,6 +12,7 @@ from ase.atoms import Atoms
 from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
 from ase.units import Bohr, GPa, Hartree, eV
 from ase.utils import IOContext
+from ase.stress import full_3x3_to_voigt_6_stress
 
 from .api import SparcAPI
 from .io import SparcBundle
@@ -257,12 +258,14 @@ class SPARC(FileIOCalculator, IOContext):
 
     def __enter__(self):
         """Reset upon entering the context."""
+        IOContext.__enter__()
         self.reset()
         self.close()
         return self
 
     def __exit__(self, type, value, traceback):
         """Exiting the context manager and reset process"""
+        IOContext.__exit__(type, value, traceback)
         self.close()
         return
 
@@ -556,7 +559,8 @@ class SPARC(FileIOCalculator, IOContext):
         ).all(), "Force values from socket communication and output file are different! Please contact the developers."
         # For stress information, we make sure that the stress is always present
         if "stress" not in self.results:
-            stress_from_socket = ret.get("stress", np.zeros(6))
+            virial_from_socket = ret.get("virial", np.zeros(6))
+            stress_from_socket = -full_3x3_to_voigt_6_stress(virial_from_socket) / atoms.get_volume()
             self.results["stress"] = stress_from_socket
         self.system_state = self._dump_system_state()
 
