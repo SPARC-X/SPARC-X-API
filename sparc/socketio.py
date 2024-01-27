@@ -49,6 +49,7 @@ class SPARCProtocol(IPIProtocol):
         md5_checksum = hashlib.md5(pkl_bytes)
         checksum_digest, checksum_count = (md5_checksum.digest(),
                                            md5_checksum.digest_size)
+        self.sendmsg('PKLOBJ')  # To distinguish from other methods like INIT
         self.log("  pickle bytes to send: ", str(nbytes))
         self.send(nbytes, np.int32)
         self.log("  sending pickle object....")
@@ -59,9 +60,14 @@ class SPARCProtocol(IPIProtocol):
         self.socket.sendall(checksum_digest)
         return
 
-    def recv_object(self):
+    def recv_object(self, include_header=True):
         """Return a decoded file
+
+        include_header: should we receive the header or not
         """
+        if include_header:
+            msg = self.recvmsg()
+            assert msg.strip() == "PKLOBJ", f"Incorrect header {msg} received when calling recv_object method! Please contact the developers"
         nbytes = int(self.recv(1, np.int32))
         self.log(" Will receive pickle object with n-bytes: ", nbytes)
         bytes_received = self._recvall(nbytes)
@@ -74,22 +80,6 @@ class SPARCProtocol(IPIProtocol):
         obj = pickle.loads(bytes_received)
         return obj
     
-
-    # def send_json(self, json_string, encoding="ascii"):
-    #     """Send the full json-string in file mode.
-    #     #TODO: add checksum
-    #     """
-    #     fd = io.BytesIO()
-    #     # ASCII should be ok for current file system
-    #     json_bytes = json_string.encode(encoding)
-    #     with fd:
-    #         self.log("Sending json-string in bytes mode")
-    #         fd.seek(0)
-    #         fd.write(json_bytes)
-    #         fd.seek(0)
-            
-            
-        
 
     def send_param(self, name, value):
         """Send a specific param setting to SPARC
@@ -167,6 +157,19 @@ class SPARCSocketServer(SocketServer):
             self.protocol = SPARCProtocol(self.clientsocket, txt=self.log)
         return
 
+    def send_atom_and_params(self, atoms, params):
+        """Update the atoms and parameters for the SPARC calculator
+        The params should be assignable to SPARC.set
+
+        The calc for atoms is stripped for simplicity
+        """
+        atoms.calc = None
+        params = dict(params)
+        pair = (atoms, params)
+        self.protocol.send_object(pair)
+        return
+
+    def sendinit():
 
 class SPARCSocketClient(SocketClient):
     def __init__(
@@ -193,7 +196,7 @@ class SPARCSocketClient(SocketClient):
         # TODO: make sure the client is compatible with the default socketclient
         
         # We shall make NEEDINIT to be the default state
-        self.state = "NEEDINIT"
+        # self.state = "NEEDINIT"
         
 
     def calculate(self, atoms, use_stress):
@@ -210,6 +213,9 @@ class SPARCSocketClient(SocketClient):
         calculators do not involve using these. We can let the C-SPARC to spit out
         error about needinit error.
         """
+        # Discard positions received from POSDATA
+        # if the server has send positions through recvinit method
+        discard_posdata = False
         try:
             while True:
                 try:
@@ -230,17 +236,14 @@ class SPARCSocketClient(SocketClient):
                     self.protocol.sendmsg(self.state)
                 elif msg == 'POSDATA':
                     assert self.state == 'READY'
+                    assert atoms is not None, "Your SPARCSocketClient isn't properly initialized!"
                     cell, icell, positions = self.protocol.recvposdata()
-                    atoms.cell[:] = cell
-                    atoms.positions[:] = positions
+                    if not discard_posdata:
+                        atoms.cell[:] = cell
+                        atoms.positions[:] = positions
 
-                    # User may wish to do something with the atoms object now.
-                    # Should we provide option to yield here?
-                    #
-                    # (In that case we should MPI-synchronize *before*
-                    #  whereas now we do it after.)
-
-                    # Send signal for other ranks to proceed with calculation:
+                    # At this stage, we should only rely on self.calculate
+                    # to continue the socket calculation or restart
                     self.comm.broadcast(np.zeros(1, bool), 0)
                     energy, forces, virial = self.calculate(atoms, use_stress)
 
@@ -252,10 +255,17 @@ class SPARCSocketClient(SocketClient):
                     self.state = 'NEEDINIT'
                 elif msg == 'INIT':
                     assert self.state == 'NEEDINIT'
-                    # At this step, we can ask the SPARC socket to 
-                    # bead_index, initbytes = self.protocol.recvinit()
-                    # self.bead_index = bead_index
-                    # self.bead_initbytes = initbytes
+                    # Fall back to the default socketio
+                    bead_index, initbytes = self.protocol.recvinit()
+                    
+                    # The parts below use the new sparc protocol
+                    if initbytes.decode("ascii").startswith("PKLOBJ"):
+                        recv_atoms, params = self.protocol.recv_object()
+                        self.parent_calc.set(**params)
+                        # self.parent_calc.atoms = recv_atoms
+                        # TODO: should we update the atoms directly or keep copy?
+                        atoms = recv_atoms
+                        discard_posdata = True
                     self.state = 'READY'
                 else:
                     raise KeyError('Bad message', msg)
@@ -265,5 +275,8 @@ class SPARCSocketClient(SocketClient):
         def run(self, atoms=None, use_stress=False):
             """Socket mode in SPARC should allow arbitrary start
             """
+            # As a default we shall start the SPARCSocketIO always in needinit mode
+            if atoms is None:
+                self.state = "NEEDINIT"
             for _ in self.irun(atoms=atoms, use_stress=use_stress):
                 pass
