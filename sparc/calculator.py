@@ -255,6 +255,16 @@ class SPARC(FileIOCalculator, IOContext):
         # TODO: add the outbound socket client
         # TODO: we may need to check an actual socket server at host:port?!
         # At this stage, we will need to wait the actual client to join
+        if self.out_socket is None:
+            if self.socket_params["port"] > 0:
+                self.out_socket = SPARCSocketClient(
+                    host=self.socket_params["host"],
+                    port=self.socket_params["port"],
+                    # TODO: change later
+                    log=self.openfile("out_socket.log"),
+                    # TODO: add the log and timeout part
+                    parent_calc=self,
+                )
 
     def __enter__(self):
         """Reset upon entering the context."""
