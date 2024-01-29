@@ -587,7 +587,7 @@ class SPARC(FileIOCalculator, IOContext):
                     print(
                         f"{system_changes} have changed since last calculation. Restart the socket process."
                     )
-                self.close()
+                self.close(keep_out_socket=True)
 
         if self.process is None:
             self.ensure_socket()
@@ -768,12 +768,12 @@ class SPARC(FileIOCalculator, IOContext):
 
         return
 
-    def close(self):
+    def close(self, keep_out_socket=False):
         """Close the socket communication, the SPARC process etc"""
         if self.in_socket is not None:
             self.in_socket.close()
 
-        if self.out_socket is not None:
+        if (self.out_socket is not None) and (not keep_out_socket):
             self.out_socket.close()
 
         # import pdb; pdb.set_trace()
@@ -789,7 +789,8 @@ class SPARC(FileIOCalculator, IOContext):
 
         # TODO: check if in_socket should be merged
         self.in_socket = None
-        self.out_socket = None
+        if not keep_out_socket:
+            self.out_socket = None
         self._reset_process()
 
     def _send_mpi_signal(self, sig):
