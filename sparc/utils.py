@@ -176,7 +176,8 @@ def locate_api(json_file=None, doc_path=None):
                     )
                 api = SparcAPI(tmpfile)
             return api
-        except Exception:
+        except Exception as e:
+            warn(f"Cannot load JSON schema from env {doc_path}, the error is {e}.")
             pass
 
     api = SparcAPI()
