@@ -90,10 +90,6 @@ class SPARCProtocol(IPIProtocol):
         """
         self.log(f"Setup param {name}, {value}")
         msg = self.status()
-        # TODO: see how NEEDINIT works
-        # if msg == 'NEEDINIT':
-        # self.sendinit()
-        # msg = self.status()
         assert msg == "READY", msg
         # Send message
         self.sendmsg("SETPARAM")
@@ -124,6 +120,8 @@ class SPARCProtocol(IPIProtocol):
         return super().recvinit()
 
     def calculate_new_protocol(self, atoms, params):
+        atoms = atoms.copy()
+        atoms.calc = None
         self.log(' calculate with new protocol')
         msg = self.status()
         # We don't know how NEEDINIT is supposed to work, but some codes
@@ -213,10 +211,28 @@ class SPARCSocketServer(SocketServer):
         self.protocol.send_object(pair)
         return
 
-    # def calculate(self, positions, cell):
-    #     """Fallback protocol to adapt the original i-PI protocol
-    #     """
-        # return super().calculate(positions, cell)
+    def calculate_origin_protocol(self, atoms):
+        """Send geometry to client and return calculated things as dict.
+
+        This will block until client has established connection, then
+        wait for the client to finish the calculation."""
+        assert not self._closed
+
+        # If we have not established connection yet, we must block
+        # until the client catches up:
+        if self.protocol is None:
+            self._accept()
+        return self.protocol.calculate(atoms.positions, atoms.cell)
+
+    def calculate_new_protocol(self, atoms, params={}):
+        assert not self._closed
+
+        # If we have not established connection yet, we must block
+        # until the client catches up:
+        if self.protocol is None:
+            self._accept()
+        return self.protocol.calculate_new_protocol(atoms, params)
+    
 
     
 class SPARCSocketClient(SocketClient):
@@ -319,7 +335,6 @@ class SPARCSocketClient(SocketClient):
                         print(recv_atoms, params)
                         if params != {}:
                             self.parent_calc.set(**params)
-                        # self.parent_calc.atoms = recv_atoms
                         # TODO: should we update the atoms directly or keep copy?
                         atoms = recv_atoms
                         atoms.calc = self.parent_calc

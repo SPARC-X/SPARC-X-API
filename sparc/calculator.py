@@ -238,25 +238,33 @@ class SPARC(FileIOCalculator, IOContext):
         return system_state
 
     def ensure_socket(self):
+        # TODO: more ensure directory to other place?
         if not self.directory.is_dir():
             os.makedirs(self.directory, exist_ok=True)
         if not self.use_socket:
             return
         if self.in_socket is None:
-            # self.in_socket is actually a SocketServer
-            socket_name = generate_random_socket_name()
-            print(f"Creating a socket server with name {socket_name}")
-            self.in_socket = SPARCSocketServer(
-                unixsocket=socket_name,
-                # TODO: make the log fd persistent
-                log=self.openfile(self._indir(ext=".log", label="socket"), mode="w"),
-                parent=self,
-            )
+            if self.socket_mode == "server":
+                # TODO: Exception for wrong port
+                self.in_socket = SPARCSocketServer(
+                    port=self.socket_params["port"],
+                    log=self.openfile(self._indir(ext=".log", label="socket"), mode="w"),
+                    parent=self,
+                )
+            else:
+                socket_name = generate_random_socket_name()
+                print(f"Creating a socket server with name {socket_name}")
+                self.in_socket = SPARCSocketServer(
+                    unixsocket=socket_name,
+                    # TODO: make the log fd persistent
+                    log=self.openfile(self._indir(ext=".log", label="socket"), mode="w"),
+                    parent=self,
+                )
         # TODO: add the outbound socket client
         # TODO: we may need to check an actual socket server at host:port?!
         # At this stage, we will need to wait the actual client to join
         if self.out_socket is None:
-            if self.socket_params["port"] > 0:
+            if self.socket_mode == "client":
                 self.out_socket = SPARCSocketClient(
                     host=self.socket_params["host"],
                     port=self.socket_params["port"],
@@ -282,6 +290,26 @@ class SPARC(FileIOCalculator, IOContext):
     @property
     def use_socket(self):
         return self.socket_params["use_socket"]
+
+    @property
+    def socket_mode(self):
+        """The mode of the socket calculator:
+        
+        disabled: pure SPARC file IO interface
+        local: Serves as a local SPARC calculator with socket support
+        client: Relay SPARC calculation
+        server: Remote server
+        """
+        if self.use_socket:
+            if self.socket_params["port"] > 0:
+                if self.socket_params["server_only"]:
+                    return "server"
+                else:
+                    return "client"
+            else:
+                return "local"
+        else:
+            return "disabled"
 
     def _indir(self, ext, label=None, occur=0, d_format="{:02d}"):
         return self.sparc_bundle._indir(
@@ -483,10 +511,14 @@ class SPARC(FileIOCalculator, IOContext):
         if param_changed:
             system_changes.append("parameters")
 
-        if self.use_socket:
+        if self.socket_mode in ("local", "client"):
             self._calculate_with_socket(
                 atoms=atoms, properties=properties, system_changes=system_changes
             )
+            return
+
+        if self.socket_mode == "server":
+            self._calculate_as_server(atoms=atoms, properties=properties, system_changes=system_changes)
             return
         self.write_input(self.atoms, properties, system_changes)
         self.execute()
@@ -506,6 +538,24 @@ class SPARC(FileIOCalculator, IOContext):
                     self.atoms.get_initial_magnetic_moments()
                 )
 
+    def _calculate_as_server(self, atoms=None, properties=["energy"],
+                             system_changes=all_changes):
+        """Use the server component to send instructions to socket
+        """
+        ret, raw_results = self.in_socket.calculate_new_protocol(
+                atoms=atoms, params=self.parameters
+        )
+        self.raw_results = raw_results
+        if "stress" not in self.results:
+            virial_from_socket = ret.get("virial", np.zeros(6))
+            stress_from_socket = -full_3x3_to_voigt_6_stress(virial_from_socket) / atoms.get_volume()
+            self.results["stress"] = stress_from_socket
+        # Energy and forces returned in this case do not need
+        # resorting, since they are already in the same format
+        self.results["energy"] = ret["energy"]
+        self.results["forces"] = ret["forces"]
+        return
+    
     def _calculate_with_socket(
         self, atoms=None, properties=["energy"], system_changes=all_changes
     ):
@@ -557,7 +607,8 @@ class SPARC(FileIOCalculator, IOContext):
                 universal_newlines=True,
                 bufsize=0,
             )
-        ret = self.in_socket.calculate(atoms[self.sort])
+        # in_socket is a server
+        ret = self.in_socket.calculate_origin_protocol(atoms[self.sort])
         # The results are parsed from file outputs (.static + .out)
         # Except for stress, they should be exactly the same as socket returned results
         self.read_results()  #
@@ -573,7 +624,6 @@ class SPARC(FileIOCalculator, IOContext):
             stress_from_socket = -full_3x3_to_voigt_6_stress(virial_from_socket) / atoms.get_volume()
             self.results["stress"] = stress_from_socket
         self.system_state = self._dump_system_state()
-
         return
 
     def get_stress(self, atoms=None):
@@ -723,6 +773,9 @@ class SPARC(FileIOCalculator, IOContext):
         if self.in_socket is not None:
             self.in_socket.close()
 
+        if self.out_socket is not None:
+            self.out_socket.close()
+
         # import pdb; pdb.set_trace()
         # In most cases if in_socket is closed, the SPARC process should also exit
         if self.process:
@@ -736,6 +789,7 @@ class SPARC(FileIOCalculator, IOContext):
 
         # TODO: check if in_socket should be merged
         self.in_socket = None
+        self.out_socket = None
         self._reset_process()
 
     def _send_mpi_signal(self, sig):
@@ -869,6 +923,15 @@ class SPARC(FileIOCalculator, IOContext):
                     )
                 )
         return version
+
+    
+    def run_client(self, atoms=None, use_stress=False):
+        """Main method to start the client code
+        """
+        if not self.socket_mode == "client":
+            raise RuntimeError("Cannot use SPARC.run_client if the calculator is not configured in client mode!")
+
+        self.out_socket.run(atoms, use_stress)
 
     def detect_socket_compatibility(self):
         """Test if the sparc binary supports socket mode"""
