@@ -50,7 +50,7 @@ def atoms_to_dict(
             sort_ = np.array(sort)
             resort_ = make_reverse_mapping(sort_)
         else:
-            sort_ = np.argsort(atoms.get_chemical_symbols())
+            sort_ = np.argsort(atoms.get_chemical_symbols(), kind="stable")
             resort_ = make_reverse_mapping(sort_)
         # This is the sorted atoms object
         atoms = atoms[sort_]

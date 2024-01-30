@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 curdir = Path(__file__).parent
+repo_dir = curdir.parent
 test_psp_dir = curdir / "psps"
 test_output_dir = curdir / "outputs"
 
@@ -133,21 +134,26 @@ def test_read_ion_inpt():
     assert atoms.get_chemical_formula() == "O4Ti2"
 
 
-def test_write_ion_inpt(fs):
+def test_write_ion_inpt():
     """Same example as in test_parse_atoms but try writing inpt and atoms"""
     from ase.build import bulk
     from ase.units import Angstrom, Bohr
 
     from sparc.io import SparcBundle
 
-    fs.create_dir("test.sparc")
-    atoms = bulk("Cu") * [4, 4, 4]
-    with pytest.raises(ValueError):
-        sp = SparcBundle(directory="test.sparc", mode="r")
-        sp._write_ion_and_inpt(atoms)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        atoms = bulk("Cu") * [4, 4, 4]
+        with pytest.raises(ValueError):
+            sp = SparcBundle(directory=tmpdir, mode="r")
+            sp._write_ion_and_inpt(atoms)
 
-    sp = SparcBundle(directory="test.sparc", mode="w")
-    sp._write_ion_and_inpt(atoms, direct=True, copy_psp=False)
+        sp = SparcBundle(directory=tmpdir, mode="w")
+        sp._write_ion_and_inpt(atoms, direct=True, copy_psp=False)
+        assert sp.sorting is not None
+        print(sp.sorting)
+        assert np.isclose(sp.sorting["sort"], np.arange(0, 64)).all()
+        assert np.isclose(sp.sorting["resort"], np.arange(0, 64)).all()
     # Copy psp should have the psps available
 
 
@@ -172,27 +178,29 @@ def test_write_ion_inpt_real(monkeypatch):
         assert len(list(Path(workdir).glob("*.psp8"))) == 1
 
 
-def test_bundle_diff_label(fs):
+def test_bundle_diff_label():
     from ase.build import bulk
     from ase.units import Angstrom, Bohr
 
     from sparc.io import SparcBundle
 
-    fs.create_dir("test.sparc")
-    atoms = bulk("Cu") * [4, 4, 4]
-    sp = SparcBundle(directory="test.sparc", mode="w", label="Cu")
-    sp._write_ion_and_inpt(atoms)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
 
-    sp = SparcBundle(directory="test.sparc", mode="r")
-    assert sp.label == "Cu"
-    assert sp.directory.name == "test.sparc"
+        atoms = bulk("Cu") * [4, 4, 4]
+        sp = SparcBundle(directory=tmpdir, mode="w", label="Cu")
+        sp._write_ion_and_inpt(atoms)
 
-    # Write another into the bundle
-    sp = SparcBundle(directory="test.sparc", mode="w", label="Cu1")
-    sp._write_ion_and_inpt(atoms)
+        sp = SparcBundle(directory=tmpdir, mode="r")
+        assert sp.label == "Cu"
+        assert sp.directory.name == tmpdir.name
 
-    with pytest.raises(Exception):
-        sp = SparcBundle(directory="test.sparc", mode="r")
+        # Write another into the bundle
+        sp = SparcBundle(directory=tmpdir, mode="w", label="Cu1")
+        sp._write_ion_and_inpt(atoms)
+
+        with pytest.raises(Exception):
+            sp = SparcBundle(directory=tmpdir, mode="r")
 
 
 def test_bundle_write_multi():
@@ -282,9 +290,13 @@ def test_bundle_nh3():
         tmpdir = Path(tmpdir)
         sb = SparcBundle(directory=tmpdir, mode="w")
         sb._write_ion_and_inpt(atoms=nh3)
+        assert sb.sorting is not None
+        assert tuple(sb.sorting["sort"]) == (1, 2, 3, 0)
+        assert tuple(sb.sorting["resort"]) == (3, 0, 1, 2)
         # Read back, the sorting should remain the same
         sb2 = SparcBundle(directory=tmpdir, mode="r")
         atoms = sb2.convert_to_ase()
+        assert tuple(sb2.sorting["sort"]) == (1, 2, 3, 0)
         assert tuple(sb2.sorting["resort"]) == (3, 0, 1, 2)
         assert tuple(atoms.get_chemical_symbols()) == ("N", "H", "H", "H")
         assert atoms.constraints[0].index[0] == 0

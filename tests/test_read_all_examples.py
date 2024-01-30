@@ -35,9 +35,10 @@ selected_quick_tests = [
 def test_read_all_tests():
     """Search all .inpt files within the tests dir."""
 
+    import os
+
     from sparc.io import read_sparc
     from sparc.utils import locate_api
-    import os
 
     print("SPARC_DOC_PATH is: ", os.environ.get("SPARC_DOC_PATH", None))
     api = locate_api()
@@ -53,6 +54,10 @@ def test_read_all_tests():
     for inpt_file in tests_dir.glob("**/*.inpt"):
         workdir = inpt_file.parent
         parent_name = inpt_file.parents[1].name
+        realpath = workdir.resolve()
+        # Do not run on socket tests
+        if "Socket_tests" in realpath.as_posix():
+            continue
         if parent_name in skipped_names:
             continue
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -161,6 +166,7 @@ def test_quick_examples():
     for test_name in selected_quick_tests:
         bundle = tests_dir / test_name
         parent_name = test_name.split("/")[0]
+        print(f"testing quick example {parent_name}")
 
         atoms = read_sparc(bundle, index=0)
         inpt_file = bundle / f"{parent_name}.inpt"

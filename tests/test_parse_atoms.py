@@ -248,3 +248,30 @@ def test_atoms_pbc_conversion():
     mos2 = mx2("MoS2")
     sparc_dict = atoms_to_dict(mos2)
     assert sparc_dict["inpt"]["params"]["BC"] == "P P D"
+
+
+def test_atoms_sorting_order():
+    """Chemical symbols should be sorted in a 'stable'-fashion
+    i.e. the relative ordering between elements of the same symbol
+    should appear the same after the sorting
+    """
+    from ase.build import bulk, molecule
+
+    from sparc.sparc_parsers.atoms import atoms_to_dict
+
+    # Case 1: All the same atoms, sort and resort should be the original order
+    # stable-sort should retain the original order
+    cu = bulk("Cu") * [5, 5, 5]
+    ion_data = atoms_to_dict(cu, sort=True)["ion"]
+    assert tuple(ion_data["sorting"]["sort"]) == tuple(range(125))
+    assert tuple(ion_data["sorting"]["resort"]) == tuple(range(125))
+
+    # Case 2: after sorting, the relative order of the same element should be incremental
+    h2o = molecule("H2O", cell=[4, 4, 4], pbc=True) * [5, 5, 5]
+    # The first 125 * 2 = 250 --> H
+    ion_data = atoms_to_dict(h2o, sort=True)["ion"]
+    sort_H = np.array(ion_data["sorting"]["sort"][:250])
+    sort_O = np.array(ion_data["sorting"]["sort"][250:])
+    # sort must be strictly incremental
+    assert np.all(sort_H[1:] - sort_H[:-1])
+    assert np.all(sort_O[1:] - sort_O[:-1])
