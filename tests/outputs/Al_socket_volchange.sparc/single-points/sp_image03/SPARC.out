@@ -1,0 +1,134 @@
+***************************************************************************
+*                       SPARC (version Oct 31, 2023)                      *
+*   Copyright (c) 2020 Material Physics & Mechanics Group, Georgia Tech   *
+*           Distributed under GNU General Public License 3 (GPL)          *
+*                   Start time: Thu Jan 18 08:03:29 2024                  *
+***************************************************************************
+                           Input parameters                                
+***************************************************************************
+LATVEC_SCALE: 1 1 1 
+LATVEC:
+7.882992533928750 0.000000000000000 0.000000000000000 
+0.000000000000000 7.882992533928750 0.000000000000000 
+0.000000000000000 0.000000000000000 7.882992533928750 
+FD_GRID: 15 15 15
+FD_ORDER: 12
+BC: P P P
+KPOINT_GRID: 1 1 1
+KPOINT_SHIFT: 0 0 0
+SPIN_TYP: 0
+ELEC_TEMP_TYPE: Fermi-Dirac
+SMEARING: 0.000950043469
+EXCHANGE_CORRELATION: GGA_PBE
+NSTATES: 12
+CHEB_DEGREE: 17
+CHEFSI_BOUND_FLAG: 0
+CALC_STRESS: 1
+MAXIT_SCF: 100
+MINIT_SCF: 2
+MAXIT_POISSON: 3000
+TOL_SCF: 1.00E-03
+POISSON_SOLVER: AAR
+TOL_POISSON: 1.00E-05
+TOL_LANCZOS: 1.00E-02
+TOL_PSEUDOCHARGE: 1.00E-06
+MIXING_VARIABLE: density
+MIXING_PRECOND: kerker
+TOL_PRECOND: 2.76E-04
+PRECOND_KERKER_KTF: 1
+PRECOND_KERKER_THRESH: 0
+MIXING_PARAMETER: 1
+MIXING_HISTORY: 7
+PULAY_FREQUENCY: 1
+PULAY_RESTART: 0
+REFERENCE_CUTOFF: 0.5
+RHO_TRIGGER: 4
+NUM_CHEFSI: 1
+FIX_RAND: 0
+VERBOSITY: 1
+PRINT_FORCES: 1
+PRINT_ATOMS: 1
+PRINT_EIGEN: 0
+PRINT_DENSITY: 0
+PRINT_ENERGY_DENSITY: 0
+OUTPUT_FILE: SPARC
+***************************************************************************
+                                Cell                                       
+***************************************************************************
+Lattice vectors (Bohr):
+7.882992533928750 0.000000000000000 0.000000000000000 
+0.000000000000000 7.882992533928750 0.000000000000000 
+0.000000000000000 0.000000000000000 7.882992533928750 
+Volume: 4.8986154253E+02 (Bohr^3)
+Density: 2.2031971206E-01 (amu/Bohr^3), 2.4688747266E+00 (g/cc)
+***************************************************************************
+                           Parallelization                                 
+***************************************************************************
+NP_SPIN_PARAL: 1
+NP_KPOINT_PARAL: 1
+NP_BAND_PARAL: 2
+NP_DOMAIN_PARAL: 1 1 1
+NP_DOMAIN_PHI_PARAL: 1 1 2
+EIG_SERIAL_MAXNS: 1500
+***************************************************************************
+                             Initialization                                
+***************************************************************************
+Number of processors               :  2
+Mesh spacing                       :  0.525533 (Bohr)
+Number of symmetry adapted k-points:  1
+Output printed to                  :  SPARC.out
+Total number of atom types         :  1
+Total number of atoms              :  4
+Total number of electrons          :  12
+Atom type 1  (valence electrons)   :  Al 3
+Pseudopotential                    :  13_Al_3_1.9_1.9_pbe_n_v1.0.psp8
+Atomic mass                        :  26.9815385
+Pseudocharge radii of atom type 1  :  7.36 7.36 7.36 (x, y, z dir)
+Number of atoms of type 1          :  4
+Estimated total memory usage       :  3.01 MB
+Estimated memory per processor     :  1.50 MB
+===================================================================
+                    Self Consistent Field (SCF#1)                     
+===================================================================
+Iteration     Free Energy (Ha/atom)   SCF Error        Timing (sec)
+1            -2.2651344754E+00        2.028E-01        0.018
+2            -2.2666991193E+00        2.472E-01        0.007
+3            -2.2641458016E+00        1.047E-01        0.007
+4            -2.2638828224E+00        5.919E-02        0.007
+5            -2.2638142438E+00        1.442E-02        0.006
+6            -2.2638150695E+00        1.529E-02        0.006
+7            -2.2638084699E+00        1.668E-03        0.006
+8            -2.2638077756E+00        1.169E-03        0.006
+9            -2.2638075048E+00        5.802E-04        0.006
+Total number of SCF: 9     
+====================================================================
+                    Energy and force calculation                    
+====================================================================
+Free energy per atom               : -2.2638075048E+00 (Ha/atom)
+Total free energy                  : -9.0552300193E+00 (Ha)
+Band structure energy              :  3.5437936851E-01 (Ha)
+Exchange correlation energy        : -4.2791320655E+00 (Ha)
+Self and correction energy         : -1.2498805405E+01 (Ha)
+-Entropy*kb*T                      : -2.6332920571E-03 (Ha)
+Fermi level                        :  1.0712409303E-01 (Ha)
+RMS force                          :  5.9914302832E-03 (Ha/Bohr)
+Maximum force                      :  7.3681031524E-03 (Ha/Bohr)
+Time for force calculation         :  0.013 (sec)
+Pressure                           :  4.9470135481E+00 (GPa)
+Maximum stress                     :  2.8951496890E+01 (GPa)
+Time for stress calculation        :  0.024 (sec)
+***************************************************************************
+                               Timing info                                 
+***************************************************************************
+Total walltime                     :  0.182 sec
+___________________________________________________________________________
+
+***************************************************************************
+*             Material Physics & Mechanics Group, Georgia Tech            *
+*                       PI: Phanish Suryanarayana                         *
+*               List of contributors: See the documentation               *
+*         Citation: See README.md or the documentation for details        *
+*  Acknowledgements: U.S. DOE SC (DE-SC0019410), U.S. DOE NNSA (ASC)      *
+*      {Preliminary developments: U.S. NSF (1333500,1663244,1553212)}     *
+***************************************************************************
+                                                                           

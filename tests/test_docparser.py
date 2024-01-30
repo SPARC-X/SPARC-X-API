@@ -1,15 +1,18 @@
 """Test for SPARC doc parser
 """
 import os
+import tempfile
 from pathlib import Path
 
 import pytest
 
-curdir = Path(__file__).parent
+curdir = Path(__file__).parent.resolve()
+repo_dir = curdir.parent
 test_doc_dir = curdir / "sparc-latex-doc-202302"
+test_doc_socket_dir = curdir / "sparc-latex-socket-202401"
 
 
-def test_docparser_init_wrong(fs):
+def test_docparser_init_wrong():
     """Mimic situations where docparser inits at wrong file structure"""
     from sparc.docparser import SparcDocParser
 
@@ -18,15 +21,20 @@ def test_docparser_init_wrong(fs):
         sp = SparcDocParser("/tmp")
 
     # Case 2: missing manual
-    fs.create_dir(".LaTeX")
-    fs.create_file(".LaTeX/Manual.tex")
-    with pytest.raises(FileNotFoundError):
-        sp = SparcDocParser(".LaTeX")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        with open(tmpdir / "Manual.tex", "w") as fd:
+            fd.write("")
+        with pytest.raises(FileNotFoundError):
+            sp = SparcDocParser(tmpdir)
 
     # Case 3: missing manual
-    fs.create_file(".LaTeX/Introduction.tex")
-    with pytest.raises(Exception):
-        sp = SparcDocParser(".LaTeX")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        with open(tmpdir / "Introduction.tex", "w") as fd:
+            fd.write("")
+        with pytest.raises(Exception):
+            sp = SparcDocParser(tmpdir)
 
 
 def test_docparser_init_working():
@@ -49,6 +57,7 @@ def test_docparser_init_working():
 
 def test_version_parser(fs, monkeypatch):
     """Only parse version"""
+    fs.add_real_directory(repo_dir)
     from sparc.docparser import SparcDocParser
 
     content_init_c = """void write_output_init(SPARC_OBJ *pSPARC) {
@@ -179,3 +188,16 @@ def test_docparser_main():
     import subprocess
 
     subprocess.run(["python", "-m", "sparc.docparser", f"{test_doc_dir.as_posix()}"])
+
+
+def test_socket_doc():
+    from sparc.docparser import SparcDocParser
+
+    sp = SparcDocParser(directory=test_doc_socket_dir)
+    assert "SOCKET_FLAG" in sp.parameters
+    assert "SOCKET_HOST" in sp.parameters
+    assert "SOCKET_INET" in sp.parameters
+    assert "SOCKET_PORT" in sp.parameters
+    assert "SOCKET_MAX_NITER" in sp.parameters
+    assert sp.parameters["SOCKET_MAX_NITER"]["type"] == "integer"
+    assert sp.parameters["SOCKET_MAX_NITER"]["default"] == 10000

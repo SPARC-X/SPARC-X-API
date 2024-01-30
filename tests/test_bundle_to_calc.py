@@ -1,4 +1,5 @@
 import os
+import re
 import tempfile
 from pathlib import Path
 
@@ -9,6 +10,20 @@ from ase.units import Hartree
 curdir = Path(__file__).parent
 test_psp_dir = curdir / "psps"
 test_output_dir = curdir / "outputs"
+
+
+def test_files_glob():
+    """Only match the re part"""
+    pattern = r"^\.out(?:_\d+)?$"
+    assert re.fullmatch(pattern, ".out")
+    assert re.fullmatch(pattern, ".out_0")
+    assert re.fullmatch(pattern, ".out_01")
+    assert re.fullmatch(pattern, ".out_009")
+    assert re.fullmatch(pattern, ".out_") is None
+    assert re.fullmatch(pattern, ".out_00_") is None
+    assert re.fullmatch(pattern, ".out#") is None
+    assert re.fullmatch(pattern, ".out~") is None
+    assert re.fullmatch(pattern, ".out_01~") is None
 
 
 def test_bundle_convert():

@@ -7,7 +7,9 @@ ase.io.vasp
 ase.io.trajectory
 
 """
+import itertools
 import os
+import re
 from pathlib import Path
 from warnings import warn
 
@@ -26,11 +28,11 @@ from .sparc_parsers.inpt import _read_inpt, _write_inpt
 from .sparc_parsers.ion import _read_ion, _write_ion
 from .sparc_parsers.out import _read_out
 from .sparc_parsers.pseudopotential import copy_psp_file, parse_psp8_header
-from .sparc_parsers.static import _read_static
+from .sparc_parsers.static import _add_cell_info, _read_static
 from .utils import deprecated, locate_api, string2index
 
 # from .sparc_parsers.ion import read_ion, write_ion
-defaultAPI = SparcAPI()
+defaultAPI = locate_api()
 
 
 class SparcBundle:
@@ -319,6 +321,9 @@ class SparcBundle:
 
         _write_ion(self._indir(".ion"), data_dict, validator=self.validator)
         _write_inpt(self._indir(".inpt"), data_dict, validator=self.validator)
+        # Update the sorting information
+        ion_dict = _read_ion(self._indir(".ion"))["ion"]
+        self.sorting = ion_dict.get("sorting", None)
         return
 
     def read_raw_results(self, include_all_files=False):
@@ -336,7 +341,14 @@ class SparcBundle:
             self.raw_results (dict or List): the same as the return value
         """
         # Find the max output index
-        last_out = sorted(self.directory.glob(f"{self.label}.out*"), reverse=True)
+        out_files = self.directory.glob(f"{self.label}.out*")
+        valid_out_files = [
+            f
+            for f in out_files
+            if (re.fullmatch(r"^\.out(?:_\d+)?$", f.suffix) is not None)
+        ]
+        # Combine and sort the file lists
+        last_out = sorted(valid_out_files, reverse=True)
         # No output file, only ion / inpt
         if len(last_out) == 0:
             self.last_image = -1
@@ -459,7 +471,7 @@ class SparcBundle:
         SinglePointDFTCalculators
 
         The calculator also takes parameters from ion, inpt that exist
-        in self.raw_results
+        in self.raw_results.
 
         Arguments:
             calc_results (List): Calculation results for all images
@@ -474,7 +486,7 @@ class SparcBundle:
         for res, _atoms in zip(calc_results, images):
             atoms = _atoms.copy()
             sp = SinglePointDFTCalculator(atoms)
-            # Simply copy the results?
+            # Res can be empty at this point, leading to incomplete calc
             sp.results.update(res)
             sp.name = "sparc"
             sp.kpts = raw_results["inpt"].get("params", {}).get("KPOINT_GRID", None)
@@ -504,36 +516,63 @@ class SparcBundle:
             List[results], List[Atoms]
 
         """
-        # TODO: implement the multi-file static
-        static_results = raw_results.get("static", {})
-        calc_results = {}
-        if "free energy" in static_results:
-            calc_results["energy"] = static_results["free energy"]
-            calc_results["free energy"] = static_results["free energy"]
+        static_results = raw_results.get("static", [])
+        calc_results = []
+        # Use extra lattice information to construct the positions
+        cell = self.init_atoms.cell
+        # import pdb; pdb.set_trace()
+        static_results = _add_cell_info(static_results, cell)
 
-        if "forces" in static_results:
-            # TODO: what about non-sorted ones
-            calc_results["forces"] = static_results["forces"][self.resort]
+        if isinstance(index, int):
+            _images = [static_results[index]]
+        elif isinstance(index, str):
+            _images = static_results[string2index(index)]
 
-        if "stress" in static_results:
-            calc_results["stress"] = static_results["stress"]
+        ase_images = []
+        for static_results in _images:
+            partial_results = {}
+            if "free energy" in static_results:
+                partial_results["energy"] = static_results["free energy"]
+                partial_results["free energy"] = static_results["free energy"]
 
-        if "stress_equiv" in static_results:
-            calc_results["stress_equiv"] = static_results["stress_equiv"]
+            if "forces" in static_results:
+                partial_results["forces"] = static_results["forces"][self.resort]
 
-        atoms = self.init_atoms.copy()
-        if "atoms" in static_results:
-            atoms_dict = static_results["atoms"]
-            # TODO: detect change in atomic symbols!
-            # TODO: Check naming, is it coord_frac or scaled_positions?
-            if "coord_frac" in atoms_dict:
-                # TODO: check if set_scaled_positions requires constraint?
-                atoms.set_scaled_positions(atoms_dict["coord_frac"][self.resort])
-            elif "coord" in atoms_dict:
-                atoms.set_positions(
-                    atoms_dict["coord"][self.resort], apply_constraint=False
-                )
-        return [calc_results], [atoms]
+            if "stress" in static_results:
+                partial_results["stress"] = static_results["stress"]
+
+            if "stress_equiv" in static_results:
+                partial_results["stress_equiv"] = static_results["stress_equiv"]
+
+            atoms = self.init_atoms.copy()
+            # import pdb; pdb.set_trace()
+            if "atoms" in static_results:
+                atoms_dict = static_results["atoms"]
+
+                # The socket mode case. Reset all cell and positions
+                # Be careful,
+                if "lattice" in static_results:
+                    lat = static_results["lattice"]
+                    atoms.set_cell(lat, scale_atoms=False)
+                    if "coord" not in atoms_dict:
+                        raise KeyError(
+                            "Coordination conversion failed in socket static output!"
+                        )
+                    atoms.set_positions(
+                        atoms_dict["coord"][self.resort], apply_constraint=False
+                    )
+                else:  # Do not change cell information (normal static file)
+                    if "coord_frac" in atoms_dict:
+                        atoms.set_scaled_positions(
+                            atoms_dict["coord_frac"][self.resort]
+                        )
+                    elif "coord" in atoms_dict:
+                        atoms.set_positions(
+                            atoms_dict["coord"][self.resort], apply_constraint=False
+                        )
+            ase_images.append(atoms)
+            calc_results.append(partial_results)
+        return calc_results, ase_images
 
     def _extract_geopt_results(self, raw_results, index=":"):
         """Extract the static calculation results and atomic
