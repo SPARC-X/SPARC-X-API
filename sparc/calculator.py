@@ -90,7 +90,7 @@ class SPARC(FileIOCalculator, IOContext):
         sparc_json_file=None,
         sparc_doc_path=None,
         check_version=False,
-        keep_old_files=False,
+        keep_old_files=True,
         use_socket=False,
         socket_params={},
         **kwargs,
