@@ -783,3 +783,4 @@ examples/ex1-ase/
 /test-1/
 /test-2/
 *.pt
+/README.html
