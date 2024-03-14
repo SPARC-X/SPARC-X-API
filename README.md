@@ -376,8 +376,11 @@ overhead typically associated with file I/O during calculation
 restarts. This feature is particularly beneficial for tasks involving
 repetitive operations like structural optimization and saddle point
 searches, where traditional file-based communication can become a
-bottleneck. The underlying software architecture is shown in the following scheme:
+bottleneck. The underlying software architecture is shown in [Fig. 2]():
+
 ![scheme-sparc-socket](doc/img/scheme_socket_hetero.png)
+*Fig. 2. Scheme for the operation of SPARC socket communication accross heterogeneous 
+computational platforms.*
 
  
 
@@ -398,9 +401,10 @@ adheres to the [i-PI protocol](https://github.com/i-pi/i-pi)
 standard. Specifically, we implement the original i-PI protocol within
 the SPARC C-source code, while the python SPARC-X-API uses a
 backward-compatible protocol based on i-PI. The dual-mode design is aimed for both low-level and
-high-level interfacing of the DFT codes, providing the following features:
+high-level interfacing of the DFT codes, providing the following features as shown in [Fig. 3]():
 
 ![scheme-sparc-protocol](doc/img/scheme_sparc_protocol.png)
+*Fig. 3. Overview of the SPARC protocol as an extension to the standard i-PI protocol.*
 
 1. **Unified Interface**: A consistent interface for both client and server codes, simplifying user interaction across different modes.
 2. **Versatile Operation Modes:** Supports various modes (Local-only, Client, Server) to cater to diverse computational needs.
