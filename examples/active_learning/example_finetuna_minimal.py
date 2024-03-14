@@ -46,6 +46,7 @@ ml_potential = FinetunerEnsembleCalc(
 )
 
 
+<<<<<<< HEAD
 # init_molecule = molecule("H2O", pbc=False, cell=[8, 8, 8])
 # init_molecule.center()
 # init_molecule.rattle()
@@ -77,6 +78,14 @@ sparc_params = {"xc": "pbe", "h": 0.13}
 
 with SPARC(directory="online_coldstart", **sparc_params) as parent_calc:
     atoms = init_atoms.copy()
+=======
+init_molecule = molecule("H2O", pbc=False, cell=[8, 8, 8])
+init_molecule.center()
+init_molecule.rattle()
+
+sparc_params = {"directory": curdir, "xc": "pbe", "h": 0.22}
+with SPARC(**sparc_params) as parent_calc:
+>>>>>>> f703ec5 (use smaller mesh size)
     onlinecalc = OnlineLearner(learner, [], ml_potential, parent_calc)
     atoms.calc = onlinecalc
     dyn = BFGS(atoms,
