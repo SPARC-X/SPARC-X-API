@@ -10,7 +10,11 @@
 2. A JSON API interfacing with SPARC's C-code for parameter validation and conversion
 3. A comprehensive calculator interface for SPARC.
 
+[Fig. 1]() provides an overlook of the components of `SPARC-X-API`.
+
 ![scheme-sparc-api-outlook](doc/img/scheme_api_architecture.png)
+*Fig. 1 Schematic drawing for the architecture of the `SPARC-X-API` package*
+
 
 
 ## Installation:
