@@ -371,7 +371,7 @@ restarts. This feature is particularly beneficial for tasks involving
 repetitive operations like structural optimization and saddle point
 searches, where traditional file-based communication can become a
 bottleneck. The underlying software architecture is shown in the following scheme:
-![scheme-sparc-socket](doc/img/scheme_socket_hetero.svg)
+![scheme-sparc-socket](doc/img/scheme_socket_hetero.png)
 
  
 
@@ -394,7 +394,7 @@ the SPARC C-source code, while the python SPARC-X-API uses a
 backward-compatible protocol based on i-PI. The dual-mode design is aimed for both low-level and
 high-level interfacing of the DFT codes, providing the following features:
 
-![scheme-sparc-protocol](doc/img/scheme_sparc_protocol.svg)
+![scheme-sparc-protocol](doc/img/scheme_sparc_protocol.png)
 
 1. **Unified Interface**: A consistent interface for both client and server codes, simplifying user interaction across different modes.
 2. **Versatile Operation Modes:** Supports various modes (Local-only, Client, Server) to cater to diverse computational needs.
