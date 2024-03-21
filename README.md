@@ -411,6 +411,8 @@ high-level interfacing of the DFT codes, providing the following features as sho
 3. **Seamless Calculation Restart:** Automates the restarting process on the client side, enhancing user convenience.
 
 Based on the user scenarios, the socket communication layer can be accessed via the following approaches:
+![scheme-sparc-modes](doc/img/scheme-SPARC-socket-modes.png)
+*Fig. 4. Different operational modes of SPARC socket modes
 
 1. **SPARC binary only**
    
