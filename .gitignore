@@ -782,3 +782,5 @@ examples/ex1-ase/
 /*.psp8
 /test-1/
 /test-2/
+*.pt
+/README.html

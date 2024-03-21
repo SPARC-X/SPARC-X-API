@@ -1,0 +1,867 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="214.12332mm"
+   height="111.11124mm"
+   viewBox="0 0 214.12332 111.11124"
+   version="1.1"
+   id="svg7857"
+   inkscape:version="1.2.2 (b0a84865, 2022-12-01)"
+   sodipodi:docname="scheme-SPARC-socke-modes.svg"
+   inkscape:export-filename="scheme-SPARC-socket-modes.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7859"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     showguides="true"
+     inkscape:zoom="0.99154209"
+     inkscape:cx="471.99207"
+     inkscape:cy="281.37989"
+     inkscape:window-width="1894"
+     inkscape:window-height="1038"
+     inkscape:window-x="26"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1">
+    <sodipodi:guide
+       position="110.02406,134.8114"
+       orientation="1,0"
+       id="guide16191"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <defs
+     id="defs7854" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-6.4417217,-5.893394)">
+    <rect
+       style="opacity:0.6;fill:#c19d49;fill-opacity:0.6;fill-rule:evenodd;stroke:none;stroke-width:0.24792;stroke-linecap:square;stroke-dasharray:0.991685, 0.24792"
+       id="rect15144"
+       width="45"
+       height="35"
+       x="11.243647"
+       y="71.940865"
+       ry="3.3120959" />
+    <rect
+       style="opacity:1;fill:#bcbcbc;fill-opacity:0.6;fill-rule:evenodd;stroke:none;stroke-width:0.264999;stroke-linecap:square;stroke-dasharray:1.06, 0.264999"
+       id="rect8030"
+       width="36.986282"
+       height="26"
+       x="11.576823"
+       y="19.6875"
+       ry="3.784137" />
+    <rect
+       style="opacity:0.6;fill:#49bbc1;fill-opacity:0.6;fill-rule:evenodd;stroke:none;stroke-width:0.264999;stroke-linecap:square;stroke-dasharray:1.06, 0.264999"
+       id="rect9492"
+       width="39.516949"
+       height="26"
+       x="67.633759"
+       y="20.216667"
+       ry="3.784137" />
+    <g
+       id="g15256"
+       style="display:inline;fill:#f4614b;fill-opacity:1"
+       transform="translate(-101.96561,-1.5658832)">
+      <g
+         id="g22952"
+         style="fill:#f4614b;fill-opacity:1">
+        <path
+           style="fill:#bcbcbc;fill-opacity:1;stroke:#b5b5b5;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 152.14079,34.782551 h 17.16354"
+           id="path10801"
+           sodipodi:nodetypes="cc" />
+        <rect
+           style="fill:#bcbcbc;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.3;stroke-opacity:1"
+           id="rect10797"
+           width="2.9423223"
+           height="3.2515326"
+           x="149.6113"
+           y="33.156784"
+           ry="0" />
+        <rect
+           style="fill:#bcbcbc;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.3;stroke-opacity:1"
+           id="rect10799"
+           width="2.9423223"
+           height="3.2515326"
+           x="168.01189"
+           y="33.156784"
+           ry="0" />
+      </g>
+    </g>
+    <rect
+       style="opacity:1;fill:#bcbcbc;fill-opacity:0.6;fill-rule:evenodd;stroke:none;stroke-width:0.264999;stroke-linecap:square;stroke-dasharray:1.06, 0.264999"
+       id="rect8030-5"
+       width="36.986282"
+       height="26"
+       x="118.73639"
+       y="20.216667"
+       ry="3.784137" />
+    <rect
+       style="opacity:0.6;fill:#c16149;fill-opacity:0.6;fill-rule:evenodd;stroke:none;stroke-width:0.264999;stroke-linecap:square;stroke-dasharray:1.06, 0.264999"
+       id="rect9492-4"
+       width="39.516949"
+       height="26"
+       x="174.79333"
+       y="20.216667"
+       ry="3.784137" />
+    <g
+       id="g15256-9"
+       style="display:inline;fill:#f4614b;fill-opacity:1"
+       transform="translate(5.1939574,-1.5658832)">
+      <g
+         id="g22952-1"
+         style="fill:#f4614b;fill-opacity:1">
+        <path
+           style="fill:#bcbcbc;fill-opacity:1;stroke:#b5b5b5;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 152.14079,34.782551 h 17.16354"
+           id="path10801-9"
+           sodipodi:nodetypes="cc" />
+        <rect
+           style="fill:#bcbcbc;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.3;stroke-opacity:1"
+           id="rect10797-38"
+           width="2.9423223"
+           height="3.2515326"
+           x="149.6113"
+           y="33.156784"
+           ry="0" />
+        <rect
+           style="fill:#bcbcbc;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.3;stroke-opacity:1"
+           id="rect10799-5"
+           width="2.9423223"
+           height="3.2515326"
+           x="168.01189"
+           y="33.156784"
+           ry="0" />
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:3.52777px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="6.3499999"
+       y="8.5709715"
+       id="text10414"><tspan
+         sodipodi:role="line"
+         id="tspan10412"
+         style="font-weight:bold;stroke-width:0.264583"
+         x="6.3499999"
+         y="8.5709715">a</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:3.52777px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="111.12498"
+       y="8.5709715"
+       id="text10418"><tspan
+         sodipodi:role="line"
+         id="tspan10416"
+         style="font-weight:bold;stroke-width:0.264583"
+         x="111.12498"
+         y="8.5709715">b</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:3.52777px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="6.3288331"
+       y="70.483482"
+       id="text10422"><tspan
+         sodipodi:role="line"
+         id="tspan10420"
+         style="font-weight:bold;stroke-width:0.264583"
+         x="6.3288331"
+         y="70.483482">c</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:3.52777px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="111.21317"
+       y="70.483482"
+       id="text10426"><tspan
+         sodipodi:role="line"
+         id="tspan10424"
+         style="font-weight:bold;stroke-width:0.264583"
+         x="111.21317"
+         y="70.483482">d</tspan></text>
+    <rect
+       style="opacity:0.6;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.403644;stroke-linecap:square;stroke-dasharray:1.61458, 0.403644"
+       id="rect10442"
+       width="50.765274"
+       height="45.55365"
+       x="10.428483"
+       y="70.543457"
+       ry="5.6531553" />
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="123.98347"
+       y="17.32444"
+       id="text10472"><tspan
+         sodipodi:role="line"
+         id="tspan10470"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="123.98347"
+         y="17.32444">SPARC binary (client)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="182.37819"
+       y="17.891706"
+       id="text12804"><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="182.37819"
+         y="17.891706"
+         id="tspan12806">SPARC-X-API Server</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="72.876175"
+       y="17.32444"
+       id="text12804-8"><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="72.876175"
+         y="17.32444"
+         id="tspan12806-4">i-PI-compatible Server</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="71.551147"
+       y="27.727449"
+       id="text12854"><tspan
+         sodipodi:role="line"
+         id="tspan12852"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+         x="71.551147"
+         y="27.727449"> </tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+         x="71.551147"
+         y="31.255224"
+         id="tspan13748">SocketIOCalculator(</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+         x="71.551147"
+         y="34.783001"
+         id="tspan14038">    **parameters</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+         x="71.551147"
+         y="38.310776"
+         id="tspan14040">)</tspan></text>
+    <g
+       id="g15356"
+       transform="translate(-50.081398,16.363262)">
+      <rect
+         style="opacity:0.6;fill:#49bbc1;fill-opacity:0.6;fill-rule:evenodd;stroke:none;stroke-width:0.264999;stroke-linecap:square;stroke-dasharray:1.06, 0.264999"
+         id="rect9492-9"
+         width="39.516949"
+         height="26"
+         x="117.71516"
+         y="60.077606"
+         ry="3.784137" />
+      <text
+         xml:space="preserve"
+         style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+         x="121.63255"
+         y="67.588387"
+         id="text12854-5"><tspan
+           sodipodi:role="line"
+           id="tspan12852-72"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+           x="121.63255"
+           y="67.588387"> </tspan><tspan
+           sodipodi:role="line"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+           x="121.63255"
+           y="71.116165"
+           id="tspan13748-0">SocketIOCalculator(</tspan><tspan
+           sodipodi:role="line"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+           x="121.63255"
+           y="74.643936"
+           id="tspan14038-6">    **parameters</tspan><tspan
+           sodipodi:role="line"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+           x="121.63255"
+           y="78.171715"
+           id="tspan14040-7">)</tspan></text>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="177.92757"
+       y="25.963562"
+       id="text12854-7"><tspan
+         sodipodi:role="line"
+         id="tspan12852-7"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+         x="177.92757"
+         y="25.963562"> </tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+         x="177.92757"
+         y="29.491337"
+         id="tspan14104">SPARC(   </tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+         x="177.92757"
+         y="33.019112"
+         id="tspan14106">    use_socket=True,</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+         x="177.92757"
+         y="36.546886"
+         id="tspan14110">    **parameters</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+         x="177.92757"
+         y="40.074661"
+         id="tspan13966">)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="13.498499"
+       y="99.102745"
+       id="text12854-7-7"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+         x="13.498499"
+         y="99.102745"
+         id="tspan13966-8">python -m sparc.client \</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+         x="13.498499"
+         y="102.63052"
+         id="tspan15287">       -s $host:$port</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-weight:bold;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';display:inline;stroke-width:0.264583"
+       x="13.211473"
+       y="30.085691"
+       id="text4844"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono Bold';stroke-width:0.264583"
+         x="13.211473"
+         y="30.085691"
+         id="tspan4850">mpirun -np $Ncore \</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono Bold';stroke-width:0.264583"
+         x="13.211473"
+         y="33.668221"
+         id="tspan13694">sparc -name $fname \</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono Bold';stroke-width:0.264583"
+         x="13.211473"
+         y="37.250751"
+         id="tspan4852">      -socket $sname</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:3.52777px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="50.841465"
+       y="53.72501"
+       id="text13752"><tspan
+         sodipodi:role="line"
+         id="tspan13750"
+         style="stroke-width:0.264583"
+         x="50.841465"
+         y="53.72501" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:3.52777px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="27.920572"
+       y="7.7400441"
+       id="text13756"><tspan
+         sodipodi:role="line"
+         id="tspan13754"
+         style="stroke-width:0.264583"
+         x="27.920572"
+         y="7.7400441" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="16.823902"
+       y="17.13253"
+       id="text10472-6"><tspan
+         sodipodi:role="line"
+         id="tspan10470-8"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="16.823902"
+         y="17.13253">SPARC binary (client)</tspan></text>
+    <rect
+       style="opacity:0.6;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#5a5a5a;stroke-width:0.6;stroke-linecap:square;stroke-dasharray:2.4, 2.4;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect13836"
+       width="100.33933"
+       height="36.689182"
+       x="116.41665"
+       y="13.478295"
+       ry="3.784137" />
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="122.2859"
+       y="30.528503"
+       id="text13972"><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="122.2859"
+         y="30.528503"
+         id="tspan13976">Process auto-managed</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="122.2859"
+         y="34.056278"
+         id="tspan14117">via</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+         x="122.2859"
+         y="37.584053"
+         id="tspan14119">$ASE_SPARC_COMMAND</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="11.435712"
+       y="50.434074"
+       id="text13980"><tspan
+         sodipodi:role="line"
+         id="tspan13978"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="11.435712"
+         y="50.434074">• Manual input generation</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="11.435712"
+         y="53.961849"
+         id="tspan14048">• Manual process management</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="58.183086"
+       y="28.331429"
+       id="text14044"><tspan
+         sodipodi:role="line"
+         id="tspan14042"
+         style="font-size:2.82222px;text-align:center;text-anchor:middle;stroke-width:0.264583"
+         x="58.183086"
+         y="28.331429">INET or UNIX</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;text-align:center;text-anchor:middle;stroke-width:0.264583"
+         x="58.183086"
+         y="31.859203"
+         id="tspan14046">socket</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="145.79179"
+       y="48.813156"
+       id="text14123"><tspan
+         sodipodi:role="line"
+         id="tspan14121"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="145.79179"
+         y="48.813156">Computating Platform Boundary</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="118.75587"
+       y="55.48415"
+       id="text14344"><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="118.75587"
+         y="55.48415"
+         id="tspan14342">• Same API as SPARC-X-API as file I/O calculator on local file system</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="118.75587"
+         y="59.011925"
+         id="tspan16467">• <tspan
+   style="fill:#ce2929;fill-opacity:1"
+   id="tspan17921">Local testing / homogeneous computing platforms</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="157.75372"
+       y="26.551201"
+       id="text15086"><tspan
+         sodipodi:role="line"
+         id="tspan15084"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="157.75372"
+         y="26.551201">Ephemeral</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="157.75372"
+         y="30.078976"
+         id="tspan15088">UNIX socket</tspan></text>
+    <g
+       id="g15158"
+       transform="translate(-1.9599352,2.248272)">
+      <rect
+         style="opacity:1;fill:#bcbcbc;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.196103;stroke-linecap:square;stroke-dasharray:0.784417, 0.196103"
+         id="rect15146"
+         width="24.922174"
+         height="17.519375"
+         x="14.261915"
+         y="70.902657"
+         ry="2.8003209" />
+      <text
+         xml:space="preserve"
+         style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+         x="17.535282"
+         y="78.656219"
+         id="text15150"><tspan
+           sodipodi:role="line"
+           id="tspan15148"
+           style="font-size:2.82222px;stroke-width:0.264583"
+           x="17.535282"
+           y="78.656219">Socket-aware</tspan><tspan
+           sodipodi:role="line"
+           style="font-size:2.82222px;stroke-width:0.264583"
+           x="17.535282"
+           y="82.183998"
+           id="tspan15152">SPARC process</tspan></text>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="55.0877"
+       y="76.153061"
+       id="text15162"><tspan
+         sodipodi:role="line"
+         id="tspan15160"
+         style="font-size:2.82222px;text-align:end;text-anchor:end;stroke-width:0.264583"
+         x="55.0877"
+         y="76.153061">SPARC-X-API </tspan><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;text-align:end;text-anchor:end;stroke-width:0.264583"
+         x="55.0877"
+         y="79.68084"
+         id="tspan15211">client</tspan></text>
+    <g
+       id="g15366"
+       style="display:inline;fill:#f4614b;fill-opacity:1"
+       transform="translate(-100.79095,54.658318)">
+      <g
+         id="g15364"
+         style="fill:#f4614b;fill-opacity:1">
+        <path
+           style="fill:#bcbcbc;fill-opacity:1;stroke:#b5b5b5;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 157.43246,34.782551 h 11.87187"
+           id="path15358"
+           sodipodi:nodetypes="cc" />
+        <rect
+           style="fill:#bcbcbc;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.3;stroke-opacity:1"
+           id="rect15360"
+           width="2.9423223"
+           height="3.2515326"
+           x="155.96129"
+           y="33.156784"
+           ry="0" />
+        <rect
+           style="fill:#bcbcbc;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.3;stroke-opacity:1"
+           id="rect15362"
+           width="2.9423223"
+           height="3.2515326"
+           x="168.01189"
+           y="33.156784"
+           ry="0" />
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="72.876175"
+       y="73.438797"
+       id="text15370"><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="72.876175"
+         y="73.438797"
+         id="tspan15368">i-PI-compatible Server</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="11.435712"
+       y="112.87573"
+       id="text15399"><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="11.435712"
+         y="112.87573"
+         id="tspan15397">• Assimilate as a standard i-PI client with i-PI protocol</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="11.435712"
+         y="116.40351"
+         id="tspan18203">• <tspan
+   style="fill:#ce2929;fill-opacity:1"
+   id="tspan18619">Pipelining SPARC with external codes (i-PI, PLUMED, etc)</tspan></tspan></text>
+    <rect
+       style="opacity:0.6;fill:none;fill-opacity:0.6;fill-rule:evenodd;stroke:#8e8e8e;stroke-width:0.6;stroke-linecap:square;stroke-dasharray:1.8, 1.8;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect15403"
+       width="46.428074"
+       height="36.864742"
+       x="10.521146"
+       y="71.008682"
+       ry="3.3120959" />
+    <rect
+       style="opacity:0.6;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.403644;stroke-linecap:square;stroke-dasharray:1.61458, 0.403644"
+       id="rect16133"
+       width="50.765274"
+       height="45.55365"
+       x="116.26182"
+       y="69.314018"
+       ry="5.6531553" />
+    <g
+       id="g16179"
+       style="display:inline;fill:#f4614b;fill-opacity:1"
+       transform="translate(4.513214,53.428881)" />
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="117.26904"
+       y="112.87573"
+       id="text16187"><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="117.26904"
+         y="112.87573"
+         id="tspan16185">• Client-server communication with SPARC protocol</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.264583"
+         x="117.26904"
+         y="116.40351"
+         id="tspan16461">• <tspan
+   style="fill:#ce2929;fill-opacity:1"
+   id="tspan16463">Production / hybrid-architecture computating platform</tspan></tspan></text>
+    <g
+       id="g19108"
+       transform="translate(0,1.2294445)">
+      <g
+         id="g16147"
+         transform="translate(55.751937,15.133825)">
+        <rect
+           style="opacity:0.6;fill:#4954c1;fill-opacity:0.6;fill-rule:evenodd;stroke:none;stroke-width:0.264999;stroke-linecap:square;stroke-dasharray:1.06, 0.264999"
+           id="rect16135"
+           width="47.399994"
+           height="31.797071"
+           x="117.41312"
+           y="57.81142"
+           ry="3.784137" />
+        <text
+           xml:space="preserve"
+           style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+           x="120.25555"
+           y="59.401299"
+           id="text16145"><tspan
+             sodipodi:role="line"
+             id="tspan16137"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+             x="120.25555"
+             y="59.401299"> </tspan><tspan
+             sodipodi:role="line"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+             x="120.25555"
+             y="62.929073"
+             id="tspan16139">SPARC(</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+             x="120.25555"
+             y="66.456848"
+             id="tspan16297">    use_socket=True,</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+             x="120.25555"
+             y="69.984627"
+             id="tspan16299">    socket_params={</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+             x="120.25555"
+             y="73.512398"
+             id="tspan16303">        port=31415,</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+             x="120.25555"
+             y="77.040176"
+             id="tspan16305">        server_only=True,</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+             x="120.25555"
+             y="80.567947"
+             id="tspan16301">    },</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+             x="120.25555"
+             y="84.095726"
+             id="tspan16141">    **parameters</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+             x="120.25555"
+             y="87.623497"
+             id="tspan16143">)</tspan></text>
+      </g>
+      <rect
+         style="opacity:0.6;fill:#c19d49;fill-opacity:0.6;fill-rule:evenodd;stroke:none;stroke-width:0.24792;stroke-linecap:square;stroke-dasharray:0.991685, 0.24792"
+         id="rect16131"
+         width="45"
+         height="35"
+         x="117.07697"
+         y="70.711426"
+         ry="3.3120959" />
+      <text
+         xml:space="preserve"
+         style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+         x="119.33183"
+         y="97.873306"
+         id="text16153"><tspan
+           sodipodi:role="line"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+           x="119.33183"
+           y="97.873306"
+           id="tspan16149">python -m sparc.client \</tspan><tspan
+           sodipodi:role="line"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'fira mono';-inkscape-font-specification:'fira mono';stroke-width:0.264583"
+           x="119.33183"
+           y="101.40108"
+           id="tspan16151">       -s $host:$port</tspan></text>
+      <g
+         id="g16163"
+         transform="translate(103.8734,1.0188352)">
+        <rect
+           style="opacity:1;fill:#bcbcbc;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.196103;stroke-linecap:square;stroke-dasharray:0.784417, 0.196103"
+           id="rect16155"
+           width="24.922174"
+           height="17.519375"
+           x="14.261915"
+           y="70.902657"
+           ry="2.8003209" />
+        <text
+           xml:space="preserve"
+           style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+           x="17.535282"
+           y="78.656219"
+           id="text16161"><tspan
+             sodipodi:role="line"
+             id="tspan16157"
+             style="font-size:2.82222px;stroke-width:0.264583"
+             x="17.535282"
+             y="78.656219">Socket-aware</tspan><tspan
+             sodipodi:role="line"
+             style="font-size:2.82222px;stroke-width:0.264583"
+             x="17.535282"
+             y="82.183998"
+             id="tspan16159">SPARC process</tspan></text>
+      </g>
+      <text
+         xml:space="preserve"
+         style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+         x="160.92104"
+         y="74.923622"
+         id="text16169"><tspan
+           sodipodi:role="line"
+           id="tspan16165"
+           style="font-size:2.82222px;text-align:end;text-anchor:end;stroke-width:0.264583"
+           x="160.92104"
+           y="74.923622">SPARC-X-API </tspan><tspan
+           sodipodi:role="line"
+           style="font-size:2.82222px;text-align:end;text-anchor:end;stroke-width:0.264583"
+           x="160.92104"
+           y="78.451401"
+           id="tspan16167">client</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+         x="184.69144"
+         y="72.209358"
+         id="text16183"><tspan
+           sodipodi:role="line"
+           style="font-size:2.82222px;stroke-width:0.264583"
+           x="184.69144"
+           y="72.209358"
+           id="tspan16181">SPARC-X-API Server</tspan></text>
+      <rect
+         style="opacity:0.6;fill:none;fill-opacity:0.6;fill-rule:evenodd;stroke:#8e8e8e;stroke-width:0.6;stroke-linecap:square;stroke-dasharray:1.8, 1.8;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect16189"
+         width="46.428074"
+         height="36.864742"
+         x="116.35448"
+         y="69.779243"
+         ry="3.3120959" />
+      <g
+         id="g10468"
+         style="display:inline;fill:#f4614b;fill-opacity:1"
+         transform="translate(4.3898977,53.428881)">
+        <g
+           id="g10466"
+           style="fill:#f4614b;fill-opacity:1">
+          <rect
+             style="fill:#c15949;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.3;stroke-opacity:1"
+             id="rect10460"
+             width="2.9423223"
+             height="3.2515326"
+             x="155.96129"
+             y="33.156784"
+             ry="0" />
+          <rect
+             style="fill:#c15949;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.3;stroke-opacity:1"
+             id="rect10462"
+             width="2.9423223"
+             height="3.2515326"
+             x="168.01189"
+             y="33.156784"
+             ry="0" />
+          <path
+             style="fill:#c15949;fill-opacity:1;stroke:#c15949;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+             d="m 157.96162,34.782551 h 11.34271"
+             id="path10464"
+             sodipodi:nodetypes="cc" />
+        </g>
+      </g>
+      <text
+         xml:space="preserve"
+         style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+         x="167.73476"
+         y="87.531273"
+         id="text19112-6"><tspan
+           sodipodi:role="line"
+           id="tspan19110-4"
+           style="font-size:2.82222px;text-align:center;text-anchor:middle;stroke-width:0.264583"
+           x="167.73476"
+           y="87.531273">SPARC</tspan><tspan
+           sodipodi:role="line"
+           style="font-size:2.82222px;text-align:center;text-anchor:middle;stroke-width:0.264583"
+           x="167.73476"
+           y="91.059052"
+           id="tspan19114-1">Protocol</tspan></text>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:2.82222px;line-height:1.25;font-family:'fira sans';-inkscape-font-specification:'fira sans';stroke-width:0.264583"
+       x="62.553909"
+       y="88.760712"
+       id="text19112"><tspan
+         sodipodi:role="line"
+         id="tspan19110"
+         style="font-size:2.82222px;text-align:center;text-anchor:middle;stroke-width:0.264583"
+         x="62.553909"
+         y="88.760712">i-PI</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;text-align:center;text-anchor:middle;stroke-width:0.264583"
+         x="62.553909"
+         y="92.28849"
+         id="tspan19114">Protocol</tspan></text>
+  </g>
+</svg>

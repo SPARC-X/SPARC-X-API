@@ -276,14 +276,14 @@ class SPARC(FileIOCalculator, IOContext):
 
     def __enter__(self):
         """Reset upon entering the context."""
-        IOContext.__enter__()
+        IOContext.__enter__(self)
         self.reset()
         self.close()
         return self
 
     def __exit__(self, type, value, traceback):
         """Exiting the context manager and reset process"""
-        IOContext.__exit__(type, value, traceback)
+        IOContext.__exit__(self, type, value, traceback)
         self.close()
         return
 
@@ -770,13 +770,14 @@ class SPARC(FileIOCalculator, IOContext):
 
     def close(self, keep_out_socket=False):
         """Close the socket communication, the SPARC process etc"""
+        if not self.use_socket:
+            return
         if self.in_socket is not None:
             self.in_socket.close()
 
         if (self.out_socket is not None) and (not keep_out_socket):
             self.out_socket.close()
 
-        # import pdb; pdb.set_trace()
         # In most cases if in_socket is closed, the SPARC process should also exit
         if self.process:
             with time_limit(5):
