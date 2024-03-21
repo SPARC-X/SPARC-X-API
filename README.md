@@ -4,6 +4,15 @@
 [![Unit tests](https://github.com/SPARC-X/SPARC-X-API/actions/workflows/installation_test.yml/badge.svg)](https://github.com/SPARC-X/SPARC-X-API/actions/workflows/installation_test.yml)
 [![JSON-API](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/api_version.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/api_version.svg)
 
+# Table of Contents
+- [Installation](#installation)
+- [Setting Up Environment](#setting-up-the-environment)
+- [Basic Usage](#basic-usage-of-the-python-api)
+- [Advanced Usage: Socket Interface](#advanced-usage-sparc-x-api-as-a-socket-interface)
+- [Troubleshooting](#troubleshooting)
+- [Advanced Topics](#advanced-topics)
+- [Support and Contribution](#how-to-contribute)
+
 `SPARC-X-API` is an [ASE](https://wiki.fysik.dtu.dk/ase/)-compatible Python API for the density functional theory (DFT) code [SPARC](https://github.com/SPARC-X/SPARC). It offers:
 
 1. ASE-compatible I/O format for SPARC files
@@ -60,7 +69,7 @@ To utilize the API for drive SPARC calculations, please
 following the [SPARC manual](https://github.com/SPARC-X/SPARC) for
 compilation and installation of the SPARC DFT code itself.
 
-## Post-installation check
+### Post-installation check
 
 We recommend the users to run a simple test after installation and setup:
 
