@@ -7,13 +7,14 @@
 `SPARC-X-API` is an [ASE](https://wiki.fysik.dtu.dk/ase/)-compatible Python API for the density functional theory (DFT) code [SPARC](https://github.com/SPARC-X/SPARC). It offers:
 
 1. ASE-compatible I/O format for SPARC files
-2. A JSON API interfacing with SPARC's C-code for parameter validation and conversion
-3. A comprehensive calculator interface for SPARC.
+2. A JSON Schema interfacing with SPARC's C-code for parameter validation and conversion
+3. A comprehensive calculator interface for SPARC with socket-communication support.
 
-[Fig. 1]() provides an overlook of the components of `SPARC-X-API`.
 
+[Fig. 1](#fig-1-schematic-drawing-for-the-architecture-of-the-sparc-x-api-package) provides an overlook of the components of `SPARC-X-API` and its relation with the SPARC C-code.
+
+#### Fig. 1 Schematic drawing for the architecture of the `SPARC-X-API` package
 ![scheme-sparc-api-outlook](doc/img/scheme_api_architecture.png)
-*Fig. 1 Schematic drawing for the architecture of the `SPARC-X-API` package*
 
 
 
@@ -212,9 +213,9 @@ To learn more about the JSON schema design, please refer to [Advanced
 Topics](doc/advanced_topics.md).
 
 
-### 3. Calculator interface
+### 3. Calculator interface (File-IO mode)
 
-`SPARC-X-API` offers a calculator interface that aligns with many
+`SPARC-X-API` offers a calculator interface based on file I/O that aligns with many
 other ASE calculators.  If you've worked with ASE modules like `Vasp`,
 `QuantumEspresso`, or `GPAW`, you'll find this package intuitive,
 as shown in the following examples:
@@ -283,7 +284,7 @@ opt.run(fmax=0.02)
 
 ### 4. Command-line tools
 
-`SPARC-X-API` provides a simple command wrapper `sparc-ase` to add
+A simple command wrapper `sparc-ase` is provided to add
 support of SPARC file formats to the `ase` cli tools. Simple
 replace `ase [subcommand] [args]` with `sparc-ase [subcommand] [args]`
 to access your SPARC bundle files as you would use for other file
@@ -292,9 +293,10 @@ for the visualization of atomistic structures. Depending on the
 bundle's contents, this could display individual atoms or multiple
 images.
 
-Below is a screenshot showing the usage of `sparc-ase gui` to visualize a
+[Fig. 2](#fig-2-a-screenshot-of-the-sparc-ase-program) is a screenshot showing the usage of `sparc-ase gui` to visualize a
 short [MD trajectory](tests/outputs/NH3_sort_lbfgs_opt.sparc).
 
+#### Fig 2. A screenshot of the `sparc-ase` program
 <img width="1200" alt="image" src="https://github.com/alchem0x2A/SPARC-X-API/assets/6829706/e72329ff-7194-4819-94f8-486ef2218844">
 
 ### 5. Parameters and units used in `SPARC-X-API`
@@ -368,7 +370,7 @@ calc = SPARC(xc="PBE", kpts=(9, 9, 9), h=0.25, directory="sparc-calc.sparc", con
 *Disclaimer: The socket communication feature in SPARC and SPARC-X-API are experimental and subject to changes until the release of v2.0 SPARC-X-API.*
 
 ### Overview
-Experienced users can now harness the power of SPARC and SPARC-X-API's
+Experienced users can harness the power of SPARC and SPARC-X-API's
 socket communication layer to build efficient and flexible
 computational workflows. By integrating a socket communication
 interface directly into SPARC, users can significantly reduce the
@@ -376,11 +378,12 @@ overhead typically associated with file I/O during calculation
 restarts. This feature is particularly beneficial for tasks involving
 repetitive operations like structural optimization and saddle point
 searches, where traditional file-based communication can become a
-bottleneck. The underlying software architecture is shown in [Fig. 2]():
+bottleneck. The underlying software architecture is shown in [Fig. 3](#fig-3-sparc-electronic-calculations-with-socket-communication-across-hybrid-computing-platforms):
+
+#### Fig. 3. SPARC electronic calculations with socket communication across hybrid computing platforms
 
 ![scheme-sparc-socket](doc/img/scheme_socket_hetero.png)
-*Fig. 2. Scheme for the operation of SPARC socket communication accross heterogeneous 
-computational platforms.*
+
 
  
 
@@ -401,20 +404,18 @@ adheres to the [i-PI protocol](https://github.com/i-pi/i-pi)
 standard. Specifically, we implement the original i-PI protocol within
 the SPARC C-source code, while the python SPARC-X-API uses a
 backward-compatible protocol based on i-PI. The dual-mode design is aimed for both low-level and
-high-level interfacing of the DFT codes, providing the following features as shown in [Fig. 3]():
+high-level interfacing of the DFT codes, providing the following features as shown in [Fig. 4](#fig-4-overview-of-the-sparc-protocol-as-an-extension-to-the-standard-i-pi-protocol):
 
+#### Fig. 4. Overview of the SPARC protocol as an extension to the standard i-PI protocol.
 ![scheme-sparc-protocol](doc/img/scheme_sparc_protocol.png)
-*Fig. 3. Overview of the SPARC protocol as an extension to the standard i-PI protocol.*
 
-1. **Unified Interface**: A consistent interface for both client and server codes, simplifying user interaction across different modes.
-2. **Versatile Operation Modes:** Supports various modes (Local-only, Client, Server) to cater to diverse computational needs.
-3. **Seamless Calculation Restart:** Automates the restarting process on the client side, enhancing user convenience.
+Based on the scenarios, the socket communication layer can be accessed via the following approaches as shown in [Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode):
 
-Based on the user scenarios, the socket communication layer can be accessed via the following approaches:
+#### Fig. 5. Different ways of using SPARC's socket mode.
 ![scheme-sparc-modes](doc/img/scheme-SPARC-socket-modes.png)
-*Fig. 4. Different operational modes of SPARC socket modes
 
-1. **SPARC binary only**
+
+1. **SPARC binary only** ([Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode) **a**)
    
    SPARC binary with socket support can be readily coupled with any i-PI compatible socker server, such as
    `ase.calculators.socketio.SocketIOCalculator`, for example
@@ -436,7 +437,7 @@ Based on the user scenarios, the socket communication layer can be accessed via 
    to be run on a single computer system. 
 
 
-2. **Local-only Mode**
+2. **Local-only Mode** ([Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode) **b**)
    
    Ideal for standalone calculations, this mode simulates a conventional calculator while benefiting from socket-based efficiency.
    
@@ -446,7 +447,7 @@ Based on the user scenarios, the socket communication layer can be accessed via 
    ```
    For most users we recommend using this mode when performing a calculation on a single HPC node.
 
-3. **Client (Relay) Mode** 
+3. **Client (Relay) Mode** ([Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode) **c**)
 
    In this mode, the `sparc.SPARC` calculator servers as a passive
    client which listens to a remote i-PI-compatible server. When
@@ -474,7 +475,7 @@ Based on the user scenarios, the socket communication layer can be accessed via 
    automatically determine if it is necessary to restart the SPARC
    subprocess.
    
-4. **Server Mode**
+4. **Server Mode** ([Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode) **d**)
 
    Paired with the client mode in (3), SPARC-X-API can be run as a
    socket server, isolated from the node that performs the
@@ -499,7 +500,8 @@ Based on the user scenarios, the socket communication layer can be accessed via 
 
 ### (In-progress) Controlling SPARC routines from socket interface
 
-Our SPARC socket protocol designs allows bidirectional control of
+As shown in [Fig. 4](#fig-4-overview-of-the-sparc-protocol-as-an-extension-to-the-standard-i-pi-protocol), 
+the SPARC socket protocol designs allows bidirectional control of
 internal SPARC routines. Local- or server-mode `sparc.SPARC`
 calculators can communicate with the SPARC binary via functions like
 `set_params`. This can be useful for applications like on-the-fly
