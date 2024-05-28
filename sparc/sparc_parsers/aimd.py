@@ -61,10 +61,10 @@ def _read_aimd_step(raw_aimd_text):
         raise ValueError("Wrong aimd format! The :MDSTEP: label is missing.")
     # Geopt file uses 1-indexed step names, convert to 0-indexed
     step = int(header.split(":MDSTEP:")[-1]) - 1
-    print("Step ", step)
     bounds = [i for i, x in enumerate(body) if ":" in x] + [len(body)]
     blocks = [body[start:end] for start, end in zip(bounds[:-1], bounds[1:])]
     data = {}
+    header_warn = []
     for block in blocks:
         header_block, body_block = block[0], block[1:]
         header_name = header_block.split(":")[1]
@@ -159,9 +159,10 @@ def _read_aimd_step(raw_aimd_text):
         elif header_name in ("AVGV", "MAXV", "MIND"):
             warn(f"MD output keyword {header_name} will not be parsed.")
             value = None
-        else:
+        elif header_name not in header_warn:
             warn(f"MD output keyword {header_name} not known to SPARC. " "Ignore.")
             value = None
+            header_warn.append(header_name)
         if value is not None:
             data[name] = value
     data["step"] = step
