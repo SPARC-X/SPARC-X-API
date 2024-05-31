@@ -21,7 +21,7 @@ def write_structures_file(structures:list, filename:str = "MLFF_data_reference_s
         f.write("Structures:\n")
     
         for i, atoms in enumerate(structures):
-            f.write(f"Structure {i+1}\n")
+            f.write(f"structure_no: {i+1}\n")
             # Write cell information
             cell = atoms.get_cell() / Bohr  # Convert from Angstrom to Bohr
             mags = atoms.cell.lengths() / Bohr  # Convert from Angstrom to Bohr

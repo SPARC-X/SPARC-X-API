@@ -670,7 +670,7 @@ class SparcBundle:
         return calc_results, ase_images
 
     def _extract_aimd_results(self, raw_results, index=":"):
-        """Extract energy / forces from aimd results
+        """Extract energy / forces from aimd results (symmetric stress tensor)
 
         For calculator, we only need the last image
 
@@ -725,6 +725,9 @@ class SparcBundle:
 
             if "velocities" in result:
                 atoms.set_velocities(result["velocities"][self.resort])
+            
+            if "stress" in result:
+                partial_result["stress"] = result["stress"]
 
             ase_images.append(atoms)
             calc_results.append(partial_result)
