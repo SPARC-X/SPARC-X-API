@@ -10,9 +10,9 @@ import numpy as np
 import psutil
 from ase.atoms import Atoms
 from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
+from ase.stress import full_3x3_to_voigt_6_stress
 from ase.units import Bohr, GPa, Hartree, eV
 from ase.utils import IOContext
-from ase.stress import full_3x3_to_voigt_6_stress
 
 from .api import SparcAPI
 from .io import SparcBundle
@@ -248,7 +248,9 @@ class SPARC(FileIOCalculator, IOContext):
                 # TODO: Exception for wrong port
                 self.in_socket = SPARCSocketServer(
                     port=self.socket_params["port"],
-                    log=self.openfile(self._indir(ext=".log", label="socket"), mode="w"),
+                    log=self.openfile(
+                        self._indir(ext=".log", label="socket"), mode="w"
+                    ),
                     parent=self,
                 )
             else:
@@ -257,7 +259,9 @@ class SPARC(FileIOCalculator, IOContext):
                 self.in_socket = SPARCSocketServer(
                     unixsocket=socket_name,
                     # TODO: make the log fd persistent
-                    log=self.openfile(self._indir(ext=".log", label="socket"), mode="w"),
+                    log=self.openfile(
+                        self._indir(ext=".log", label="socket"), mode="w"
+                    ),
                     parent=self,
                 )
         # TODO: add the outbound socket client
@@ -294,7 +298,7 @@ class SPARC(FileIOCalculator, IOContext):
     @property
     def socket_mode(self):
         """The mode of the socket calculator:
-        
+
         disabled: pure SPARC file IO interface
         local: Serves as a local SPARC calculator with socket support
         client: Relay SPARC calculation
@@ -518,7 +522,9 @@ class SPARC(FileIOCalculator, IOContext):
             return
 
         if self.socket_mode == "server":
-            self._calculate_as_server(atoms=atoms, properties=properties, system_changes=system_changes)
+            self._calculate_as_server(
+                atoms=atoms, properties=properties, system_changes=system_changes
+            )
             return
         self.write_input(self.atoms, properties, system_changes)
         self.execute()
@@ -538,24 +544,26 @@ class SPARC(FileIOCalculator, IOContext):
                     self.atoms.get_initial_magnetic_moments()
                 )
 
-    def _calculate_as_server(self, atoms=None, properties=["energy"],
-                             system_changes=all_changes):
-        """Use the server component to send instructions to socket
-        """
+    def _calculate_as_server(
+        self, atoms=None, properties=["energy"], system_changes=all_changes
+    ):
+        """Use the server component to send instructions to socket"""
         ret, raw_results = self.in_socket.calculate_new_protocol(
-                atoms=atoms, params=self.parameters
+            atoms=atoms, params=self.parameters
         )
         self.raw_results = raw_results
         if "stress" not in self.results:
             virial_from_socket = ret.get("virial", np.zeros(6))
-            stress_from_socket = -full_3x3_to_voigt_6_stress(virial_from_socket) / atoms.get_volume()
+            stress_from_socket = (
+                -full_3x3_to_voigt_6_stress(virial_from_socket) / atoms.get_volume()
+            )
             self.results["stress"] = stress_from_socket
         # Energy and forces returned in this case do not need
         # resorting, since they are already in the same format
         self.results["energy"] = ret["energy"]
         self.results["forces"] = ret["forces"]
         return
-    
+
     def _calculate_with_socket(
         self, atoms=None, properties=["energy"], system_changes=all_changes
     ):
@@ -621,7 +629,9 @@ class SPARC(FileIOCalculator, IOContext):
         # For stress information, we make sure that the stress is always present
         if "stress" not in self.results:
             virial_from_socket = ret.get("virial", np.zeros(6))
-            stress_from_socket = -full_3x3_to_voigt_6_stress(virial_from_socket) / atoms.get_volume()
+            stress_from_socket = (
+                -full_3x3_to_voigt_6_stress(virial_from_socket) / atoms.get_volume()
+            )
             self.results["stress"] = stress_from_socket
         self.system_state = self._dump_system_state()
         return
@@ -926,12 +936,12 @@ class SPARC(FileIOCalculator, IOContext):
                 )
         return version
 
-    
     def run_client(self, atoms=None, use_stress=False):
-        """Main method to start the client code
-        """
+        """Main method to start the client code"""
         if not self.socket_mode == "client":
-            raise RuntimeError("Cannot use SPARC.run_client if the calculator is not configured in client mode!")
+            raise RuntimeError(
+                "Cannot use SPARC.run_client if the calculator is not configured in client mode!"
+            )
 
         self.out_socket.run(atoms, use_stress)
 
