@@ -13,6 +13,7 @@ from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
 from ase.stress import full_3x3_to_voigt_6_stress
 from ase.units import Bohr, GPa, Hartree, eV
 from ase.utils import IOContext
+from ase.parallel import world
 
 from .api import SparcAPI
 from .io import SparcBundle
@@ -76,6 +77,8 @@ class SPARC(FileIOCalculator, IOContext):
         "kpts": (1, 1, 1),
         "h": 0.25,  # Angstrom equivalent to MESH_SPACING = 0.47
     }
+    # TODO: ASE 3.23 compatibility. should use profile
+    _legacy_default_command = "sparc"
 
     def __init__(
         self,
@@ -249,7 +252,9 @@ class SPARC(FileIOCalculator, IOContext):
                 self.in_socket = SPARCSocketServer(
                     port=self.socket_params["port"],
                     log=self.openfile(
-                        self._indir(ext=".log", label="socket"), mode="w"
+                        file=self._indir(ext=".log", label="socket"),
+                        comm=world, 
+                        mode="w"
                     ),
                     parent=self,
                 )
@@ -260,7 +265,9 @@ class SPARC(FileIOCalculator, IOContext):
                     unixsocket=socket_name,
                     # TODO: make the log fd persistent
                     log=self.openfile(
-                        self._indir(ext=".log", label="socket"), mode="w"
+                        file=self._indir(ext=".log", label="socket"), 
+                        comm=world,
+                        mode="w"
                     ),
                     parent=self,
                 )
@@ -273,7 +280,7 @@ class SPARC(FileIOCalculator, IOContext):
                     host=self.socket_params["host"],
                     port=self.socket_params["port"],
                     # TODO: change later
-                    log=self.openfile("out_socket.log"),
+                    log=self.openfile(file="out_socket.log", comm=world),
                     # TODO: add the log and timeout part
                     parent_calc=self,
                 )
@@ -605,7 +612,7 @@ class SPARC(FileIOCalculator, IOContext):
             )
             # Use the IOContext class's lazy context manager
             # TODO what if self.log is None
-            fd_log = self.openfile(self.log)
+            fd_log = self.openfile(file=self.log, comm=world)
             self.process = subprocess.Popen(
                 cmds,
                 shell=True,

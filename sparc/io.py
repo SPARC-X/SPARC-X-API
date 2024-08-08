@@ -16,6 +16,10 @@ from .download_data import is_psp_download_complete
 from .sparc_parsers.atoms import atoms_to_dict, dict_to_atoms
 from .sparc_parsers.inpt import _read_inpt, _write_inpt
 from .sparc_parsers.ion import _read_ion, _write_ion
+from .sparc_parsers.static import _read_static
+from .sparc_parsers.geopt import _read_geopt
+from .sparc_parsers.aimd import _read_aimd
+from .sparc_parsers.out import _read_out
 from .sparc_parsers.pseudopotential import copy_psp_file, parse_psp8_header
 from .sparc_parsers.static import _add_cell_info
 from .utils import deprecated, locate_api, string2index
@@ -349,11 +353,17 @@ class SparcBundle:
                 self.last_image = int(suffix.split("_")[1])
         self.num_calculations = self.last_image + 1
 
+        # Always make sure ion / inpt results are parsed regardless of actual calculations
         if include_all_files:
-            results = [
-                self._read_results_from_index(index)
-                for index in range(self.num_calculations)
-            ]
+            if self.num_calculations > 0:
+                results = [
+                    self._read_results_from_index(index)
+                    for index in range(self.num_calculations)
+                ]
+            else:
+                results = [
+                    self._read_results_from_index(self.last_image)
+                ]
         else:
             results = self._read_results_from_index(self.last_image)
 
@@ -1109,10 +1119,18 @@ try:
     from ase.utils.plugins import ExternalIOFormat as EIF
 except ImportError:
     # Backward Compatibility
-    from collections import namedtuple
-
-    EIF = namedtuple("ExternalIOFormat", ["desc", "module", "code", "ext"])
-
+    from typing import List, NamedTuple, Optional, Union
+    # Copy definition from 3.23
+    # Name is defined in the entry point
+    class ExternalIOFormat(NamedTuple):
+        desc: str
+        code: str
+        module: Optional[str] = None
+        glob: Optional[Union[str, List[str]]] = None
+        ext: Optional[Union[str, List[str]]] = None
+        magic: Optional[Union[bytes, List[bytes]]] = None
+        magic_regex: Optional[bytes] = None
+    EIF = ExternalIOFormat
 
 format_sparc = EIF(
     desc="SPARC .sparc bundle",

@@ -17,9 +17,14 @@ def test_cli():
 
 
 def test_info():
-    """Call the sparc-ase info on sparc file"""
+    """Call the sparc-ase info on sparc file. Be aware of the API changes in 3.22->3.23"""
+    import ase
+    from packaging import version
     bundle = test_output_dir / "Cu_FCC.sparc"
-    proc = run(["sparc-ase", "info", f"{bundle}"], capture_output=True)
+    if version.parse(ase.__version__) < version.parse("3.23"):
+        proc = run(["sparc-ase", "info", f"{bundle}"], capture_output=True)
+    else:
+        proc = run(["sparc-ase", "info", "--files", f"{bundle}"], capture_output=True)
     assert proc.returncode == 0
     assert "SPARC" in proc.stdout.decode("utf8")
 

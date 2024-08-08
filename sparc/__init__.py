@@ -41,7 +41,9 @@ if _import_complete:
     if version.parse(ase.__version__) < version.parse("3.23"):
         register_ase_io_sparc()
     else:
-        pass
+        # register calculator class <experimental>
+        from ase.calculators.calculator import register_calculator_class
+        register_calculator_class("sparc", SPARC)
 else:
     # If importing is not complete, any code trying to directly import
     # the following attributes will raise ImportError
