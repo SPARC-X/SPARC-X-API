@@ -175,7 +175,7 @@ jobs:
         mamba install -c conda-forge make compilers openmpi fftw scalapack openblas
     - name: Install package
       run: |
-        pip install -e ".[test]" ase==3.22
+        pip install -e ".[test]" ase==3.22 numpy==1.24 scipy==1.10
         # Manually downgrade
         # Download the external psp data
         python -m sparc.download_data
