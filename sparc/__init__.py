@@ -31,10 +31,20 @@ except ImportError:
     _import_complete = False
 
 if _import_complete:
+    from packaging import version
+
     from .calculator import SPARC
     from .io import read_sparc, register_ase_io_sparc, write_sparc
 
-    register_ase_io_sparc()
+    # If ase version less than 3.23, use manual register function
+    # Otherwise use the new entry point
+    if version.parse(ase.__version__) < version.parse("3.23"):
+        register_ase_io_sparc()
+    else:
+        # register calculator class <experimental>
+        from ase.calculators.calculator import register_calculator_class
+
+        register_calculator_class("sparc", SPARC)
 else:
     # If importing is not complete, any code trying to directly import
     # the following attributes will raise ImportError

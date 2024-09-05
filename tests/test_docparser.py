@@ -70,7 +70,7 @@ def test_version_parser(fs, monkeypatch):
     time(&current_time);
     char *c_time_str = ctime(&current_time);
     // ctime includes a newline char '\n', remove manually
-    if (c_time_str[strlen(c_time_str)-1] == '\n') 
+    if (c_time_str[strlen(c_time_str)-1] == '\n')
         c_time_str[strlen(c_time_str)-1] = '\0';
 
     FILE *output_fp = fopen(pSPARC->OutFilename,"w");

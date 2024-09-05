@@ -1,22 +1,21 @@
 """A i-PI compatible socket protocol implemented in SPARC
 """
+import hashlib
+import io
 import os
+import pickle
 import random
 import socket
 import string
-import io
-import pickle
 
 import numpy as np
 from ase.calculators.socketio import (
     IPIProtocol,
     SocketClient,
+    SocketClosed,
     SocketServer,
     actualunixsocketname,
-    SocketClosed,
 )
-
-import hashlib
 
 
 def generate_random_socket_name(prefix="sparc_", length=6):
@@ -40,16 +39,17 @@ class SPARCProtocol(IPIProtocol):
         return
 
     def send_object(self, obj):
-        """Send an object dumped into pickle 
-        """
+        """Send an object dumped into pickle"""
         # We can use the highese protocol since the
         # python requirement >= 3.8
         pkl_bytes = pickle.dumps(obj, protocol=5)
         nbytes = len(pkl_bytes)
         md5_checksum = hashlib.md5(pkl_bytes)
-        checksum_digest, checksum_count = (md5_checksum.digest(),
-                                           md5_checksum.digest_size)
-        self.sendmsg('PKLOBJ')  # To distinguish from other methods like INIT
+        checksum_digest, checksum_count = (
+            md5_checksum.digest(),
+            md5_checksum.digest_size,
+        )
+        self.sendmsg("PKLOBJ")  # To distinguish from other methods like INIT
         self.log("  pickle bytes to send: ", str(nbytes))
         self.send(nbytes, np.int32)
         self.log("  sending pickle object....")
@@ -67,7 +67,9 @@ class SPARCProtocol(IPIProtocol):
         """
         if include_header:
             msg = self.recvmsg()
-            assert msg.strip() == "PKLOBJ", f"Incorrect header {msg} received when calling recv_object method! Please contact the developers"
+            assert (
+                msg.strip() == "PKLOBJ"
+            ), f"Incorrect header {msg} received when calling recv_object method! Please contact the developers"
         nbytes = int(self.recv(1, np.int32))
         self.log(" Will receive pickle object with n-bytes: ", nbytes)
         bytes_received = self._recvall(nbytes)
@@ -76,10 +78,11 @@ class SPARCProtocol(IPIProtocol):
         digest_received = self._recvall(checksum_nbytes)
         digest_calc = hashlib.md5(bytes_received).digest()
         minlen = min(len(digest_calc), len(digest_received))
-        assert digest_calc[:minlen] == digest_received[:minlen], ("MD5 checksum for the received object does not match!")
+        assert (
+            digest_calc[:minlen] == digest_received[:minlen]
+        ), "MD5 checksum for the received object does not match!"
         obj = pickle.loads(bytes_received)
         return obj
-    
 
     def send_param(self, name, value):
         """Send a specific param setting to SPARC
@@ -105,48 +108,46 @@ class SPARCProtocol(IPIProtocol):
         to the calculator instance.
         The actual behavior regarding how the calculator would be (re)-initialized, dependends on the implementation of recvinit
         """
-        self.log(' New sendinit for SPARC protocol')
-        self.sendmsg('INIT')
+        self.log(" New sendinit for SPARC protocol")
+        self.sendmsg("INIT")
         self.send(0, np.int32)  # fallback
         msg_chars = [ord(c) for c in "NEWPROTO"]
         len_msg = len(msg_chars)
         self.send(len_msg, np.int32)
         self.send(msg_chars, np.byte)  # initialization string
         return
-    
+
     def recvinit(self):
-        """Fallback recvinit method
-        """
+        """Fallback recvinit method"""
         return super().recvinit()
 
     def calculate_new_protocol(self, atoms, params):
         atoms = atoms.copy()
         atoms.calc = None
-        self.log(' calculate with new protocol')
+        self.log(" calculate with new protocol")
         msg = self.status()
         # We don't know how NEEDINIT is supposed to work, but some codes
         # seem to be okay if we skip it and send the positions instead.
-        if msg == 'NEEDINIT':
+        if msg == "NEEDINIT":
             self.sendinit()
             self.send_object((atoms, params))
             msg = self.status()
         cell = atoms.get_cell()
-        positions = atoms.get_positions() # Original order
-        assert msg == 'READY', msg
+        positions = atoms.get_positions()  # Original order
+        assert msg == "READY", msg
         icell = np.linalg.pinv(cell).transpose()
         self.sendposdata(cell, icell, positions)
         msg = self.status()
-        assert msg == 'HAVEDATA', msg
+        assert msg == "HAVEDATA", msg
         e, forces, virial, morebytes = self.sendrecv_force()
-        r = dict(energy=e,
-                 forces=forces,
-                 virial=virial,
-                 morebytes=morebytes)
+        r = dict(energy=e, forces=forces, virial=virial, morebytes=morebytes)
         # Additional data (e.g. parsed from file output)
         moredata = self.recv_object()
         return r, moredata
 
+
 # TODO: make sure both calc are ok
+
 
 class SPARCSocketServer(SocketServer):
     """We only implement the unix socket version due to simplicity
@@ -232,9 +233,8 @@ class SPARCSocketServer(SocketServer):
         if self.protocol is None:
             self._accept()
         return self.protocol.calculate_new_protocol(atoms, params)
-    
 
-    
+
 class SPARCSocketClient(SocketClient):
     def __init__(
         self,
@@ -256,16 +256,14 @@ class SPARCSocketClient(SocketClient):
         )
         sock = self.protocol.socket
         self.protocol = SPARCProtocol(sock, txt=log)
-        self.parent_calc = parent_calc # Track the actual calculator
+        self.parent_calc = parent_calc  # Track the actual calculator
         # TODO: make sure the client is compatible with the default socketclient
-        
+
         # We shall make NEEDINIT to be the default state
         # self.state = "NEEDINIT"
-        
 
     def calculate(self, atoms, use_stress):
-        """Use the calculator instance
-        """
+        """Use the calculator instance"""
         if atoms.calc is None:
             atoms.calc = self.parent_calc
         return super().calculate(atoms, use_stress)
@@ -288,20 +286,22 @@ class SPARCSocketClient(SocketClient):
                 except SocketClosed:
                     # Server closed the connection, but we want to
                     # exit gracefully anyway
-                    msg = 'EXIT'
+                    msg = "EXIT"
 
-                if msg == 'EXIT':
+                if msg == "EXIT":
                     # Send stop signal to clients:
                     self.comm.broadcast(np.ones(1, bool), 0)
                     # (When otherwise exiting, things crashed and we should
                     # let MPI_ABORT take care of the mess instead of trying
                     # to synchronize the exit)
                     return
-                elif msg == 'STATUS':
+                elif msg == "STATUS":
                     self.protocol.sendmsg(self.state)
-                elif msg == 'POSDATA':
-                    assert self.state == 'READY'
-                    assert atoms is not None, "Your SPARCSocketClient isn't properly initialized!"
+                elif msg == "POSDATA":
+                    assert self.state == "READY"
+                    assert (
+                        atoms is not None
+                    ), "Your SPARCSocketClient isn't properly initialized!"
                     cell, icell, positions = self.protocol.recvposdata()
                     if not discard_posdata:
                         atoms.cell[:] = cell
@@ -312,18 +312,18 @@ class SPARCSocketClient(SocketClient):
                     self.comm.broadcast(np.zeros(1, bool), 0)
                     energy, forces, virial = self.calculate(atoms, use_stress)
 
-                    self.state = 'HAVEDATA'
+                    self.state = "HAVEDATA"
                     yield
-                elif msg == 'GETFORCE':
-                    assert self.state == 'HAVEDATA', self.state
+                elif msg == "GETFORCE":
+                    assert self.state == "HAVEDATA", self.state
                     self.protocol.sendforce(energy, forces, virial)
                     if new_protocol:
                         # TODO: implement more raw results
                         raw_results = self.parent_calc.raw_results
                         self.protocol.send_object(raw_results)
-                    self.state = 'NEEDINIT'
-                elif msg == 'INIT':
-                    assert self.state == 'NEEDINIT'
+                    self.state = "NEEDINIT"
+                elif msg == "INIT":
+                    assert self.state == "NEEDINIT"
                     # Fall back to the default socketio
                     bead_index, initbytes = self.protocol.recvinit()
                     # The parts below use the new sparc protocol
@@ -339,15 +339,14 @@ class SPARCSocketClient(SocketClient):
                         atoms = recv_atoms
                         atoms.calc = self.parent_calc
                         discard_posdata = True
-                    self.state = 'READY'
+                    self.state = "READY"
                 else:
-                    raise KeyError('Bad message', msg)
+                    raise KeyError("Bad message", msg)
         finally:
             self.close()
-            
+
     def run(self, atoms=None, use_stress=False):
-        """Socket mode in SPARC should allow arbitrary start
-        """
+        """Socket mode in SPARC should allow arbitrary start"""
         # As a default we shall start the SPARCSocketIO always in needinit mode
         if atoms is None:
             self.state = "NEEDINIT"

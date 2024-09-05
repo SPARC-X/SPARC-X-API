@@ -1,13 +1,5 @@
 """Providing a new bundled SPARC file format
-.sparc
-
-Many of the logics are taken from
-ase.io.vasp
-
-ase.io.trajectory
-
 """
-import itertools
 import os
 import re
 from pathlib import Path
@@ -360,11 +352,15 @@ class SparcBundle:
                 self.last_image = int(suffix.split("_")[1])
         self.num_calculations = self.last_image + 1
 
+        # Always make sure ion / inpt results are parsed regardless of actual calculations
         if include_all_files:
-            results = [
-                self._read_results_from_index(index)
-                for index in range(self.num_calculations)
-            ]
+            if self.num_calculations > 0:
+                results = [
+                    self._read_results_from_index(index)
+                    for index in range(self.num_calculations)
+                ]
+            else:
+                results = [self._read_results_from_index(self.last_image)]
         else:
             results = self._read_results_from_index(self.last_image)
 
@@ -782,7 +778,7 @@ class SparcBundle:
         return psp_info
 
 
-def read_sparc(filename, index=-1, include_all_files=False, **kwargs):
+def read_sparc(filename, index=-1, include_all_files=True, **kwargs):
     """Parse a SPARC bundle, return an Atoms object or list of Atoms (image)
     with embedded calculator result.
 
@@ -829,7 +825,7 @@ def write_sparc(filename, images, **kwargs):
 @deprecated(
     "Reading individual .ion file is not recommended. Please use read_sparc instead."
 )
-def read_ion(filename, **kwargs):
+def read_sparc_ion(filename, **kwargs):
     """Parse an .ion file inside the SPARC bundle using a wrapper around SparcBundle
     The reader works only when other files (.inpt) exist.
 
@@ -850,10 +846,14 @@ def read_ion(filename, **kwargs):
     return atoms
 
 
+# Backward compatibity
+read_ion = read_sparc_ion
+
+
 @deprecated(
     "Writing individual .ion file is not recommended. Please use write_sparc instead."
 )
-def write_ion(filename, atoms, **kwargs):
+def write_sparc_ion(filename, atoms, **kwargs):
     """Write .ion file using the SparcBundle wrapper. This method will also create the .inpt file
 
     This is only for backward compatibility
@@ -871,10 +871,14 @@ def write_ion(filename, atoms, **kwargs):
     return atoms
 
 
+# Backward compatibility
+write_ion = write_sparc_ion
+
+
 @deprecated(
     "Reading individual .static file is not recommended. Please use read_sparc instead."
 )
-def read_static(filename, index=-1, **kwargs):
+def read_sparc_static(filename, index=-1, **kwargs):
     """Parse a .static file bundle using a wrapper around SparcBundle
     The reader works only when other files (.ion, .inpt) exist.
 
@@ -889,14 +893,22 @@ def read_static(filename, index=-1, **kwargs):
     parent_dir = Path(filename).parent
     api = locate_api()
     sb = SparcBundle(directory=parent_dir, validator=api)
+    # In most of the cases the user wants to inspect all images
+    kwargs = kwargs.copy()
+    if "include_all_files" not in kwargs:
+        kwargs.update(include_all_files=True)
     atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
     return atoms_or_images
+
+
+# Backward compatibility
+read_static = read_sparc_static
 
 
 @deprecated(
     "Reading individual .geopt file is not recommended. Please use read_sparc instead."
 )
-def read_geopt(filename, index=-1, **kwargs):
+def read_sparc_geopt(filename, index=-1, **kwargs):
     """Parse a .geopt file bundle using a wrapper around SparcBundle
     The reader works only when other files (.ion, .inpt) exist.
 
@@ -911,14 +923,21 @@ def read_geopt(filename, index=-1, **kwargs):
     parent_dir = Path(filename).parent
     api = locate_api()
     sb = SparcBundle(directory=parent_dir, validator=api)
+    kwargs = kwargs.copy()
+    if "include_all_files" not in kwargs:
+        kwargs.update(include_all_files=True)
     atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
     return atoms_or_images
+
+
+# Backward compatibility
+read_geopt = read_sparc_geopt
 
 
 @deprecated(
     "Reading individual .aimd file is not recommended. Please use read_sparc instead."
 )
-def read_aimd(filename, index=-1, **kwargs):
+def read_sparc_aimd(filename, index=-1, **kwargs):
     """Parse a .static file bundle using a wrapper around SparcBundle
     The reader works only when other files (.ion, .inpt) exist.
 
@@ -933,28 +952,25 @@ def read_aimd(filename, index=-1, **kwargs):
     parent_dir = Path(filename).parent
     api = locate_api()
     sb = SparcBundle(directory=parent_dir, validator=api)
+    kwargs = kwargs.copy()
+    if "include_all_files" not in kwargs:
+        kwargs.update(include_all_files=True)
     atoms_or_images = sb.convert_to_ase(index=index, **kwargs)
     return atoms_or_images
 
 
-def register_ase_io_sparc(name="sparc"):
-    """
-    Monkey patching the ase.io and ase.io.formats
-    So that the following formats can be used
-    after `import sparc`
+# Backward compatibility
+read_aimd = read_sparc_aimd
 
-    ```
-    from ase.io import sparc
-    ase.io.read("test.sparc")
-    atoms.write("test.sparc")
-    ```
 
-    The register method only aims to work for ase 3.22
-    the develope version of ase provides a much more powerful
-    register mechanism, we can wait.
+def __register_new_filetype():
+    """Register the filetype() function that allows recognizing .sparc as directory
+    This method should only be called for ase==3.22 compatibility and for ase-gui
+    In future versions of ase gui where format is supported, this method should be removed
     """
+    import sys
+
     from ase.io import formats as hacked_formats
-    from ase.io.formats import define_io_format as F
     from ase.io.formats import filetype as _old_filetype
     from ase.io.formats import ioformats
 
@@ -972,10 +988,38 @@ def register_ase_io_sparc(name="sparc"):
                     return "sparc"
             return _old_filetype(filename, read, guess)
 
+    hacked_formats.filetype = _new_filetype
+    sys.modules["ase.io.formats"] = hacked_formats
+    return
+
+
+@deprecated(
+    "register_ase_io_sparc will be deprecated for future releases. Please upgrade ase>=3.23."
+)
+def register_ase_io_sparc(name="sparc"):
+    """
+    **Legacy register of io-formats for ase==3.22**
+    **For ase>=3.23, use the package entrypoint registration**
+    Monkey patching the ase.io and ase.io.formats
+    So that the following formats can be used
+    after `import sparc`
+
+    ```
+    from ase.io import sparc
+    ase.io.read("test.sparc")
+    atoms.write("test.sparc")
+    ```
+
+    The register method only aims to work for ase 3.22
+    the develope version of ase provides a much more powerful
+    register mechanism, we can wait.
+    """
     import sys
     from warnings import warn
 
     import pkg_resources
+    from ase.io.formats import define_io_format as F
+    from ase.io.formats import ioformats
 
     name = name.lower()
     if name in ioformats.keys():
@@ -1001,11 +1045,8 @@ def register_ase_io_sparc(name="sparc"):
         )
         return
 
-    hacked_formats.filetype = _new_filetype
-
     sys.modules[f"ase.io.{name}"] = _monkey_mod
-    sys.modules["ase.io.formats"] = hacked_formats
-    # sys.modules[f"ase.io.format"] = _monkey_mod
+    __register_new_filetype()
 
     # Step 2: define a new format
     F(
@@ -1066,3 +1107,57 @@ def register_ase_io_sparc(name="sparc"):
 
     # TODO: remove print options as it may be redundant
     print("Successfully registered sparc formats with ase.io!")
+
+
+# ase>=3.23 uses new ExternalIOFormat as registered entrypoints
+# Please do not use from ase.io.formats import ExternalIOFormat!
+# This causes circular import
+try:
+    from ase.utils.plugins import ExternalIOFormat as EIF
+except ImportError:
+    # Backward Compatibility
+    from typing import List, NamedTuple, Optional, Union
+
+    # Copy definition from 3.23
+    # Name is defined in the entry point
+    class ExternalIOFormat(NamedTuple):
+        desc: str
+        code: str
+        module: Optional[str] = None
+        glob: Optional[Union[str, List[str]]] = None
+        ext: Optional[Union[str, List[str]]] = None
+        magic: Optional[Union[bytes, List[bytes]]] = None
+        magic_regex: Optional[bytes] = None
+
+    EIF = ExternalIOFormat
+
+format_sparc = EIF(
+    desc="SPARC .sparc bundle",
+    module="sparc.io",
+    code="+S",  # read_sparc has multi-image support
+    ext="sparc",
+)
+format_ion = EIF(
+    desc="SPARC .ion file",
+    module="sparc.io",
+    code="1S",
+    ext="ion",
+)
+format_static = EIF(
+    desc="SPARC single point results",
+    module="sparc.io",
+    code="+S",
+    glob=["*.static", "*.static_*"],
+)
+format_geopt = EIF(
+    desc="SPARC geometric optimization results",
+    module="sparc.io",
+    code="+S",
+    glob=["*.geopt", "*.geopt_*"],
+)
+format_aimd = EIF(
+    desc="SPARC AIMD results",
+    module="sparc",
+    code="+S",
+    glob=["*.aimd*", "*.geopt_*"],
+)

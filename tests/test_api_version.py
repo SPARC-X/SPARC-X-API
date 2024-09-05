@@ -10,6 +10,7 @@ curdir = Path(__file__).parent
 def test_sparc_api(monkeypatch):
     from sparc.api import SparcAPI
     from sparc.utils import locate_api
+
     monkeypatch.delenv("SPARC_DOC_PATH", raising=False)
     default_ver = SparcAPI().sparc_version
     # No location provided, use default version

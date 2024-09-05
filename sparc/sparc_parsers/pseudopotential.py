@@ -3,7 +3,7 @@
 The psp8 format is defined in abinit manual
 https://docs.abinit.org/developers/psp8_info/
 
-The first 
+The first
 
 """
 

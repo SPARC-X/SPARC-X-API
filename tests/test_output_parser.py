@@ -19,7 +19,7 @@ def test_output_date_parser():
 *           Distributed under GNU General Public License 3 (GPL)          *
 *                   Start time: Sun Feb  5 13:39:04 2023                  *
 ***************************************************************************
-                           Input parameters                                
+                           Input parameters
 ***************************************************************************"""
     assert _read_sparc_version(header1) == "2023.02.03"
     header2 = """***************************************************************************
@@ -28,7 +28,7 @@ def test_output_date_parser():
 *           Distributed under GNU General Public License 3 (GPL)          *
 *                   Start time: Sun Feb  5 13:39:04 2023                  *
 ***************************************************************************
-                           Input parameters                                
+                           Input parameters
 ***************************************************************************"""
     assert _read_sparc_version(header2) == "2023.06.24"
 
@@ -69,13 +69,13 @@ def test_incomplete_output():
 *           Distributed under GNU General Public License 3 (GPL)          *
 *                   Start time: Fri Jan 19 08:30:23 2024                  *
 ***************************************************************************
-                           Input parameters                                
+                           Input parameters
 ***************************************************************************
-LATVEC_SCALE: 1 1 1 
+LATVEC_SCALE: 1 1 1
 LATVEC:
-22.676713510043140 0.000000000000000 0.000000000000000 
-0.000000000000000 25.561338867158440 0.000000000000000 
-0.000000000000000 0.000000000000000 23.803574206414829 
+22.676713510043140 0.000000000000000 0.000000000000000
+0.000000000000000 25.561338867158440 0.000000000000000
+0.000000000000000 0.000000000000000 23.803574206414829
 FD_GRID: 43 49 45
 FD_ORDER: 12
 BC: P P P
@@ -118,23 +118,23 @@ PRINT_DENSITY: 0
 PRINT_ENERGY_DENSITY: 0
 OUTPUT_FILE: SPARC
 ***************************************************************************
-                              Socket Mode                                  
+                              Socket Mode
 ***************************************************************************
 SOCKET_HOST: localhost
 SOCKET_PORT: 12345
 SOCKET_INET: 1
 SOCKET_MAX_NITER: 10000
 ***************************************************************************
-                                Cell                                       
+                                Cell
 ***************************************************************************
 Lattice vectors (Bohr):
-22.676713510043140 0.000000000000000 0.000000000000000 
-0.000000000000000 25.561338867158440 0.000000000000000 
-0.000000000000000 0.000000000000000 23.803574206414829 
+22.676713510043140 0.000000000000000 0.000000000000000
+0.000000000000000 25.561338867158440 0.000000000000000
+0.000000000000000 0.000000000000000 23.803574206414829
 Volume: 1.3797674149E+04 (Bohr^3)
 Density: 1.3056802042E-03 (amu/Bohr^3), 1.4631286628E-02 (g/cc)
 ***************************************************************************
-                           Parallelization                                 
+                           Parallelization
 ***************************************************************************
 NP_SPIN_PARAL: 1
 NP_KPOINT_PARAL: 1
@@ -143,7 +143,7 @@ NP_DOMAIN_PARAL: 1 1 1
 NP_DOMAIN_PHI_PARAL: 1 1 1
 EIG_SERIAL_MAXNS: 1500
 ***************************************************************************
-                             Initialization                                
+                             Initialization
 ***************************************************************************
 Number of processors               :  1
 Mesh spacing in x-direction        :  0.527365 (Bohr)
@@ -167,7 +167,7 @@ Number of atoms of type 2          :  1
 Estimated total memory usage       :  47.35 MB
 Estimated memory per processor     :  47.35 MB
 ===================================================================
-                    Self Consistent Field (SCF#1)                     
+                    Self Consistent Field (SCF#1)
 ===================================================================
 Iteration     Free Energy (Ha/atom)   SCF Error        Timing (sec)
 1            -6.0722904791E+00        3.403E-01        0.631
@@ -193,9 +193,9 @@ Iteration     Free Energy (Ha/atom)   SCF Error        Timing (sec)
 21           -6.0306578714E+00        2.154E-03        0.205
 22           -6.0306566894E+00        1.092E-03        0.197
 23           -6.0306580555E+00        4.574E-04        0.197
-Total number of SCF: 23    
+Total number of SCF: 23
 ====================================================================
-                    Energy and force calculation                    
+                    Energy and force calculation
 ====================================================================
 Free energy per atom               : -6.0306580555E+00 (Ha/atom)
 Total free energy                  : -1.8091974166E+01 (Ha)
@@ -211,7 +211,7 @@ Pressure                           : -3.5253797930E+00 (GPa)
 Maximum stress                     :  5.1281197310E+00 (GPa)
 Time for stress calculation        :  0.022 (sec)
 ===================================================================
-                    Self Consistent Field (SCF#2)                     
+                    Self Consistent Field (SCF#2)
 ===================================================================
 Iteration     Free Energy (Ha/atom)   SCF Error        Timing (sec)
 1            -6.0403347565E+00        2.197E-01        0.303

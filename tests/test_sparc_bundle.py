@@ -211,7 +211,7 @@ def test_bundle_write_multi():
     from sparc.io import read_sparc, write_sparc
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        tmpdir = Path(tmpdir)
+        tmpdir = Path("test-111")
         testbundle = tmpdir / "test.sparc"
         os.makedirs(testbundle, exist_ok=True)
         atoms = bulk("Cu") * [4, 4, 4]

@@ -322,7 +322,7 @@ The reasoning and details about unit conversion can be found in the [Rules for I
 
 
 In order for `SPARC-X-API` to be compatible with other ASE-based DFT calculators,
-there is a list of special parameters consistent with the ASE convention and uses Å / eV / GPa / fs 
+there is a list of special parameters consistent with the ASE convention and uses Å / eV / GPa / fs
 unit system:
 
 | parameter name | meaning                         | example        | equivalent `SPARC` input |
@@ -394,7 +394,7 @@ bottleneck. The underlying software architecture is shown in [Fig. 3](#fig-3-spa
 ![scheme-sparc-socket](doc/img/scheme_socket_hetero.png)
 
 
- 
+
 
 **Requirements**: the SPARC binary must be manually compiled from the source
 code with [socket
@@ -425,10 +425,10 @@ Based on the scenarios, the socket communication layer can be accessed via the f
 
 
 1. **SPARC binary only** ([Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode) **a**)
-   
+
    SPARC binary with socket support can be readily coupled with any i-PI compatible socker server, such as
    `ase.calculators.socketio.SocketIOCalculator`, for example
-   
+
    ```python
    from ase.calculators.socketio import SocketIOCalculator
    from subprocess import Popen
@@ -439,17 +439,17 @@ Based on the scenarios, the socket communication layer can be accessed via the f
 	   # Single point calculations
 	   process.kill()
    ```
-   
+
    The end user is responsible for generating the input files and
    making sure the same atoms structures are used by
    `SocketIOCalculator` and the SPARC binary. The mode is also limited
-   to be run on a single computer system. 
+   to be run on a single computer system.
 
 
 2. **Local-only Mode** ([Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode) **b**)
-   
+
    Ideal for standalone calculations, this mode simulates a conventional calculator while benefiting from socket-based efficiency.
-   
+
    ```python
    with SPARC(use_socket=True, **normal_parameters) as calc:
        # Execute single-point calculations
@@ -464,7 +464,7 @@ Based on the scenarios, the socket communication layer can be accessed via the f
    message to a local SPARC binary and send results back through the
    socket pipe. The server side can either be a normal i-PI compatible
    server (such as `SocketIOCalculator`) or server-mode `sparc.SPARC` (see 4).
-   
+
    Start the client by:
    ```python
    client = SPARC(use_socket=True,
@@ -472,7 +472,7 @@ Based on the scenarios, the socket communication layer can be accessed via the f
    with client:
        client.run()
    ```
-   
+
    Or via Command-Line:
    ```bash
    python -m sparc.client -s host:port
@@ -483,14 +483,14 @@ Based on the scenarios, the socket communication layer can be accessed via the f
    new atoms positions and parameters arrive, the client will
    automatically determine if it is necessary to restart the SPARC
    subprocess.
-   
+
 4. **Server Mode** ([Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode) **d**)
 
    Paired with the client mode in (3), SPARC-X-API can be run as a
    socket server, isolated from the node that performs the
    computation. This can be useful for highly-distributed
    computational workflows.
-   
+
    On the server node, run:
    ```python
    server_calc = SPARC(use_socket=True, socket_params=dict(port=31415, server_only=True), **normal_parameters)
@@ -498,18 +498,18 @@ Based on the scenarios, the socket communication layer can be accessed via the f
        # Execute single point calculations for atoms_1
 	   # Execute single point calculations for atoms_2
    ```
-   
+
    In this case, the server will opens `0.0.0.0:31415` for
    connection. Make sure your server is directly accessible from the
    clients and the port is not occupied. The socker server is capable
    of receiving `raw_results` directly from the clients, making it
    possible to access `server_calc.raw_results` without access to the
    file systems on the client side.
-   
+
 
 ### (In-progress) Controlling SPARC routines from socket interface
 
-As shown in [Fig. 4](#fig-4-overview-of-the-sparc-protocol-as-an-extension-to-the-standard-i-pi-protocol), 
+As shown in [Fig. 4](#fig-4-overview-of-the-sparc-protocol-as-an-extension-to-the-standard-i-pi-protocol),
 the SPARC socket protocol designs allows bidirectional control of
 internal SPARC routines. Local- or server-mode `sparc.SPARC`
 calculators can communicate with the SPARC binary via functions like

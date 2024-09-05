@@ -170,8 +170,18 @@ class SparcDocParser(object):
             )
             self.version = None
             return
-        date_str = match[0].strip().replace(",", " ")
-        date_version = datetime.strptime(date_str, "%b %d %Y").strftime("%Y.%m.%d")
+        # We need to add more spacing matching in case the source code includes extra
+        date_str = re.sub(r"\s+", " ", match[0].strip().replace(",", " "))
+        # Older version of SPARC doc may contain abbreviated month format
+        date_version = None
+        for fmt in ("%b %d %Y", "%B %d %Y"):
+            try:
+                date_version = datetime.strptime(date_str, fmt).strftime("%Y.%m.%d")
+                break
+            except Exception:
+                continue
+        if date_version is None:
+            raise ValueError(f"Cannot parse date time {date_str}")
         self.version = date_version
         return
 
