@@ -39,8 +39,12 @@ jobs:
         python -m sparc.download_data
     - name: Download SPARC output files to SPARC-master
       run: |
-        wget https://github.com/SPARC-X/SPARC/archive/refs/heads/master.zip
-        unzip master.zip
+        # Pin the current version of SPARC to versions before MLFF
+        # wget https://github.com/SPARC-X/SPARC/archive/refs/heads/master.zip
+        # unzip master.zip
+        wget -O SPARC-master.zip https://codeload.github.com/SPARC-X/SPARC/zip/3371b4401e4ebca0921fb77a02587f578f3bf3f7
+        unzip SPARC-master.zip
+        mv SPARC-33* SPARC-master
     - name: Test with pytest
       run: |
         # python -m pytest -svv tests/ --cov=sparc --cov-report=json --cov-report=html
