@@ -152,7 +152,7 @@ jobs:
         flake8 sparc/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
   # To be deleted once 1.0 release is done
-  build-linux-ase-3.22:
+  build-linux-ase-3-22:
     defaults:
       run:
         shell: bash -l {0}
