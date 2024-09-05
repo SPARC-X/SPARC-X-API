@@ -43,6 +43,7 @@ if _import_complete:
     else:
         # register calculator class <experimental>
         from ase.calculators.calculator import register_calculator_class
+
         register_calculator_class("sparc", SPARC)
 else:
     # If importing is not complete, any code trying to directly import

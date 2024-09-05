@@ -11,8 +11,10 @@ test_requires = [
     "pyfakefs",
     "pytest-cov",
     "black",
+    "isort",
     "flake8",
     "anybadge",
+    "pre-commit",
 ]
 
 setup(

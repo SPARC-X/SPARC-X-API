@@ -19,13 +19,13 @@ REQUIRED ARGUMENT:
            The filename shared by .inpt file and .ion
            file (without extension)
 
-OPTIONS: 
+OPTIONS:
     -h, --help
            Display help (from command line).
     -n <number of Nodes>
     -c <number of CPUs per node>
     -a <number of Accelerators (e.g., GPUs) per node>
-    -socket <socket> 
+    -socket <socket>
             <socket> can be either  <host>:<port> or <unix_socket>:UNIX.
             Note: socket (driver) mode is an experimental feature.
 
@@ -36,8 +36,8 @@ EXAMPLE:
     The example command runs sparc with 8 cores, with input file named
     test.inpt, and ion file named test.ion.
 
-NOTE: 
-    This is a short description of the usage of SPARC. For a detailed 
+NOTE:
+    This is a short description of the usage of SPARC. For a detailed
     discription, refer to the manual online at
 
         https://github.com/SPARC-X/SPARC/tree/master/doc
@@ -54,7 +54,7 @@ REQUIRED ARGUMENT:
            The filename shared by .inpt file and .ion
            file (without extension)
 
-OPTIONS: 
+OPTIONS:
     -h, --help
            Display help (from command line).
     -n <number of Nodes>
@@ -68,11 +68,11 @@ EXAMPLE:
     The example command runs sparc with 8 cores, with input file named
     test.inpt, and ion file named test.ion.
 
-NOTE: 
-    This is a short description of the usage of SPARC. For a detailed 
+NOTE:
+    This is a short description of the usage of SPARC. For a detailed
     discription, refer to the manual online at
 
-        https://github.com/SPARC-X/SPARC/tree/master/doc 
+        https://github.com/SPARC-X/SPARC/tree/master/doc
 """
 
 

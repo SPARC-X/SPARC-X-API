@@ -10,10 +10,10 @@ import numpy as np
 import psutil
 from ase.atoms import Atoms
 from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
+from ase.parallel import world
 from ase.stress import full_3x3_to_voigt_6_stress
 from ase.units import Bohr, GPa, Hartree, eV
 from ase.utils import IOContext
-from ase.parallel import world
 
 from .api import SparcAPI
 from .io import SparcBundle
@@ -78,7 +78,8 @@ class SPARC(FileIOCalculator, IOContext):
         "h": 0.25,  # Angstrom equivalent to MESH_SPACING = 0.47
     }
     # TODO: ASE 3.23 compatibility. should use profile
-    _legacy_default_command = "sparc"
+    # TODO: remove the legacy command check for future releases
+    _legacy_default_command = "sparc not initialized"
 
     def __init__(
         self,
@@ -253,8 +254,8 @@ class SPARC(FileIOCalculator, IOContext):
                     port=self.socket_params["port"],
                     log=self.openfile(
                         file=self._indir(ext=".log", label="socket"),
-                        comm=world, 
-                        mode="w"
+                        comm=world,
+                        mode="w",
                     ),
                     parent=self,
                 )
@@ -265,9 +266,9 @@ class SPARC(FileIOCalculator, IOContext):
                     unixsocket=socket_name,
                     # TODO: make the log fd persistent
                     log=self.openfile(
-                        file=self._indir(ext=".log", label="socket"), 
+                        file=self._indir(ext=".log", label="socket"),
                         comm=world,
-                        mode="w"
+                        mode="w",
                     ),
                     parent=self,
                 )
@@ -440,12 +441,16 @@ class SPARC(FileIOCalculator, IOContext):
 
         Extras will add additional arguments to the self.command,
         e.g. -name, -socket etc
+
+        2024.09.05 @alchem0x2a
+        Note in ase>=3.23 the FileIOCalculator.command will fallback
+        to self._legacy_default_command, which we should set to invalid value for now.
         """
         if isinstance(extras, (list, tuple)):
             extras = " ".join(extras)
         else:
             extras = extras.strip()
-        if self.command is None:
+        if (self.command is None) or (self.command == SPARC._legacy_default_command):
             command_env = os.environ.get("ASE_SPARC_COMMAND", None)
             if command_env is None:
                 sparc_exe, mpi_exe, num_cores = _find_default_sparc()

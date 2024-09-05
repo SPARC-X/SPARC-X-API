@@ -59,4 +59,3 @@ jobs:
         gh pr create --base master --title "[PR Bot] New JSON API version ${API_VERSION}"  --body "Merge new JSON API version ${API_VERSION} into master" -R ${{ github.repository_owner }}/SPARC-X-API
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    

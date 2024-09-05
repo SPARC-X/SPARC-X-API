@@ -16,7 +16,7 @@ Provide a minimal list of settings / codes to help us debug, such as
 - Version (git commit hash) of `SPARC-X-API`
 - `SPARC` C-code version (see the SPARC .out file header)
 - Your platform and architecture
- 
+
 **Expected behavior**
 What is the code intended to achieve?
 

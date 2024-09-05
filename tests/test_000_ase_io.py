@@ -16,6 +16,7 @@ def test_import_order1():
     """import ase before sparc"""
     import ase
     from packaging import version
+
     if version.parse(ase.__version__) >= version.parse("3.23"):
         pytest.skip("")
     from ase.io.formats import ioformats
@@ -34,6 +35,7 @@ def test_import_order2():
     """import ase after sparc"""
     import ase
     from packaging import version
+
     if version.parse(ase.__version__) >= version.parse("3.23"):
         pytest.skip("")
     from ase.io.formats import ioformats
@@ -53,6 +55,7 @@ def test_sparc_fake_write_exp(monkeypatch):
     """
     import ase
     from packaging import version
+
     if version.parse(ase.__version__) >= version.parse("3.23"):
         pytest.skip("")
 
@@ -81,8 +84,10 @@ def test_sparc_fake_write(monkeypatch):
     """
     import ase
     from packaging import version
+
     if version.parse(ase.__version__) >= version.parse("3.23"):
         pytest.skip("")
+
     def fake_write_sparc(filename, atoms, **kwargs):
         print("I'm the fake writer")
         pass
@@ -107,8 +112,10 @@ def test_sparc_fake_read_exp(monkeypatch, fs):
     to makesure the sparc.read_sparc register works
     """
     from pathlib import Path
+
     import ase
     from packaging import version
+
     if version.parse(ase.__version__) >= version.parse("3.23"):
         pytest.skip("")
 
@@ -141,8 +148,10 @@ def test_sparc_fake_read(monkeypatch, fs):
     to makesure the ase.io register works
     """
     from pathlib import Path
+
     import ase
     from packaging import version
+
     if version.parse(ase.__version__) >= version.parse("3.23"):
         pytest.skip("")
 
@@ -174,8 +183,10 @@ def test_sparc_fake_read(monkeypatch, fs):
 def test_sparc_read_auto(monkeypatch, fs):
     """Same version of the fake read but with automatic format discover"""
     from pathlib import Path
+
     import ase
     from packaging import version
+
     if version.parse(ase.__version__) >= version.parse("3.23"):
         pytest.skip("")
 
@@ -211,6 +222,7 @@ def test_ase_io_filetype(fs):
     """
     import ase
     from packaging import version
+
     if version.parse(ase.__version__) >= version.parse("3.23"):
         pytest.skip("")
     from ase.io.formats import filetype
