@@ -144,6 +144,7 @@ jobs:
         echo "Current coverage is $COVERAGE"
         echo "COVPERCENT=$COVERAGE" >> $GITHUB_ENV
 
+<<<<<<< HEAD
     - name: Lint with flake8
       run: |
         echo $CONDA_PREFIX
@@ -204,6 +205,8 @@ jobs:
         echo "Current coverage is $COVERAGE"
         echo "COVPERCENT=$COVERAGE" >> $GITHUB_ENV
 
+=======
+>>>>>>> b49a1a9 (Add calculator compatibility with ase>=3.23)
     - name: Lint with flake8
       run: |
         echo $CONDA_PREFIX
