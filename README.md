@@ -161,11 +161,21 @@ The command to execute SPARC calculations is determined based on the following p
 3) If neither of the above is defined, `SPARC-X-API` looks for the SPARC binary under current `$PATH` and combine with the suitable `mpi` command prefix.
 
 Example:
+
+1. Using `mpirun` (e.g. on a single test machine)
 ```bash
-export ASE_SPARC_COMMAND="mpirun -n 8 /path/to/sparc -name PREFIX"
+export ASE_SPARC_COMMAND="mpirun -n 8 -mca orte_abort_on_non_zero_status 1 /path/to/sparc -name PREFIX"
 ```
 
-*Note*: the `-name PREFIX` part can be omitted the `label` property of the `sparc.SPARC` calculator is set (which is the default behavior). Any extra features of the SPARC code (e.g. GPU acceleration) should be specified in the command.
+2. Using `srun` (e.g. in HPC slurm job system)
+```bash
+export ASE_SPARC_COMMAND="srun -n 8 --kill-on-bad-exit /path/to/sparc -name PREFIX"
+```
+
+*Notes*:
+1. The `-name PREFIX` part can be omitted the `label` property of the `sparc.SPARC` calculator is set (which is the default behavior). Any extra features of the SPARC code (e.g. GPU acceleration) should be specified in the command.
+
+2. We recommend adding kill switches for your MPI commands like the examples above when running `sparc` to avoid unexpected behaviors with exit signals.
 
 
 ## Basic usage of the Python API
