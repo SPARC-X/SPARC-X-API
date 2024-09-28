@@ -784,3 +784,5 @@ examples/ex1-ase/
 /test-2/
 *.pt
 /README.html
+/paper/paper.pdf
+/paper/jats/
