@@ -57,7 +57,7 @@ class SparcDocParser(object):
     def __init__(
         self,
         directory=".",
-        main_file="Manual*.tex",
+        main_file="*Manual.tex",
         intro_file="Introduction.tex",
         params_from_intro=True,
         parse_version=True,
@@ -370,12 +370,12 @@ class SparcDocParser(object):
         directory = Path(directory)
         root_dict = cls(directory=directory, **kwargs).to_dict()
         if include_subdirs:
-            for sub_manual_tex in directory.glob("*/Manual*.tex"):
+            for sub_manual_tex in directory.glob("*/*Manual.tex"):
                 subdir = sub_manual_tex.parent
                 try:
                     sub_dict = cls(directory=subdir, parse_version=False).to_dict()
                 except FileNotFoundError:
-                    print(subdir)
+                    print(subdir, " Latex files not found. Check naming conventions for Manual.tex. Expects format *Manual.tex")
                     continue
                 for param, param_desc in sub_dict["parameters"].items():
                     if param not in root_dict["parameters"]:
