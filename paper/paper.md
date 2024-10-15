@@ -152,7 +152,10 @@ SPARC-X-API offers two key functionalities:
 
 Unique Features of SPARC-X-API:
 
-1) Support for Bundled File Formats: Unlike typical single-file DFT implementations, SPARC requires both .inpt and .ion files. SPARC-X-API's design simplifies this by reading and writing at the directory level, streamlining the handling of SPARC bundles.
+1) Support for Bundled File Formats: Unlike typical single-file DFT
+implementations, SPARC requires both .inpt and .ion
+files. SPARC-X-API's design simplifies this by reading and writing at
+the directory level, streamlining the handling of SPARC bundles.
 
 2) JSON Schema for Parameter Validation: SPARC-X-API ensures parameter
 consistency through a JSON schema derived from SPARC's LaTeX
@@ -194,6 +197,10 @@ ongoing SPARC developments while separating parameter updates from the
 main SPARC maintainers’ efforts.
 
 # Acknowledgements
+
+The authors gratefully acknowledge the support of the U.S. Department
+of Energy, Office of Science, under Grant No. DE-SC0019410 and
+DE-SC0023445.
 
 
 # References
