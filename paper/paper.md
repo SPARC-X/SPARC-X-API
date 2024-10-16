@@ -11,7 +11,7 @@ authors:
     orcid: 0000-0003-0634-0455
     affiliation: 1
   - name: Lucas Timmerman
-    orcid:
+    orcid: 0000-0001-5664-5762
     affiliation: 1
   - name: Shashikant Kumar
     orcid: 0009-0001-5134-1580
