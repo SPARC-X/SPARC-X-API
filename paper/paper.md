@@ -8,13 +8,14 @@ tags:
   - Socket Interface
 authors:
   - name: Tian Tian
-    orcid:
-    affiliation: [1,2]
+    orcid: 0000-0003-0634-0455
+    affiliation: 1
   - name: Lucas Timmerman
     orcid:
     affiliation: 1
   - name: Shashikant Kumar
-    affiliation: 2
+    orcid: 0009-0001-5134-1580
+    affiliation: 1
   - name: Ben Comer
     orcid: 0000-0002-7528-0049
 	affiliation: 1
@@ -25,14 +26,12 @@ authors:
   - name: Phanish Suryanarayana
     orcid: 0000-0001-5172-0049
     corresponding: true
-    affiliation: [2, 3]
+    affiliation: [1, 2]
 affiliations:
-  - name: School of Civil and Environmental Engineering, Georgia Institute of Technology
+  - name: College of Engineering, Georgia Institute of Technology, Atlanta, GA 30332, USA
 	index: 1
-  - name: School of Chemical and Biomolecular Engineering, Georgia Institute of Technology
+  - name: College of Computing, Georgia Institute of Technology, Atlanta, GA 30332, USA
     index: 2
-  - name: School of Computational Science and Engineering, Georgia Institute of Technology
-    index: 3
 
 date: 24 September 2024
 bibliography: paper.bib
@@ -41,152 +40,348 @@ bibliography: paper.bib
 # Summary
 
 Density Functional Theory (DFT) is the de facto gold standard for
-electronic structure calculations in chemistry and materials
-science. While plane-wave DFT remains the most widely used, real-space
-DFT provides advantages in handling complex boundary conditions and
-scaling to very large systems. The SPARC-X project
-(https://github.com/SPARC-X) has pioneered highly efficient real-space
-DFT codes available in both Matlab [@xu_m-sparc-1.0_2020;
-@zhang_m-sparc-2.0_2023] and C [@xu_sparc-1.0_2021;
-@zhang_sparc-2.0_2024]. However, the specific input formats for SPARC
-have often made it challenging for users accustomed to plane-wave DFT
-to transition to real-space methods. To address this, we introduce
-SPARC-X-API, a Python interface designed to bridge the SPARC-X project
-with broader computational frameworks. Built on the atomic simulation
-environment (ASE [@larsen_ase_2017]) standard, SPARC-X-API allows
-users to handle SPARC file formats, and run SPARC calculations using
-the same interface as with other computational packages. SPARC-X-API
-provides additional features beyond the standard ASE package,
-including 1) support of complex boundary conditions, 2) a JSON schema
-for validating and converting calculation parameters, and 3) a
-comprehensive calculator interface with advanced socket-communication
-support. SPARC-X-API provides a smooth transition for users from
-plane-wave DFT, making the access to real-space DFT calculations more
-available and flexible for a wider range of users and computational
-workflows.
+electronic structure calculations in chemistry and materials science.
+While plane-wave DFT implementations remain the most widely used,
+real-space DFT provides advantages in handling complex boundary
+conditions and scaling to very large systems by allowing for the
+efficient use of large-scale supercomputers and linear-scaling methods
+that circumvent the cubic scaling bottleneck.  The SPARC-X project
+([https://github.com/SPARC-X](https://github.com/SPARC-X)) provides
+highly efficient and straightforward-to-install real-space DFT codes
+for a wide range of first principle applications, available in both
+Matlab (M-SPARC [@xu_m-sparc-1.0_2020; @zhang_m-sparc-2.0_2023]) and C
+(SPARC [@xu_sparc-1.0_2021; @zhang_sparc-2.0_2024]). The rapid growth
+of SPARC’s feature set has created the need for a fully functional
+interface to drive SPARC in high-throughput calculations.  Here we
+introduce SPARC-X-API, a Python package designed to bridge the SPARC-X
+project with broader computational frameworks. Built on the atomic
+simulation environment (ASE [@larsen_ase_2017]) standard, SPARC-X-API
+allows users to handle SPARC file formats and run SPARC calculations
+through the same interface as with other ASE-compatible DFT packages.
+Beyond standard ASE capabilities, SPARC-X-API provides additional
+features including 1) support of SPARC-specific setups, including
+complex boundary conditions and unit conversion, 2) a JSON schema
+parsed from SPARC's documentation for parameter validating and
+compatibility check, and 3) a comprehensive socket communication layer
+derived from the i-PI protol [@ceriotti_i-pi-1.0_2014;
+@kapil_i-pi-2.0_2019] facilitating message passing between low-level C
+code and Python interface.  The goal of SPARC-X-API is to provide a
+easy-to-use interface for users with diverse needs and levels of
+expertise, allowing for minimal effort in adapting SPARC to existing
+computational workflows, while also supporting developers of advanced
+real-space methods.
 
 # Statement of Need
 
-Kohn-Sham Density Functional Theory (DFT) has unargubaly become the
-cornerstone of electronic simulations in chemical and materials
-sciences due to its simplicity and applications across a wide range of
-systems. The popularity of DFT over other first-principle methods in
-materials simulation largely stems from the simplicity of the
-plane-wave pseudopotential implementation, where convergence is
-controlled by simply the plane-wave cutoff energy, and solving the
-Kohn-Sham equations can be benefited from highly-optimized Fast
-Fourier Transform (FFT) packages. While many non-theoretical
-researchers may associate DFT exclusively with plane-wave
-implementations, this approach has notable limitations. The periodic
-nature of the Fourier basis enforces the use of periodic boundary
-conditions, making the simulation setup of isolated and semi-finite
-systems non-straightforward. Additionally, the global nature of the
-Fourier basis causes plane-wave codes to scale poorly with increasing
-numbers of parallel processes. A compelling alternative to overcome
-these limitations is to solve the Kohn-Sham equations using a
-finite-difference approach on real-space grids. Real-space DFT
-naturally supports both periodic and Dirichlet boundary conditions,
-allowing for the flexible treatment of systems in any
-dimensionality. Furthermore, the locality of the finite-difference
-grids makes real-space DFT methods inherently scalable, paving the way
-for the development of linearly-scaling solutions to the Kohn-Sham
-equations.
+Density Functional Theory (DFT) has unargubaly become the cornerstone
+of electronic simulations in chemical and materials sciences due to
+its simplicity and applications across a wide range of systems. While
+many researchers primarily associate DFT with the plane-wave
+pseudopotential method, due to the maturity and wide availability of
+such codes, these approaches do have limitations.  One long-standing
+challenge in DFT is to develop methods that overcomes the huge
+computational cost for solving the Kohn-Sham equation, which scales
+cubically with respect to the system size.  In plane-wave methods,
+the global nature of the Fourier basis used limits the ability to
+achieve linear scaling [@bowler_order_n_dft_2012]. This becomes
+especially problematic in massively parallel computing environments,
+where the extensive global communication required during Fourier
+transformations limits the scalability, making it challenging to
+efficiently simulate very large systems in plane-wave DFT.  Moreover,
+the periodic nature of the Fourier basis enforces the use of periodic
+boundary conditions, making the simulation setup of isolated and
+semi-finite systems non-straightforward. A compelling
+alternative to overcome these limitations is to solve the Kohn-Sham
+equations using a finite-difference (FD) approach on real-space
+grids. The locality of the FD grids makes real-space DFT methods
+inherently scalable, paving the way for the development of
+linearly-scaling solutions to the Kohn-Sham equations.
+Real-space DFT also naturally supports both periodic and Dirichlet
+boundary conditions, allowing for the flexible treatment of systems in
+any dimensionality.
 
-<!-- Need review @TT 2024.09.30 --> Despite the advantages of
-real-space DFT, plane-wave implementations remain dominant in the
-field of computational chemistry and materials science, largely due to
-the greater accessibility of plane-wave DFT codes and their more
-established programmable interfaces. While real-space DFT offers
-significant benefits, there are currently few widely used packages
-that provide comprehensive real-space DFT capabilities.
-
-The only notable exception has been GPAW
-[@mortensen_gpaw_original_2005; @enkovaara_gpaw_1_2011;
-@mortensen_gpaw_2_2024], which originally focused on real-space
-finite-difference methods. However, in recent years, the development
-of GPAW has shifted its focus toward plane-wave implementations
-[@@mortensen_gpaw_2_2024], leaving its finite-difference capabilities
-underdeveloped and missing key functionality. In contrast, the SPARC-X
-project (https://github.com/SPARC-X) has pioneered efforts to develop
-an open-source, real-space DFT code that is both user-friendly and
-competitive with state-of-the-art plane-wave codes.
-
-SPARC-X offers real-space DFT algorithms through two implementations:
-M-SPARC [@xu_m-sparc-1.0_2020; @zhang_m-sparc-2.0_2023] for
-prototyping and small-system simulations, and SPARC
+In the past few years, the SPARC-X project
+([https://github.com/SPARC-X](https://github.com/SPARC-X)) has
+pioneered efforts to develop an open-source, real-space DFT code that
+is both user-friendly and competitive with state-of-the-art plane-wave
+codes. The philosophy of the SPARC-X project is to provide codes that
+are easy to implement new algorithms, highly portable, and
+straightforward to install and use across various computational
+environments.  In line with this, SPARC-X offers real-space DFT
+algorithms through two implementations: 1) Matlab-based M-SPARC
+[@xu_m-sparc-1.0_2020; @zhang_m-sparc-2.0_2023] for algorithm
+prototyping and small-system simulations, with no external
+dependencies other than Matlab itself, and 2) C-based SPARC
 [@xu_sparc-1.0_2021; @zhang_sparc-2.0_2024] for large-scale production
-calculations that can accommodate a wide range of system
-sizes. Although SPARC has demonstrated its computational efficiency
-and features a rich set of algorithms, its adoption has been limited
-by the lack of a user-friendly interface that can connect the code to
-a broader audience of users and computational tools.
+calculations that can accommodate a wide range of system sizes and
+requires only MPI and MKL/BLAS for compilation.  New development of
+SPARC has covered topics including spin-orbit coupling, dispersion
+interactions, and advanced exchange-correlation (xc) functionals
+[@zhang_sparc-2.0_2024], linear-scaling Spectral Quadrature (SQ)
+method [@suryanarayana_sparc_sq_2018], cyclic/helical symmetry
+[@sharma_sparc_cyclix_2021], real-space density functional
+perturbation theory (DFPT) [@sharma_sparc_dfpt_2023], orbital-free DFT
+(ODFT) [@ghosh_sparc_ofdft_2016; @kumar_ofdft_delta_ml_2023],
+on-the-fly machine-learning force fields (OTF-MLFF)
+[@timmerman_sparc_mlff_2024; @kumar_sparc_mlff_2024]. The rapid
+development of SPARC has led to the need for a fully functional and
+user-friendly interface that fully automate SPARC calculation in
+high-throughput scenarios.  To address this, we introduce SPARC-X-API,
+a Python interface designed to bridge the SPARC code with a
+broader range of scientific workflows. SPARC-X-API builds upon the
+Python wrapper originally shipped with SPARC version 1.0
+[@xu_sparc-1.0_2021], offering an API compatible with the widely-used
+Atomic Simulation Environment (ASE [@larsen_ase_2017]) standard and
+updated with the latest versions of SPARC. With ASE's support for
+various popular DFT methods, including both plane-wave (e.g. VASP
+[@kresse_vasp_1996], Quantum ESPRESSO [@giannozzi_qe_2017], and Abinit
+[@gonze_abinit_2020]), and real-space (e.g. GPAW
+[@enkovaara_gpaw_1_2011; @mortensen_gpaw_2_2024] and Octopus
+[@tancogne_dejean_octopus_2020]) implementations, SPARC-X-API enables
+seamless integration of SPARC into existing workflows, allowing users
+to incorporate real-space DFT calculations with minimal adjustments. A summary of the role
+SPARC-X-API in the SPARC-X project is shown in
+\ref{fig:sparc-overview}.
+In addition to the capabilities inherited from ASE, SPARC-X-API seeks
+to enhance the user experience in a few key aspects, including 1)
+supporting SPARC-specific features in an ASE-comatible API, 2) a
+parameter validation mechanism based on SPARC's `LaTeX` documentation,
+and 3) a versatile socket communication layer for efficient
+high-throughput calculations. Details will be discussed in the Features and Functionalities section.
 
-To address this, we introduce SPARC-X-API, a Python-based interface
-designed to bridge the SPARC-X code with a broader range of scientific
-workflows. Built on the Atomic Simulation Environment (ASE
-[@larsen_ase_2017]) standard, SPARC-X-API provides seamless file
-read/write support for SPARC files and a feature-complete calculator
-interface to the SPARC code. With SPARC-X-API, researchers can easily
-incorporate real-space DFT into their workflows using familiar tools
-and interfaces, making real-space DFT more accessible to a wider range
-of users.
+<!-- Firstly, the -->
+<!-- design of the API is closely aligned with the ASE interfaces of other -->
+<!-- popular DFT packages using the Angstrom-eV unit system. For advanced -->
+<!-- users, SPARC-X-API also supports raw input parameters in SPARC’s -->
+<!-- `.inpt` file using atomic units with full support for complex boundary -->
+<!-- conditions. Secondly, as SPARC’s feature set rapidly evolves, there is -->
+<!-- a growing need to ensure input compatibility with different SPARC -->
+<!-- versions, an issue common across many DFT codes. Instead of -->
+<!-- hard-coding parameter lists into the API, SPARC-X-API introduces a -->
+<!-- validation mechanism based on a JSON schema parsed directly from the -->
+<!-- official SPARC documentation. This allows SPARC-X-API to verify input -->
+<!-- parameters and check version compatibility at runtime, keeping the API -->
+<!-- and the main SPARC code as separate projects while ensuring -->
+<!-- compatibility. Lastly, SPARC-X-API provides an advanced and -->
+<!-- easy-to-use socket communication layer for direct interaction with the -->
+<!-- SPARC executable in high-throughput calculations. Users can easily -->
+<!-- switch from file-based I/O to a local UNIX socket with a single -->
+<!-- parameter change, without the need for manual socket setup. When -->
+<!-- performing calculations over remote machines, SPARC-X-API eliminates -->
+<!-- the need to manually restart the client code when the chemical -->
+<!-- composition changes or connection resets, which are usually -->
+<!-- encountered when using the `ase.calculators.socketio` -->
+<!-- module. Furthermore, the socket layer extends the i-PI protocol -->
+<!--  with additional -->
+<!-- message-passing capabilities, allowing for more precise control of -->
+<!-- SPARC routines in future development. A summary of the role -->
+<!-- SPARC-X-API in the SPARC-X project is shown in -->
+<!-- \ref{fig:sparc-overview}. -->
 
-<!-- statement of SPARC-X-API v0.1 -->
+![**NEED REVISION** Overview of SPARC-X-API in the SPARC-X project system
+\label{fig:sparc-overview}
+](){ width=100% }
 
-<!-- SPARC-X-API philosophy -->
 
 
 # Features and Functionalities
 
-SPARC-X-API offers two key functionalities:
+SPARC-X-API is structured as a Python package `sparc`. A summary of
+its key functionalities is provided below, and for detailed
+documentation, please refer to the [official
+documentation](https://github.com/SPARC-X/SPARC-X-API/blob/master/README.md).
 
-- File I/O: Through the sparc.io submodule, SPARC-X-API implements
-  file read/write support for SPARC file formats, including .inpt and
-  .ion files. SPARC-X-API operates on the directory level, treating
-  each calculation directory as a "SPARC bundle." From version 1.0
-  onwards, SPARC-X-API is fully integrated with ASE (version 3.23),
-  automatically registering SPARC as an external I/O format.
-- Calculator Interface: The sparc.calculator submodule provides a full
-  ASE-compatible calculator interface for running SPARC calculations,
-  enabling integration with ASE workflows. <!-- IO and socker -->
+## `sparc.io`: File I/O Manupulation
 
-Unique Features of SPARC-X-API:
+In SPARC and M-SPARC calculations, the input information are provided
+by two files: a `.inpt` (cell dimensions, boundary conditions,
+calculation flags), and a `.ion` file (atomic configurations and
+locations to pseudopotential). Depending on the type of calculation,
+various output files may be written, such as`.static`, `.geopt` or
+`.aimd`. The separation of information across multiple files means
+converting ASE `Atoms` objects to SPARC input files or retrieving
+energy and forces information from SPARC calculations requires
+handling more than just a single file, as is common in most ASE I/O
+formats. To manage this, SPARC-X-API operates on the directory level,
+treating each calculation directory as a "SPARC bundle". The
+`sparc.io.SparcBundle` class facilitates reading from and writing to
+this bundle, ensuring that all necessary input and output files are
+properly handled. By default, SPARC-X-API also copies relevant
+pseudopotential files into the calculation directory, making the SPARC
+bundle portable across different machines. From version 2.0 onwards,
+SPARC-X-API leverages the new features introduced in ASE version 3.23
+to register as an external I/O format, allowing reading and writing
+SPARC files directly using `ase.io` submodule:
 
-1) Support for Bundled File Formats: Unlike typical single-file DFT
-implementations, SPARC requires both .inpt and .ion
-files. SPARC-X-API's design simplifies this by reading and writing at
-the directory level, streamlining the handling of SPARC bundles.
+```py
+from ase.io import read, write
+# 1. Read a SPARC bundle by specifying the `sparc` format
+atoms = read("sparc_output_dir", format="sparc")
+# 2. Write to a SPARC bundle from aboth object
+write("sparc_input_dir", atoms, format="sparc")
+```
 
-2) JSON Schema for Parameter Validation: SPARC-X-API ensures parameter
-consistency through a JSON schema derived from SPARC's LaTeX
-documentation. This guarantees compatibility with SPARC's source code,
-offering a robust mechanism for validating and converting parameters.
-3) Unit Conversions: SPARC-X-API manages the conversion between atomic
-units (Hartree, Bohr) used in SPARC and the eV/Å units in ASE.
+SPARC-X-API supports parsing complex boundary conditions from the
+`.inpt` file. The periodic (P) and Dirichlet (D) boundary conditions
+are translated into `True` and `False` values, respectively, in the
+corresponding `pbc` direction of an `Atoms` object. While standard ASE
+objects do not natively support cyclic (C) or helical (H) boundary
+conditions, SPARC-X-API treats them similarly to Dirichlet boundaries
+and stores the original boundary condition information in the `info`
+attribute of the atomic object, to preserve the correct boundary
+combinations when re-writing to SPARC input files.
 
-## Socket-Communication Calculator Interface
-SPARC-X-API’s socket-communication layer allows for efficient and
-flexible workflows by reducing the overhead of file I/O. This feature
-is particularly useful for iterative calculations, such as structural
-optimizations and saddle point searches, where traditional file-based
-communication can become a bottleneck.
 
-Key advantages:
+## `sparc.api`: Parameter Validation
 
-Efficiency: Eliminates intermediate file I/O by streaming data
-directly between processes.  Speed: Enhances performance in iterative
-calculations, critical for large-scale simulations.  Flexibility:
-Enables real-time modification of calculation parameters without
-restarting processes.  SPARC-X-API implements a backward-compatible
-i-PI protocol, allowing both low-level and high-level interfacing with
-SPARC's DFT code.
+In the ASE ecosystem, the default calculator interface such as
+`FileIOCalculator` does not implement parameter validation, which can
+lead to issues such as incorrect parameter settings or incompatibility
+when providing running calculations. To address this, SPARC-X-API
+introduces a robust parameter validation system using a JSON schema
+generated from SPARC’s [LaTeX
+documentation](https://github.com/SPARC-X/SPARC/tree/master/doc/.LaTeX). A
+JSON schema contains the version of the SPARC software, a list of
+input parameters used in `.inpt` and `.ion` files, as well as
+supported data types and parameter categorizes. The validation is handled via the `sparc.api.SparcAPI` class, including:
+- Verify that the schema is compatible with the version of SPARC binary
+- Convert `.inpt` fields into Python data types
+- Validate input parameters in both string and numerical formats
+- Output help information about specific parameter(s)
+
+Each release of SPARC-X-API contains a copy of a JSON schema linked
+with the latest SPARC release as the default validator, although the
+user is free to choose a different combination of SPARC versions and
+schemas. The separation between SPARC-X-API and SPARC not only
+prevents the need for hard-coding parameter lists into the API, but
+also facilitates easier maintenance: the "central truth" of parameters
+remains in the SPARC documentation, maintained by the SPARC core
+developers, while SPARC-X-API can focus on providing a user-friendly
+interface without being tied to constant updates, maximizing
+flexibility.
+
+## `sparc.calculator`: Socket-Communication Calculator Interface
+
+The submodule `sparc.calculator` provides a class `SPARC` as the main
+entry point for driving SPARC calculations, which provides two modes
+of operation: 1) a file I/O-based calculator extending the
+`ase.calculators.FileIOCalculator` class, and 2) a comprehensive
+socket communication layer that allows direct communication between
+the Python API and low-level C-code.
+
+In file I/O mode, the SPARC calculator object utilizes the
+`sparc.io.SparcBundle` for generating input files and
+`sparc.api.SparcAPI` for parameter validation, while the mode of
+calculation (single-point, relaxation or molecular dynamics) is
+controlled by the input flags. For users transitioning from other DFT
+packages and their ASE calculators, SPARC-X-API is designed to
+minimize adaptation effort. `SPARC` calculator class supports two sets
+of input parameters: 1) lower-case special parameters that follow
+conventions from other ASE DFT calculators (e.g. real-space grid
+spacing `h` from GPAW, and exchange-correlation keyword `xc` from
+VASP) that use Angstrom-eV system, and 2) case-insensitive raw SPARC
+input parameters in Bohr-Hartree units for fine-grained control. This
+dual approach is designed so that users familiar with other DFT codes
+can adopt SPARC with minimal changes to their existing
+workflows. Basic DFT calculations can be covered by using special
+parameter sets alone in SPARC-X-API, as shown by the side-by-side
+constructor with VASP and GPAW, using the same
+exchange-correlation functional and compatible convergence settings:
+
+
+```py
+#1. Using VASP
+from ase.calculators.vasp import Vasp
+calc = Vasp(xc="pbe", kpts=(9, 9, 9), ecut=450, ediff=1.e-4)
+
+#2. Using GPAW
+from gpaw import GPAW
+calc = GPAW(xc="pbe", kpts=(9, 9, 9), h=0.25, convergence={"energy": 1.e-4})
+
+#3. Using SPARC
+from sparc.calculator import SPARC
+calc = SPARC(xc="pbe", kpts=(9, 9, 9), h=0.25, convergence={"energy": 1.e-4})
+```
+
+In high-throughput frameworks requiring thousands of single-point DFT
+evaluations, relying on file I/O mode can be inefficient, as
+calculations are restarted at each DFT call and the total number of
+files easily exceeds SPARC's file count limit.  The socket layer in
+SPARC-X-API avoids this overhead by direct communicating with a
+long-running SPARC process for updating atomic positions, while
+keeping density and orbitals in memory and reducing self-consistent
+field (SCF) cycles. While alternative communication methods exist,
+such as C-binding approaches seen in GPAW [@mortensen_gpaw_2_2024] and
+Psi4 [@smith_psi4_2020], these typically involve complex compilation
+and integration steps when installing the Python package. We chose a
+socket-based communication layer for its simplicity, which allows for
+a clear separation between the Python and SPARC codebases, minimal
+modifications to the existing C code, and ease of installation without
+requiring recompilation.
+
+The communication protocol used in SPARC-X-API, referred to as the
+SPARC protocol, is based on the i-PI protocol
+[@ceriotti_i-pi-1.0_2014; @kapil_i-pi-2.0_2019], which is also adapted
+by a wide range of ASE calculators. The SPARC protocol introduces
+additional header types and supporting binary data transfers via
+Python's pickle format.  While SPARC’s C-code maintains compatibility
+with the original i-PI standard, SPARC-X-API leverages this extended
+version with pickle decoding. The two-tier design offers flexibility
+for socket calculations. At its core, the SPARC binary can communicate
+directly with any i-PI-compatible server, such as
+`ase.calculators.socketio.SocketIOCalculator` in ASE, using the basic
+protocol, though this requires careful setup by the user. SPARC-X-API
+further makes running socket mode calculations at ease. Leveraging the
+SPARC protocol, the API internally relays socket data to the SPARC
+binary, handling object decoding and socket resets automatically. When
+running socket calculations on a single machine, users can activate
+socket mode by simply adding `use_socket=True` to the `SPARC`
+calculator constructor, enabling UNIX socket communication without
+additional setup. More importantly, the design of SPARC protocol
+allows easy and seamless integration in distributed computational
+systems, offering the following features: 1) flexible client
+initialization / restart 2) efficient data transfer 3) heterogeneous
+computational setup \autoref{fig:socket-hetero} summarizes the
+server-client setup across hybrid computing platforms.
+
+![**NEED REVISION** Example of socket communication across hybrid computing platforms using SPARC-X-API
+\label{fig:socket-hetero}
+](fig/fig_socket_hetero.svg){ width=100% }
+
+
+The design of the SPARC protocol allows insertion of bidirectional
+additional routines between two DFT calls, allowing further control
+over the low-level C-code.
+
+
+
+## Miscellaneous Helper Functionalities
+
+SPARC-X-API provides several helper functions to facilitate user
+installation and testing, inlcuding:
+
+- `sparc.quicktest`: a utility to verify the installation and
+  environment setups for `SPARC-X-API` and `SPARC`.
+- `sparc.docparser`: a submodule to convert existing `LaTeX`
+  documentation included in SPARC source code into JSON schema.
+- `sparc.download_data`: a tool to download the latest ONCV
+  pseudopotentials released by SPARC.
+- `sparc-ase`: an extension to the commandline `ase` tool, adding
+  compatibility with SPARC file formats.
 
 # Code Release and Maintenance
-SPARC-X-API maximizes accessibility for users by providing streamlined
-installation via the conda-forge channel, where the sparc-x-api
-package can be installed with default ONCV pseudopotentials. It also
-integrates continuous integration (CI) and continuous deployment (CD)
-workflows for:
+
+SPARC-X-API is released as source code in github repository
+[https://github.com/SPARC-X/SPARC-X-API](https://github.com/SPARC-X/SPARC-X-API),
+and as a `conda-forge` package
+[`sparc-x-api`](https://anaconda.org/conda-forge/sparc-x-api). When
+installing using `conda-forge`, the package is bundled with the
+optimized pseudopotentials [@shojaei_sparc_pseudopot_2023], and
+compatible with the
+[`sparc`](https://anaconda.org/conda-forge/sparc-x) package that
+contains the compiled SPARC binary.
+
+It also integrates continuous integration (CI) workflows for:
 
 - Unit testing and code coverage
 - Fetching the latest SPARC documentation for updating the JSON schema
