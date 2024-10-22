@@ -10,7 +10,7 @@ authors:
   - name: Tian Tian
     orcid: 0000-0003-0634-0455
     affiliation: 1
-  - name: Lucas Timmerman
+  - name: Lucas R Timmerman
     orcid: 0000-0001-5664-5762
     affiliation: 1
   - name: Shashikant Kumar
