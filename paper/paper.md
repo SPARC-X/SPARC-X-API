@@ -102,15 +102,16 @@ allowing for the flexible treatment of systems in
 any dimensionality.
 
 In the past few years, the SPARC-X project
-([https://github.com/SPARC-X](https://github.com/SPARC-X)) has
-led efforts to develop an open-source, real-space DFT code that
-is both user-friendly and competitive with state-of-the-art plane-wave
-codes. The philosophy of the SPARC-X project is to provide codes that are highly
-efficient and portable (i.e. straightforward to install and use across various computational
-environments). The codes also seek to be user-friendly and developer-friendly
-to facilitate the implementation of new algorithms. In line with this, SPARC-X offers real-space DFT
-algorithms through two implementations: 1) Matlab-based M-SPARC
-[@xu_m-sparc-1.0_2020; @zhang_m-sparc-2.0_2023] for algorithm
+([https://github.com/SPARC-X](https://github.com/SPARC-X)) has led
+efforts to develop an open-source, real-space DFT code that is both
+user-friendly and competitive with state-of-the-art plane-wave
+codes. The philosophy of the SPARC-X project is to provide codes that
+are highly efficient and portable (i.e. straightforward to install and
+use across various computational environments). The codes also seek to
+be user-friendly and developer-friendly to facilitate the
+implementation of new algorithms. In line with this, SPARC-X offers
+real-space DFT algorithms through two implementations: 1) Matlab-based
+M-SPARC [@xu_m-sparc-1.0_2020; @zhang_m-sparc-2.0_2023] for algorithm
 prototyping and small-system simulations, with no external
 dependencies other than Matlab itself, and 2) C/C++ based SPARC
 [@xu_sparc-1.0_2021; @zhang_sparc-2.0_2024] for large-scale production
@@ -122,33 +123,41 @@ interactions, and advanced exchange-correlation (xc) functionals
 method [@suryanarayana_sparc_sq_2018], cyclic/helical symmetry
 [@sharma_sparc_cyclix_2021], real-space density functional
 perturbation theory (DFPT) [@sharma_sparc_dfpt_2023], orbital-free DFT
-(ODFT) [@ghosh_sparc_ofdft_2016],
-on-the-fly machine-learning force fields (OTF-MLFF)
-[@kumar_ofdft_delta_ml_2023; @timmerman_sparc_mlff_2024; @kumar_sparc_mlff_2024]. The rapid
+(ODFT) [@ghosh_sparc_ofdft_2016], on-the-fly machine-learning force
+fields (OTF-MLFF) [@kumar_ofdft_delta_ml_2023;
+@timmerman_sparc_mlff_2024; @kumar_sparc_mlff_2024]. The rapid
 development of SPARC has led to the need for a fully functional and
 user-friendly interface that facilitates the use of SPARC with
-high-throughput workflows.  To address this, we introduce the SPARC-X-API,
-a Python interface designed to bridge the SPARC code with a
-wide range of scientific workflows. The SPARC-X-API builds upon the
+high-throughput workflows.  To address this, we introduce the
+SPARC-X-API, a Python interface designed to bridge the SPARC code with
+a wide range of scientific workflows. The SPARC-X-API builds upon the
 Python wrapper originally shipped with SPARC version 1.0
 [@xu_sparc-1.0_2021], offering an API compatible with the widely-used
-ASE (ASE [@larsen_ase_2017]) standard and
-updated with the latest versions of SPARC. With ASE's support for
-various popular DFT methods, including both plane-wave (e.g. VASP
-[@kresse_vasp_1996], Quantum ESPRESSO [@giannozzi_qe_2017], and Abinit
-[@gonze_abinit_2020]), and real-space (e.g. GPAW
-[@enkovaara_gpaw_1_2011; @mortensen_gpaw_2_2024] and Octopus
-[@tancogne_dejean_octopus_2020]) implementations, SPARC-X-API enables
-seamless integration of SPARC into existing workflows, allowing users
-to incorporate real-space DFT calculations with minimal adjustments. A summary of the role
+ASE (ASE [@larsen_ase_2017]) standard and updated with the latest
+versions of SPARC. With ASE's support for various popular DFT methods,
+including both plane-wave (e.g. VASP [@kresse_vasp_1996], Quantum
+ESPRESSO [@giannozzi_qe_2017], and Abinit [@gonze_abinit_2020]), and
+real-space (e.g. GPAW [@enkovaara_gpaw_1_2011; @mortensen_gpaw_2_2024]
+and Octopus [@tancogne_dejean_octopus_2020]) implementations,
+SPARC-X-API enables seamless integration of SPARC into existing
+workflows, allowing users to incorporate real-space DFT calculations
+with minimal adjustments.  The modular design of SPARC-X-API makes it
+straightforward to be plugged into complex computational workflows,
+for example high-throughput dynamics simulations by i-PI
+[@litman_i-pi-3.0_2024] and PLUMED [@article{bonomi_plumed_2019], as
+well as active machine learning frameworks including FineTuna
+[@musielewicz_finetuna_2022], powered by state-of-art neural network
+interatomic potentials such as FAIR-Chem
+(https://github.com/FAIR-Chem/fairchem)[https://github.com/FAIR-Chem/fairchem]
+and MACE-MP [@ilyes_mace_2023] model series.  A summary of the role
 SPARC-X-API in the SPARC-X project is shown in
-\autoref{fig:sparc-overview}.
-In addition to the capabilities inherited from ASE, SPARC-X-API seeks
-to enhance the user experience in a few key aspects, including 1)
-supporting SPARC-specific features in an ASE-comatible API, 2) a
-parameter validation mechanism based on SPARC's `LaTeX` documentation,
-and 3) a versatile socket communication layer for efficient
-high-throughput calculations. Details will be discussed in the Features and Functionalities section.
+\autoref{fig:sparc-overview}.  In addition to the capabilities
+inherited from ASE, SPARC-X-API seeks to enhance the user experience
+in a few key aspects, including 1) supporting SPARC-specific features
+in an ASE-comatible API, 2) a parameter validation mechanism based on
+SPARC's `LaTeX` documentation, and 3) a versatile socket communication
+layer for efficient high-throughput calculations. Details will be
+discussed in the Features and Functionalities section.
 
 <!-- Firstly, the -->
 <!-- design of the API is closely aligned with the ASE interfaces of other -->
@@ -181,7 +190,7 @@ high-throughput calculations. Details will be discussed in the Features and Func
 
 ![Overview of SPARC-X-API in the SPARC-X project system
 \label{fig:sparc-overview}
-](fig/fig_sparc_api_overview.svg){ width=100% }
+](fig/fig_sparc_api_overview.svg){ width=90% }
 
 
 
