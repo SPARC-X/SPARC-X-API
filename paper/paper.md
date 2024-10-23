@@ -144,7 +144,7 @@ workflows, allowing users to incorporate real-space DFT calculations
 with minimal adjustments.  The modular design of SPARC-X-API makes it
 straightforward to be plugged into complex computational workflows,
 for example high-throughput dynamics simulations by i-PI
-[@litman_i-pi-3.0_2024] and PLUMED [@article{bonomi_plumed_2019], as
+[@litman_i-pi-3.0_2024] and PLUMED [@bonomi_plumed_2019], as
 well as active machine learning frameworks including FineTuna
 [@musielewicz_finetuna_2022], powered by state-of-art neural network
 interatomic potentials such as FAIR-Chem
