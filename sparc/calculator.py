@@ -404,7 +404,7 @@ class SPARC(FileIOCalculator, IOContext):
         else:
             return self.sparc_bundle.sorting["resort"]
 
-    def check_state(self, atoms, tol=1e-9):
+    def check_state(self, atoms, tol=1e-8):
         """Updated check_state method.
         By default self.atoms (cached from output files) contains the initial_magmoms,
         so we add a zero magmoms to the atoms for comparison if it does not exist.
@@ -421,11 +421,10 @@ class SPARC(FileIOCalculator, IOContext):
                 ]
                 * len(atoms_copy)
             )
-
         system_changes = FileIOCalculator.check_state(self, atoms_copy, tol=tol)
         # A few hard-written rules. Wrapping should only affect the position
         if "positions" in system_changes:
-            atoms_copy.wrap()
+            atoms_copy.wrap(eps=tol)
             new_system_changes = FileIOCalculator.check_state(self, atoms_copy, tol=tol)
             if "positions" not in new_system_changes:
                 system_changes.remove("positions")
@@ -635,9 +634,12 @@ class SPARC(FileIOCalculator, IOContext):
         assert np.isclose(
             ret["energy"], self.results["energy"]
         ), "Energy values from socket communication and output file are different! Please contact the developers."
-        assert np.isclose(
-            ret["forces"][self.resort], self.results["forces"]
-        ).all(), "Force values from socket communication and output file are different! Please contact the developers."
+        try:
+            assert np.isclose(
+                ret["forces"][self.resort], self.results["forces"]
+            ).all(), "Force values from socket communication and output file are different! Please contact the developers."
+        except KeyError:
+            print("Force values cannot be accessed via the results dictionary. They may not be available in the output file. Ensure PRINT_FORCES: 1\nResults:\n",self.results)
         # For stress information, we make sure that the stress is always present
         if "stress" not in self.results:
             virial_from_socket = ret.get("virial", np.zeros(6))
