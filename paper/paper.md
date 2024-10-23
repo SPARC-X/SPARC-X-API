@@ -33,7 +33,7 @@ affiliations:
   - name: College of Computing, Georgia Institute of Technology, Atlanta, GA 30332, USA
     index: 2
 
-date: 24 September 2024
+date: 24 October 2024
 bibliography: paper.bib
 ---
 
@@ -85,7 +85,7 @@ cubically with respect to the system size.  This becomes
 especially problematic in massively parallel computing environments,
 where the extensive global communication required during Fourier
 transformations limits the scalability, making it challenging to
-efficiently simulate very large systems in plane-wave DFT.  
+efficiently simulate very large systems in plane-wave DFT.
 In plane-wave methods, the global nature of the Fourier basis used limits the ability to
 achieve linear scaling [@bowler_order_n_dft_2012]. Moreover,
 the periodic nature of the Fourier basis enforces the use of periodic
@@ -105,7 +105,7 @@ In the past few years, the SPARC-X project
 ([https://github.com/SPARC-X](https://github.com/SPARC-X)) has
 led efforts to develop an open-source, real-space DFT code that
 is both user-friendly and competitive with state-of-the-art plane-wave
-codes. The philosophy of the SPARC-X project is to provide codes that are highly 
+codes. The philosophy of the SPARC-X project is to provide codes that are highly
 efficient and portable (i.e. straightforward to install and use across various computational
 environments). The codes also seek to be user-friendly and developer-friendly
 to facilitate the implementation of new algorithms. In line with this, SPARC-X offers real-space DFT
@@ -142,7 +142,7 @@ various popular DFT methods, including both plane-wave (e.g. VASP
 seamless integration of SPARC into existing workflows, allowing users
 to incorporate real-space DFT calculations with minimal adjustments. A summary of the role
 SPARC-X-API in the SPARC-X project is shown in
-\ref{fig:sparc-overview}.
+\autoref{fig:sparc-overview}.
 In addition to the capabilities inherited from ASE, SPARC-X-API seeks
 to enhance the user experience in a few key aspects, including 1)
 supporting SPARC-specific features in an ASE-comatible API, 2) a
@@ -179,9 +179,9 @@ high-throughput calculations. Details will be discussed in the Features and Func
 <!-- SPARC-X-API in the SPARC-X project is shown in -->
 <!-- \ref{fig:sparc-overview}. -->
 
-![**NEED REVISION** Overview of SPARC-X-API in the SPARC-X project system
+![Overview of SPARC-X-API in the SPARC-X project system
 \label{fig:sparc-overview}
-](){ width=100% }
+](fig/fig_sparc_api_overview.svg){ width=100% }
 
 
 
@@ -227,7 +227,7 @@ The SPARC-X-API also supports parsing complex boundary conditions from the
 are translated into `True` and `False` values, respectively, in the
 corresponding `pbc` direction of an `Atoms` object. Standard ASE
 objects do not natively support cyclic (C) or helical (H) boundary
-conditions that are available in SPARC, so the SPARC-X-API 
+conditions that are available in SPARC, so the SPARC-X-API
 treats them similarly to Dirichlet boundaries
 and stores the original boundary condition information in the `info`
 attribute of the atomic object. This ensures that the correct boundary
@@ -255,7 +255,7 @@ supported data types and parameter categories. Validation is handled via the `sp
 Each release of the SPARC-X-API contains a copy of a JSON schema linked
 with the latest SPARC release as the default validator, although the
 user is can select different combination of SPARC versions and
-schemas depending on the version they are using. The separation between the 
+schemas depending on the version they are using. The separation between the
 SPARC-X-API and the core SPARC code not only
 prevents the need for hard-coding parameter lists into the API, but
 also facilitates easier maintenance: the "central truth" of parameters
@@ -279,8 +279,8 @@ In file I/O mode, the SPARC calculator object utilizes the
 calculation (single-point, relaxation or molecular dynamics) is
 controlled by the input flags. For users transitioning from other DFT
 packages and their ASE calculators, the SPARC-X-API is designed to
-minimize adaptation effort, but the API is designed to also enable 
-advanced inputs from expert users. The `SPARC` calculator class 
+minimize adaptation effort, but the API is designed to also enable
+advanced inputs from expert users. The `SPARC` calculator class
 achieves this by supporting two sets
 of input parameters: 1) lower-case special parameters that follow
 conventions from other ASE DFT calculators (e.g. real-space grid
@@ -289,7 +289,7 @@ VASP) that use the ASE default Angstrom-eV system, and 2) case-insensitive raw S
 input parameters in Bohr-Hartree units for fine-grained control. This
 dual approach is designed so that users familiar with other DFT codes
 can adopt SPARC with minimal changes to their existing
-workflows, while expert users can exert full control. 
+workflows, while expert users can exert full control.
 Basic DFT calculations can be covered by using standard ASE
 parameter sets in the SPARC-X-API, as shown by the side-by-side
 constructor with VASP and GPAW, using the same
@@ -337,7 +337,7 @@ protocol with pickle decoding. The two-tier design offers flexibility
 for socket calculations. At its core, the SPARC binary can communicate
 directly with any i-PI-compatible server, such as
 `ase.calculators.socketio.SocketIOCalculator` in ASE, using the basic
-protocol, though this requires careful setup by the user. 
+protocol, though this requires careful setup by the user.
 However, the SPARC-X-API leverages the
 SPARC protocol, which allows the API to internally relay more advanced
  data types to the SPARC
@@ -356,7 +356,7 @@ over the low-level C/C++ code.
 Figure \autoref{fig:socket-hetero} summarizes the
 server-client setup across hybrid computing platforms.
 
-![**NEED REVISION** Example of socket communication across hybrid computing platforms using SPARC-X-API
+![Example of socket communication across hybrid computing platforms using SPARC-X-API
 \label{fig:socket-hetero}
 ](fig/fig_socket_hetero.svg){ width=100% }
 
