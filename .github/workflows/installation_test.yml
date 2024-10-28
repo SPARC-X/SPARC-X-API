@@ -42,7 +42,7 @@ jobs:
         # Pin the current version of SPARC to versions before MLFF
         # wget https://github.com/SPARC-X/SPARC/archive/refs/heads/master.zip
         # unzip master.zip
-        wget -O SPARC-master.zip https://codeload.github.com/SPARC-X/SPARC/zip/3371b4401e4ebca0921fb77a02587f578f3bf3f7
+        wget -O SPARC-master.zip https://codeload.github.com/SPARC-X/SPARC/zip/525e94c82345f1e8741a76599e4b2818dfb549a9
         unzip SPARC-master.zip
         mv SPARC-33* SPARC-master
     - name: Test with pytest
