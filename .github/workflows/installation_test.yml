@@ -44,7 +44,7 @@ jobs:
         # unzip master.zip
         wget -O SPARC-master.zip https://codeload.github.com/SPARC-X/SPARC/zip/525e94c82345f1e8741a76599e4b2818dfb549a9
         unzip SPARC-master.zip
-        mv SPARC-33* SPARC-master
+        mv SPARC-52* SPARC-master
     - name: Test with pytest
       run: |
         # python -m pytest -svv tests/ --cov=sparc --cov-report=json --cov-report=html
