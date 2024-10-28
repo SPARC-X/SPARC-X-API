@@ -3,7 +3,7 @@
 The test needs to be combined with the downloadable test outputs from SPARC-X's repo
 and will only be activated when the environment variable $SPARC_TESTS_DIR is set
 
-The ref
+
 """
 import os
 import shutil

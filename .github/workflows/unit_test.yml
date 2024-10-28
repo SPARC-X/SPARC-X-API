@@ -1,4 +1,4 @@
-name: unit tests
+name: Unit tests for SPARC-X-API
 
 on:
   push:
@@ -10,60 +10,44 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-linux:
+  test-linux:
     defaults:
       run:
         shell: bash -l {0}
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 5
 
     steps:
     - uses: actions/checkout@v3
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         python-version: "3.10"
         mamba-version: "*"
-        channels: conda-forge,alchem0x2a,defaults
+        channels: conda-forge,defaults
         channel-priority: true
         activate-environment: sparc-api-test
     - name: Install dependencies
       run: |
-        # mamba install -c conda-forge ase>=3.22 pymatgen flake8 pytest
         mamba install -c conda-forge sparc-x
-        # pip install pyfakefs
     - name: Install package
       run: |
         pip install -e ".[test]"
         # Download the external psp data
         python -m sparc.download_data
-    - name: Download SPARC output files to SPARC-master
-      run: |
-        # Pin the current version of SPARC to versions before MLFF
-        # wget https://github.com/SPARC-X/SPARC/archive/refs/heads/master.zip
-        # unzip master.zip
-        wget -O SPARC-master.zip https://codeload.github.com/SPARC-X/SPARC/zip/3371b4401e4ebca0921fb77a02587f578f3bf3f7
-        unzip SPARC-master.zip
-        mv SPARC-33* SPARC-master
-    - name: Test with pytest
-      run: |
-        # python -m pytest -svv tests/ --cov=sparc --cov-report=json --cov-report=html
-        export SPARC_TESTS_DIR="./SPARC-master/tests"
-        export ASE_SPARC_COMMAND="mpirun -n 1 sparc"
-        export SPARC_DOC_PATH="./SPARC-master/doc/.LaTeX"
-        coverage run -a -m pytest -svv tests/
-        coverage json --omit="tests/*.py"
-        coverage html --omit="tests/*.py"
-        COVERAGE=`cat coverage.json | jq .totals.percent_covered | xargs printf '%.*f' 0`
-        echo "Current coverage is $COVERAGE"
-        echo "COVPERCENT=$COVERAGE" >> $GITHUB_ENV
-
     - name: Lint with flake8
       run: |
         echo $CONDA_PREFIX
         conda info
         flake8 sparc/ --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 sparc/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Test with pytest (without all SPARC examples)
+      run: |
+        export ASE_SPARC_COMMAND="mpirun -n 1 sparc"
+        coverage run -a -m pytest -svv tests/
+        coverage json --omit="tests/*.py"
+        coverage html --omit="tests/*.py"
+        COVERAGE=`cat coverage.json | jq .totals.percent_covered | xargs printf '%.*f' 0`
+        echo "Current coverage is $COVERAGE"
+        echo "COVPERCENT=$COVERAGE" >> $GITHUB_ENV
     - name: SPARC API version
       run: |
         python -c "from sparc.api import SparcAPI; import os; ver=SparcAPI().sparc_version; os.system(f'echo API_VERSION={ver} >> $GITHUB_ENV')"
@@ -93,26 +77,59 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         RID: ${{ github.run_id }}
 
+  parse-sparc-official-examples:
+    defaults:
+      run:
+        shell: bash -l {0}
+    runs-on: ubuntu-latest
+    needs: test-linux
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        python-version: "3.10"
+        mamba-version: "*"
+        channels: conda-forge,defaults
+        channel-priority: true
+        activate-environment: sparc-api-test
+    - name: Install dependencies
+      run: |
+        mamba install -c conda-forge sparc-x
+    - name: Install package
+      run: |
+        pip install -e ".[test]"
+        # Download the external psp data
+        python -m sparc.download_data
+    - name: Download SPARC output files to SPARC-master
+      run: |
+        wget https://github.com/SPARC-X/SPARC/archive/refs/heads/master.zip
+        unzip master.zip
+    - name: Test with pytest on official examples
+      run: |
+        export SPARC_TESTS_DIR="./SPARC-master/tests"
+        export ASE_SPARC_COMMAND="mpirun -n 1 sparc"
+        export SPARC_DOC_PATH="./SPARC-master/doc/.LaTeX"
+        python -m pytest -svv tests/test_read_all_examples.py
+
   test-socket:
     defaults:
       run:
         shell: bash -l {0}
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 5
+    needs: test-linux
 
     steps:
     - uses: actions/checkout@v3
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         python-version: "3.10"
         mamba-version: "*"
-        channels: conda-forge,alchem0x2a,defaults
+        channels: conda-forge,defaults
         channel-priority: true
         activate-environment: sparc-api-test
     - name: Install dependencies
       run: |
-        # mamba install -c conda-forge ase>=3.22 pymatgen flake8 pytest
         mamba install -c conda-forge make compilers openmpi fftw scalapack openblas
     - name: Install package
       run: |
@@ -134,79 +151,7 @@ jobs:
       run: |
         ls ./SPARC-socket/lib/sparc
         PWD=$(pwd)
-        export SPARC_TESTS_DIR="${PWD}/SPARC-socket/tests"
+        #export SPARC_TESTS_DIR="${PWD}/SPARC-socket/tests"
         export ASE_SPARC_COMMAND="mpirun -n 1 ${PWD}/SPARC-socket/lib/sparc"
         export SPARC_DOC_PATH="${PWD}/SPARC-socket/doc/.LaTeX"
-        coverage run -a -m pytest -svv tests/
-        coverage json --omit="tests/*.py"
-        coverage html --omit="tests/*.py"
-        COVERAGE=`cat coverage.json | jq .totals.percent_covered | xargs printf '%.*f' 0`
-        echo "Current coverage is $COVERAGE"
-        echo "COVPERCENT=$COVERAGE" >> $GITHUB_ENV
-
-    - name: Lint with flake8
-      run: |
-        echo $CONDA_PREFIX
-        conda info
-        flake8 sparc/ --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 sparc/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-  # To be deleted once 1.0 release is done
-  build-linux-ase-3-22:
-    defaults:
-      run:
-        shell: bash -l {0}
-    runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 5
-
-    steps:
-    - uses: actions/checkout@v3
-    - uses: conda-incubator/setup-miniconda@v2
-      with:
-        python-version: "3.10"
-        mamba-version: "*"
-        channels: conda-forge,alchem0x2a,defaults
-        channel-priority: true
-        activate-environment: sparc-api-test
-    - name: Install dependencies
-      run: |
-        # mamba install -c conda-forge ase>=3.22 pymatgen flake8 pytest
-        mamba install -c conda-forge make compilers openmpi fftw scalapack openblas
-    - name: Install package
-      run: |
-        pip install -e ".[test]" ase==3.22 numpy==1.24 scipy==1.10
-        # Manually downgrade
-        # Download the external psp data
-        python -m sparc.download_data
-    - name: Download SPARC output files to SPARC-master
-      run: |
-        # TODO: merge to master
-        wget -O SPARC-socket.zip https://codeload.github.com/alchem0x2A/SPARC/zip/refs/heads/socket
-        unzip SPARC-socket.zip
-    - name: Compile SPARC with socket
-      run: |
-        cd SPARC-socket/src
-        make clean
-        make -j2 USE_SOCKET=1 USE_MKL=0 USE_SCALAPACK=1 DEBUG_MODE=1
-        ls ../lib
-    - name: Test with pytest
-      run: |
-        ls ./SPARC-socket/lib/sparc
-        PWD=$(pwd)
-        export SPARC_TESTS_DIR="${PWD}/SPARC-socket/tests"
-        export ASE_SPARC_COMMAND="mpirun -n 1 ${PWD}/SPARC-socket/lib/sparc"
-        export SPARC_DOC_PATH="${PWD}/SPARC-socket/doc/.LaTeX"
-        coverage run -a -m pytest -svv tests/
-        coverage json --omit="tests/*.py"
-        coverage html --omit="tests/*.py"
-        COVERAGE=`cat coverage.json | jq .totals.percent_covered | xargs printf '%.*f' 0`
-        echo "Current coverage is $COVERAGE"
-        echo "COVPERCENT=$COVERAGE" >> $GITHUB_ENV
-
-    - name: Lint with flake8
-      run: |
-        echo $CONDA_PREFIX
-        conda info
-        flake8 sparc/ --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 sparc/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        python -m pytest -svv tests/test_socket.py

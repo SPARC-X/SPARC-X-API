@@ -29,14 +29,14 @@ def test_sparc_api(monkeypatch):
 
 def test_sparc_params():
     if "SPARC_DOC_PATH" not in os.environ:
-        pytest.skip(msg="No $SPARC_DOC_PATH set. Skip")
+        pytest.skip("No $SPARC_DOC_PATH set. Skip")
 
     from sparc.utils import locate_api
 
     # Use the default api with SPARC_DOC_PATH
     api = locate_api()
     if api.sparc_version is None:
-        pytest.skip(msg="SPARC version not known. skip")
+        pytest.skip("SPARC version not known. skip")
 
     if version.parse(api.sparc_version) > version.parse("2023.09.01"):
         assert "NPT_SCALE_VECS" in api.parameters
