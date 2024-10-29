@@ -129,7 +129,7 @@ def _write_ion(
         ]:
             val = block.get(key, None)
             # print(key, val)
-            if (key not in ["RELAX", "COORD", "COORD_FRAC"]) and (val is None):
+            if (key not in ["RELAX", "COORD", "COORD_FRAC", "SPIN"]) and (val is None):
                 raise ValueError(f"Key {key} is not provided! Abort writing ion file")
             # TODO: change the API version
             if val is None:
