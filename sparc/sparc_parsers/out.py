@@ -222,6 +222,9 @@ def _read_scfs(contents):
             elif unit == "sec":
                 converted_value = raw_value * 1
                 converted_unit = "sec"
+            elif unit == "Bohr magneton":
+                converted_value = raw_value
+                converted_unit = "Bohr magneton"
             else:
                 warn(f"Conversion for unit {unit} unknown! Treat as unit")
                 converted_value = raw_value
