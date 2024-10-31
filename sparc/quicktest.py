@@ -1,16 +1,6 @@
 """A simple test module for sparc python api
-TODO: fix the docstring
 Usage:
 python -m sparc.quicktest
-A few tests will be performed
-1) Is the sparc format recognizable by ASE
-2) Is the command properly set
-3) Is the psp directory accessible
-4) Is the json api accessible
-5) Can the command actually run a very simple calculation
-
-TODO: use docstring as help information if things fail?
-TODO: remove intermediate state print?
 """
 from pathlib import Path
 
