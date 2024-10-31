@@ -218,14 +218,14 @@ class ApiTest(BaseTest):
 
 class CommandTest(BaseTest):
     """Check validity of command to run SPARC calculation. This test
-    only checks if the command prefix without actually running a
-    calculation.
+    also checks sparc version and socket compatibility
 
-    # TODO: check ase 3.23 config
+    # TODO: check ase 3.23 config with separate binary
     Error handling:
     - The command prefix to run SPARC calculation should look like
       `<mpi instructions> <sparc binary>`
     - Use $ASE_SPARC_COMMAND to set the command string
+    - Check HPC resources and compatibility (e.g. `srun` on a login node)
     """
 
     display_name = "SPARC Command"
@@ -235,16 +235,36 @@ class CommandTest(BaseTest):
 
         from sparc.calculator import SPARC
 
+        self.info["command"] = ""
+        self.info["sparc_version"] = ""
+
         with tempfile.TemporaryDirectory() as tmpdir:
             calc = SPARC(directory=tmpdir)
+            # Step 1: validity of sparc command
             try:
                 test_cmd = calc._make_command()
                 self.result = True
                 self.info["command"] = test_cmd
             except Exception as e:
                 self.result = False
-                self.info["command (example)"] = "not found"
-                self.error_msg = f"Error setting SPARC command: {e}"
+                self.info["command"] = "not found"
+                self.error_msg = f"Error setting SPARC command:\n{e}"
+
+            # Step 2: check SPARC binary version
+            try:
+                sparc_version = calc.detect_sparc_version()
+                # Version may be None if failed to retrieve
+                if sparc_version:
+                    self.result = self.result & True
+                    self.info["sparc_version"] = sparc_version
+                else:
+                    self.result = False
+                    self.info["sparc_version"] = "NaN"
+                    self.error_msg += "\nError detecting SPARC version"
+            except Exception as e:
+                self.result = False
+                self.info["sparc_version"] = "NaN"
+                self.error_msg += f"\nError detecting SPARC version:\n{e}"
         return
 
 
@@ -300,6 +320,15 @@ class SocketCalcTest(BaseTest):
         from ase.build import bulk
 
         from sparc.calculator import SPARC
+
+        # Check SPARC binary socket compatibility
+        with tempfile.TemporaryDirectory() as tmpdir:
+            calc = SPARC(directory=tmpdir)
+            try:
+                sparc_compat = calc.detect_socket_compatibility()
+                self.info["sparc_socket_compatibility"] = sparc_compat
+            except Exception as e:
+                self.info["sparc_socket_compatibility"] = False
 
         # 1x Al atoms with super bad calculation condition
         al = bulk("Al", cubic=False)
