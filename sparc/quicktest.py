@@ -199,16 +199,20 @@ class ApiTest(BaseTest):
     def make_test(self):
         from .utils import locate_api
 
-        # cprint("Testing JSON API...", color="COMMENT")
-
         try:
             api = locate_api()
             version = api.sparc_version
             self.result = True
             self.info["api_version"] = version
-        except Exception:
+            self.info["api_source"] = api.source
+        except Exception as e:
             self.result = False
-            self.info["api_version"] = "Not found!"
+            self.info["api_version"] = "NaN"
+            self.info["api_source"] = "not found"
+            self.error_msg = (
+                "Error when locating a JSON schema or "
+                f"LaTeX source files for SPARC. Error is {e}"
+            )
         return
 
 
