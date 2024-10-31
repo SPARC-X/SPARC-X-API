@@ -260,10 +260,12 @@ class CommandTest(BaseTest):
                 else:
                     self.result = False
                     self.info["sparc_version"] = "NaN"
-                    self.error_msg += "\nError detecting SPARC version"
+                    self.error_msg += "\n" if len(self.error_msg) > 0 else ""
+                    self.error_msg += "Error detecting SPARC version"
             except Exception as e:
                 self.result = False
                 self.info["sparc_version"] = "NaN"
+                self.error_msg += "\n" if len(self.error_msg) > 0 else ""
                 self.error_msg += f"\nError detecting SPARC version:\n{e}"
         return
 
@@ -327,7 +329,7 @@ class SocketCalcTest(BaseTest):
             try:
                 sparc_compat = calc.detect_socket_compatibility()
                 self.info["sparc_socket_compatibility"] = sparc_compat
-            except Exception as e:
+            except Exception:
                 self.info["sparc_socket_compatibility"] = False
 
         # 1x Al atoms with super bad calculation condition
@@ -354,12 +356,6 @@ def main():
         ("Performing a quick test on your " "SPARC and python API setup"),
         color=None,
     )
-    # results = {}
-    # results["Import"] = import_test()
-    # results["Pseudopotential"] = psp_test()
-    # results["JSON API"] = api_test()
-    # results["SPARC command"] = command_test()
-    # results["Calculation"] = False if results["SPARC command"] is False else calc_test()
 
     test_classes = [
         ImportTest(),
@@ -375,17 +371,22 @@ def main():
         test.run_test()
         system_info.update(test.info)
 
+    # Header section
+    print("-" * 80)
     cprint(
-        "\nSummary of test results",
+        "Summary",
+        bold=True,
         color="HEADER",
     )
-
-    print("-" * 60)
-
+    print("-" * 80)
+    cprint("Configuration", bold=True, color="HEADER")
     for key, val in system_info.items():
-        print(key, val)
+        print(f"{key}: {val}")
 
-    print("-" * 60)
+    print("-" * 80)
+    # Body section
+    cprint("Tests", bold=True, color="HEADER")
+
     print_wiki = False
     for test in test_classes:
         cprint(f"{test.display_name}:", bold=True, end="")
@@ -395,22 +396,29 @@ def main():
             cprint("  FAIL", color="FAIL")
             print_wiki = True
 
-    print("-" * 60)
-
+    print("-" * 80)
+    # Error information section
+    has_print_error_header = False
     for test in test_classes:
         if (test.result is False) and (test.error_handling):
+            if has_print_error_header is False:
+                cprint(
+                    ("Some tests failed! " "Please check the following information.\n"),
+                    color="FAIL",
+                )
+                has_print_error_header = True
             cprint(f"{test.display_name}:", bold=True)
             cprint(f"{test.error_msg}", color="FAIL")
             print(test.error_handling)
-
-    print("-" * 60)
+            print("\n")
 
     if print_wiki:
+        print("-" * 80)
         cprint(
-            "\nSome of the tests failed! Please refer to the following resources: \n"
+            "Please check additional information from:\n"
             "1. SPARC's documentation: https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf \n"
             "2. Python API documentation: https://github.com/alchem0x2A/SPARC-X-API/blob/master/README.md\n",
-            color="FAIL",
+            color=None,
         )
 
 
