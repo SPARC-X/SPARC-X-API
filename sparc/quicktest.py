@@ -1,4 +1,5 @@
 """A simple test module for sparc python api
+TODO: fix the docstring
 Usage:
 python -m sparc.quicktest
 A few tests will be performed
@@ -7,63 +8,168 @@ A few tests will be performed
 3) Is the psp directory accessible
 4) Is the json api accessible
 5) Can the command actually run a very simple calculation
+
+TODO: use docstring as help information if things fail?
+TODO: remove intermediate state print?
 """
 from .utils import cprint
 
 
-def import_test():
-    cprint("Testing import...", color="COMMENT")
-    from ase.io.formats import ioformats
+class BaseTest(object):
+    """Base class for all tests providing functionalities
 
-    import sparc
+    Each child class will implement its own `run_test` method to
+    update the `result`, `error_handling` and `info` fields.
 
-    if "sparc" not in ioformats.keys():
-        return False
-    try:
-        from ase.io import sparc
-    except ImportError:
-        return False
-    return hasattr(sparc, "read_sparc") and hasattr(sparc, "write_sparc")
+    If you wish to include a simple error handling message for each
+    child class, add a line starting `Error handling` follows by the
+    helper message at the end of the docstring
+    """
 
+    def __init__(self):
+        self.result = None
+        self.error_handling = ""
+        self.info = {}
 
-def psp_test():
-    cprint("Testing pseudo potential path...", color="COMMENT")
-    import tempfile
+    @property
+    @classmethod
+    def dislay_name(cls):
+        return cls.__name__
 
-    from sparc.io import SparcBundle
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        sb = SparcBundle(directory=tmpdir)
-        psp_dir = sb.psp_dir
-        if psp_dir is not None:
-            cprint(f"Found psp files at {psp_dir}", color="OKBLUE")
-            return True
+    def display_docstring(self):
+        """Convert the class's docstring to error handling"""
+        doc = self.__class__.__doc__
+        error_handling_lines = []
+        begin_record = False
+        indent = 0  # indentation for the "Error handling" line
+        if doc:
+            for line in doc.splitlines():
+                if line.lstrip().startswith("Error handling"):
+                    if begin_record is True:
+                        msg = (
+                            "There are multiple Error handlings "
+                            "in the docstring of "
+                            f"{self.__class__.__name__}."
+                        )
+                        raise ValueError(msg)
+                    begin_record = True
+                    indent = len(line) - len(line.lstrip())
+                elif begin_record is True:
+                    current_indent = len(line) - len(line.lstrip())
+                    line = line.strip()
+                    if len(line) > 0:  # Only add non-empty lines
+                        # Compensate for the extra indentation
+                        # if current_indent > indent
+                        spaces = max(0, current_indent - indent) * " "
+                        error_handling_lines.append(spaces + line)
+                else:
+                    pass
         else:
-            cprint(
-                (
-                    "No psp files found! \n"
-                    "Please make sure you have downloaded them via `python -m sparc.download_data`, "
-                    "or set $SPARC_PSP_PATH"
-                ),
-                color="FAIL",
+            pass
+        error_handling_string = "\n".join(error_handling_lines)
+        return error_handling_string
+
+    def make_test(self):
+        """Each class should implement ways to update `result` and `info`"""
+        raise NotImplementedError
+
+    def run_test(self):
+        """Run test and update result etc.
+        If result is False, update the error handling message
+        """
+        try:
+            self.make_test()
+        except Exception:
+            self.result = False
+
+        if self.result is None:
+            raise ValueError(
+                "Test result is not updated for " f"{self.__class__.__name__} !"
             )
-            return False
+        if self.result is False:
+            self.error_handling = self.display_docstring()
+        return
 
 
-def api_test():
-    cprint("Testing JSON API...", color="COMMENT")
-    from sparc.api import SparcAPI
+class ImportTest(BaseTest):
+    """Check if external io format `sparc` can be registered in ASE
 
-    try:
-        api = SparcAPI()
-    except Exception:
-        return False
-    version = api.sparc_version
-    if version is None:
-        cprint("Loaded API but no version date is provided.", color="WARNING")
-    else:
-        cprint(f"Loaded API version {version}", color="OKBLUE")
-    return True
+    Error handling:
+    - Make sure SPARC-X-API is installed via conda / pip / setuptools
+    - If you wish to work on SPARC-X-API source code, use `pip install -e`
+      instead of setting up $PYTHON_PATH
+    """
+
+    display_name = "Import"
+
+    def make_test(self):
+        cprint("Testing import...", color="COMMENT")
+        from ase.io.formats import ioformats
+
+        self.result = "sparc" in ioformats.keys()
+        return
+
+
+class PspTest(BaseTest):
+    """Check at least one directory of Pseudopotential files exist
+    info[`psp_dir`] contains the first psp dir found on system
+    #TODO: update to the ASE 3.23 config method
+
+    Error handling:
+    - Default version of psp files can be downloaded by
+      `python -m sparc.download_data`
+    - Alternatively, specify the variable $SPARC_PSP_PATH
+      to the custom pseudopotential files
+    """
+
+    display_name = "Pseudopotential"
+
+    def make_test(self):
+        cprint("Testing pseudo potential path...", color="COMMENT")
+        import tempfile
+
+        from .io import SparcBundle
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            sb = SparcBundle(directory=tmpdir)
+            psp_dir = sb.psp_dir
+
+        if psp_dir is not None:
+            self.result = True
+            self.info["psp_dir"] = psp_dir
+        else:
+            self.result = False
+            self.info["psp_dir"] = "Not found!"
+        return
+
+
+class ApiTest(BaseTest):
+    """Check if the API can be loaded, and store the Schema version.
+
+    # TODO: consider change to schema instead of api
+    # TODO: allow config to change json file path
+    Error handling:
+    - Check if default JSON schema exists in
+      `<sparc-x-api-root>/sparc_json_api/parameters.json`
+    - Use $SPARC_DOC_PATH to specify the raw LaTeX files
+    """
+
+    display_name = "JSON API"
+
+    def make_test(self):
+        from .utils import locate_api
+
+        # cprint("Testing JSON API...", color="COMMENT")
+
+        try:
+            api = locate_api()
+            version = api.sparc_version
+            self.result = True
+            self.info["api_version"] = version
+        except Exception:
+            self.result = False
+            self.info["api_version"] = "Not found!"
+        return
 
 
 def command_test():
@@ -120,26 +226,52 @@ def main():
         ("Performing a quick test on your " "SPARC and python API setup"),
         color=None,
     )
-    results = {}
-    results["Import"] = import_test()
-    results["Pseudopotential"] = psp_test()
-    results["JSON API"] = api_test()
-    results["SPARC command"] = command_test()
-    results["Calculation"] = False if results["SPARC command"] is False else calc_test()
+    # results = {}
+    # results["Import"] = import_test()
+    # results["Pseudopotential"] = psp_test()
+    # results["JSON API"] = api_test()
+    # results["SPARC command"] = command_test()
+    # results["Calculation"] = False if results["SPARC command"] is False else calc_test()
+
+    test_classes = [
+        ImportTest(),
+        PspTest(),
+        ApiTest(),
+    ]
+
+    system_info = {}
+    for test in test_classes:
+        test.run_test()
+        system_info.update(test.info)
 
     cprint(
         "\nSummary of test results",
         color="HEADER",
     )
 
+    print("-" * 60)
+
+    for key, val in system_info.items():
+        print(key, val)
+
+    print("-" * 60)
     print_wiki = False
-    for key, val in results.items():
-        cprint(f"{key}:", bold=True, end="")
-        if val is True:
+    for test in test_classes:
+        cprint(f"{test.display_name}:", bold=True, end="")
+        if test.result is True:
             cprint("  PASS", color="OKGREEN")
         else:
             cprint("  FAIL", color="FAIL")
             print_wiki = True
+
+    print("-" * 60)
+
+    for test in test_classes:
+        if (test.result is False) and (test.error_handling):
+            cprint(f"{test.display_name}:", bold=True)
+            print(test.error_handling)
+
+    print("-" * 60)
 
     if print_wiki:
         cprint(

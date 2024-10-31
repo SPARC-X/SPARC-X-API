@@ -29,6 +29,7 @@ setup(
     # ASE 3.22 dependency will be deprecated in 1.1.0+ release
     install_requires=["ase>=3.22.0", "numpy>=1.23", "packaging>=20.0", "psutil>=5.0.0"],
     entry_points={
+        # TODO: deprecate
         "ase.io": [
             "sparc = sparc.io",
         ],
