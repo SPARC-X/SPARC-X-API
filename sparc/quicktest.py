@@ -216,53 +216,108 @@ class ApiTest(BaseTest):
         return
 
 
-def command_test():
-    cprint("Testing SPARC command...", color="COMMENT")
-    import tempfile
+class CommandTest(BaseTest):
+    """Check validity of command to run SPARC calculation. This test
+    only checks if the command prefix without actually running a
+    calculation.
 
-    from sparc.calculator import SPARC
+    # TODO: check ase 3.23 config
+    Error handling:
+    - The command prefix to run SPARC calculation should look like
+      `<mpi instructions> <sparc binary>`
+    - Use $ASE_SPARC_COMMAND to set the command string
+    """
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        calc = SPARC(directory=tmpdir)
-        try:
-            test_cmd = calc._make_command()
-        except Exception:
-            cprint(
-                (
-                    "No SPARC command found! \n"
-                    "Please make sure you have sparc in your path, "
-                    "or set up $ASE_SPARC_COMMAND variable!"
-                ),
-                color="FAIL",
+    display_name = "SPARC Command"
+
+    def make_test(self):
+        import tempfile
+
+        from sparc.calculator import SPARC
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            calc = SPARC(directory=tmpdir)
+            try:
+                test_cmd = calc._make_command()
+                self.result = True
+                self.info["command"] = test_cmd
+            except Exception as e:
+                self.result = False
+                self.info["command (example)"] = "not found"
+                self.error_msg = f"Error setting SPARC command: {e}"
+        return
+
+
+class FileIOCalcTest(BaseTest):
+    """Run a simple calculation in File IO mode.
+
+    # TODO: check ase 3.23 config
+    Error handling:
+    - Check if settings for pseudopotential files are correct
+    - Check if SPARC binary exists and functional
+    - Check if specific HPC requirements are met:
+      (module files, libraries, parallel settings, resources)
+    """
+
+    display_name = "Calculation (File I/O)"
+
+    def make_test(self):
+        import tempfile
+
+        from ase.build import bulk
+
+        from sparc.calculator import SPARC
+
+        # 1x Al atoms with super bad calculation condition
+        al = bulk("Al", cubic=False)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            calc = SPARC(h=0.3, kpts=(1, 1, 1), tol_scf=1e-3, directory=tmpdir)
+            try:
+                al.calc = calc
+                al.get_potential_energy()
+                self.result = True
+            except Exception as e:
+                self.result = False
+                self.error_msg = "Simple calculation in file I/O mode failed: \n" f"{e}"
+        return
+
+
+class SocketCalcTest(BaseTest):
+    """Run a simple calculation in Socket mode (UNIX socket).
+
+    # TODO: check ase 3.23 config
+    Error handling:
+    - The same as error handling in file I/O calculation test
+    - Check if SPARC binary supports socket
+    """
+
+    display_name = "Calculation (UNIX socket)"
+
+    def make_test(self):
+        import tempfile
+
+        from ase.build import bulk
+
+        from sparc.calculator import SPARC
+
+        # 1x Al atoms with super bad calculation condition
+        al = bulk("Al", cubic=False)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            calc = SPARC(
+                h=0.3, kpts=(1, 1, 1), tol_scf=1e-3, use_socket=True, directory=tmpdir
             )
-            return False
-        cprint(f"The prefix for SPARC command is {test_cmd}", color="OKBLUE")
-        return True
-
-
-def calc_test():
-    cprint("Running simple calculation...", color="COMMENT")
-    import tempfile
-
-    from ase.build import bulk
-
-    from sparc.calculator import SPARC
-
-    # 1x Al atoms with super bad calculation condition
-    al = bulk("Al", cubic=False)
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        calc = SPARC(h=0.3, kpts=(1, 1, 1), tol_scf=1e-3, directory=tmpdir)
-        try:
-            al.calc = calc
-            al.get_potential_energy()
-        except Exception:
-            cprint(
-                ("Simple SPARC calculation failed!"),
-                color="FAIL",
-            )
-            return False
-        return True
+            try:
+                al.calc = calc
+                al.get_potential_energy()
+                self.result = True
+            except Exception as e:
+                self.result = False
+                self.error_msg = (
+                    "Simple calculation in socket mode (UNIX socket) failed: \n" f"{e}"
+                )
+        return
 
 
 def main():
@@ -281,6 +336,9 @@ def main():
         ImportTest(),
         PspTest(),
         ApiTest(),
+        CommandTest(),
+        FileIOCalcTest(),
+        SocketCalcTest(),
     ]
 
     system_info = {}
