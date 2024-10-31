@@ -12,6 +12,10 @@ A few tests will be performed
 TODO: use docstring as help information if things fail?
 TODO: remove intermediate state print?
 """
+from pathlib import Path
+
+from ase.data import chemical_symbols
+
 from .utils import cprint
 
 
@@ -28,6 +32,7 @@ class BaseTest(object):
 
     def __init__(self):
         self.result = None
+        self.error_msg = ""
         self.error_handling = ""
         self.info = {}
 
@@ -79,8 +84,9 @@ class BaseTest(object):
         """
         try:
             self.make_test()
-        except Exception:
+        except Exception as e:
             self.result = False
+            self.error_msg = str(e)
 
         if self.result is None:
             raise ValueError(
@@ -107,12 +113,17 @@ class ImportTest(BaseTest):
         from ase.io.formats import ioformats
 
         self.result = "sparc" in ioformats.keys()
+        if self.result is False:
+            self.error_msg = (
+                "Cannot find `sparc` as a valid " "external ioformat for ASE."
+            )
         return
 
 
 class PspTest(BaseTest):
     """Check at least one directory of Pseudopotential files exist
     info[`psp_dir`] contains the first psp dir found on system
+    # TODO: check if all psp files can be located
     #TODO: update to the ASE 3.23 config method
 
     Error handling:
@@ -129,17 +140,46 @@ class PspTest(BaseTest):
         import tempfile
 
         from .io import SparcBundle
+        from .sparc_parsers.pseudopotential import find_pseudo_path
 
         with tempfile.TemporaryDirectory() as tmpdir:
             sb = SparcBundle(directory=tmpdir)
             psp_dir = sb.psp_dir
 
         if psp_dir is not None:
-            self.result = True
-            self.info["psp_dir"] = psp_dir
+            psp_dir = Path(psp_dir)
+            self.info["psp_dir"] = f"{psp_dir.resolve()}"
+            if not psp_dir.is_dir():
+                self.result = False
+                self.error_msg = (
+                    "Pseudopotential files path " f"{psp_dir.resolve()} does not exist."
+                )
+            else:
+                missing_elements = []
+                # Default psp file are 1-57 + 72-83
+                spms_elements = chemical_symbols[1:58] + chemical_symbols[72:84]
+                for element in spms_elements:
+                    try:
+                        find_pseudo_path(element, psp_dir)
+                    except Exception:
+                        missing_elements.append(element)
+                if len(missing_elements) == 0:
+                    self.result = True
+                else:
+                    self.result = False
+                    self.error_msg = (
+                        "Pseudopotential files for "
+                        f"{len(missing_elements)} elements are "
+                        "missing or incompatible: \n"
+                        f"{missing_elements}"
+                    )
         else:
+            self.info["psp_dir"] = "None"
             self.result = False
-            self.info["psp_dir"] = "Not found!"
+            self.error_msg = (
+                "Pseudopotential file path not defined and/or "
+                "default psp files are incomplete."
+            )
         return
 
 
@@ -269,6 +309,7 @@ def main():
     for test in test_classes:
         if (test.result is False) and (test.error_handling):
             cprint(f"{test.display_name}:", bold=True)
+            cprint(f"{test.error_msg}", color="FAIL")
             print(test.error_handling)
 
     print("-" * 60)
