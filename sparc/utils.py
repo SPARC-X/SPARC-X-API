@@ -175,6 +175,8 @@ def locate_api(json_file=None, doc_path=None):
                         )
                     )
                 api = SparcAPI(tmpfile)
+            api.source["path"] = Path(doc_path).resolve().as_posix()
+            api.source["type"] = "latex"
             return api
         except Exception as e:
             warn(f"Cannot load JSON schema from env {doc_path}, the error is {e}.")
