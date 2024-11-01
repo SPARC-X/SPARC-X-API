@@ -27,7 +27,8 @@ def _read_static(fileobj):
     """
     Read the .static file content
 
-    Each .static file should only host 1 or more images (is socket mode is enabled), but the output may vary
+    Each .static file should only host 1 or more images
+    (if socket mode is enabled), but the output may vary
     a lot depending on the flags (e.g. PRINT_ATOMS, PRINT_FORCES etc)
     """
     contents = fileobj.read()
