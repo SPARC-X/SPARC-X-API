@@ -17,6 +17,12 @@ test_requires = [
     "pre-commit",
 ]
 
+doc_requires = [
+    "sphinx_rtd_theme",
+    "sphinx_tabs",
+    "myst-parser",
+]
+
 setup(
     name="sparc-x-api",
     version="1.0.4",
@@ -45,6 +51,7 @@ setup(
     },
     extras_require={
         "test": test_requires,
+        "doc": test_requires + doc_requires,
     },
     package_data={"sparc": ["psp/*", "sparc_json_api/*.json"]},
     include_package_data=True,
