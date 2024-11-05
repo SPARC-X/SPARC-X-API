@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SPARC-X-API: A Python API for the Real-Space SPARC-X DFT Code &mdash; SPARC-X-API  documentation</title>
+  <title>SPARC-X-API: A Python API for the SPARC-X DFT Code &mdash; SPARC-X-API  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
@@ -18,7 +18,8 @@
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Introduction" href="introduction.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,15 +41,22 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">SPARC-X-API: A Python API for the Real-Space SPARC-X DFT Code</a><ul>
-<li><a class="reference internal" href="#how-to-cite">How to cite</a></li>
-<li><a class="reference internal" href="#acknowledgment">Acknowledgment</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup_environment.html">Setup Environment for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maintainers.html">Documentation for Maintainers</a></li>
 </ul>
-</li>
-</ul>
-</div>
+
         </div>
       </div>
     </nav>
@@ -63,7 +71,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">SPARC-X-API: A Python API for the Real-Space SPARC-X DFT Code</li>
+      <li class="breadcrumb-item active">SPARC-X-API: A Python API for the SPARC-X DFT Code</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -73,33 +81,53 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="sparc-x-api-a-python-api-for-the-real-space-sparc-x-dft-code">
-<h1>SPARC-X-API: A Python API for the Real-Space SPARC-X DFT Code<a class="headerlink" href="#sparc-x-api-a-python-api-for-the-real-space-sparc-x-dft-code" title="Link to this heading"></a></h1>
+  <section id="sparc-x-api-a-python-api-for-the-sparc-x-dft-code">
+<h1>SPARC-X-API: A Python API for the SPARC-X DFT Code<a class="headerlink" href="#sparc-x-api-a-python-api-for-the-sparc-x-dft-code" title="Link to this heading"></a></h1>
+<p><a class="reference external" href="https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/package.svg"><img alt="Package" src="https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/package.svg" /></a>
+<a class="reference external" href="https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/coverage.svg"><img alt="Coverage" src="https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/coverage.svg" /></a>
+<a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/actions/workflows/installation_test.yml"><img alt="Unit tests" src="https://github.com/SPARC-X/SPARC-X-API/actions/workflows/installation_test.yml/badge.svg" /></a>
+<a class="reference external" href="https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/api_version.svg"><img alt="JSON-API" src="https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/api_version.svg" /></a></p>
 <p>SPARC-X-API is a versatile Python API for the real-space density
 functional (DFT) package <a class="reference external" href="https://github.com/SPARC-X/SPARC">SPARC</a>
 (<strong>S</strong>imulation <strong>P</strong>ackage for <strong>A</strong>b-initio <strong>R</strong>eal-<strong>S</strong>pace
-<strong>C</strong>alculations) distributed under the GPLv3 license. SPARC-X-API
+<strong>C</strong>alculations) distributed under the GPLv3 license.
+SPARC-X-API
 leverages the powerful Atomic Simulation Environment
 (<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/">ASE</a>) framework for manipulating
 input / output files, as well as running DFT calculations and analysis
-via the SPARC code written in C/C++. Through SPARC-X-API, users can
-easily integrate real-space SPARC calculations seamlessly into their
-existing atomistic simulation workflows, thanks to the calculator
-interface provided by ASE.</p>
+via the SPARC code written in C/C++. Key features include:</p>
+<ol class="arabic simple">
+<li><p>ASE-compatible I/O format for SPARC files</p></li>
+<li><p>A JSON Schema interfacing with SPARC’s C/C++-code for parameter validation and conversion</p></li>
+<li><p>A comprehensive calculator interface for SPARC with file I/O and socket-communication support.</p></li>
+</ol>
+<section id="quick-start">
+<h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h2>
+</section>
 <section id="how-to-cite">
 <h2>How to cite<a class="headerlink" href="#how-to-cite" title="Link to this heading"></a></h2>
 <p>If you find SPARC-X-API help, please consider cite the relevant
 publications below:</p>
 <ul class="simple">
 <li><p><strong>TBD</strong> To cite the SPARC-X-API package itself: <strong>TBD JOSS</strong></p></li>
-<li><p>The SPARC C/C++ code v2.0 [https://doi.org/10.1016/j.simpa.2024.100649] and v1.0  [https://doi.org/10.1016/j.softx.2021.100709]</p></li>
-<li><p>The M-SPARC Matlab code v2.0 [https://doi.org/10.1016/j.softx.2022.101295] and v1.0 [https://doi.org/10.1016/j.softx.2020.100423]</p></li>
+<li><p>The SPARC C/C++ code</p>
+<ul>
+<li><p>v2.0 <a class="reference external" href="https://doi.org/10.1016/j.simpa.2024.100649">Zhang 2024</a></p></li>
+<li><p>v1.0 <a class="reference external" href="https://doi.org/10.1016/j.softx.2021.100709">Xu 2021</a></p></li>
+</ul>
+</li>
+<li><p>The M-SPARC Matlab code</p>
+<ul>
+<li><p>v2.0 <a class="reference external" href="https://doi.org/10.1016/j.softx.2022.101295">Zhang 2023</a></p></li>
+<li><p>v1.0 <a class="reference external" href="https://doi.org/10.1016/j.softx.2020.100423">Xu 2020</a></p></li>
+</ul>
+</li>
 </ul>
 <p>For a full list of publications in the SPARC-X project please refer to:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC?tab=readme-ov-file#6-citation">SPARC developement</a></p></li>
 <li><p><a class="reference external" href="https://github.com/SPARC-X/M-SPARC?tab=readme-ov-file#6-citation">M-SPARC development</a></p></li>
-<li><p><a class="reference external" href="https://github.com/SPARC-X/SPMS-psps?tab=readme-ov-file#citation">Pseudopotential</a></p></li>
+<li><p><a class="reference external" href="https://github.com/SPARC-X/SPMS-psps?tab=readme-ov-file#citation">Pseudopotentials</a></p></li>
 </ul>
 </section>
 <section id="acknowledgment">
@@ -107,7 +135,73 @@ publications below:</p>
 <p>The authors gratefully acknowledge the support of the U.S. Department
 of Energy, Office of Science, under Grant No. DE-SC0019410 and
 DE-SC0023445.</p>
+<!-- [Fig. 1](#fig-1-schematic-drawing-for-the-architecture-of-the-sparc-x-api-package) provides an overlook of the components of `SPARC-X-API` and its relation with the SPARC C-code. -->
+<!-- #### Fig. 1 Schematic drawing for the architecture of the `SPARC-X-API` package -->
+<!-- ![scheme-sparc-api-outlook](doc/img/scheme_api_architecture.png) -->
+<!-- ## Troubleshooting -->
+<!-- Please refer to the [troubleshooting](doc/troubleshooting.md) guidelines -->
+<!-- ## Advanced topics -->
+<!-- A detailed description about how the API works can be found [here](doc/advanced_topics.md) -->
+<!-- ## API changes -->
+<!-- The API changes compared to the older release ([v0.1](https://github.com/SPARC-X/SPARC-X-API/tree/eac557f214b402122a506f88f38c7a8767283503)) are summarized [here](doc/changes_v0.1.md) -->
+<!-- ## How to contribute -->
+<!-- Please refer to our [guidelines for contributors](doc/contribution_guideline.md) -->
+<!-- # SPARC-X-API: A Python API for the SPARC-X DFT Code -->
+<!--  Through SPARC-X-API, users can -->
+<!-- easily integrate real-space SPARC calculations seamlessly into their -->
+<!-- existing atomistic simulation workflows, thanks to the calculator -->
+<!-- interface provided by ASE.  -->
 <div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#via-anaconda-or-miniconda-recommended">1. Via <code class="docutils literal notranslate"><span class="pre">anaconda</span></code> or <code class="docutils literal notranslate"><span class="pre">miniconda</span></code> (recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#manual-installation-from-source-with-pip">2. Manual installation from source with <code class="docutils literal notranslate"><span class="pre">pip</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#post-installation-check">Post-installation check</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="setup_environment.html">Setup Environment for SPARC-X-API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="setup_environment.html#a-pseudopotential-files">A) Pseudopotential files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_environment.html#b-json-schema">B) JSON schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup_environment.html#c-sparc-command-configuration">C) SPARC Command Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="basic_usage.html#read-write-sparc-files">1. Read / write SPARC files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic_usage.html#json-schema-for-sparc-calculator">2. JSON Schema for SPARC calculator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic_usage.html#calculator-interface-file-io-mode">3. Calculator interface (File-IO mode)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic_usage.html#command-line-tools">4. Command-line tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic_usage.html#parameters-and-units-used-in-sparc-x-api">5. Parameters and units used in <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="advanced_socket.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced_socket.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced_socket.html#in-progress-controlling-sparc-routines-from-socket-interface">(In-progress) Controlling SPARC routines from socket interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_topics.html">Advanced Topics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="advanced_topics.html#id1">Advanced Topics</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_changes.html">Changes in API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_changes.html#major-changes-from-sparc-x-api-v0-1">Major changes from <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> v0.1</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#known-issues">Known issues</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">How to Contribute</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contribute.html#submitting-issues-and-pull-requests">Submitting issues and pull requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contribute.html#notes-for-developers">Notes for developers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="maintainers.html">Documentation for Maintainers</a></li>
+</ul>
 </div>
 </section>
 </section>
@@ -115,7 +209,9 @@ DE-SC0023445.</p>
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="introduction.html" class="btn btn-neutral float-right" title="Introduction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

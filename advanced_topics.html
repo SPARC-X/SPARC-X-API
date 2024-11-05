@@ -1,0 +1,257 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Topics &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Changes in API" href="api_changes.html" />
+    <link rel="prev" title="SPARC-X-API Package Components" href="package_components.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup_environment.html">Setup Environment for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Advanced Topics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Advanced Topics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#behind-the-bundle-file-format">Behind the bundle file format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#behind-the-json-api">Behind the JSON API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#retriving-parameters-from-old-sparc-calculations">Retriving parameters from old SPARC calculations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rules-for-input-parameters-in-sparc-sparc-calculator">Rules for input parameters in <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiple-occurance-of-output-files">Multiple occurance of output files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Advanced Topics</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/advanced_topics.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="advanced-topics">
+<h1>Advanced Topics<a class="headerlink" href="#advanced-topics" title="Link to this heading"></a></h1>
+<!-- TODO move this section with package components -->
+<section id="id1">
+<h2>Advanced Topics<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p>The design of <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> is schematically shown in the following figure
+<img width="929" alt="image" src="https://github.com/alchem0x2A/sparc-dft-api/assets/6829706/3419b1c4-3c56-4fd1-a6de-1ce2aea426e7"></p>
+<section id="behind-the-bundle-file-format">
+<h3>Behind the bundle file format<a class="headerlink" href="#behind-the-bundle-file-format" title="Link to this heading"></a></h3>
+<p>Instead of parsing individual <code class="docutils literal notranslate"><span class="pre">.ion</span></code> and <code class="docutils literal notranslate"><span class="pre">.inpt</span></code> files,
+the bundle format (recognized by ASE by <code class="docutils literal notranslate"><span class="pre">format=&quot;sparc&quot;</span></code>) will
+gather information from all files and check if atomic information
+and calculation results can be retrieved.
+The central piece for handling the bundle format is
+<code class="docutils literal notranslate"><span class="pre">sparc.io.SpardBundle</span></code> class. You can use it to parse an existing bundle</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.io</span> <span class="kn">import</span> <span class="n">SparcBundle</span>
+<span class="n">bundle</span> <span class="o">=</span> <span class="n">SparcBundle</span><span class="p">(</span><span class="s2">&quot;path/to/your-calc.sparc&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+<span class="n">images</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">convert_to_ase</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or write an <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> object to a bundle with a minimal set of <code class="docutils literal notranslate"><span class="pre">.ion</span></code> and <code class="docutils literal notranslate"><span class="pre">.inpt</span></code>
+files.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.io</span> <span class="kn">import</span> <span class="n">SparcBundle</span>
+<span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span>
+<span class="n">atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s2">&quot;some-externalfile.xyz&quot;</span><span class="p">)</span>
+<span class="n">bundle</span> <span class="o">=</span> <span class="n">SparcBundle</span><span class="p">(</span><span class="s2">&quot;path/to/your-calc.sparc&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>
+<span class="n">bundle</span><span class="o">.</span><span class="n">_write_ion_and_inpt</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;SPARC&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For each individual SPARC file (e.g. <code class="docutils literal notranslate"><span class="pre">.ion</span></code>, <code class="docutils literal notranslate"><span class="pre">.inpt</span></code>, <code class="docutils literal notranslate"><span class="pre">.static</span></code>, <code class="docutils literal notranslate"><span class="pre">.geopt</span></code>, <code class="docutils literal notranslate"><span class="pre">.aimd</span></code>),
+file-specific parsers are in <code class="docutils literal notranslate"><span class="pre">sparc.sparc_parsers.&lt;format&gt;</span></code> files.
+Each <code class="docutils literal notranslate"><span class="pre">_read_&lt;format&gt;</span></code> method will return the structured raw-data dictionary of the files.
+Similarly, <code class="docutils literal notranslate"><span class="pre">_write_&lt;format&gt;</span></code> takes the structured dictionary as input and write the file
+using only relevant data.</p>
+</section>
+<section id="behind-the-json-api">
+<h3>Behind the JSON API<a class="headerlink" href="#behind-the-json-api" title="Link to this heading"></a></h3>
+<p>The JSON API are directly parsed from the <code class="docutils literal notranslate"><span class="pre">SPARC</span></code> documentation <a class="reference external" href="https://github.com/SPARC-X/SPARC/tree/master/doc/.LaTeX">LaTeX files</a>.
+The JSON API file (<code class="docutils literal notranslate"><span class="pre">sparc/sparc_json_api/parameters.json</span></code>) distributed by <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> is generated by:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/SPARC-X/SPARC.git
+python<span class="w"> </span>-m<span class="w"> </span>sparc.docparser<span class="w"> </span>SPARC/doc/.LaTeX
+</pre></div>
+</div>
+<p>You can use <code class="docutils literal notranslate"><span class="pre">sparc.api.SparcAPI</span></code> together with the generated JSON API schema:</p>
+<ol class="arabic simple">
+<li><p>Load the latest SPARC api</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.api</span> <span class="kn">import</span> <span class="n">SparcAPI</span>
+<span class="n">sis</span> <span class="o">=</span> <span class="n">SparcAPI</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sis</span><span class="o">.</span><span class="n">sparc_version</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Check if a variable is available</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.api</span> <span class="kn">import</span> <span class="n">SparcAPI</span>
+<span class="n">sis</span> <span class="o">=</span> <span class="n">SparcAPI</span><span class="p">()</span>
+<span class="c1"># A typo will be detected (actual parameter is CALC_PRESS)</span>
+<span class="k">assert</span> <span class="s2">&quot;CALC_PRESSURE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sis</span><span class="o">.</span><span class="n">parameters</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Convert string &lt;–&gt; valid value</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.api</span> <span class="kn">import</span> <span class="n">SparcAPI</span>
+<span class="n">sis</span> <span class="o">=</span> <span class="n">SparcAPI</span><span class="p">()</span>
+<span class="n">latvec</span> <span class="o">=</span> <span class="n">sis</span><span class="o">.</span><span class="n">convert_string_to_value</span><span class="p">(</span><span class="s2">&quot;LATVEC&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0 0 0</span><span class="se">\n</span><span class="s2"> 0 1.0 0</span><span class="se">\n</span><span class="s2"> 0 0 1.0&quot;</span><span class="p">)</span>
+<span class="n">latvec_string</span> <span class="o">=</span> <span class="n">sis</span><span class="o">.</span><span class="n">convert_value_to_string</span><span class="p">(</span><span class="s2">&quot;LATVEC&quot;</span><span class="p">,</span> <span class="n">latvec</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>Provide help info for a given parameter</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.api</span> <span class="kn">import</span> <span class="n">SparcAPI</span>
+<span class="n">sis</span> <span class="o">=</span> <span class="n">SparcAPI</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="retriving-parameters-from-old-sparc-calculations">
+<h3>Retriving parameters from old SPARC calculations<a class="headerlink" href="#retriving-parameters-from-old-sparc-calculations" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator supports the <code class="docutils literal notranslate"><span class="pre">restart</span></code> mode which will reconstruct all
+parameters, psp files and atomic information from an existing SPARC calculation and
+rerun them.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc</span> <span class="kn">import</span> <span class="n">SPARC</span>
+<span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">restart</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;old-calc.sparc&quot;</span><span class="p">)</span>
+<span class="n">old_atoms</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="c1"># Redo the calculation with updated parameters</span>
+<span class="n">old_atoms</span><span class="o">.</span><span class="n">rattle</span><span class="p">()</span>
+<span class="n">calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;new-calc.sparc&quot;</span><span class="p">)</span>
+<span class="n">old_atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">calc</span>
+<span class="n">old_atoms</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="rules-for-input-parameters-in-sparc-sparc-calculator">
+<h3>Rules for input parameters in <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator<a class="headerlink" href="#rules-for-input-parameters-in-sparc-sparc-calculator" title="Link to this heading"></a></h3>
+<p>When constructing the <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator using the syntax</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>the parameters are handled in the following priority:</p>
+<ol class="arabic simple">
+<li><p>Parameters available to <code class="docutils literal notranslate"><span class="pre">.inpt</span></code> files (i.e. <strong>CAPITALIZED</strong>) have highest priority and overwrite all special inputs. They should be set directly using the atomic unit values (i.e the same value as they appear in the <code class="docutils literal notranslate"><span class="pre">.inpt</span></code> files).</p></li>
+<li><p>Special inputs (i.e, <code class="docutils literal notranslate"><span class="pre">h</span></code>, <code class="docutils literal notranslate"><span class="pre">kpts</span></code>, <code class="docutils literal notranslate"><span class="pre">gpts</span></code>, <code class="docutils literal notranslate"><span class="pre">xc</span></code>, <code class="docutils literal notranslate"><span class="pre">convergence</span></code>) have second highest priority and overwrite default values. They are using the ASE unit system (i.e. Å, eV, GPa, fs).</p></li>
+<li><p>If none of the parameters are provided, <code class="docutils literal notranslate"><span class="pre">SPARC</span></code> uses its default parameter set, currently</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;xc&quot;</span><span class="p">:</span> <span class="s2">&quot;pbe&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span> <span class="s2">&quot;kpts&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)}</span>
+</pre></div>
+</div>
+<p>We accept parameters in both upper and lower cases, in other words, <code class="docutils literal notranslate"><span class="pre">FD_GRID=[10,</span> <span class="pre">10,</span> <span class="pre">10]</span></code> and <code class="docutils literal notranslate"><span class="pre">fd_grid=[10,</span> <span class="pre">10,</span> <span class="pre">10]</span></code> are equivalent.
+Additionally, boolean inputs (i.e. <code class="docutils literal notranslate"><span class="pre">PRINT_FORCES</span></code>) can be written in both integer or boolean values.</p>
+</section>
+<section id="multiple-occurance-of-output-files">
+<h3>Multiple occurance of output files<a class="headerlink" href="#multiple-occurance-of-output-files" title="Link to this heading"></a></h3>
+<p>In a typical SPARC calculation, there may be multiple result files in the SPARC bundle, with different suffixes (e.g. <code class="docutils literal notranslate"><span class="pre">.out</span></code>, <code class="docutils literal notranslate"><span class="pre">.out_01</span></code>, <code class="docutils literal notranslate"><span class="pre">.out_02</span></code> etc.).
+These files can be a result of restarted geometry optimization / AIMD or written by an ASE optimizer.</p>
+<p>When using <code class="docutils literal notranslate"><span class="pre">read_sparc</span></code> to access the files, you can add <code class="docutils literal notranslate"><span class="pre">include_all_files=True</span></code> option to parse
+trajectories from all files.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.io</span> <span class="kn">import</span> <span class="n">read_sparc</span>
+<span class="c1"># Read all images from .static, .static_01, .static_02 etc.</span>
+<span class="n">images</span> <span class="o">=</span> <span class="n">read_sparc</span><span class="p">(</span><span class="s2">&quot;path/to/calc.sparc&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">include_all_files</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Read only from .static_02</span>
+<span class="n">last_atoms</span> <span class="o">=</span> <span class="n">read_sparc</span><span class="p">(</span><span class="s2">&quot;path/to/calc.sparc&quot;</span><span class="p">,</span> <span class="n">include_all_files</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator only access the last image of last output file when reading the calculation results.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="package_components.html" class="btn btn-neutral float-left" title="SPARC-X-API Package Components" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api_changes.html" class="btn btn-neutral float-right" title="Changes in API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,245 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changes in API &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Troubleshooting" href="troubleshooting.html" />
+    <link rel="prev" title="Advanced Topics" href="advanced_topics.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup_environment.html">Setup Environment for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Changes in API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#major-changes-from-sparc-x-api-v0-1">Major changes from <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> v0.1</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Changes in API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api_changes.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="changes-in-api">
+<h1>Changes in API<a class="headerlink" href="#changes-in-api" title="Link to this heading"></a></h1>
+<section id="major-changes-from-sparc-x-api-v0-1">
+<h2>Major changes from <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> <a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/tree/eac557f214b402122a506f88f38c7a8767283503">v0.1</a><a class="headerlink" href="#major-changes-from-sparc-x-api-v0-1" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> has been heavily refactored in v1.0. If you’re using legacy Python codes
+that are written under v0.1 API, there are a few major changes that require your attention:</p>
+<ol class="arabic simple">
+<li><p>Support for single <code class="docutils literal notranslate"><span class="pre">.ion</span></code> file format is deprecated. Instead, <code class="docutils literal notranslate"><span class="pre">v0.2</span></code> API treats the whole SPARC directory as a bundle format. Please use <code class="docutils literal notranslate"><span class="pre">read_sparc</span></code> and <code class="docutils literal notranslate"><span class="pre">write_sparc</span></code> methods for basic file I/O instead.
+Nevertheless, reading calculation results generated by a v0.1 API code will not be affected.</p></li>
+<li><p>v1.0 API uses a different mapping scheme for the sorting of ASE atoms objects (similar to <code class="docutils literal notranslate"><span class="pre">Vasp</span></code>), add a comment section in <code class="docutils literal notranslate"><span class="pre">.ion</span></code> file similar to follows:</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># ASE-SORT:</span>
+<span class="c1"># 3 2 1 0</span>
+<span class="c1"># END ASE-SORT</span>
+</pre></div>
+</div>
+<p>which maps atoms 3, 2, 1, 0 from the SPARC .ion file order to atoms 0, 1, 2, 3 in ASE order. This is useful for systems that are constructed by ASE’s <code class="docutils literal notranslate"><span class="pre">add_adsorbate</span></code> method.</p>
+<ol class="arabic simple" start="3">
+<li><p>v1.0 API accepts all SPARC internal parameters (i.e. <strong>CAPITALIZED</strong>) in <em>atomic units</em> for consistency reason.
+However, we also keep a list of “special input params” that are conventionally used in other ASE calculators, that use Å / eV / GPa / fs unit system.</p></li>
+<li><p>Defining <code class="docutils literal notranslate"><span class="pre">LATVEC</span></code>, <code class="docutils literal notranslate"><span class="pre">LATVEC_SCALE</span></code>, or <code class="docutils literal notranslate"><span class="pre">CELL</span></code> via the calculator parameters is no longer encouraged. Instead, all structure changes should be made to the <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> object.</p></li>
+</ol>
+<p>For more discussion please see [Advanced Topic] section.</p>
+<p>Below are a list of v0.1 method of the <code class="docutils literal notranslate"><span class="pre">SPARC</span></code> calculator and their current status in v0.2 API.
+<code class="docutils literal notranslate"><span class="pre">calc</span></code> is an instance of <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code>.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>old methods</p></th>
+<th class="head"><p>status in v1.0 API</p></th>
+<th class="head"><p>alternatives</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">interpret_grid_input</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">calc.set(fd_grid=[20,</span> <span class="pre">20,</span> <span class="pre">20])</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">interpret_kpoint_input</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">calc.set(kpts=[3,</span> <span class="pre">3,</span> <span class="pre">3])</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">interpret_downsampling_input</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p>Manual setting not recommended</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">interpret_kpoint_shift</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">calc.set(kpoint_shift=[0,</span> <span class="pre">0,</span> <span class="pre">0])</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">get_pseudopotential_directory</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">calc.psp_dir</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">get_nstates</span></code></p></td>
+<td><p>maintained</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">setup_parallel_env</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p>Manual set</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">generate_command</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">calc._make_command()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">estimate_memory</span></code></p></td>
+<td><p>maintained</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">get_scf_steps</span></code></p></td>
+<td><p>maintained</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">get_geometric_steps</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">calc.get_number_of_ionic_steps()</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">get_runtime</span></code></p></td>
+<td><p>maintained</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">get_fermi_level</span></code></p></td>
+<td><p>maintained</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">concatinate_output</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p>Use <code class="docutils literal notranslate"><span class="pre">sparc.SparcBundle</span></code> instead</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">read_line</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p>Use <code class="docutils literal notranslate"><span class="pre">sparc.SparcBundle</span></code> instead</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">parse_output</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">calc.read_results()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">parse_relax</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">calc.read_results()</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">parse_md</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">calc.read_results()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">parse_input_args</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">calc.set(**kwargs)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">recover_index_order_from_ion_file</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p>Use <code class="docutils literal notranslate"><span class="pre">calc.sort</span></code> and <code class="docutils literal notranslate"><span class="pre">calc.resort</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">atoms_dict</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p>Use third party library like <code class="docutils literal notranslate"><span class="pre">bson</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dict_atoms</span></code></p></td>
+<td><p><span style="color:red">deprecated</span></p></td>
+<td><p>Use third party library like <code class="docutils literal notranslate"><span class="pre">bson</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="advanced_topics.html" class="btn btn-neutral float-left" title="Advanced Topics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="troubleshooting.html" class="btn btn-neutral float-right" title="Troubleshooting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

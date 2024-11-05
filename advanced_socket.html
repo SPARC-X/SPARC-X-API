@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Usage: SPARC-X-API as a Socket Interface &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Basic Usage" href="basic_usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup_environment.html">Setup Environment for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Advanced Usage: SPARC-X-API as a Socket Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#fig-3-sparc-electronic-calculations-with-socket-communication-across-hybrid-computing-platforms">Fig. 3. SPARC electronic calculations with socket communication across hybrid computing platforms</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#fig-4-overview-of-the-sparc-protocol-as-an-extension-to-the-standard-i-pi-protocol">Fig. 4. Overview of the SPARC protocol as an extension to the standard i-PI protocol.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fig-5-different-ways-of-using-sparc-s-socket-mode">Fig. 5. Different ways of using SPARC’s socket mode.</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#in-progress-controlling-sparc-routines-from-socket-interface">(In-progress) Controlling SPARC routines from socket interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Advanced Usage: SPARC-X-API as a Socket Interface</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/advanced_socket.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="advanced-usage-sparc-x-api-as-a-socket-interface">
+<h1>Advanced Usage: SPARC-X-API as a Socket Interface<a class="headerlink" href="#advanced-usage-sparc-x-api-as-a-socket-interface" title="Link to this heading"></a></h1>
+<p><em>Disclaimer: The socket communication feature in SPARC and SPARC-X-API are experimental and subject to changes until the release of v2.0 SPARC-X-API.</em></p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>Experienced users can harness the power of SPARC and SPARC-X-API’s
+socket communication layer to build efficient and flexible
+computational workflows. By integrating a socket communication
+interface directly into SPARC, users can significantly reduce the
+overhead typically associated with file I/O during calculation
+restarts. This feature is particularly beneficial for tasks involving
+repetitive operations like structural optimization and saddle point
+searches, where traditional file-based communication can become a
+bottleneck. The underlying software architecture is shown in <a class="reference internal" href="#fig-3-sparc-electronic-calculations-with-socket-communication-across-hybrid-computing-platforms"><span class="xref myst">Fig. 3</span></a>:</p>
+<section id="fig-3-sparc-electronic-calculations-with-socket-communication-across-hybrid-computing-platforms">
+<h3>Fig. 3. SPARC electronic calculations with socket communication across hybrid computing platforms<a class="headerlink" href="#fig-3-sparc-electronic-calculations-with-socket-communication-across-hybrid-computing-platforms" title="Link to this heading"></a></h3>
+<p><img alt="scheme-sparc-socket" src="doc/img/scheme_socket_hetero.png" /></p>
+<p><strong>Requirements</strong>: the SPARC binary must be manually compiled from the source
+code with <a class="reference external" href="https://github.com/alchem0x2A/SPARC/tree/socket">socket
+support</a> and with the
+<code class="docutils literal notranslate"><span class="pre">USE_SOCKET=1</span></code> flag enabled (see the <a class="reference external" href="https://github.com/alchem0x2A/SPARC/tree/socket">installation
+instructions</a>.</p>
+</section>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
+<p>The socket communication layer in SPARC and SPARC-X-API are designed for:</p>
+<ul class="simple">
+<li><p><strong>Efficiency:</strong> Eliminates the need for intermediate file I/O, directly streaming data between processes.</p></li>
+<li><p><strong>Speed:</strong> Enhances the performance of iterative calculations, crucial for large-scale simulations.</p></li>
+<li><p><strong>Flexibility:</strong> Allows dynamic modification of calculation parameters without the need to restart the process.</p></li>
+</ul>
+<p>The communication protocol implemented in SPARC and SPARC-X-API
+adheres to the <a class="reference external" href="https://github.com/i-pi/i-pi">i-PI protocol</a>
+standard. Specifically, we implement the original i-PI protocol within
+the SPARC C-source code, while the python SPARC-X-API uses a
+backward-compatible protocol based on i-PI. The dual-mode design is aimed for both low-level and
+high-level interfacing of the DFT codes, providing the following features as shown in <a class="reference internal" href="#fig-4-overview-of-the-sparc-protocol-as-an-extension-to-the-standard-i-pi-protocol"><span class="xref myst">Fig. 4</span></a>:</p>
+<section id="fig-4-overview-of-the-sparc-protocol-as-an-extension-to-the-standard-i-pi-protocol">
+<h3>Fig. 4. Overview of the SPARC protocol as an extension to the standard i-PI protocol.<a class="headerlink" href="#fig-4-overview-of-the-sparc-protocol-as-an-extension-to-the-standard-i-pi-protocol" title="Link to this heading"></a></h3>
+<p><img alt="scheme-sparc-protocol" src="doc/img/scheme_sparc_protocol.png" /></p>
+<p>Based on the scenarios, the socket communication layer can be accessed via the following approaches as shown in <a class="reference internal" href="#fig-5-different-ways-of-using-sparcs-socket-mode"><span class="xref myst">Fig. 5</span></a>:</p>
+</section>
+<section id="fig-5-different-ways-of-using-sparc-s-socket-mode">
+<h3>Fig. 5. Different ways of using SPARC’s socket mode.<a class="headerlink" href="#fig-5-different-ways-of-using-sparc-s-socket-mode" title="Link to this heading"></a></h3>
+<p><img alt="scheme-sparc-modes" src="doc/img/scheme-SPARC-socket-modes.png" /></p>
+<ol class="arabic">
+<li><p><strong>SPARC binary only</strong> (<a class="reference internal" href="#fig-5-different-ways-of-using-sparcs-socket-mode"><span class="xref myst">Fig. 5</span></a> <strong>a</strong>)</p>
+<p>SPARC binary with socket support can be readily coupled with any i-PI compatible socker server, such as
+<code class="docutils literal notranslate"><span class="pre">ase.calculators.socketio.SocketIOCalculator</span></code>, for example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ase.calculators.socketio</span> <span class="kn">import</span> <span class="n">SocketIOCalculator</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span>
+<span class="n">calc</span> <span class="o">=</span> <span class="n">SocketIOCalculator</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="mi">31415</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">calc</span><span class="p">:</span>
+    <span class="c1"># Start sparc at background</span>
+    <span class="n">process</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="s2">&quot;mpirun -n 8 sparc -name SPARC -socket localhost:31415&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># Single point calculations</span>
+    <span class="n">process</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The end user is responsible for generating the input files and
+making sure the same atoms structures are used by
+<code class="docutils literal notranslate"><span class="pre">SocketIOCalculator</span></code> and the SPARC binary. The mode is also limited
+to be run on a single computer system.</p>
+</li>
+<li><p><strong>Local-only Mode</strong> (<a class="reference internal" href="#fig-5-different-ways-of-using-sparcs-socket-mode"><span class="xref myst">Fig. 5</span></a> <strong>b</strong>)</p>
+<p>Ideal for standalone calculations, this mode simulates a conventional calculator while benefiting from socket-based efficiency.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">use_socket</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">normal_parameters</span><span class="p">)</span> <span class="k">as</span> <span class="n">calc</span><span class="p">:</span>
+    <span class="c1"># Execute single-point calculations</span>
+</pre></div>
+</div>
+<p>For most users we recommend using this mode when performing a calculation on a single HPC node.</p>
+</li>
+<li><p><strong>Client (Relay) Mode</strong> (<a class="reference internal" href="#fig-5-different-ways-of-using-sparcs-socket-mode"><span class="xref myst">Fig. 5</span></a> <strong>c</strong>)</p>
+<p>In this mode, the <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator servers as a passive
+client which listens to a remote i-PI-compatible server. When
+messages are received on the client side, it relays the relevant
+message to a local SPARC binary and send results back through the
+socket pipe. The server side can either be a normal i-PI compatible
+server (such as <code class="docutils literal notranslate"><span class="pre">SocketIOCalculator</span></code>) or server-mode <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> (see 4).</p>
+<p>Start the client by:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">use_socket</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+               <span class="n">socket_params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;host.address.com&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">31415</span><span class="p">))</span>
+<span class="k">with</span> <span class="n">client</span><span class="p">:</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Or via Command-Line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>sparc.client<span class="w"> </span>-s<span class="w"> </span>host:port
+</pre></div>
+</div>
+<p>Note: when running SPARC-X-API as a socket client, the atoms object
+can be ommitted (is the server also runs the SPARC protocol). When
+new atoms positions and parameters arrive, the client will
+automatically determine if it is necessary to restart the SPARC
+subprocess.</p>
+</li>
+<li><p><strong>Server Mode</strong> (<a class="reference internal" href="#fig-5-different-ways-of-using-sparcs-socket-mode"><span class="xref myst">Fig. 5</span></a> <strong>d</strong>)</p>
+<p>Paired with the client mode in (3), SPARC-X-API can be run as a
+socket server, isolated from the node that performs the
+computation. This can be useful for highly-distributed
+computational workflows.</p>
+<p>On the server node, run:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">server_calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">use_socket</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">socket_params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="mi">31415</span><span class="p">,</span> <span class="n">server_only</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="o">**</span><span class="n">normal_parameters</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">server_calc</span><span class="p">:</span>
+    <span class="c1"># Execute single point calculations for atoms_1</span>
+    <span class="c1"># Execute single point calculations for atoms_2</span>
+</pre></div>
+</div>
+<p>In this case, the server will opens <code class="docutils literal notranslate"><span class="pre">0.0.0.0:31415</span></code> for
+connection. Make sure your server is directly accessible from the
+clients and the port is not occupied. The socker server is capable
+of receiving <code class="docutils literal notranslate"><span class="pre">raw_results</span></code> directly from the clients, making it
+possible to access <code class="docutils literal notranslate"><span class="pre">server_calc.raw_results</span></code> without access to the
+file systems on the client side.</p>
+</li>
+</ol>
+</section>
+</section>
+<section id="in-progress-controlling-sparc-routines-from-socket-interface">
+<h2>(In-progress) Controlling SPARC routines from socket interface<a class="headerlink" href="#in-progress-controlling-sparc-routines-from-socket-interface" title="Link to this heading"></a></h2>
+<p>As shown in <a class="reference internal" href="#fig-4-overview-of-the-sparc-protocol-as-an-extension-to-the-standard-i-pi-protocol"><span class="xref myst">Fig. 4</span></a>,
+the SPARC socket protocol designs allows bidirectional control of
+internal SPARC routines. Local- or server-mode <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code>
+calculators can communicate with the SPARC binary via functions like
+<code class="docutils literal notranslate"><span class="pre">set_params</span></code>. This can be useful for applications like on-the-fly
+force field learning, electron density fitting, setting up boundary
+conditions etc. Applications will be updated in both SPARC and
+SPARC-X-API repositories.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="basic_usage.html" class="btn btn-neutral float-left" title="Basic Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
