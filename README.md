@@ -62,7 +62,27 @@ atoms = Bulk("Al") * [4, 4, 4]
 atoms.write("sparc_calc_dir/", format="sparc")
 ```
 
-### Running SPARC calculations
+### Visualizing Atomic Structures in SPARC Files
+
+You can use the `ase gui` commandline tool to visualize SPARC files:
+
+```bash
+ase gui sparc_calc_dir/*.ion
+```
+
+### Parameter Validation with JSON Schema
+
+SPARC-X-API allows user to validate SPARC parameters based on a JSON
+schema that is parsed from the [LaTeX
+documentation](https://github.com/SPARC-X/SPARC/tree/master/doc) of
+the SPARC-X project. To get help for a specific parameter:
+
+```python
+from sparc.api import SparcAPI
+print(SparcAPI().help_info("LATVEC"))
+```
+
+### Running SPARC Calculations
 
 SPARC-X-API provides two ways to run a DFT calculation via SPARC C/C++ code:
 
@@ -117,10 +137,10 @@ atoms.center()
 atoms.calc = SPARC(h=0.25, use_socket=True) # 0.25 Å mesh spacing
 opt = BFGS(atoms)
 with atoms.calc:
-	opt.run(fmax=0.01)
+    opt.run(fmax=0.01)
 ```
 
-###
+
 
 ## How to cite
 If you find SPARC-X-API help, please consider cite the relevant
