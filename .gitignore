@@ -784,3 +784,4 @@ examples/ex1-ase/
 /test-2/
 *.pt
 /README.html
+/doc/_build/

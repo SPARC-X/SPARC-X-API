@@ -7,10 +7,8 @@
 
 SPARC-X-API is a versatile Python API for the real-space density
 functional (DFT) package [SPARC](https://github.com/SPARC-X/SPARC)
-(**S**imulation **P**ackage for **A**b-initio **R**eal-**S**pace
-**C**alculations) distributed under the GPLv3 license.
-SPARC-X-API
-leverages the powerful Atomic Simulation Environment
+distributed under the GPLv3 license.  SPARC-X-API leverages the
+powerful Atomic Simulation Environment
 ([ASE](https://wiki.fysik.dtu.dk/ase/)) framework for manipulating
 input / output files, as well as running DFT calculations and analysis
 via the SPARC code written in C/C++. Key features include:
@@ -19,7 +17,27 @@ via the SPARC code written in C/C++. Key features include:
 2. A JSON Schema interfacing with SPARC's C/C++ code for parameter validation and conversion
 3. A comprehensive calculator interface for SPARC with file I/O and socket-communication support.
 
-##
+## Overview
+
+SPARC-X-API is part of the [SPARC-X
+project](https://github.com/SPARC-X), a collection of open-source
+packages aim to provide modern and efficient implementation of real
+space DFT simulations, led by the research groups of Phanish
+Suryanarayana and Andrew J. Medford from Georgia Tech. The name SPARC
+stands for **S**imulation **P**ackage for **A**b-initio
+**R**eal-**S**pace **C**alculations, which comes in two variations:
+- [**M-SPARC**](https://github.com/SPARC-X/M-SPARC): self-consistent
+  Matlab code for algorithm prototyping and testing
+- [**SPARC**](https://github.com/SPARC-X/SPARC): C/C++ implementation
+  of efficient production code scaling up to millions of atoms
+
+The SPARC-X project shares common input / output file formats, and
+parameter specification. SPARC-X-API serves as the interface that
+connects the core SPARC-X components with external workflows, as
+illustrated in the diagram below.
+
+![Overview of SPARC-X-API](doc/img/fig_sparc_api_overview.svg)
+
 
 ## Quick start
 
@@ -28,20 +46,16 @@ standard for seamless integration into other computational workflows.
 
 ### Installation
 
-We recommend to use the
-[`conda`](https://docs.conda.io/projects/conda/en/latest/index.html)
-for installation on UNIX systems.
+Install SPARC-X-API via
+[`conda`](https://docs.conda.io/projects/conda/en/latest/index.html).
 ```bash
 conda install -c conda-forge sparc-x-api
 ```
 
-You can also install the pre-compiled SPARC binary alongside SPARC-X-API (Linux only).
+Install the pre-compiled SPARC binary alongside SPARC-X-API (Linux only).
 ```bash
 conda install -c conda-forge sparc-x
 ```
-
-More installation options please see documentations for [installation]() and
-[environment setup]().
 
 ### Reading / Writing SPARC files
 
@@ -86,8 +100,9 @@ print(SparcAPI().help_info("LATVEC"))
 
 SPARC-X-API provides two ways to run a DFT calculation via SPARC C/C++ code:
 
-1. **File I/O mode**: generate input files, run a standard SPARC
-   process and read results until calculation finishes. Suitable for:
+1. **File I/O mode**: classic way to drive SPARC calculation by
+   running a standard SPARC process with input files. Suitable for
+   things implemented internally in SPARC C/C++ codes:
    - Single point evaluation
    - Band structure calculations
    - Structural optimization (SPARC internal routines)
@@ -116,17 +131,12 @@ atoms.get_potential_energy()
 atoms.get_forces()
 ```
 
-<!-- The file I/O mode is capable of running single point DFT calculations, -->
-<!-- geometric optimization (using SPARC's internal routines), Ab-init -->
-<!-- molecular dynamics (AIMD). Optimization and AIMD tasks may also -->
-<!-- benefit from the built-in machine learning force field (MLFF) module. -->
-
 #### Socket mode
 
-With just a few parameters, you can switch to the socket mode, ideal
-for evaluating hundreds or thousands of single point DFT energy and
-forces with much less overhead and more flexibility compared with the
-file I/O mode:
+Switching to the socket mode requires just a few parameters, ideal for
+workflows with hundreds or thousands of single point DFT calls with
+much less overhead and more flexibility. An example for optimization
+using socket mode and ASE optimizer:
 
 ```python
 from sparc.calculator import SPARC
@@ -140,7 +150,11 @@ with atoms.calc:
     opt.run(fmax=0.01)
 ```
 
-
+## Documentation
+Please check the [full
+documentation](https://sparc-x.github.io/SPARC-X-API) for details
+regarding installation, usage, troubleshooting and contribution
+guidelines.
 
 ## How to cite
 If you find SPARC-X-API help, please consider cite the relevant
@@ -158,38 +172,7 @@ For a full list of publications in the SPARC-X project please refer to:
 - [M-SPARC development](https://github.com/SPARC-X/M-SPARC?tab=readme-ov-file#6-citation)
 - [Pseudopotentials](https://github.com/SPARC-X/SPMS-psps?tab=readme-ov-file#citation)
 
-## Documentation
-
-Please check the [full
-documentation](https://sparc-x.github.io/sparc-x-api) for details
-regarding installation, usage, troubleshooting and contribution
-guidelines.
-
 ## Acknowledgment
-The authors gratefully acknowledge the support of the U.S. Department
-of Energy, Office of Science, under Grant No. DE-SC0019410 and
+The development of SPARC-X-API is supported by the U.S. Department of
+Energy, Office of Science, under Grant No. DE-SC0019410 and
 DE-SC0023445.
-
-
-
-<!-- [Fig. 1](#fig-1-schematic-drawing-for-the-architecture-of-the-sparc-x-api-package) provides an overlook of the components of `SPARC-X-API` and its relation with the SPARC C-code. -->
-
-<!-- #### Fig. 1 Schematic drawing for the architecture of the `SPARC-X-API` package -->
-<!-- ![scheme-sparc-api-outlook](doc/img/scheme_api_architecture.png) -->
-
-
-
-
-
-
-<!-- ## Troubleshooting -->
-<!-- Please refer to the [troubleshooting](doc/troubleshooting.md) guidelines -->
-
-<!-- ## Advanced topics -->
-<!-- A detailed description about how the API works can be found [here](doc/advanced_topics.md) -->
-
-<!-- ## API changes -->
-<!-- The API changes compared to the older release ([v0.1](https://github.com/SPARC-X/SPARC-X-API/tree/eac557f214b402122a506f88f38c7a8767283503)) are summarized [here](doc/changes_v0.1.md) -->
-
-<!-- ## How to contribute -->
-<!-- Please refer to our [guidelines for contributors](doc/contribution_guideline.md) -->

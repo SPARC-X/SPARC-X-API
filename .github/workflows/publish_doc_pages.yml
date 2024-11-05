@@ -4,12 +4,12 @@ on:
   push:
     branches:
       - master
-      - 'docs/**'
+      - 'doc/**'
   pull_request:
     branches:
       - master
     paths:
-      - 'docs/**'
+      - 'doc/**'
 
   workflow_dispatch:
 
@@ -34,17 +34,17 @@ jobs:
         pip install -e ".[doc]"
     - name: Build sphix doc
       run: |
-        sphinx-build docs docs/_build
+        sphinx-build doc doc/_build
     - name: Deploy to github pages
       uses: peaceiris/actions-gh-pages@v4
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_branch: gh_pages
-        publish_dir: docs/_build
+        publish_dir: doc/_build
     - name: Upload preview when creating pull request
       if: github.event_name == 'pull_request'
       uses: actions/upload-artifact@v3
       with:
         name: docs_build_preview
-        path: docs/_build
+        path: doc/_build

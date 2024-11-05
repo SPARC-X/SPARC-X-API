@@ -1,3 +1,5 @@
+# Advanced Topics
+<!-- TODO move this section with package components -->
 ## Advanced Topics
 The design of `SPARC-X-API` is schematically shown in the following figure
 <img width="929" alt="image" src="https://github.com/alchem0x2A/sparc-dft-api/assets/6829706/3419b1c4-3c56-4fd1-a6de-1ce2aea426e7">
