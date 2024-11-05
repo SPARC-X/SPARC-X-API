@@ -16,21 +16,113 @@ input / output files, as well as running DFT calculations and analysis
 via the SPARC code written in C/C++. Key features include:
 
 1. ASE-compatible I/O format for SPARC files
-2. A JSON Schema interfacing with SPARC's C/C++-code for parameter validation and conversion
+2. A JSON Schema interfacing with SPARC's C/C++ code for parameter validation and conversion
 3. A comprehensive calculator interface for SPARC with file I/O and socket-communication support.
 
+##
+
 ## Quick start
+
+SPARC-X-API is straightforward to install and use, adhering to the ASE
+standard for seamless integration into other computational workflows.
+
+### Installation
+
+We recommend to use the
+[`conda`](https://docs.conda.io/projects/conda/en/latest/index.html)
+for installation on UNIX systems.
+```bash
+conda install -c conda-forge sparc-x-api
+```
+
+Installing the pre-compiled SPARC binary alongside SPARC-X-API (Linux only)
+```bash
+conda install -c conda-forge sparc-x
+```
+
+More installation options please see documentations for [installation]() and
+[environment setup]().
+
+### Reading / Writing SPARC files
+
+SPARC-X-API provides a file format `sparc` compatible with the ASE
+`ioformat`, which treats the calculation directory containing SPARC
+in-/output files as a bundle:
+
+- Read from a SPARC bundle
+```python
+from ase.io import read
+atoms = read("sparc_calc_dir/", format="sparc")
+```
+
+- Write input files
+```python
+from ase.build import Bulk
+atoms = Bulk("Al") * [4, 4, 4]
+atoms.write("sparc_calc_dir/", format="sparc")
+```
+
+### Running SPARC calculations
+
+SPARC-X-API provides two ways to run a DFT calculation via SPARC C/C++ code:
+
+1. **File I/O mode**: generate input files, run a standard SPARC
+   process and read results until calculation finishes.
+2. **Socket mode**: run a background SPARC process while providing
+   atomic positions and other data via socket communication.
+
+The calculator interface in SPARC-X-API is designed to be intuitive
+for users familiar with the ASE calculator interfaces for other DFT
+packages (e.g. VASP, Quantum ESPRESSO, GPAW, Abinit, etc):
+
+#### File I/O mode
+
+Run a single point DFT calculation with Dirichlet boundary conditions:
+```python
+from sparc.calculator import SPARC
+from ase.build import molecule
+atoms = molecule("H2", cell=(10, 10, 10), pbc=False, directory="run_sp")
+atoms.calc = SPARC(h=0.25) # 0.25 Å mesh spacing
+atoms.get_potential_energy()
+atoms.get_forces()
+```
+
+The file I/O mode is capable of running single point DFT calculations,
+geometric optimization (using SPARC's internal routines), Ab-init
+molecular dynamics (AIMD). Optimization and AIMD tasks may also
+benefit from the built-in machine learning force field (MLFF) module.
+
+#### Socket mode
+
+The socket mode is ideal for evaluating hundreds or thousands of
+single point DFT energy and forces with much less overhead and more
+flexibility compared with the file I/O mode. It usually requires just
+a few more parameters to switch from file I/O mode to socket mode:
+
+```python
+from sparc.calculator import SPARC
+from ase.build import molecule
+from ase.optimize import BFGS
+atoms = molecule("H2", cell=(10, 10, 10), pbc=False, directory="run_sp")
+atoms.center()
+atoms.calc = SPARC(h=0.25, use_socket=True) # 0.25 Å mesh spacing
+opt = BFGS(atoms)
+with atoms.calc:
+	opt.run(fmax=0.01)
+```
+
+###
 
 ## How to cite
 If you find SPARC-X-API help, please consider cite the relevant
 publications below:
-- **TBD** To cite the SPARC-X-API package itself: **TBD JOSS**
+- The SPARC-X-API package itself: [Tian et al. 2024]() **TBD**
 - The SPARC C/C++ code
-  - v2.0 [Zhang 2024](https://doi.org/10.1016/j.simpa.2024.100649)
-  - v1.0 [Xu 2021](https://doi.org/10.1016/j.softx.2021.100709)
+  - v2.0 [Zhang et al., 2024](https://doi.org/10.1016/j.simpa.2024.100649)
+  - v1.0 [Xu et al., 2021](https://doi.org/10.1016/j.softx.2021.100709)
 - The M-SPARC Matlab code
-  - v2.0 [Zhang 2023](https://doi.org/10.1016/j.softx.2022.101295)
-  - v1.0 [Xu 2020](https://doi.org/10.1016/j.softx.2020.100423)
+  - v2.0 [Zhang et al., 2023](https://doi.org/10.1016/j.softx.2022.101295)
+  - v1.0 [Xu et al., 2020](https://doi.org/10.1016/j.softx.2020.100423)
 
 For a full list of publications in the SPARC-X project please refer to:
 - [SPARC developement](https://github.com/SPARC-X/SPARC?tab=readme-ov-file#6-citation)
