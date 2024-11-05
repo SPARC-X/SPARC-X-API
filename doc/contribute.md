@@ -7,7 +7,7 @@ requests](https://github.com/SPARC-X/SPARC-X-API/pulls).
 When reporting a bug, please make sure to include the following
 information:
 
-- `SPARC` version (if available. Should look like "Month Day, Year" in the `.out` file)
+- `SPARC` version (if available). Should look like "Month Day, Year" in the `.out` file)
 - `SPARC-X-API` version or commit hash
 - Minimal example for reproducing the error
 - Error trace message
@@ -67,9 +67,9 @@ There are several tests that will only be activated when certain
 environment variables are set (may subject to changes):
 
 -  [`test_read_all_examples.py`](https://github.com/SPARC-X/SPARC-X-API/blob/master/tests/test_read_all_examples.py): test for parsing all examples from a SPARC C/C++ release. Requires:
-  - `SPARC_TESTS_DIR`: directory to local SPARC test files, e.g. `SPARC-master/tests`
-  - `SPARC_DOC_PATH` (optional): directory to LaTeX documentation sources, e.g. `SPARC-master/doc/.LaTeX`, to generate compatible JSON schema
-  - Valid SPARC command (e.g. via `ASE_SPARC_COMMAND`): optional, to run `test_quick_examples` step
+   - `SPARC_TESTS_DIR`: directory to local SPARC test files, e.g. `SPARC-master/tests`
+   - `SPARC_DOC_PATH` (optional): directory to LaTeX documentation sources, e.g. `SPARC-master/doc/.LaTeX`, to generate compatible JSON schema
+   - Valid SPARC command (e.g. via `ASE_SPARC_COMMAND`): optional, to run `test_quick_examples` step
 
 
 - [`test_socket.py`](https://github.com/SPARC-X/SPARC-X-API/blob/master/tests/test_socket.py): test for socket calculations. Requires:
@@ -109,6 +109,11 @@ that are important for demonstrating the functionalities of
 computating power (e.g. a few minutes with 4 CPU cores).
 
 The examples can have the name in the format `ex[Number]-[purpose].py`.
+
+## Notes for repo maintainers
+
+Please check the [maintenance guide](maintainers.md) for roles
+involving admin privileges.
 
 <!-- ### Code structure -->
 
