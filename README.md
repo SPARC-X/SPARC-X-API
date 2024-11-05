@@ -35,7 +35,7 @@ for installation on UNIX systems.
 conda install -c conda-forge sparc-x-api
 ```
 
-Installing the pre-compiled SPARC binary alongside SPARC-X-API (Linux only)
+You can also install the pre-compiled SPARC binary alongside SPARC-X-API (Linux only).
 ```bash
 conda install -c conda-forge sparc-x
 ```
@@ -67,9 +67,18 @@ atoms.write("sparc_calc_dir/", format="sparc")
 SPARC-X-API provides two ways to run a DFT calculation via SPARC C/C++ code:
 
 1. **File I/O mode**: generate input files, run a standard SPARC
-   process and read results until calculation finishes.
+   process and read results until calculation finishes. Suitable for:
+   - Single point evaluation
+   - Band structure calculations
+   - Structural optimization (SPARC internal routines)
+   - Ab-init molecular dynamics (AIMD)
+
 2. **Socket mode**: run a background SPARC process while providing
-   atomic positions and other data via socket communication.
+   atomic positions and other data via socket communication. Suitable for:
+   - Hundreds / thousands of single point DFT evaluations
+   - Integration with complex algorithms / workflows
+   - Combination with internal and external machine learning (ML)
+     force fields
 
 The calculator interface in SPARC-X-API is designed to be intuitive
 for users familiar with the ASE calculator interfaces for other DFT
@@ -87,17 +96,17 @@ atoms.get_potential_energy()
 atoms.get_forces()
 ```
 
-The file I/O mode is capable of running single point DFT calculations,
-geometric optimization (using SPARC's internal routines), Ab-init
-molecular dynamics (AIMD). Optimization and AIMD tasks may also
-benefit from the built-in machine learning force field (MLFF) module.
+<!-- The file I/O mode is capable of running single point DFT calculations, -->
+<!-- geometric optimization (using SPARC's internal routines), Ab-init -->
+<!-- molecular dynamics (AIMD). Optimization and AIMD tasks may also -->
+<!-- benefit from the built-in machine learning force field (MLFF) module. -->
 
 #### Socket mode
 
-The socket mode is ideal for evaluating hundreds or thousands of
-single point DFT energy and forces with much less overhead and more
-flexibility compared with the file I/O mode. It usually requires just
-a few more parameters to switch from file I/O mode to socket mode:
+With just a few parameters, you can switch to the socket mode, ideal
+for evaluating hundreds or thousands of single point DFT energy and
+forces with much less overhead and more flexibility compared with the
+file I/O mode:
 
 ```python
 from sparc.calculator import SPARC
