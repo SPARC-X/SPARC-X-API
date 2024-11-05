@@ -54,7 +54,16 @@
 <li class="toctree-l1"><a class="reference internal" href="api_changes.html">Changes in API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contribute.html">How to Contribute</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Documentation for Maintainers</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Documentation for Maintainers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#github-settings">Github Settings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#github-branches">Github Branches</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#github-pages-settings">Github Pages Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-a-new-badge-in-readme">Adding a New Badge in Readme</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1"></a></li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -83,6 +92,41 @@
              
   <section id="documentation-for-maintainers">
 <h1>Documentation for Maintainers<a class="headerlink" href="#documentation-for-maintainers" title="Link to this heading"></a></h1>
+<p>This part contains maintenance guidelines for SPARC-X-API core
+developers. For general guidelines regarding how to contribute to this
+project please refer to the <a class="reference internal" href="contribute.html"><span class="std std-doc">how to contribute</span></a> page.</p>
+<p>Most of the tasks in this documentation require <code class="docutils literal notranslate"><span class="pre">maintain</span></code> or <code class="docutils literal notranslate"><span class="pre">admin</span></code>
+role for the repository.</p>
+<section id="github-settings">
+<h2>Github Settings<a class="headerlink" href="#github-settings" title="Link to this heading"></a></h2>
+<section id="github-branches">
+<h3>Github Branches<a class="headerlink" href="#github-branches" title="Link to this heading"></a></h3>
+<p>There are multiple branches required for the CI/CD workflow in
+SPARC-X-API. Push / pull request to these branches should only be made by automatic github actions.</p>
+<ul>
+<li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/tree/badges"><code class="docutils literal notranslate"><span class="pre">badges</span></code></a>:
+branch for maintaining the svg badges (package version, CI status,
+etc.)</p>
+<p>A list of svg badges can be found under <code class="docutils literal notranslate"><span class="pre">badges/</span></code> directory of this
+branch. See <strong>TODO</strong> for how to add / modify badges to be shown in
+the README.</p>
+</li>
+<li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/tree/gh_pages"><code class="docutils literal notranslate"><span class="pre">gh_pages</span></code></a>:
+branch to publish the documentation site.</p></li>
+</ul>
+</section>
+<section id="github-pages-settings">
+<h3>Github Pages Settings<a class="headerlink" href="#github-pages-settings" title="Link to this heading"></a></h3>
+<p>To change how the documentation pages</p>
+<p><strong>TODO</strong> only maintainers</p>
+</section>
+</section>
+<section id="adding-a-new-badge-in-readme">
+<h2>Adding a New Badge in Readme<a class="headerlink" href="#adding-a-new-badge-in-readme" title="Link to this heading"></a></h2>
+</section>
+<section id="id1">
+<h2><a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+</section>
 </section>
 
 

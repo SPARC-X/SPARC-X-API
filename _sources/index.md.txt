@@ -1,5 +1,7 @@
 ```{include} ../README.md
 :language: md
+:relative-docs: docs/
+:relative-images:
 ```
 <!-- # SPARC-X-API: A Python API for the SPARC-X DFT Code -->
 
