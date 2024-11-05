@@ -37,10 +37,18 @@ For a full list of publications in the SPARC-X project please refer to:
 - [M-SPARC development](https://github.com/SPARC-X/M-SPARC?tab=readme-ov-file#6-citation)
 - [Pseudopotentials](https://github.com/SPARC-X/SPMS-psps?tab=readme-ov-file#citation)
 
+## Documentation
+
+Please check the [full
+documentation](https://sparc-x.github.io/sparc-x-api) for details
+regarding installation, usage, troubleshooting and contribution
+guidelines.
+
 ## Acknowledgment
 The authors gratefully acknowledge the support of the U.S. Department
 of Energy, Office of Science, under Grant No. DE-SC0019410 and
 DE-SC0023445.
+
 
 
 <!-- [Fig. 1](#fig-1-schematic-drawing-for-the-architecture-of-the-sparc-x-api-package) provides an overlook of the components of `SPARC-X-API` and its relation with the SPARC C-code. -->
