@@ -48,9 +48,11 @@ for pre-commit hooks used in this project, and change them if needed.
 
 ### Installing SPARC C/C++ binary
 
-If you need to test running DFT using the API, compile or install the `sparc` executables following the [manual](https://github.com/SPARC-X/SPARC/blob/master/README.md).
-
-**TODO** refer to the installation guide instead.
+If you need to test running DFT using the API, compile or install the
+`sparc` executables following the
+[manual](https://github.com/SPARC-X/SPARC/blob/master/README.md). Check
+[some examples](#install-the-sparc-binary-code) for our recommended
+approaches.
 
 
 ### Running tests
@@ -100,6 +102,11 @@ and then open `doc/_build/index.html` in a browser.
 
 Details about hosting the doc on Github pages please refer to the
 [maintenance guide](maintainers.md).
+
+```{note}
+1. Do not add contents directly in [`index.md`](https://github.com/SPARC-X/SPARC-X-API/blob/master/doc/index.md) except the `{toctree}` block for editing crosslinks.
+2. [`README.md`](https://github.com/SPARC-X/SPARC-X-API/blob/master/README.md) should be kept as concise as possible.
+```
 
 ### Adding examples
 

@@ -115,15 +115,15 @@ sparc.sparc_json_api.default_json_api -->
 
 ### Pseudopotential files
 
-Pseudopotential files (in `Abinit` [psp8 format]() are loaded in the
+Pseudopotential files (in `Abinit` [psp8 format](https://docs.abinit.org/developers/psp8_info/) are loaded in the
 following order:
 
-1. Via the `psp_dir` argument passed to the `sparc.SPARC` calculator.
-2. Through the environment variables `$SPARC_PSP_PATH` or `$SPARC_PP_PATH` (this is the
- method employed by [`conda` installation](#1-via-anaconda-or-miniconda-recommended)).
-(manual-psp8)=
-3. By using `psp8` files bundled with the SPARC-X-API installation (see the
-[pip installation](#pip-install)).
+<!-- 1. Via the `psp_dir` argument passed to the `sparc.SPARC` calculator. -->
+<!-- 2. Through the environment variables `$SPARC_PSP_PATH` or `$SPARC_PP_PATH` (this is the -->
+<!--  method employed by [`conda` installation](#use-conda)). -->
+<!-- (manual-psp8)= -->
+<!-- 3. By using `psp8` files bundled with the SPARC-X-API installation (see the -->
+<!-- [pip installation](#pip-install)). -->
 
 To specify a custom path for your pseudopotential files (in Abinit [psp8 format]()),
 use the environment variable `$SPARC_PSP_PATH` or `$SPARC_PP_PATH` variable:
@@ -138,7 +138,7 @@ When installing SPARC [via `conda-forge`](#use-conda),
 conda environment.
 
 
-To determine the location of default psp8 files (as in [option 3](#manual-psp8)), run the following code:
+To determine the location of default psp8 files (as in [manual pip installation](#pip-install)), run the following code:
 ```bash
 python -c "from sparc.common import psp_dir; print(psp_dir)"
 ```
@@ -151,7 +151,7 @@ following priority:
 
 1. The command argument provided directly to the `sparc.SPARC` calculator.
 2. The environment variable `$ASE_SPARC_COMMAND`
-3. If neither of the above is defined, `SPARC-X-API` looks for the SPARC binary under current `$PATH` and combine with the suitable `mpi` command prefix.
+3. If neither of the above is defined, `SPARC-X-API` looks for the SPARC binary under current `$PATH` and combine with the suitable MPI command prefix.
 
 Example to set `$ASE_SPARC_COMMAND`
 
@@ -160,17 +160,16 @@ Example to set `$ASE_SPARC_COMMAND`
 export ASE_SPARC_COMMAND="mpirun -n 8 -mca orte_abort_on_non_zero_status 1 /path/to/sparc -name PREFIX"
 ```
 
-2. Using `srun` (e.g. in HPC slurm job system)
+2. Using `srun` (e.g. [SLURM](https://slurm.schedmd.com/documentation.html) job system HPCs)
 ```bash
 export ASE_SPARC_COMMAND="srun -n 8 --kill-on-bad-exit /path/to/sparc -name PREFIX"
 ```
 
-**TODO** sphinx's way for notes
-*Notes*:
-1. The `-name PREFIX` part can be omitted the `label` property of the `sparc.SPARC` calculator is set (which is the default behavior). Any extra features of the SPARC code (e.g. GPU acceleration) should be specified in the command.
+```{note}
+1. The `-name PREFIX` is optional and will automatically replaced by the `sparc.SPARC` calculator.
 
 2. We recommend adding kill switches for your MPI commands like the examples above when running `sparc` to avoid unexpected behaviors with exit signals.
-
+```
 
 ## Post-installation check
 
@@ -267,11 +266,15 @@ Please check additional information from:
 </div>
 ```
 
-
-When using SPARC-X-API to parse SPARC files, it's essential that at
-least the "Import" and "JSON API" tests are successful. For running
-SPARC calculations, "SPARC Command" and "Calculation (File I/O)" must
+```{note}
+1. When using SPARC-X-API to parse SPARC files, it's essential that at
+least the "Import" and "JSON API" tests are successful.
+2. For running
+SPARC calculations, "SPARC Command" and "Calculation (File I/O)" must also
 succeed.
+3. "Calculation (UNIX socket)" ensures the SPARC binary is compatible with socket communication,
+see [calculation in socket mode](advanced_socket.md).
+```
 
 If you run into further problems, consult our [troubleshooting
 guidlines](troubleshooting.md) or [raise an issue](contribute.md).

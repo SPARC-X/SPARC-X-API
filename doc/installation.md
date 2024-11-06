@@ -4,13 +4,16 @@
 SPARC-X-API may be installed via the following approaches:
 
 (use-conda)=
-### Using [`conda`]() (recommended)
+### Using [`conda`](https://docs.conda.io/en/latest/) (recommended)
 
-You can use any of [`anaconda`](), [`miniconda`](), or
-[`micromamba`]() to install a `conda` package engine.  The rest of the
-steps will be made in a [conda
+You can use any of [`anaconda`](https://docs.anaconda.com/),
+[`miniconda`](https://docs.anaconda.com/miniconda/), or
+[`micromamba`](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html)
+tools to install a `conda` package engine.  The rest of the steps will
+be made in a [conda
 environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands)
-to get the latest release of SPARC-X-API that comes with the pseudopotentials installed:
+to get the latest release of SPARC-X-API that comes with the
+pseudopotentials installed:
 
 ```bash
 # Change 'sparc-env' to your desired name if needed
@@ -32,7 +35,7 @@ conda activate sparc-env
 
 
 (pip-install)=
-### [`pip`]() install from source
+### [`pip`](https://pip.pypa.io/en/stable/cli/pip_install/) install from source
 
 You can installed the SPARC-X-API from the latest commit using `pip`
 
@@ -91,14 +94,17 @@ requirements about the parallel and numerical library setups. While
 conda installation works in most cases, it is often true to compile
 SPARC with existing MPI/MKL/BLAS libraries to ensure optimal
 performance. The following example shows the compilation with Intel
-MKL/MPICH on Georgia Tech's Pheonix cluster:
+MKL/MPICH on Georgia Tech's [Pheonix Cluster](https://sites.gatech.edu/ewanparktest/phoenix-cluster/):
 
+**TODO** make sure modules are correct.
 ```bash
 module load git intel-one-api fftw
 git clone https://github.com/SPARC-X/SPARC.git
 cd SPARC/src
 make USE_MKL=1 USE_SCALAPACK=0 USE_FFTW=1
 ```
+
+**TODO** add module in script.
 
 The compiled binary will be at `SPARC/lib/sparc`, and running it
 requires the dependent modules to be loaded at runtime.
