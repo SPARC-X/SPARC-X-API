@@ -1,9 +1,10 @@
 # Installation
 
+## Installting the API
 SPARC-X-API may be installed via the following approaches:
 
 (use-conda)=
-## Using [`conda`]() (recommended)
+### Using [`conda`]() (recommended)
 
 You can use any of [`anaconda`](), [`miniconda`](), or
 [`micromamba`]() to install a `conda` package engine.  The rest of the
@@ -23,14 +24,15 @@ On Linux platforms (x86_64, aarch64), you can also install the
 pre-compiled SPARC DFT binaries alongside the API:
 
 ```bash
+# Note the package name is sparc-x
 conda install -c conda-forge sparc-x
 # Re-activate to have the env variables effective
 conda activate sparc-env
 ```
 
 
-
-## [`pip`]() install from source
+(pip-install)=
+### [`pip`]() install from source
 
 You can installed the SPARC-X-API from the latest commit using `pip`
 
@@ -61,7 +63,9 @@ C/C++, it is also straightforward:
 ### Use `conda` toolchains
 
 In the previously configured `sparc-env` environment, install the
-build dependencies and compile. The following process compilers SPARC
+build dependencies and compile.
+
+The following process compilers SPARC
 with OpenMPI/OpenBLAS/Scalapack toolchains.
 
 ```bash
@@ -100,26 +104,5 @@ The compiled binary will be at `SPARC/lib/sparc`, and running it
 requires the dependent modules to be loaded at runtime.
 
 
-
-
-## Post-installation check
-
-We recommend the users to run a simple test after installation and
-setup:
-
-```bash
-python -m sparc.quicktest
-```
-
-A proper setup will display the following sections at the output's conclusion:
-
-<img width="500" alt="image" src="https://github.com/alchem0x2A/SPARC-X-API/assets/6829706/95cb712e-4c77-4b14-8130-4961e3c50278">
-
-For using the API to parse SPARC input and output files, it's
-essential that the "Import" and "JSON API" tests are successful. For
-run SPARC calculations, all tests must pass.
-
-Please refer to the [Setting Up the
-Environment](#setting-up-the-environment) or guidance on correctly
-configuring the environment variables. If you run into further problems, consult our
-[Trouble Shooting](doc/troubleshooting.md).
+Now head to the [setup tutorial](setup_environment.md) to finetune
+your settings.
