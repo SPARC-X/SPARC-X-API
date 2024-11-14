@@ -10,7 +10,6 @@
 ```{toctree}
 :maxdepth: 2
 :caption: Contents
-introduction.md
 installation.md
 setup_environment.md
 basic_usage.md
