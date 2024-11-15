@@ -1,4 +1,4 @@
-name: Unit tests for SPARC-X-API
+name: Unit tests
 
 on:
   push:
@@ -60,7 +60,7 @@ jobs:
         PIPVER=`pip show sparc-x-api | grep Version | cut -d ' ' -f2`
         anybadge --value=$PIPVER --file=badges/package.svg -l sparc-x-api
         # api version badge
-        anybadge --value=${API_VERSION} --file=badges/api_version.svg -l "json-api version"
+        anybadge --value=${API_VERSION} --file=badges/api_version.svg -l "JSON schema version"
     - name: Manually add git badges
       run: |
         # Assuming a badges branch already exists!

@@ -1,8 +1,7 @@
 # Advanced Usage: SPARC-X-API as a Socket Interface
 
-*Disclaimer: The socket communication feature in SPARC and SPARC-X-API are experimental and subject to changes until the release of v2.0 SPARC-X-API.*
 
-### Overview
+## Overview
 Experienced users can harness the power of SPARC and SPARC-X-API's
 socket communication layer to build efficient and flexible
 computational workflows. By integrating a socket communication
@@ -11,14 +10,14 @@ overhead typically associated with file I/O during calculation
 restarts. This feature is particularly beneficial for tasks involving
 repetitive operations like structural optimization and saddle point
 searches, where traditional file-based communication can become a
-bottleneck. The underlying software architecture is shown in [Fig. 3](#fig-3-sparc-electronic-calculations-with-socket-communication-across-hybrid-computing-platforms):
+bottleneck. The underlying software architecture is shown in [the following figure](#fig-3-sparc-electronic-calculations-with-socket-communication-across-hybrid-computing-platforms):
 
-#### Fig. 3. SPARC electronic calculations with socket communication across hybrid computing platforms
+<!-- #### Fig. 3. SPARC electronic calculations with socket communication across hybrid computing platforms -->
 
-![scheme-sparc-socket](doc/img/scheme_socket_hetero.png)
+![scheme-sparc-socket](img/scheme_socket_hetero.png)
 
 
-
+**TODO** change doc source
 
 **Requirements**: the SPARC binary must be manually compiled from the source
 code with [socket
@@ -26,7 +25,7 @@ support](https://github.com/alchem0x2A/SPARC/tree/socket) and with the
 `USE_SOCKET=1` flag enabled (see the [installation
 instructions](https://github.com/alchem0x2A/SPARC/tree/socket).
 
-### Usage
+## Usage
 The socket communication layer in SPARC and SPARC-X-API are designed for:
 - **Efficiency:** Eliminates the need for intermediate file I/O, directly streaming data between processes.
 - **Speed:** Enhances the performance of iterative calculations, crucial for large-scale simulations.
@@ -39,13 +38,13 @@ the SPARC C-source code, while the python SPARC-X-API uses a
 backward-compatible protocol based on i-PI. The dual-mode design is aimed for both low-level and
 high-level interfacing of the DFT codes, providing the following features as shown in [Fig. 4](#fig-4-overview-of-the-sparc-protocol-as-an-extension-to-the-standard-i-pi-protocol):
 
-#### Fig. 4. Overview of the SPARC protocol as an extension to the standard i-PI protocol.
-![scheme-sparc-protocol](doc/img/scheme_sparc_protocol.png)
+### Fig. 4. Overview of the SPARC protocol as an extension to the standard i-PI protocol.
+![scheme-sparc-protocol](img/scheme_sparc_protocol.png)
 
 Based on the scenarios, the socket communication layer can be accessed via the following approaches as shown in [Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode):
 
-#### Fig. 5. Different ways of using SPARC's socket mode.
-![scheme-sparc-modes](doc/img/scheme-SPARC-socket-modes.png)
+### Fig. 5. Different ways of using SPARC's socket mode.
+![scheme-sparc-modes](img/scheme-SPARC-socket-modes.png)
 
 
 1. **SPARC binary only** ([Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode) **a**)
@@ -131,7 +130,7 @@ Based on the scenarios, the socket communication layer can be accessed via the f
    file systems on the client side.
 
 
-### (In-progress) Controlling SPARC routines from socket interface
+## (In-progress) Controlling SPARC routines from socket interface
 
 As shown in [Fig. 4](#fig-4-overview-of-the-sparc-protocol-as-an-extension-to-the-standard-i-pi-protocol),
 the SPARC socket protocol designs allows bidirectional control of
