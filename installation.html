@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Setup Environment for SPARC-X-API" href="setup_environment.html" />
-    <link rel="prev" title="Introduction" href="introduction.html" /> 
+    <link rel="next" title="Configurations for SPARC-X-API" href="setup_environment.html" />
+    <link rel="prev" title="SPARC-X-API: A Python API for the SPARC-X DFT Code" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,16 +42,22 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#via-anaconda-or-miniconda-recommended">1. Via <code class="docutils literal notranslate"><span class="pre">anaconda</span></code> or <code class="docutils literal notranslate"><span class="pre">miniconda</span></code> (recommended)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#manual-installation-from-source-with-pip">2. Manual installation from source with <code class="docutils literal notranslate"><span class="pre">pip</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#post-installation-check">Post-installation check</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installting-the-api">Installting the API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#using-conda-recommended">Using <code class="docutils literal notranslate"><span class="pre">conda</span></code> (recommended)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pip-install-from-source"><code class="docutils literal notranslate"><span class="pre">pip</span></code> install from source</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="setup_environment.html">Setup Environment for SPARC-X-API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-the-sparc-binary-code">Install the SPARC binary code</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#use-conda-toolchains">Use <code class="docutils literal notranslate"><span class="pre">conda</span></code> toolchains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#compiling-sparc-on-hpc">Compiling SPARC on HPC</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="setup_environment.html">Configurations for SPARC-X-API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
@@ -89,26 +95,37 @@
              
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
-<p>The Python API may be installed via either of the following approaches:</p>
-<section id="via-anaconda-or-miniconda-recommended">
-<h2>1. Via <code class="docutils literal notranslate"><span class="pre">anaconda</span></code> or <code class="docutils literal notranslate"><span class="pre">miniconda</span></code> (recommended)<a class="headerlink" href="#via-anaconda-or-miniconda-recommended" title="Link to this heading"></a></h2>
-<p>Set up a <a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands">conda environment</a> and install the Python API,
-which includes the pseudopotential files:</p>
+<section id="installting-the-api">
+<h2>Installting the API<a class="headerlink" href="#installting-the-api" title="Link to this heading"></a></h2>
+<p>SPARC-X-API may be installed via the following approaches:</p>
+<section id="using-conda-recommended">
+<span id="use-conda"></span><h3>Using <a class="reference external" href="https://docs.conda.io/en/latest/"><code class="docutils literal notranslate"><span class="pre">conda</span></code></a> (recommended)<a class="headerlink" href="#using-conda-recommended" title="Link to this heading"></a></h3>
+<p>You can use any of <a class="reference external" href="https://docs.anaconda.com/"><code class="docutils literal notranslate"><span class="pre">anaconda</span></code></a>,
+<a class="reference external" href="https://docs.anaconda.com/miniconda/"><code class="docutils literal notranslate"><span class="pre">miniconda</span></code></a>, or
+<a class="reference external" href="https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html"><code class="docutils literal notranslate"><span class="pre">micromamba</span></code></a>
+tools to install a <code class="docutils literal notranslate"><span class="pre">conda</span></code> package engine.  The rest of the steps will
+be made in a <a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands">conda
+environment</a>
+to get the latest release of SPARC-X-API that comes with the
+pseudopotentials installed:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Change &#39;sparc-env&#39; to your desired name if needed</span>
-conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>sparc-env
+conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>sparc-env<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.11<span class="w"> </span>pip<span class="w"> </span>mamba
 conda<span class="w"> </span>activate<span class="w"> </span>sparc-env
 conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>sparc-x-api
 </pre></div>
 </div>
 <p>On Linux platforms (x86_64, aarch64), you can also install the
-precompiled <code class="docutils literal notranslate"><span class="pre">sparc</span></code> DFT binaries alongside the API:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>sparc-x
-conda<span class="w"> </span>activate<span class="w"> </span>sparc-env<span class="w">   </span><span class="c1"># Re-activate to have the env variables effective</span>
+pre-compiled SPARC DFT binaries alongside the API:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note the package name is sparc-x</span>
+conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>sparc-x
+<span class="c1"># Re-activate to have the env variables effective</span>
+conda<span class="w"> </span>activate<span class="w"> </span>sparc-env
 </pre></div>
 </div>
 </section>
-<section id="manual-installation-from-source-with-pip">
-<h2>2. Manual installation from source with <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#manual-installation-from-source-with-pip" title="Link to this heading"></a></h2>
+<section id="pip-install-from-source">
+<span id="pip-install"></span><h3><a class="reference external" href="https://pip.pypa.io/en/stable/cli/pip_install/"><code class="docutils literal notranslate"><span class="pre">pip</span></code></a> install from source<a class="headerlink" href="#pip-install-from-source" title="Link to this heading"></a></h3>
+<p>You can installed the SPARC-X-API from the latest commit using <code class="docutils literal notranslate"><span class="pre">pip</span></code></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/SPARC-X/SPARC-X-API
 </pre></div>
 </div>
@@ -116,25 +133,60 @@ conda<span class="w"> </span>activate<span class="w"> </span>sparc-env<span clas
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>sparc.download_data
 </pre></div>
 </div>
-<p>To utilize the API for drive SPARC calculations, please
-following the <a class="reference external" href="https://github.com/SPARC-X/SPARC">SPARC manual</a> for
-compilation and installation of the SPARC DFT code itself.</p>
+<p>For developers, please check the <a class="reference internal" href="#setting-up-environment"><span class="xref myst">how to
+contribute</span></a> page for setting up a development
+environment for SPARC-X-API.</p>
 </section>
-<section id="post-installation-check">
-<h2>Post-installation check<a class="headerlink" href="#post-installation-check" title="Link to this heading"></a></h2>
-<p>We recommend the users to run a simple test after installation and setup:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>sparc.quicktest
+</section>
+<section id="install-the-sparc-binary-code">
+<h2>Install the SPARC binary code<a class="headerlink" href="#install-the-sparc-binary-code" title="Link to this heading"></a></h2>
+<p>To utilize the API for drive SPARC calculations, please following the
+<a class="reference external" href="https://github.com/SPARC-X/SPARC">SPARC manual</a> for compilation and
+installation of the SPARC DFT code itself.</p>
+<p>We recommend using the <a class="reference internal" href="#use-conda"><code class="docutils literal notranslate"><span class="pre">conda-forge</span></code> package</a> to install
+the pre-compiled SPARC binary. If you want to compile the latest SPARC
+C/C++, it is also straightforward:</p>
+<section id="use-conda-toolchains">
+<h3>Use <code class="docutils literal notranslate"><span class="pre">conda</span></code> toolchains<a class="headerlink" href="#use-conda-toolchains" title="Link to this heading"></a></h3>
+<p>In the previously configured <code class="docutils literal notranslate"><span class="pre">sparc-env</span></code> environment, install the
+build dependencies and compile.</p>
+<p>The following process compilers SPARC
+with OpenMPI/OpenBLAS/Scalapack toolchains.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>sparc-env
+mamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="se">\</span>
+<span class="w">                 </span>make<span class="w"> </span>compilers<span class="w"> </span><span class="se">\</span>
+<span class="w">				 </span><span class="nv">fftw</span><span class="o">=</span>*<span class="o">=</span>mpi_openmpi_*<span class="w"> </span><span class="se">\</span>
+<span class="w">				 </span>openblas<span class="w"> </span>openmpi<span class="w"> </span>scalapack
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/SPARC-X/SPARC.git
+<span class="nb">cd</span><span class="w"> </span>SPARC/src
+make<span class="w"> </span><span class="nv">USE_MKL</span><span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="nv">USE_SCALAPACK</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">USE_FFTW</span><span class="o">=</span><span class="m">1</span>
 </pre></div>
 </div>
-<p>A proper setup will display the following sections at the output’s conclusion:</p>
-<img width="500" alt="image" src="https://github.com/alchem0x2A/SPARC-X-API/assets/6829706/95cb712e-4c77-4b14-8130-4961e3c50278">
-<p>For using the API to parse SPARC input and output files, it’s
-essential that the “Import” and “JSON API” tests are successful. For
-run SPARC calculations, all tests must pass.</p>
-<p>Please refer to the <a class="reference internal" href="#setting-up-the-environment"><span class="xref myst">Setting Up the
-Environment</span></a> or guidance on correctly
-configuring the environment variables. If you run into further problems, consult our
-<a class="reference internal" href="#doc/troubleshooting.md"><span class="xref myst">Trouble Shooting</span></a>.</p>
+<p>The compiled binary will be at <code class="docutils literal notranslate"><span class="pre">SPARC/lib/sparc</span></code>, and will run when
+<code class="docutils literal notranslate"><span class="pre">sparc-env</span></code> environment is activated.</p>
+<p><strong>TODO</strong> MKL available?</p>
+</section>
+<section id="compiling-sparc-on-hpc">
+<h3>Compiling SPARC on HPC<a class="headerlink" href="#compiling-sparc-on-hpc" title="Link to this heading"></a></h3>
+<p>High Performance Clusters (HPC) machines usually have some specific
+requirements about the parallel and numerical library setups. While
+conda installation works in most cases, it is often true to compile
+SPARC with existing MPI/MKL/BLAS libraries to ensure optimal
+performance. The following example shows the compilation with Intel
+MKL/MPICH on Georgia Tech’s <a class="reference external" href="https://sites.gatech.edu/ewanparktest/phoenix-cluster/">Pheonix Cluster</a>:</p>
+<p><strong>TODO</strong> make sure modules are correct.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>load<span class="w"> </span>git<span class="w"> </span>intel-one-api<span class="w"> </span>fftw
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/SPARC-X/SPARC.git
+<span class="nb">cd</span><span class="w"> </span>SPARC/src
+make<span class="w"> </span><span class="nv">USE_MKL</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">USE_SCALAPACK</span><span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="nv">USE_FFTW</span><span class="o">=</span><span class="m">1</span>
+</pre></div>
+</div>
+<p><strong>TODO</strong> add module in script.</p>
+<p>The compiled binary will be at <code class="docutils literal notranslate"><span class="pre">SPARC/lib/sparc</span></code>, and running it
+requires the dependent modules to be loaded at runtime.</p>
+<p>Now head to the <a class="reference internal" href="setup_environment.html"><span class="std std-doc">setup tutorial</span></a> to finetune
+your settings.</p>
+</section>
 </section>
 </section>
 
@@ -142,8 +194,8 @@ configuring the environment variables. If you run into further problems, consult
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="introduction.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="setup_environment.html" class="btn btn-neutral float-right" title="Setup Environment for SPARC-X-API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="SPARC-X-API: A Python API for the SPARC-X DFT Code" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="setup_environment.html" class="btn btn-neutral float-right" title="Configurations for SPARC-X-API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

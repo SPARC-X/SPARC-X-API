@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup Environment for SPARC-X-API &mdash; SPARC-X-API  documentation</title>
+  <title>Configurations for SPARC-X-API &mdash; SPARC-X-API  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
@@ -42,14 +42,18 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Setup Environment for SPARC-X-API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#a-pseudopotential-files">A) Pseudopotential files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#b-json-schema">B) JSON schema</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#c-sparc-command-configuration">C) SPARC Command Configuration</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configurations for SPARC-X-API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#default-configurations">Default configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-configurations">Custom configurations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#json-schema">JSON schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pseudopotential-files">Pseudopotential files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sparc-command-configuration">SPARC Command Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#post-installation-check">Post-installation check</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
@@ -77,7 +81,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Setup Environment for SPARC-X-API</li>
+      <li class="breadcrumb-item active">Configurations for SPARC-X-API</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/setup_environment.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -87,76 +91,144 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="setup-environment-for-sparc-x-api">
-<h1>Setup Environment for SPARC-X-API<a class="headerlink" href="#setup-environment-for-sparc-x-api" title="Link to this heading"></a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> is designed to automate the discovery of
-pseudopotential files, the JSON API, and the SPARC binary. However,
-you can exert fine-grained control over their setup:</p>
-<section id="a-pseudopotential-files">
-<h2>A) Pseudopotential files<a class="headerlink" href="#a-pseudopotential-files" title="Link to this heading"></a></h2>
-<p>Pseudopotential files (in <code class="docutils literal notranslate"><span class="pre">Abinit</span></code> psp8 format) are loaded in the following
-order:</p>
+  <section id="configurations-for-sparc-x-api">
+<h1>Configurations for SPARC-X-API<a class="headerlink" href="#configurations-for-sparc-x-api" title="Link to this heading"></a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> requires the following components to be fully functional:</p>
+<ul class="simple">
+<li><p>A JSON schema parsed from SPARC LaTeX documentation</p></li>
+<li><p>Pseudopotential files</p></li>
+<li><p>SPARC C/C++ binary</p></li>
+</ul>
+<section id="default-configurations">
+<h2>Default configurations<a class="headerlink" href="#default-configurations" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> is designed to automate the discovery of these
+configurations. The default configurations are:</p>
+<ul class="simple">
+<li><p>JSON schema: <code class="docutils literal notranslate"><span class="pre">&lt;sparc-x-api-root&gt;/sparc_json_api/parameters.json</span></code></p></li>
+<li><p>Pseudopotential files: <code class="docutils literal notranslate"><span class="pre">&lt;sparc-x-api-root&gt;/psp/*.psp8</span></code> (if installed <a class="reference internal" href="installation.html#use-conda"><span class="std std-ref">via conda</span></a>)</p></li>
+<li><p>Command to run SPARC binary: <code class="docutils literal notranslate"><span class="pre">mpirun</span> <span class="pre">sparc</span></code> (if <code class="docutils literal notranslate"><span class="pre">sparc</span></code> is found in <code class="docutils literal notranslate"><span class="pre">$PATH</span></code>)</p></li>
+</ul>
+</section>
+<section id="custom-configurations">
+<h2>Custom configurations<a class="headerlink" href="#custom-configurations" title="Link to this heading"></a></h2>
+<p><strong>TODO</strong> use sparc ini config.</p>
+<p>Please check the following steps for detailed setup:</p>
+<section id="json-schema">
+<h3>JSON schema<a class="headerlink" href="#json-schema" title="Link to this heading"></a></h3>
+<p>Each version of SPARC-X-API ships with a JSON schema compatible with a
+dated-version of SPARC C/C++ code. You can find that version in the README badge like follows:</p>
+<p><img alt="API badge" src="https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/api_version.svg" /></p>
+<p>If that does not match your local SPARC version, you can configure the location of JSON schema using one of the following methods:</p>
 <ol class="arabic simple">
-<li><p>Via the <code class="docutils literal notranslate"><span class="pre">psp_dir</span></code> argument passed to the <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator.</p></li>
-<li><p>Through the environment variables <code class="docutils literal notranslate"><span class="pre">$SPARC_PSP_PATH</span></code> or <code class="docutils literal notranslate"><span class="pre">$SPARC_PP_PATH</span></code> (this is the
-method employed by <a class="reference internal" href="#1-via-anaconda-or-miniconda-recommended"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">conda</span></code> installation</span></a>).</p></li>
-<li><p>By using <code class="docutils literal notranslate"><span class="pre">psp8</span></code> files bundled with the SPARC-X-API installation (see the
-<a class="reference internal" href="#2-manual-installation-from-source-with-pip"><span class="xref myst">manual installation</span></a>).</p></li>
+<li><p>Set the <code class="docutils literal notranslate"><span class="pre">$SPARC_DOC_PATH</span></code> variable</p></li>
 </ol>
-<p>To specify a custom path for your psp8 files, set the <code class="docutils literal notranslate"><span class="pre">$SPARC_PSP_PATH</span></code> or <code class="docutils literal notranslate"><span class="pre">$SPARC_PP_PATH</span></code> variable as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">SPARC_PSP_PATH</span><span class="o">=</span><span class="s2">&quot;/path/to/your/psp8/directory&quot;</span>
+<p><code class="docutils literal notranslate"><span class="pre">$SPARC_DOC_PATH</span></code> will direct SPARC-X-API to look for a local directory containing LaTeX documentation, for example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">SPARC_DOC_PATH</span><span class="o">=</span>&lt;local-SPARC-dir&gt;/doc/.LaTeX
 </pre></div>
 </div>
-<p>To determine the default location of psp8 files (as per option 3), run the following code:</p>
+<p>and parse the JSON schema on-the-fly.</p>
+<ol class="arabic simple" start="2">
+<li><p>Use your own <code class="docutils literal notranslate"><span class="pre">parameters.json</span></code></p></li>
+</ol>
+<p>In some cases an experimental feature may not have been updated in the
+official doc. You can create and edit your own <code class="docutils literal notranslate"><span class="pre">parameters.json</span></code> file to
+temporarily test a local version of SPARC:</p>
+<p>First parse the LaTeX files into <code class="docutils literal notranslate"><span class="pre">parameters.json</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>sparc.docparser<span class="w">  </span>&lt;local-SPARC-dir&gt;/doc/.LaTeX<span class="w"> </span><span class="se">\</span>
+<span class="w">                           </span>--output<span class="w"> </span>parameters.json<span class="w"> </span><span class="se">\</span>
+<span class="w">                           </span>--include-subdirs
+</pre></div>
+</div>
+<p>Then add / edit missing parameters in the <code class="docutils literal notranslate"><span class="pre">parameters</span></code> section in
+<code class="docutils literal notranslate"><span class="pre">parameters.json</span></code>, see examples from the existing file:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;ACE_FLAG&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="nt">&quot;symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ACE_FLAG&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ACE_FLAG&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;integer&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No unit&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;example&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ACE_FLAG: 0&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Use ACE operator to accelarte the hybrid calculation.&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;remark&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Without ACE operator, the hybrid calculation will be way slower than with it on depending on the system size.&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;allow_bool_input&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;default_remark&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;description_raw&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Use ACE operator to accelarte the hybrid calculation.&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;remark_raw&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Without ACE operator, the hybrid calculation will be way slower than with it on depending on the system size.&quot;</span><span class="p">,</span>
+<span class="w">   </span><span class="nt">&quot;category&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;scf&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+</pre></div>
+</div>
+<p><strong>TODO</strong> make sure the json parameters are included.
+Finally, set up <strong>TODO</strong>.</p>
+<!--t `SPARC-X-API` is engineered for compatibility with the SPARC -->
+<!-- C-code. It achieves this by loading a JSON schema for --> <!--
+<p>parameter validation and unit conversion. You can review the default
+–&gt; <!-- schema used by the API at
+sparc.sparc_json_api.default_json_api --></p>
+<!-- ```json -->
+<!-- "FD_GRID": { -\-> -->
+<!-- "symbol": "FD_GRID", -\-> -->
+<!-- <\!--    "label": "FD_GRID", -\-> -->
+<!-- <\!--    "type": "integer array", -\-> -->
+<!-- <\!--    "default": null, -\-> -->
+<!-- <\!--    "unit": "No unit", -\-> -->
+<!-- <\!--    "example": "FD_GRID: 26 26 30", -\-> -->
+<!-- <\!--    "description": "#<Some description...>", -\-> -->
+<!-- <\!--    "allow_bool_input": false, -\-> -->
+<!-- <\!--    "category": "system" -\-> -->
+<!-- <\!--   }, -\-> -->
+<!-- <\!-- ``` -\-> -->
+<!-- <\!-- The schema file is generated from SPARC's LaTeX documentation.  In -\-> -->
+<!-- <\!-- upcoming releases of `SPARC-X-API`, we're aiming to provide users the -\-> -->
+<!-- <\!-- flexibility to use their own custom schema files. This would be -\-> -->
+<!-- <\!-- particularly useful for those who might be testing a development -\-> -->
+<!-- <\!-- branch of SPARC. By default, the JSON schema is packaged under -\-> -->
+<!-- <\!-- `sparc/sparc_json_api` directory. If you have another version of SPARC -\-> -->
+<!-- source code, you can set the environment variable `$SPARC_DOC_PATH` to -->
+<!-- the directory containing the LaTeX codes for the documentation, such -->
+<!-- as `<SPARC-source-code-root>/doc/.LaTeX`. If you obtain `sparc-x` from -->
+<!-- the conda method as mentioned above, By default, the JSON schema is -->
+<!-- packaged under `sparc/sparc_json_api` directory. If you have another -->
+<!-- version of SPARC source code, you can set the environment variable -->
+<!-- `$SPARC_DOC_PATH` is automatically set to -->
+<!-- `<conda-env-root>/share/doc/sparc/.LaTeX`. Setting up the environment -->
+<!-- variable `$SPARC_DOC_PATH` helps loading the correct JSON schame that -->
+<!-- is compatible with your SPARC binary code. -->
+</section>
+<section id="pseudopotential-files">
+<h3>Pseudopotential files<a class="headerlink" href="#pseudopotential-files" title="Link to this heading"></a></h3>
+<p>Pseudopotential files (in <code class="docutils literal notranslate"><span class="pre">Abinit</span></code> <a class="reference external" href="https://docs.abinit.org/developers/psp8_info/">psp8 format</a> are loaded in the
+following order:</p>
+<!-- 1. Via the `psp_dir` argument passed to the `sparc.SPARC` calculator. -->
+<!-- 2. Through the environment variables `$SPARC_PSP_PATH` or `$SPARC_PP_PATH` (this is the -->
+<!--  method employed by [`conda` installation](#use-conda)). -->
+<!-- (manual-psp8)= -->
+<!-- 3. By using `psp8` files bundled with the SPARC-X-API installation (see the -->
+<!-- [pip installation](#pip-install)). -->
+<p>To specify a custom path for your pseudopotential files (in Abinit <a class="reference internal" href="#"><span class="xref myst">psp8 format</span></a>),
+use the environment variable <code class="docutils literal notranslate"><span class="pre">$SPARC_PSP_PATH</span></code> or <code class="docutils literal notranslate"><span class="pre">$SPARC_PP_PATH</span></code> variable:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">SPARC_PSP_PATH</span><span class="o">=</span>path/to/your/psp8/directory
+</pre></div>
+</div>
+<p><strong>TODO</strong> we should sunset the <code class="docutils literal notranslate"><span class="pre">SPARC_PP_PATH</span></code></p>
+<p>When installing SPARC <a class="reference internal" href="installation.html#use-conda"><span class="std std-ref">via <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code></span></a>,
+<code class="docutils literal notranslate"><span class="pre">$SPARC_PSP_PATH</span></code> is already included in the activate script of the
+conda environment.</p>
+<p>To determine the location of default psp8 files (as in <a class="reference internal" href="installation.html#pip-install"><span class="std std-ref">manual pip installation</span></a>), run the following code:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;from sparc.common import psp_dir; print(psp_dir)&quot;</span>
 </pre></div>
 </div>
 </section>
-<section id="b-json-schema">
-<h2>B) JSON schema<a class="headerlink" href="#b-json-schema" title="Link to this heading"></a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> is engineered for compatibility with the SPARC
-C-code. It achieves this by loading a JSON schema for
-parameter validation and unit conversion. You can review the default
-schema used by the API at sparc.sparc_json_api.default_json_api</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;FD_GRID&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">   </span><span class="nt">&quot;symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;FD_GRID&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;FD_GRID&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;integer array&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;No unit&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;example&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;FD_GRID: 26 26 30&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#&lt;Some description...&gt;&quot;</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;allow_bool_input&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-<span class="w">   </span><span class="nt">&quot;category&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;system&quot;</span>
-<span class="w">  </span><span class="p">},</span>
-</pre></div>
-</div>
-<p>The schema file is generated from SPARC’s LaTeX documentation.  In
-upcoming releases of <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code>, we’re aiming to provide users the
-flexibility to use their own custom schema files. This would be
-particularly useful for those who might be testing a development
-branch of SPARC. By default, the JSON schema is packaged under
-<code class="docutils literal notranslate"><span class="pre">sparc/sparc_json_api</span></code> directory. If you have another version of SPARC
-source code, you can set the environment variable <code class="docutils literal notranslate"><span class="pre">$SPARC_DOC_PATH</span></code> to
-the directory containing the LaTeX codes for the documentation, such
-as <code class="docutils literal notranslate"><span class="pre">&lt;SPARC-source-code-root&gt;/doc/.LaTeX</span></code>. If you obtain <code class="docutils literal notranslate"><span class="pre">sparc-x</span></code> from
-the conda method as mentioned above, By default, the JSON schema is
-packaged under <code class="docutils literal notranslate"><span class="pre">sparc/sparc_json_api</span></code> directory. If you have another
-version of SPARC source code, you can set the environment variable
-<code class="docutils literal notranslate"><span class="pre">$SPARC_DOC_PATH</span></code> is automatically set to
-<code class="docutils literal notranslate"><span class="pre">&lt;conda-env-root&gt;/share/doc/sparc/.LaTeX</span></code>. Setting up the environment
-variable <code class="docutils literal notranslate"><span class="pre">$SPARC_DOC_PATH</span></code> helps loading the correct JSON schame that
-is compatible with your SPARC binary code.</p>
-</section>
-<section id="c-sparc-command-configuration">
-<h2>C) SPARC Command Configuration<a class="headerlink" href="#c-sparc-command-configuration" title="Link to this heading"></a></h2>
-<p>The command to execute SPARC calculations is determined based on the following priority:</p>
+<section id="sparc-command-configuration">
+<h3>SPARC Command Configuration<a class="headerlink" href="#sparc-command-configuration" title="Link to this heading"></a></h3>
+<p>The command to execute SPARC calculations is determined based on the
+following priority:</p>
 <ol class="arabic simple">
 <li><p>The command argument provided directly to the <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator.</p></li>
 <li><p>The environment variable <code class="docutils literal notranslate"><span class="pre">$ASE_SPARC_COMMAND</span></code></p></li>
-<li><p>If neither of the above is defined, <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> looks for the SPARC binary under current <code class="docutils literal notranslate"><span class="pre">$PATH</span></code> and combine with the suitable <code class="docutils literal notranslate"><span class="pre">mpi</span></code> command prefix.</p></li>
+<li><p>If neither of the above is defined, <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> looks for the SPARC binary under current <code class="docutils literal notranslate"><span class="pre">$PATH</span></code> and combine with the suitable MPI command prefix.</p></li>
 </ol>
-<p>Example:</p>
+<p>Example to set <code class="docutils literal notranslate"><span class="pre">$ASE_SPARC_COMMAND</span></code></p>
 <ol class="arabic simple">
 <li><p>Using <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> (e.g. on a single test machine)</p></li>
 </ol>
@@ -164,16 +236,118 @@ is compatible with your SPARC binary code.</p>
 </pre></div>
 </div>
 <ol class="arabic simple" start="2">
-<li><p>Using <code class="docutils literal notranslate"><span class="pre">srun</span></code> (e.g. in HPC slurm job system)</p></li>
+<li><p>Using <code class="docutils literal notranslate"><span class="pre">srun</span></code> (e.g. <a class="reference external" href="https://slurm.schedmd.com/documentation.html">SLURM</a> job system HPCs)</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">ASE_SPARC_COMMAND</span><span class="o">=</span><span class="s2">&quot;srun -n 8 --kill-on-bad-exit /path/to/sparc -name PREFIX&quot;</span>
 </pre></div>
 </div>
-<p><em>Notes</em>:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <ol class="arabic simple">
-<li><p>The <code class="docutils literal notranslate"><span class="pre">-name</span> <span class="pre">PREFIX</span></code> part can be omitted the <code class="docutils literal notranslate"><span class="pre">label</span></code> property of the <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator is set (which is the default behavior). Any extra features of the SPARC code (e.g. GPU acceleration) should be specified in the command.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">-name</span> <span class="pre">PREFIX</span></code> is optional and will automatically replaced by the <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator.</p></li>
 <li><p>We recommend adding kill switches for your MPI commands like the examples above when running <code class="docutils literal notranslate"><span class="pre">sparc</span></code> to avoid unexpected behaviors with exit signals.</p></li>
 </ol>
+</div>
+</section>
+</section>
+<section id="post-installation-check">
+<h2>Post-installation check<a class="headerlink" href="#post-installation-check" title="Link to this heading"></a></h2>
+<p>We recommend the users to run a simple test after installation and
+setup to make sure everything works:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>sparc.quicktest
+</pre></div>
+</div>
+<p>A proper setup will display the following in the output’s Summary section:</p>
+<div class="highlight">
+<pre>
+--------------------------------------------------------------------------------
+<font color="#AD7FA8"><b>Summary</b></font>
+--------------------------------------------------------------------------------
+<font color="#AD7FA8"><b>Configuration</b></font>
+psp_dir: /home/pink/Dev/SPARC/psps
+api_version: 2024.10.14
+api_source: {&apos;path&apos;: &apos;/home/pink/Dev/SPARC-X-API/sparc/sparc_json_api/parameters.json&apos;, &apos;type&apos;: &apos;json&apos;}
+command: mpirun -n 2 /home/pink/Dev/dev_SPARC/lib/sparc
+sparc_version: 2024.10.14
+sparc_socket_compatibility: True
+--------------------------------------------------------------------------------
+<font color="#AD7FA8"><b>Tests</b></font>
+<b>Import:</b><font color="#8AE234">  PASS</font>
+<b>Pseudopotential:</b><font color="#8AE234">  PASS</font>
+<b>JSON API:</b><font color="#8AE234">  PASS</font>
+<b>SPARC Command:</b><font color="#8AE234">  PASS</font>
+<b>Calculation (File I/O):</b><font color="#8AE234">  PASS</font>
+<b>Calculation (UNIX socket):</b><font color="#8AE234">  PASS</font>
+--------------------------------------------------------------------------------
+</pre>
+</div><p>Check for error messages when some tests didn’t pass and
+troubleshooting hints, such as the example below with a mis-configured command.</p>
+<div class="highlight">
+<pre>--------------------------------------------------------------------------------
+<font color="#AD7FA8"><b>Summary</b></font>
+--------------------------------------------------------------------------------
+<font color="#AD7FA8"><b>Configuration</b></font>
+psp_dir: /home/pink/Dev/SPARC/psps
+api_version: 2024.10.14
+api_source: {&apos;path&apos;: &apos;/home/pink/Dev/dev_SPARC/doc/.LaTeX&apos;, &apos;type&apos;: &apos;latex&apos;}
+command: mpirun -n 4 /home/pink/Dev/dev_SPARC/lib/sparc
+sparc_version: NaN
+sparc_socket_compatibility: False
+--------------------------------------------------------------------------------
+<font color="#AD7FA8"><b>Tests</b></font>
+<b>Import:</b><font color="#8AE234">  PASS</font>
+<b>Pseudopotential:</b><font color="#8AE234">  PASS</font>
+<b>JSON API:</b><font color="#8AE234">  PASS</font>
+<b>SPARC Command:</b><font color="#EF2929">  FAIL</font>
+<b>Calculation (File I/O):</b><font color="#EF2929">  FAIL</font>
+<b>Calculation (UNIX socket):</b><font color="#EF2929">  FAIL</font>
+--------------------------------------------------------------------------------
+<font color="#EF2929">Some tests failed! Please check the following information.</font>
+
+<b>SPARC Command:</b>
+<font color="#EF2929">Error detecting SPARC version</font>
+- The command prefix to run SPARC calculation should look like
+  `&lt;mpi instructions&gt; &lt;sparc binary&gt;`
+- Use $ASE_SPARC_COMMAND to set the command string
+- Check HPC resources and compatibility (e.g. `srun` on a login node)
+
+
+<b>Calculation (File I/O):</b>
+<font color="#EF2929">Simple calculation in file I/O mode failed: </font>
+<font color="#EF2929">SPARC failed with command mpirun -n 4 /home/pink/Dev/dev_SPARC/lib/sparc -name SPARCwith error code 1</font>
+- Check if settings for pseudopotential files are correct
+- Check if SPARC binary exists and functional
+- Check if specific HPC requirements are met:
+  (module files, libraries, parallel settings, resources)
+
+
+<b>Calculation (UNIX socket):</b>
+<font color="#EF2929">Simple calculation in socket mode (UNIX socket) failed: </font>
+<font color="#EF2929">Cannot find the sparc executable! Please make sure you have the correct setup</font>
+- The same as error handling in file I/O calculation test
+- Check if SPARC binary supports socket
+
+
+--------------------------------------------------------------------------------
+Please check additional information from:
+1. SPARC&apos;s documentation: https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf
+2. Python API documentation: https://github.com/alchem0x2A/SPARC-X-API/blob/master/README.md
+
+</pre>
+</div><div class="admonition note">
+<p class="admonition-title">Note</p>
+<ol class="arabic simple">
+<li><p>When using SPARC-X-API to parse SPARC files, it’s essential that at
+least the “Import” and “JSON API” tests are successful.</p></li>
+<li><p>For running
+SPARC calculations, “SPARC Command” and “Calculation (File I/O)” must also
+succeed.</p></li>
+<li><p>“Calculation (UNIX socket)” ensures the SPARC binary is compatible with socket communication,
+see <a class="reference internal" href="advanced_socket.html"><span class="std std-doc">calculation in socket mode</span></a>.</p></li>
+</ol>
+</div>
+<p>If you run into further problems, consult our <a class="reference internal" href="troubleshooting.html"><span class="std std-doc">troubleshooting
+guidlines</span></a> or <a class="reference internal" href="contribute.html"><span class="std std-doc">raise an issue</span></a>.</p>
 </section>
 </section>
 

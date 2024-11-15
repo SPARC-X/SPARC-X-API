@@ -1,29 +1,43 @@
 # Installation
 
-The Python API may be installed via either of the following approaches:
+## Installting the API
+SPARC-X-API may be installed via the following approaches:
 
-### 1. Via `anaconda` or `miniconda` (recommended)
+(use-conda)=
+### Using [`conda`](https://docs.conda.io/en/latest/) (recommended)
 
-Set up a [conda environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands) and install the Python API,
-which includes the pseudopotential files:
+You can use any of [`anaconda`](https://docs.anaconda.com/),
+[`miniconda`](https://docs.anaconda.com/miniconda/), or
+[`micromamba`](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html)
+tools to install a `conda` package engine.  The rest of the steps will
+be made in a [conda
+environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands)
+to get the latest release of SPARC-X-API that comes with the
+pseudopotentials installed:
 
 ```bash
 # Change 'sparc-env' to your desired name if needed
-conda create -n sparc-env
+conda create -n sparc-env python=3.11 pip mamba
 conda activate sparc-env
 conda install -c conda-forge sparc-x-api
 ```
 
+
 On Linux platforms (x86_64, aarch64), you can also install the
-precompiled `sparc` DFT binaries alongside the API:
+pre-compiled SPARC DFT binaries alongside the API:
 
 ```bash
+# Note the package name is sparc-x
 conda install -c conda-forge sparc-x
-conda activate sparc-env   # Re-activate to have the env variables effective
+# Re-activate to have the env variables effective
+conda activate sparc-env
 ```
 
-### 2. Manual installation from source with `pip`
 
+(pip-install)=
+### [`pip`](https://pip.pypa.io/en/stable/cli/pip_install/) install from source
+
+You can installed the SPARC-X-API from the latest commit using `pip`
 
 ```bash
 python -m pip install git+https://github.com/SPARC-X/SPARC-X-API
@@ -35,28 +49,66 @@ Optionally, you can download the latest SPMS pseudopotentials and unpacks the ps
 python -m sparc.download_data
 ```
 
+For developers, please check the [how to
+contribute](#setting-up-environment) page for setting up a development
+environment for SPARC-X-API.
 
-To utilize the API for drive SPARC calculations, please
-following the [SPARC manual](https://github.com/SPARC-X/SPARC) for
-compilation and installation of the SPARC DFT code itself.
+## Install the SPARC binary code
 
-### Post-installation check
+To utilize the API for drive SPARC calculations, please following the
+[SPARC manual](https://github.com/SPARC-X/SPARC) for compilation and
+installation of the SPARC DFT code itself.
 
-We recommend the users to run a simple test after installation and setup:
+We recommend using the [`conda-forge` package](#use-conda) to install
+the pre-compiled SPARC binary. If you want to compile the latest SPARC
+C/C++, it is also straightforward:
+
+### Use `conda` toolchains
+
+In the previously configured `sparc-env` environment, install the
+build dependencies and compile.
+
+The following process compilers SPARC
+with OpenMPI/OpenBLAS/Scalapack toolchains.
 
 ```bash
-python -m sparc.quicktest
+conda activate sparc-env
+mamba install -c conda-forge \
+                 make compilers \
+				 fftw=*=mpi_openmpi_* \
+				 openblas openmpi scalapack
+git clone https://github.com/SPARC-X/SPARC.git
+cd SPARC/src
+make USE_MKL=0 USE_SCALAPACK=1 USE_FFTW=1
 ```
 
-A proper setup will display the following sections at the output's conclusion:
+The compiled binary will be at `SPARC/lib/sparc`, and will run when
+`sparc-env` environment is activated.
 
-<img width="500" alt="image" src="https://github.com/alchem0x2A/SPARC-X-API/assets/6829706/95cb712e-4c77-4b14-8130-4961e3c50278">
+**TODO** MKL available?
 
-For using the API to parse SPARC input and output files, it's
-essential that the "Import" and "JSON API" tests are successful. For
-run SPARC calculations, all tests must pass.
+### Compiling SPARC on HPC
 
-Please refer to the [Setting Up the
-Environment](#setting-up-the-environment) or guidance on correctly
-configuring the environment variables. If you run into further problems, consult our
-[Trouble Shooting](doc/troubleshooting.md).
+High Performance Clusters (HPC) machines usually have some specific
+requirements about the parallel and numerical library setups. While
+conda installation works in most cases, it is often true to compile
+SPARC with existing MPI/MKL/BLAS libraries to ensure optimal
+performance. The following example shows the compilation with Intel
+MKL/MPICH on Georgia Tech's [Pheonix Cluster](https://sites.gatech.edu/ewanparktest/phoenix-cluster/):
+
+**TODO** make sure modules are correct.
+```bash
+module load git intel-one-api fftw
+git clone https://github.com/SPARC-X/SPARC.git
+cd SPARC/src
+make USE_MKL=1 USE_SCALAPACK=0 USE_FFTW=1
+```
+
+**TODO** add module in script.
+
+The compiled binary will be at `SPARC/lib/sparc`, and running it
+requires the dependent modules to be loaded at runtime.
+
+
+Now head to the [setup tutorial](setup_environment.md) to finetune
+your settings.

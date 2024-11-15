@@ -1,6 +1,6 @@
 # Basic Usage
 
-### 1. Read / write SPARC files
+## Read / write SPARC files
 
 In contrast to many other DFT codes, where the ASE I/O formats refer
 to a single file, `SPARC-X-API` operates on the whole calculation
@@ -27,9 +27,9 @@ atoms = Bulk("Al") * [4, 4, 4]
 atoms.write("test.sparc")
 ```
 
-For a deeper dive into the bundle I/O format, see [Advanced Topics](doc/advanced_topics.md).
+For a deeper dive into the bundle I/O format, see [Advanced Topics](advanced_topics.md).
 
-### 2. JSON Schema for SPARC calculator
+### JSON Schema for SPARC calculator
 
 A recurring challenge of Python interfaces to DFT codes it the
 inconsistencies between low-level codes (Fortran/C/C++) and outdated
@@ -50,10 +50,10 @@ python -m sparc.docparser <sparc-source-code-root>/doc/.LaTeX
 which produces a `parameters.json` file.
 
 To learn more about the JSON schema design, please refer to [Advanced
-Topics](doc/advanced_topics.md).
+Topics](advanced_topics.md).
 
 
-### 3. Calculator interface (File-IO mode)
+### Calculator interface (File-IO mode)
 
 `SPARC-X-API` offers a calculator interface based on file I/O that aligns with many
 other ASE calculators.  If you've worked with ASE modules like `Vasp`,
@@ -122,7 +122,7 @@ opt = LBFGS(atoms, alpha=90)
 opt.run(fmax=0.02)
 ```
 
-### 4. Command-line tools
+### Command-line tools
 
 A simple command wrapper `sparc-ase` is provided to add
 support of SPARC file formats to the `ase` cli tools. Simple
@@ -139,7 +139,7 @@ short [MD trajectory](tests/outputs/NH3_sort_lbfgs_opt.sparc).
 #### Fig 2. A screenshot of the `sparc-ase` program
 <img width="1200" alt="image" src="https://github.com/alchem0x2A/SPARC-X-API/assets/6829706/e72329ff-7194-4819-94f8-486ef2218844">
 
-### 5. Parameters and units used in `SPARC-X-API`
+### Parameters and units used in `SPARC-X-API`
 
 In the SPARC DFT code, all input parameters conventionally employ atomic units, such as Hartree and Bohr. Conversely, ASE objects (like `Atoms.positions`, `Atoms.cell`, `Atoms.get_potential_energy()`) utilize eV/Angstrom units.
 

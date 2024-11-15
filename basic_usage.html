@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Advanced Usage: SPARC-X-API as a Socket Interface" href="advanced_socket.html" />
-    <link rel="prev" title="Setup Environment for SPARC-X-API" href="setup_environment.html" /> 
+    <link rel="prev" title="Configurations for SPARC-X-API" href="setup_environment.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,20 +42,21 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="setup_environment.html">Setup Environment for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup_environment.html">Configurations for SPARC-X-API</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Basic Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#read-write-sparc-files">1. Read / write SPARC files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#json-schema-for-sparc-calculator">2. JSON Schema for SPARC calculator</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#calculator-interface-file-io-mode">3. Calculator interface (File-IO mode)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#command-line-tools">4. Command-line tools</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#fig-2-a-screenshot-of-the-sparc-ase-program">Fig 2. A screenshot of the <code class="docutils literal notranslate"><span class="pre">sparc-ase</span></code> program</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#read-write-sparc-files">Read / write SPARC files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#json-schema-for-sparc-calculator">JSON Schema for SPARC calculator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calculator-interface-file-io-mode">Calculator interface (File-IO mode)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#command-line-tools">Command-line tools</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#fig-2-a-screenshot-of-the-sparc-ase-program">Fig 2. A screenshot of the <code class="docutils literal notranslate"><span class="pre">sparc-ase</span></code> program</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#parameters-and-units-used-in-sparc-x-api">5. Parameters and units used in <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parameters-and-units-used-in-sparc-x-api">Parameters and units used in <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
@@ -95,7 +96,7 @@
   <section id="basic-usage">
 <h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading"></a></h1>
 <section id="read-write-sparc-files">
-<h2>1. Read / write SPARC files<a class="headerlink" href="#read-write-sparc-files" title="Link to this heading"></a></h2>
+<h2>Read / write SPARC files<a class="headerlink" href="#read-write-sparc-files" title="Link to this heading"></a></h2>
 <p>In contrast to many other DFT codes, where the ASE I/O formats refer
 to a single file, <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> operates on the whole calculation
 directory, also known as a “SPARC bundle”. This API integrates
@@ -120,10 +121,9 @@ file format:</p>
 <span class="n">atoms</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;test.sparc&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>For a deeper dive into the bundle I/O format, see <a class="reference internal" href="#doc/advanced_topics.md"><span class="xref myst">Advanced Topics</span></a>.</p>
-</section>
+<p>For a deeper dive into the bundle I/O format, see <a class="reference internal" href="advanced_topics.html"><span class="std std-doc">Advanced Topics</span></a>.</p>
 <section id="json-schema-for-sparc-calculator">
-<h2>2. JSON Schema for SPARC calculator<a class="headerlink" href="#json-schema-for-sparc-calculator" title="Link to this heading"></a></h2>
+<h3>JSON Schema for SPARC calculator<a class="headerlink" href="#json-schema-for-sparc-calculator" title="Link to this heading"></a></h3>
 <p>A recurring challenge of Python interfaces to DFT codes it the
 inconsistencies between low-level codes (Fortran/C/C++) and outdated
 upper-level APIs regarding parameter sets and default values. To
@@ -140,11 +140,11 @@ the schema by the following code:</p>
 </pre></div>
 </div>
 <p>which produces a <code class="docutils literal notranslate"><span class="pre">parameters.json</span></code> file.</p>
-<p>To learn more about the JSON schema design, please refer to <a class="reference internal" href="#doc/advanced_topics.md"><span class="xref myst">Advanced
+<p>To learn more about the JSON schema design, please refer to <a class="reference internal" href="advanced_topics.html"><span class="std std-doc">Advanced
 Topics</span></a>.</p>
 </section>
 <section id="calculator-interface-file-io-mode">
-<h2>3. Calculator interface (File-IO mode)<a class="headerlink" href="#calculator-interface-file-io-mode" title="Link to this heading"></a></h2>
+<h3>Calculator interface (File-IO mode)<a class="headerlink" href="#calculator-interface-file-io-mode" title="Link to this heading"></a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> offers a calculator interface based on file I/O that aligns with many
 other ASE calculators.  If you’ve worked with ASE modules like <code class="docutils literal notranslate"><span class="pre">Vasp</span></code>,
 <code class="docutils literal notranslate"><span class="pre">QuantumEspresso</span></code>, or <code class="docutils literal notranslate"><span class="pre">GPAW</span></code>, you’ll find this package intuitive,
@@ -211,7 +211,7 @@ If you want to extract more information about the MD simulation steps, take a lo
 </div>
 </section>
 <section id="command-line-tools">
-<h2>4. Command-line tools<a class="headerlink" href="#command-line-tools" title="Link to this heading"></a></h2>
+<h3>Command-line tools<a class="headerlink" href="#command-line-tools" title="Link to this heading"></a></h3>
 <p>A simple command wrapper <code class="docutils literal notranslate"><span class="pre">sparc-ase</span></code> is provided to add
 support of SPARC file formats to the <code class="docutils literal notranslate"><span class="pre">ase</span></code> cli tools. Simple
 replace <code class="docutils literal notranslate"><span class="pre">ase</span> <span class="pre">[subcommand]</span> <span class="pre">[args]</span></code> with <code class="docutils literal notranslate"><span class="pre">sparc-ase</span> <span class="pre">[subcommand]</span> <span class="pre">[args]</span></code>
@@ -223,12 +223,12 @@ images.</p>
 <p><a class="reference internal" href="#fig-2-a-screenshot-of-the-sparc-ase-program"><span class="xref myst">Fig. 2</span></a> is a screenshot showing the usage of <code class="docutils literal notranslate"><span class="pre">sparc-ase</span> <span class="pre">gui</span></code> to visualize a
 short <a class="reference internal" href="#tests/outputs/NH3_sort_lbfgs_opt.sparc"><span class="xref myst">MD trajectory</span></a>.</p>
 <section id="fig-2-a-screenshot-of-the-sparc-ase-program">
-<h3>Fig 2. A screenshot of the <code class="docutils literal notranslate"><span class="pre">sparc-ase</span></code> program<a class="headerlink" href="#fig-2-a-screenshot-of-the-sparc-ase-program" title="Link to this heading"></a></h3>
+<h4>Fig 2. A screenshot of the <code class="docutils literal notranslate"><span class="pre">sparc-ase</span></code> program<a class="headerlink" href="#fig-2-a-screenshot-of-the-sparc-ase-program" title="Link to this heading"></a></h4>
 <img width="1200" alt="image" src="https://github.com/alchem0x2A/SPARC-X-API/assets/6829706/e72329ff-7194-4819-94f8-486ef2218844">
 </section>
 </section>
 <section id="parameters-and-units-used-in-sparc-x-api">
-<h2>5. Parameters and units used in <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code><a class="headerlink" href="#parameters-and-units-used-in-sparc-x-api" title="Link to this heading"></a></h2>
+<h3>Parameters and units used in <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code><a class="headerlink" href="#parameters-and-units-used-in-sparc-x-api" title="Link to this heading"></a></h3>
 <p>In the SPARC DFT code, all input parameters conventionally employ atomic units, such as Hartree and Bohr. Conversely, ASE objects (like <code class="docutils literal notranslate"><span class="pre">Atoms.positions</span></code>, <code class="docutils literal notranslate"><span class="pre">Atoms.cell</span></code>, <code class="docutils literal notranslate"><span class="pre">Atoms.get_potential_energy()</span></code>) utilize eV/Angstrom units.</p>
 <p>When you set up a calculator as below:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">REFERENCE_CUTOFF</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">EXX_RANGE_PBE</span><span class="o">=</span><span class="mf">0.16</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
@@ -363,12 +363,13 @@ unit system:</p>
 </div>
 </section>
 </section>
+</section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="setup_environment.html" class="btn btn-neutral float-left" title="Setup Environment for SPARC-X-API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="setup_environment.html" class="btn btn-neutral float-left" title="Configurations for SPARC-X-API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="advanced_socket.html" class="btn btn-neutral float-right" title="Advanced Usage: SPARC-X-API as a Socket Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

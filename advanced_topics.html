@@ -42,24 +42,20 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="setup_environment.html">Setup Environment for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup_environment.html">Configurations for SPARC-X-API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Advanced Topics</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">Advanced Topics</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#behind-the-bundle-file-format">Behind the bundle file format</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#behind-the-json-api">Behind the JSON API</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#retriving-parameters-from-old-sparc-calculations">Retriving parameters from old SPARC calculations</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#rules-for-input-parameters-in-sparc-sparc-calculator">Rules for input parameters in <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#multiple-occurance-of-output-files">Multiple occurance of output files</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#behind-the-bundle-file-format">Behind the bundle file format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#behind-the-json-api">Behind the JSON API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#retriving-parameters-from-old-sparc-calculations">Retriving parameters from old SPARC calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rules-for-input-parameters-in-sparc-sparc-calculator">Rules for input parameters in <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#multiple-occurance-of-output-files">Multiple occurance of output files</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api_changes.html">Changes in API</a></li>
@@ -94,13 +90,10 @@
              
   <section id="advanced-topics">
 <h1>Advanced Topics<a class="headerlink" href="#advanced-topics" title="Link to this heading"></a></h1>
-<!-- TODO move this section with package components -->
-<section id="id1">
-<h2>Advanced Topics<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
 <p>The design of <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> is schematically shown in the following figure
 <img width="929" alt="image" src="https://github.com/alchem0x2A/sparc-dft-api/assets/6829706/3419b1c4-3c56-4fd1-a6de-1ce2aea426e7"></p>
 <section id="behind-the-bundle-file-format">
-<h3>Behind the bundle file format<a class="headerlink" href="#behind-the-bundle-file-format" title="Link to this heading"></a></h3>
+<h2>Behind the bundle file format<a class="headerlink" href="#behind-the-bundle-file-format" title="Link to this heading"></a></h2>
 <p>Instead of parsing individual <code class="docutils literal notranslate"><span class="pre">.ion</span></code> and <code class="docutils literal notranslate"><span class="pre">.inpt</span></code> files,
 the bundle format (recognized by ASE by <code class="docutils literal notranslate"><span class="pre">format=&quot;sparc&quot;</span></code>) will
 gather information from all files and check if atomic information
@@ -128,7 +121,7 @@ Similarly, <code class="docutils literal notranslate"><span class="pre">_write_&
 using only relevant data.</p>
 </section>
 <section id="behind-the-json-api">
-<h3>Behind the JSON API<a class="headerlink" href="#behind-the-json-api" title="Link to this heading"></a></h3>
+<h2>Behind the JSON API<a class="headerlink" href="#behind-the-json-api" title="Link to this heading"></a></h2>
 <p>The JSON API are directly parsed from the <code class="docutils literal notranslate"><span class="pre">SPARC</span></code> documentation <a class="reference external" href="https://github.com/SPARC-X/SPARC/tree/master/doc/.LaTeX">LaTeX files</a>.
 The JSON API file (<code class="docutils literal notranslate"><span class="pre">sparc/sparc_json_api/parameters.json</span></code>) distributed by <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> is generated by:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/SPARC-X/SPARC.git
@@ -171,7 +164,7 @@ python<span class="w"> </span>-m<span class="w"> </span>sparc.docparser<span cla
 </div>
 </section>
 <section id="retriving-parameters-from-old-sparc-calculations">
-<h3>Retriving parameters from old SPARC calculations<a class="headerlink" href="#retriving-parameters-from-old-sparc-calculations" title="Link to this heading"></a></h3>
+<h2>Retriving parameters from old SPARC calculations<a class="headerlink" href="#retriving-parameters-from-old-sparc-calculations" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator supports the <code class="docutils literal notranslate"><span class="pre">restart</span></code> mode which will reconstruct all
 parameters, psp files and atomic information from an existing SPARC calculation and
 rerun them.</p>
@@ -187,7 +180,7 @@ rerun them.</p>
 </div>
 </section>
 <section id="rules-for-input-parameters-in-sparc-sparc-calculator">
-<h3>Rules for input parameters in <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator<a class="headerlink" href="#rules-for-input-parameters-in-sparc-sparc-calculator" title="Link to this heading"></a></h3>
+<h2>Rules for input parameters in <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator<a class="headerlink" href="#rules-for-input-parameters-in-sparc-sparc-calculator" title="Link to this heading"></a></h2>
 <p>When constructing the <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator using the syntax</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
@@ -205,7 +198,7 @@ rerun them.</p>
 Additionally, boolean inputs (i.e. <code class="docutils literal notranslate"><span class="pre">PRINT_FORCES</span></code>) can be written in both integer or boolean values.</p>
 </section>
 <section id="multiple-occurance-of-output-files">
-<h3>Multiple occurance of output files<a class="headerlink" href="#multiple-occurance-of-output-files" title="Link to this heading"></a></h3>
+<h2>Multiple occurance of output files<a class="headerlink" href="#multiple-occurance-of-output-files" title="Link to this heading"></a></h2>
 <p>In a typical SPARC calculation, there may be multiple result files in the SPARC bundle, with different suffixes (e.g. <code class="docutils literal notranslate"><span class="pre">.out</span></code>, <code class="docutils literal notranslate"><span class="pre">.out_01</span></code>, <code class="docutils literal notranslate"><span class="pre">.out_02</span></code> etc.).
 These files can be a result of restarted geometry optimization / AIMD or written by an ASE optimizer.</p>
 <p>When using <code class="docutils literal notranslate"><span class="pre">read_sparc</span></code> to access the files, you can add <code class="docutils literal notranslate"><span class="pre">include_all_files=True</span></code> option to parse
@@ -219,7 +212,6 @@ trajectories from all files.</p>
 </pre></div>
 </div>
 <p>By default, <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator only access the last image of last output file when reading the calculation results.</p>
-</section>
 </section>
 </section>
 
