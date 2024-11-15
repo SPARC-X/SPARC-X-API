@@ -2,7 +2,8 @@
 [![Package](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/package.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/package.svg)
 [![Coverage](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/coverage.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/coverage.svg)
 [![Unit tests for SPARC-X-API](https://github.com/SPARC-X/SPARC-X-API/actions/workflows/unit_test.yml/badge.svg)](https://github.com/SPARC-X/SPARC-X-API/actions/workflows/unit_test.yml)
-[![JSON-API](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/api_version.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/api_version.svg)
+[![JSON-API](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/api_version.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/master/sparc/sparc_json_api/parameters.json)
+[![Doc](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/doc.svg)](https://sparc-x.github.io/SPARC-X-API/)
 
 
 SPARC-X-API is a versatile Python API for the real-space density
