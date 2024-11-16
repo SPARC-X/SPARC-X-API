@@ -18,12 +18,14 @@ SPARC-X-API. Push / pull request to these branches should only be made by automa
   etc.)
 
   A list of svg badges can be found under `badges/` directory of this
-  branch. See **TODO** for how to add / modify badges to be shown in
+  branch.
+
+  See **TODO** for how to add / modify badges to be shown in
   the README.
 
 - [`gh_pages`](https://github.com/SPARC-X/SPARC-X-API/tree/gh_pages):
   branch to publish the documentation site.
-  
+
 
 ### Github Pages
 
@@ -68,7 +70,7 @@ shown in the screenshot below:
 - [Unit-test
   workflow](https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/unit_test.yml)
   includes several steps to run unit and coverage test.
-  
+
   - The steps `Create badges` and `  Manually add git badges` defines how
     the status badges in `README.md` are created and pushed to the
     `badges` branch.
@@ -76,23 +78,28 @@ shown in the screenshot below:
     do not use more than 4 MPI cores (may subject to changes) due to
     the [resource limitation](https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners)
     of hosted runners.
-  
+
 - [Publish doc pages
   workflow](https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/publish_doc_pages.yml)
-  uses Sphinx to convert `doc/` to doc html files. 
-  
+  uses Sphinx to convert `doc/` to doc html files.
+
   The rendered
   changes will only be pushed to the `gh_pages` branch with direct
   commit on the master branch or after one PR is merged.
-  
+
 - [Update JSON schema
   workflow](https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/update_api.yml)
   updates the JSON schema file after a new release in SPARC C/C++
   source code.
-  
+
   The workflow is run both nightly and after normal push. Change the
   behavior as needed.
-  
+
+- [Publish PyPI
+  workflow](https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/publish-pypi.yml)
+  package the source as `sparc-x-api` and publish on PyPI. Only
+  activates on new releases.
+
 ## Deploy on conda-forge
 
 ### Managing SPARC-X-API Python Package on conda-forge
@@ -112,7 +119,7 @@ a version bump, see [one
 example](https://github.com/conda-forge/sparc-x-api-feedstock/pull/2)
 for the maintainers to modify and merge. Please also ensure:
 
-- Only the `recipe/meta.yaml` needs to be changed. 
+- Only the `recipe/meta.yaml` needs to be changed.
 - Follow the conda-forge's own [recipe standard](https://conda-forge.org/docs/maintainer/guidelines/)
 - Do not directly use the [`.conda/meta.yaml`](https://github.com/SPARC-X/SPARC-X-API/blob/master/.conda/meta.yaml) for conda-forge (it is designed for local packaging test)
 - Bump the `build.number` if you need to change the recipe YAML on the same SPARC-X-API release.
@@ -129,8 +136,14 @@ several issues for future releases:
 
 ## Deploy on PyPI
 
-**TBD**
+SPARC-X-API is deployed on PyPI under the name
+[`sparc-x-api`](https://pypi.org/project/sparc-x-api/). Please contact
+the current maintainer [@alchem0x2a](mailto:alchem0x2a@gmail.com) if
+you wish to become a co-contributor.
 
+Publishing on PyPI does not require setting an API token in the CI
+workflow. Instead, it uses the [OIDC
+protocol](https://docs.pypi.org/trusted-publishers/) for a trusted
+publisher. The current settings on PyPI are like follows:
 
-  
-
+![pypi-setting](img/screenshots/pypi_publisher_setup.png)
