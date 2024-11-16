@@ -28,6 +28,8 @@ setup(
     version="1.0.5",
     python_requires=">=3.8",
     description="Python API for the SPARC DFT Code",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     author="Tian Tian, Lucas R Timmerman, Ben Comer",
     author_email="alchem0x2a@gmail.com, ltimmerman3@gatech.edu, ben.comer@gatech.edu",
     url="https://github.com/SPARC-X/SPARC-X-API",
