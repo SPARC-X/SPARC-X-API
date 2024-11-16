@@ -1,6 +1,8 @@
 name: Publish PyPI package
 
 on:
+  # The workflow runs on each push / PR but only allow upload
+  # PyPI when tagged
   push:
     branches:
       - master
