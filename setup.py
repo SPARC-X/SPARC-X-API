@@ -28,17 +28,13 @@ setup(
     version="1.0.4",
     python_requires=">=3.8",
     description="Python API for the SPARC DFT Code",
-    author="Tian Tian, Ben Comer",
-    author_email="alchem0x2a@gmail.com, ben.comer@gatech.edu",
+    author="Tian Tian, Lucas R Timmerman, Ben Comer",
+    author_email="alchem0x2a@gmail.com, ltimmerman3@gatech.edu, ben.comer@gatech.edu",
     url="https://github.com/SPARC-X/SPARC-X-API",
     packages=find_packages(),
-    # ASE 3.22 dependency will be deprecated in 1.1.0+ release
-    install_requires=["ase>=3.22.0", "numpy>=1.23", "packaging>=20.0", "psutil>=5.0.0"],
+    # ASE 3.22 dependency will be deprecated in 2.0+ release
+    install_requires=["ase>=3.23.0", "numpy>=1.23", "packaging>=20.0", "psutil>=5.0.0"],
     entry_points={
-        # TODO: deprecate
-        "ase.io": [
-            "sparc = sparc.io",
-        ],
         # The ioformats are only compatible with ase>=3.23
         "ase.ioformats": [
             "sparc = sparc.io:format_sparc",
@@ -53,6 +49,6 @@ setup(
         "test": test_requires,
         "doc": test_requires + doc_requires,
     },
-    package_data={"sparc": ["psp/*", "sparc_json_api/*.json"]},
+    package_data={"sparc": ["psp/*.psp8", "sparc_json_api/*.json"]},
     include_package_data=True,
 )
