@@ -43,6 +43,11 @@ jobs:
       run: |
         # Wheels are inside dist/ folder
         python -m build
+        # Check the contents, if psp exists
+        TMP_DIR=$(mktemp -d)
+        unzip dist/sparc_x_api-*.whl -d ${TMP_DIR}
+        find $TMP_DIR/sparc/psp -name "*.psp8"
+
     - name: Publish package distributions to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:

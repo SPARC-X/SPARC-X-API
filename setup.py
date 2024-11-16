@@ -25,7 +25,7 @@ doc_requires = [
 
 setup(
     name="sparc-x-api",
-    version="1.0.4",
+    version="1.0.5",
     python_requires=">=3.8",
     description="Python API for the SPARC DFT Code",
     author="Tian Tian, Lucas R Timmerman, Ben Comer",
@@ -33,7 +33,7 @@ setup(
     url="https://github.com/SPARC-X/SPARC-X-API",
     packages=find_packages(),
     # ASE 3.22 dependency will be deprecated in 2.0+ release
-    install_requires=["ase>=3.23.0", "numpy>=1.23", "packaging>=20.0", "psutil>=5.0.0"],
+    install_requires=["ase>=3.22.0", "numpy>=1.23", "packaging>=20.0", "psutil>=5.0.0"],
     entry_points={
         # The ioformats are only compatible with ase>=3.23
         "ase.ioformats": [
