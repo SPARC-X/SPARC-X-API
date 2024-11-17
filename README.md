@@ -1,5 +1,7 @@
 # SPARC-X-API: A Python API for the SPARC-X DFT Code
-[![Package](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/package.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/package.svg)
+<!-- [![Package](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/package.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/package.svg) -->
+![Conda Version](https://img.shields.io/conda/v/conda-forge/sparc-x-api)
+![PyPI - Version](https://img.shields.io/pypi/v/sparc-x-api)
 [![Coverage](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/coverage.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/coverage.svg)
 [![Unit tests for SPARC-X-API](https://github.com/SPARC-X/SPARC-X-API/actions/workflows/unit_test.yml/badge.svg)](https://github.com/SPARC-X/SPARC-X-API/actions/workflows/unit_test.yml)
 [![JSON-API](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/api_version.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/master/sparc/sparc_json_api/parameters.json)
