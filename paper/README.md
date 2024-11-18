@@ -26,7 +26,7 @@ This command will create the `paper.pdf` under the `paper/` subfolder.
 
 The draft pdf will be rendered after any changes are pushed the
 `paper/` under the `joss_paper` branch. Please check the [status
-page](https://github.com/alchem0x2A/SPARC-X-API/actions/workflows/joss_paper.yml)
+page](https://github.com/SPARC-X/SPARC-X-API/actions/workflows/joss_paper.yml)
 for the latest build action. Once the compilation is finished, the zip
 archive containing the rendered `paper.pdf` can be downloaded via the
 link in the "Artifacts" section of the action status.

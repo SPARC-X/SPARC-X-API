@@ -9,7 +9,8 @@ tags:
 authors:
   - name: Tian Tian
     orcid: 0000-0003-0634-0455
-    affiliation: 1
+	corresponding: true
+    affiliation: [1,3]
   - name: Lucas R Timmerman
     orcid: 0000-0001-5664-5762
     affiliation: 1
@@ -32,8 +33,10 @@ affiliations:
 	index: 1
   - name: College of Computing, Georgia Institute of Technology, Atlanta, GA 30332, USA
     index: 2
+  - name: Department of Chemical and Materials Engineering, University of Alberta, Edmonton AB, T6G 2R3, Canada
+    index: 3
 
-date: 24 October 2024
+date: 18 November 2024
 bibliography: paper.bib
 ---
 
