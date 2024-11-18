@@ -33,26 +33,43 @@ conda install -c conda-forge sparc-x
 conda activate sparc-env
 ```
 
+(pypi-install)=
+### Install from [PyPI](https://pypi.org/project/sparc-x-api/)
+
+If you prefer using `pip` to install SPARC-X-API, there is also a
+[mirror package on PyPI](https://pypi.org/project/sparc-x-api/):
+```bash
+python -m pip install sparc-x-api
+```
+
+The pseudopotential files will also be installed in this approach. If you wish to compile the SPARC C/C++ code, please refer to the [manual installation](#install-binary).
+
 
 (pip-install)=
-### [`pip`](https://pip.pypa.io/en/stable/cli/pip_install/) install from source
+### Installing from latest source code
 
-You can installed the SPARC-X-API from the latest commit using `pip`
+The latest version of the SPARC-X-API can also be installed using `pip` from the source code on Github.
 
 ```bash
 python -m pip install git+https://github.com/SPARC-X/SPARC-X-API
 ```
 
-Optionally, you can download the latest SPMS pseudopotentials and unpacks the pseudopotential files into `<python-lib-root>/site-packages/sparc/psp`:
+
+```{note}
+The pseudopotential files should be manually downloaded in this case.
+```
+
+You can download the latest SPMS pseudopotentials and unpacks the pseudopotential files into `<python-lib-root>/site-packages/sparc/psp`:
 
 ```bash
 python -m sparc.download_data
 ```
 
-For developers, please check the [how to
-contribute](#setting-up-environment) page for setting up a development
-environment for SPARC-X-API.
 
+For developers, please check the [how to
+contribute](#setting-up-environment) page for setting up a dev-environment for SPARC-X-API.
+
+(install-binary)=
 ## Install the SPARC binary code
 
 To utilize the API for drive SPARC calculations, please following the
