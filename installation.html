@@ -47,7 +47,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installting-the-api">Installting the API</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#using-conda-recommended">Using <code class="docutils literal notranslate"><span class="pre">conda</span></code> (recommended)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#pip-install-from-source"><code class="docutils literal notranslate"><span class="pre">pip</span></code> install from source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#install-from-pypi">Install from PyPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-from-latest-source-code">Installing from latest source code</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#install-the-sparc-binary-code">Install the SPARC binary code</a><ul>
@@ -123,23 +124,35 @@ conda<span class="w"> </span>activate<span class="w"> </span>sparc-env
 </pre></div>
 </div>
 </section>
-<section id="pip-install-from-source">
-<span id="pip-install"></span><h3><a class="reference external" href="https://pip.pypa.io/en/stable/cli/pip_install/"><code class="docutils literal notranslate"><span class="pre">pip</span></code></a> install from source<a class="headerlink" href="#pip-install-from-source" title="Link to this heading"></a></h3>
-<p>You can installed the SPARC-X-API from the latest commit using <code class="docutils literal notranslate"><span class="pre">pip</span></code></p>
+<section id="install-from-pypi">
+<span id="pypi-install"></span><h3>Install from <a class="reference external" href="https://pypi.org/project/sparc-x-api/">PyPI</a><a class="headerlink" href="#install-from-pypi" title="Link to this heading"></a></h3>
+<p>If you prefer using <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install SPARC-X-API, there is also a
+<a class="reference external" href="https://pypi.org/project/sparc-x-api/">mirror package on PyPI</a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>sparc-x-api
+</pre></div>
+</div>
+<p>The pseudopotential files will also be installed in this approach. If you wish to compile the SPARC C/C++ code, please refer to the <a class="reference internal" href="#install-binary">manual installation</a>.</p>
+</section>
+<section id="installing-from-latest-source-code">
+<span id="pip-install"></span><h3>Installing from latest source code<a class="headerlink" href="#installing-from-latest-source-code" title="Link to this heading"></a></h3>
+<p>The latest version of the SPARC-X-API can also be installed using <code class="docutils literal notranslate"><span class="pre">pip</span></code> from the source code on Github.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/SPARC-X/SPARC-X-API
 </pre></div>
 </div>
-<p>Optionally, you can download the latest SPMS pseudopotentials and unpacks the pseudopotential files into <code class="docutils literal notranslate"><span class="pre">&lt;python-lib-root&gt;/site-packages/sparc/psp</span></code>:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The pseudopotential files should be manually downloaded in this case.</p>
+</div>
+<p>You can download the latest SPMS pseudopotentials and unpacks the pseudopotential files into <code class="docutils literal notranslate"><span class="pre">&lt;python-lib-root&gt;/site-packages/sparc/psp</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>sparc.download_data
 </pre></div>
 </div>
 <p>For developers, please check the <a class="reference internal" href="#setting-up-environment"><span class="xref myst">how to
-contribute</span></a> page for setting up a development
-environment for SPARC-X-API.</p>
+contribute</span></a> page for setting up a dev-environment for SPARC-X-API.</p>
 </section>
 </section>
 <section id="install-the-sparc-binary-code">
-<h2>Install the SPARC binary code<a class="headerlink" href="#install-the-sparc-binary-code" title="Link to this heading"></a></h2>
+<span id="install-binary"></span><h2>Install the SPARC binary code<a class="headerlink" href="#install-the-sparc-binary-code" title="Link to this heading"></a></h2>
 <p>To utilize the API for drive SPARC calculations, please following the
 <a class="reference external" href="https://github.com/SPARC-X/SPARC">SPARC manual</a> for compilation and
 installation of the SPARC DFT code itself.</p>

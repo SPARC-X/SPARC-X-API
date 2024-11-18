@@ -113,7 +113,8 @@ SPARC-X-API. Push / pull request to these branches should only be made by automa
 branch for maintaining the svg badges (package version, CI status,
 etc.)</p>
 <p>A list of svg badges can be found under <code class="docutils literal notranslate"><span class="pre">badges/</span></code> directory of this
-branch. See <strong>TODO</strong> for how to add / modify badges to be shown in
+branch.</p>
+<p>See <strong>TODO</strong> for how to add / modify badges to be shown in
 the README.</p>
 </li>
 <li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/tree/gh_pages"><code class="docutils literal notranslate"><span class="pre">gh_pages</span></code></a>:
@@ -183,6 +184,10 @@ source code.</p>
 <p>The workflow is run both nightly and after normal push. Change the
 behavior as needed.</p>
 </li>
+<li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/publish-pypi.yml">Publish PyPI
+workflow</a>
+package the source as <code class="docutils literal notranslate"><span class="pre">sparc-x-api</span></code> and publish on PyPI. Only
+activates on new releases.</p></li>
 </ul>
 </section>
 <section id="deploy-on-conda-forge">
@@ -224,7 +229,15 @@ several issues for future releases:</p>
 </section>
 <section id="deploy-on-pypi">
 <h2>Deploy on PyPI<a class="headerlink" href="#deploy-on-pypi" title="Link to this heading"></a></h2>
-<p><strong>TBD</strong></p>
+<p>SPARC-X-API is deployed on PyPI under the name
+<a class="reference external" href="https://pypi.org/project/sparc-x-api/"><code class="docutils literal notranslate"><span class="pre">sparc-x-api</span></code></a>. Please contact
+the current maintainer <a class="reference external" href="mailto:alchem0x2a&#37;&#52;&#48;gmail&#46;com"><span>&#64;</span>alchem0x2a</a> if
+you wish to become a co-contributor.</p>
+<p>Publishing on PyPI does not require setting an API token in the CI
+workflow. Instead, it uses the <a class="reference external" href="https://docs.pypi.org/trusted-publishers/">OIDC
+protocol</a> for a trusted
+publisher. The current settings on PyPI are like follows:</p>
+<p><img alt="pypi-setting" src="_images/pypi_publisher_setup.png" /></p>
 </section>
 </section>
 
