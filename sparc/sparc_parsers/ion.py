@@ -124,11 +124,12 @@ def _write_ion(
             "PSEUDO_POT",
             "COORD_FRAC",
             "COORD",
+            "SPIN",
             "RELAX",
         ]:
             val = block.get(key, None)
             # print(key, val)
-            if (key not in ["RELAX", "COORD", "COORD_FRAC"]) and (val is None):
+            if (key not in ["RELAX", "COORD", "COORD_FRAC", "SPIN"]) and (val is None):
                 raise ValueError(f"Key {key} is not provided! Abort writing ion file")
             # TODO: change the API version
             if val is None:
@@ -139,7 +140,7 @@ def _write_ion(
             # TODO: make sure 1 line is accepted
             # TODO: write pads to vector lines
             if (val_string.count("\n") > 0) or (
-                key in ["COORD_FRAC", "COORD", "RELAX"]
+                key in ["COORD_FRAC", "COORD", "RELAX", "SPIN"]
             ):
                 output = f"{key}:\n{val_string}\n"
             else:

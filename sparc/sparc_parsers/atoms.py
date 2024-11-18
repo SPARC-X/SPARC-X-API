@@ -104,7 +104,8 @@ def atoms_to_dict(
             block_dict["COORD"] = pos
         if write_spin:
             # TODO: should we process atoms with already calculated magmoms?
-            block_dict["SPIN"] = p_atoms.get_initial_magnetic_moments()
+            n_atom = len(p_atoms)
+            block_dict["SPIN"] = p_atoms.get_initial_magnetic_moments().reshape(n_atom,-1)
         if write_relax:
             relax_this_block = relax_mask[start:end]
             block_dict["RELAX"] = relax_this_block

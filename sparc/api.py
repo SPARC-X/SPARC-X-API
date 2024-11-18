@@ -44,6 +44,10 @@ class SparcAPI:
         self.parameters = json_data["parameters"]
         self.other_parameters = json_data["other_parameters"]
         self.data_types = json_data["data_types"]
+        # TT: 2024-10-31 add the sources to trace the origin
+        # locate_api can modify self.source if it is deferred from LaTeX
+        # at runtime
+        self.source = {"path": json_api.as_posix(), "type": "json"}
 
     def get_parameter_dict(self, parameter):
         """

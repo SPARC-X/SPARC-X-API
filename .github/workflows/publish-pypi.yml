@@ -1,0 +1,52 @@
+name: Publish PyPI package
+
+on:
+  # The workflow runs on each push / PR but only allow upload
+  # PyPI when tagged
+  release:
+    types:
+      - created
+  workflow_dispatch:
+
+jobs:
+  publish-pypi:
+    name: upload release to PyPI
+    runs-on: ubuntu-latest
+    # Specifying a GitHub environment is optional, but strongly encouraged
+    environment: pypi
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        python-version: "3.10"
+        mamba-version: "*"
+        channels: conda-forge,defaults
+        channel-priority: true
+        activate-environment: sparc-api-test
+    - name: Install dependencies
+      run: |
+        pip install -U build
+    - name: Download data
+      run: |
+        # Download the external psp data
+        python -m sparc.download_data
+        # Check if psp8 exists
+        ls sparc/psp/*.psp8
+    - name: Build wheel
+      run: |
+        # Wheels are inside dist/ folder
+        python -m build
+        # Check the contents, if psp exists
+        TMP_DIR=$(mktemp -d)
+        unzip dist/sparc_x_api-*.whl -d ${TMP_DIR}
+        find $TMP_DIR/sparc/psp -name "*.psp8"
+
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        packages-dir: dist/
+      if: github.event.release.draft == false

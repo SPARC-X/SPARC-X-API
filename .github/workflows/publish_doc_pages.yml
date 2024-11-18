@@ -1,0 +1,50 @@
+name: Publish Document Pages for SPARC-X-API
+
+on:
+  push:
+    branches:
+      - master
+      - 'doc/**'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'doc/**'
+
+  workflow_dispatch:
+
+jobs:
+  sphinx-build:
+    defaults:
+      run:
+        shell: bash -l {0}
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        python-version: "3.11"
+        mamba-version: "*"
+        channels: conda-forge,defaults
+        channel-priority: true
+        activate-environment: sparc-api-build-doc
+    - name: Install doc-build dependencies
+      run: |
+        pip install -e ".[doc]"
+    - name: Build sphix doc
+      run: |
+        sphinx-build doc doc/_build
+    - name: Deploy to github pages
+      uses: peaceiris/actions-gh-pages@v4
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_branch: gh_pages
+        publish_dir: doc/_build
+    - name: Upload preview when creating pull request
+      if: github.event_name == 'pull_request'
+      uses: actions/upload-artifact@v3
+      with:
+        name: docs_build_preview
+        path: doc/_build

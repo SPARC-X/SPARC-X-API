@@ -331,6 +331,10 @@ class SparcBundle:
 
         Sets:
             self.raw_results (dict or List): the same as the return value
+
+        #TODO: @TT 2024-11-01 allow accepting indices
+        #TODO: @TT last_image is a bad name, it should refer to the occurance of images
+               the same goes with num_calculations
         """
         # Find the max output index
         out_files = self.directory.glob(f"{self.label}.out*")
@@ -381,7 +385,8 @@ class SparcBundle:
 
     def _read_results_from_index(self, index, d_format="{:02d}"):
         """Read the results from one calculation index, and return a
-        single raw result dict
+        single raw result dict, e.g. for index=0 --> .static
+        and index=1 --> .static_01.
 
         Arguments:
             index (int): Index of image to return the results
@@ -389,6 +394,8 @@ class SparcBundle:
 
         Returns:
             dict: Results for single image
+
+        #TODO: @TT should we call index --> occurance?
 
         """
         results_dict = {}
@@ -436,6 +443,8 @@ class SparcBundle:
 
         """
         # Convert to images!
+        # TODO: @TT 2024-11-01 read_raw_results should implement a more
+        # robust behavior handling index, as it is the entry point for all
         rs = self.read_raw_results(include_all_files=include_all_files)
         if isinstance(rs, dict):
             raw_results = [rs]
@@ -533,6 +542,14 @@ class SparcBundle:
 
             if "forces" in static_results:
                 partial_results["forces"] = static_results["forces"][self.resort]
+
+            if "atomic_magnetization" in static_results:
+                partial_results["magmoms"] = static_results["atomic_magnetization"][
+                    self.resort
+                ]
+
+            if "net_magnetization" in static_results:
+                partial_results["magmom"] = static_results["net_magnetization"]
 
             if "stress" in static_results:
                 partial_results["stress"] = static_results["stress"]

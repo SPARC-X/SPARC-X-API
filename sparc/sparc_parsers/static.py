@@ -27,7 +27,8 @@ def _read_static(fileobj):
     """
     Read the .static file content
 
-    Each .static file should only host 1 or more images (is socket mode is enabled), but the output may vary
+    Each .static file should only host 1 or more images
+    (if socket mode is enabled), but the output may vary
     a lot depending on the flags (e.g. PRINT_ATOMS, PRINT_FORCES etc)
     """
     contents = fileobj.read()
@@ -75,6 +76,10 @@ def _read_static_block(raw_block):
         name = "free energy"
     elif "Atomic forces" in header_name:
         name = "forces"
+    elif "Net magnetization" in header_name:
+        name = "net_magnetization"
+    elif "Atomic magnetization" in header_name:
+        name = "atomic_magnetization"
     elif "Stress (GPa)" in header_name:
         name = "stress"
     elif "Stress equiv." in header_name:
@@ -149,6 +154,10 @@ def _read_static_step(step):
             value = raw_value * Hartree
         elif name == "forces":
             value = raw_value * Hartree / Bohr
+        elif name == "atomic_magnetization":
+            value = raw_value
+        elif name == "net_magnetization":
+            value = raw_value
         elif name == "stress":
             # Stress is in eV/Ang^3, may need to convert to Virial later when cell is known
             # For low-dimension stress info, use stress_equiv
