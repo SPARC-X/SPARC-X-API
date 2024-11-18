@@ -202,7 +202,7 @@ discussed in the Features and Functionalities section.
 The SPARC-X-API is structured as a Python package, `sparc`. A summary of
 its key functionalities is provided below; for current detailed
 documentation, please refer to the [official
-documentation](https://github.com/SPARC-X/SPARC-X-API/blob/master/README.md).
+documentation](https://sparc-x.github.io/SPARC-X-API).
 
 ## `sparc.io`: File I/O Manupulation
 
