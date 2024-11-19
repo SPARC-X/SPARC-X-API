@@ -81,7 +81,7 @@ def _read_aimd_step(raw_aimd_text):
             value = raw_value.reshape((-1, 3)) * Bohr
         elif header_name == "V":
             name = "velocities"
-            value = raw_value.reshape((-1, 3)) * Bohr / AUT / (Angstrom / fs)
+            value = raw_value.reshape((-1, 3)) * Bohr / AUT
         elif header_name == "F":
             name = "forces"
             value = raw_value.reshape((-1, 3)) * Hartree / Bohr
