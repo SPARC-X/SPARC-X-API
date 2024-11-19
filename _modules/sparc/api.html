@@ -1,0 +1,444 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sparc.api &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../sparc.html">sparc</a></li>
+      <li class="breadcrumb-item active">sparc.api</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sparc.api</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">curdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+<span class="n">default_api_dir</span> <span class="o">=</span> <span class="n">curdir</span> <span class="o">/</span> <span class="s2">&quot;sparc_json_api&quot;</span>
+<span class="n">default_json_api</span> <span class="o">=</span> <span class="n">default_api_dir</span> <span class="o">/</span> <span class="s2">&quot;parameters.json&quot;</span>
+
+
+<div class="viewcode-block" id="SparcAPI">
+<a class="viewcode-back" href="../../api/sparc.api.html#sparc.api.SparcAPI">[docs]</a>
+<span class="k">class</span> <span class="nc">SparcAPI</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An interface to the parameter settings in SPARC-X calculator. User can use the</span>
+<span class="sd">    SparcAPI instance to validate and translate parameters that matches a certain</span>
+<span class="sd">    version of the SPARC-X code.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        sparc_version (str): Version of SPARC.</span>
+<span class="sd">        categories (dict): Categories of parameters.</span>
+<span class="sd">        parameters (dict): Detailed parameters information.</span>
+<span class="sd">        other_parameters (dict): Additional parameters.</span>
+<span class="sd">        data_types (dict): Supported data types.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        get_parameter_dict(parameter): Retrieves dictionary for a specific parameter.</span>
+<span class="sd">        help_info(parameter): Provides detailed information about a parameter.</span>
+<span class="sd">        validate_input(parameter, input): Validates user input against the expected parameter type.</span>
+<span class="sd">        convert_string_to_value(parameter, string): Converts string input to the appropriate data type.</span>
+<span class="sd">        convert_value_to_string(parameter, value): Converts a value to a string representation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_api</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">json_api</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">json_api</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">default_json_api</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">json_api</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">json_api</span><span class="p">)</span>
+
+        <span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">json_api</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparc_version</span> <span class="o">=</span> <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;sparc_version&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;categories&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">other_parameters</span> <span class="o">=</span> <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;other_parameters&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_types</span> <span class="o">=</span> <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;data_types&quot;</span><span class="p">]</span>
+        <span class="c1"># TT: 2024-10-31 add the sources to trace the origin</span>
+        <span class="c1"># locate_api can modify self.source if it is deferred from LaTeX</span>
+        <span class="c1"># at runtime</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">json_api</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;json&quot;</span><span class="p">}</span>
+
+<div class="viewcode-block" id="SparcAPI.get_parameter_dict">
+<a class="viewcode-back" href="../../api/sparc.api.html#sparc.api.SparcAPI.get_parameter_dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_parameter_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the dictionary for a specified parameter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parameter (str): The name of the parameter.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dictionary containing details of the parameter.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            KeyError: If the parameter is not known to the SPARC version.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parameter</span> <span class="o">=</span> <span class="n">parameter</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">parameter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Parameter </span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2"> is not known to &quot;</span> <span class="sa">f</span><span class="s2">&quot;SPARC </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sparc_version</span><span class="si">}</span><span class="s2">!&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">parameter</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="SparcAPI.help_info">
+<a class="viewcode-back" href="../../api/sparc.api.html#sparc.api.SparcAPI.help_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">help_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Provides a detailed information string for a given parameter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parameter (str): The name of the parameter to get information for.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: A formatted string with detailed information about the parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter_dict</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">pdict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span>
+                    <span class="s2">&quot;symbol&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;unit&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;example&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;description&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;remark&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;allow_bool_input&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">message</span></div>
+
+
+<div class="viewcode-block" id="SparcAPI.validate_input">
+<a class="viewcode-back" href="../../api/sparc.api.html#sparc.api.SparcAPI.validate_input">[docs]</a>
+    <span class="k">def</span> <span class="nf">validate_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validates if the given input is appropriate for the specified parameter&#39;s type.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parameter (str): The name of the parameter.</span>
+<span class="sd">            input: The input to validate, can be of various types (string, int, float, numpy types).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if input is valid, False otherwise.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the data type of the parameter is not supported.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_input_string</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">pdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter_dict</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">pdict</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;string&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">is_input_string</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;other&quot;</span><span class="p">:</span>
+            <span class="c1"># Do nother for the &quot;other&quot; types but simply</span>
+            <span class="c1"># reply on the str() method</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_input_string</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Parameter </span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2"> has &#39;other&#39; data type &quot;</span>
+                    <span class="s2">&quot;and your input is not a string. &quot;</span>
+                    <span class="s2">&quot;I hope you know what you&#39;re doing!&quot;</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;integer&quot;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">int</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;double&quot;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">float</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="nb">float</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="s2">&quot;array&quot;</span> <span class="ow">in</span> <span class="n">dtype</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_input_string</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="nb">input</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;integer&quot;</span> <span class="ow">in</span> <span class="n">dtype</span><span class="p">):</span>
+                    <span class="n">warn</span><span class="p">(</span>
+                        <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Input </span><span class="si">{</span><span class="nb">input</span><span class="si">}</span><span class="s2"> for parameter &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2"> it not strictly integer. &quot;</span>
+                            <span class="s2">&quot;I may still perform the conversion &quot;</span>
+                            <span class="s2">&quot;but be aware of data loss&quot;</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">splitlines</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="c1"># In valid input with nan</span>
+                    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="nb">input</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">bool</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;integer&quot;</span> <span class="ow">in</span> <span class="n">dtype</span><span class="p">):</span>
+                        <span class="n">warn</span><span class="p">(</span>
+                            <span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">&quot;Input </span><span class="si">{</span><span class="nb">input</span><span class="si">}</span><span class="s2"> for parameter </span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2"> is&quot;</span>
+                                <span class="s2">&quot; not strictly integer. &quot;</span>
+                                <span class="s2">&quot;I can still perform the conversion but &quot;</span>
+                                <span class="s2">&quot;be aware of data loss&quot;</span>
+                            <span class="p">)</span>
+                        <span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data type </span><span class="si">{</span><span class="n">dtype</span><span class="si">}</span><span class="s2"> is not supported!&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SparcAPI.convert_string_to_value">
+<a class="viewcode-back" href="../../api/sparc.api.html#sparc.api.SparcAPI.convert_string_to_value">[docs]</a>
+    <span class="k">def</span> <span class="nf">convert_string_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts a string input to the appropriate value type of the parameter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parameter (str): The name of the parameter.</span>
+<span class="sd">            string (str): The string input to convert.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The converted value, type depends on parameter&#39;s expected type.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: If the input is not a string.</span>
+<span class="sd">            ValueError: If the string is not a valid input for the parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Special case, the string may be a multiline string-array!</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="c1"># Make sure there is a line break at the end, for cases like [&quot;2.&quot;]</span>
+            <span class="n">string</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">string</span><span class="p">]</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+
+        <span class="n">is_input_string</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_input_string</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Please give a string input!&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_input</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">string</span><span class="si">}</span><span class="s2"> is not a valid input for </span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">pdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter_dict</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">pdict</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>
+        <span class="n">allow_bool_input</span> <span class="o">=</span> <span class="n">pdict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;allow_bool_input&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;string&quot;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;integer&quot;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">allow_bool_input</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;double&quot;</span><span class="p">:</span>
+            <span class="c1"># Some inputs, like TARGET_PRESSURE, may be accepted with a unit</span>
+            <span class="c1"># like 0.0 GPa. Only accept the first part</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;integer array&quot;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">splitlines</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">allow_bool_input</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;double array&quot;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">splitlines</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">ndmin</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;other&quot;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">string</span>
+            <span class="c1"># should not happen since validate_input has gatekeeping</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported type </span><span class="si">{</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="SparcAPI.convert_value_to_string">
+<a class="viewcode-back" href="../../api/sparc.api.html#sparc.api.SparcAPI.convert_value_to_string">[docs]</a>
+    <span class="k">def</span> <span class="nf">convert_value_to_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts a value to its string representation based on the parameter type.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parameter (str): The name of the parameter.</span>
+<span class="sd">            value: The value to convert.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The string representation of the value.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the value is not valid for the parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">is_input_string</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_input</span><span class="p">(</span><span class="n">parameter</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> is not a valid input for </span><span class="si">{</span><span class="n">parameter</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Do not conver, just return the non-padded string</span>
+        <span class="k">if</span> <span class="n">is_input_string</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="n">pdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parameter_dict</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">pdict</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>
+        <span class="c1"># allow_bool_input = pdict.get(&quot;allow_bool_input&quot;, False)</span>
+
+        <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;string&quot;</span><span class="p">:</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;integer&quot;</span><span class="p">:</span>
+            <span class="c1"># Be aware of bool values!</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;double&quot;</span><span class="p">:</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:.14f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;integer array&quot;</span><span class="p">,</span> <span class="s2">&quot;double array&quot;</span><span class="p">):</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="n">_array_to_string</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;other&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_input_string</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only support string value when datatype is other&quot;</span><span class="p">)</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># should not happen since validate_input has gatekeeping</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported type </span><span class="si">{</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">string</span></div>
+</div>
+
+
+
+<span class="k">def</span> <span class="nf">_array_to_string</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="nb">format</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts an array to a string representation based on the specified format.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        arr (array): The array to convert.</span>
+<span class="sd">        format (str): The format type (&#39;integer array&#39;, &#39;double array&#39;, etc.).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: String representation of the array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;integer array&quot;</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span><span class="p">):</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span>
+    <span class="k">elif</span> <span class="nb">format</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;double array&quot;</span><span class="p">,</span> <span class="s2">&quot;double&quot;</span><span class="p">):</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%.14f</span><span class="s2">&quot;</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="n">fmt</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">footer</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Return the string output of the buffer with</span>
+    <span class="c1"># whitespaces removed</span>
+    <span class="k">return</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,333 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sparc.api module &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="sparc.calculator module" href="sparc.calculator.html" />
+    <link rel="prev" title="sparc.sparc_parsers.utils module" href="sparc.sparc_parsers.utils.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../package_components.html">SPARC-X-API Package Components</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="modules.html">sparc</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="sparc.html">sparc package</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="sparc.html#sparc.SPARCMissingDeps"><code class="docutils literal notranslate"><span class="pre">SPARCMissingDeps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sparc.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="sparc.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../package_components.html">SPARC-X-API Package Components</a></li>
+          <li class="breadcrumb-item"><a href="modules.html">sparc</a></li>
+          <li class="breadcrumb-item"><a href="sparc.html">sparc package</a></li>
+      <li class="breadcrumb-item active">sparc.api module</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/sparc-x/SPARC-X-API/blob/master/doc/api/sparc.api.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-sparc.api">
+<span id="sparc-api-module"></span><h1>sparc.api module<a class="headerlink" href="#module-sparc.api" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="sparc.api.SparcAPI">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.api.</span></span><span class="sig-name descname"><span class="pre">SparcAPI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_api</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/api.html#SparcAPI"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.api.SparcAPI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An interface to the parameter settings in SPARC-X calculator. User can use the
+SparcAPI instance to validate and translate parameters that matches a certain
+version of the SPARC-X code.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.api.SparcAPI.sparc_version">
+<span class="sig-name descname"><span class="pre">sparc_version</span></span><a class="headerlink" href="#sparc.api.SparcAPI.sparc_version" title="Link to this definition"></a></dt>
+<dd><p>Version of SPARC.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.api.SparcAPI.categories">
+<span class="sig-name descname"><span class="pre">categories</span></span><a class="headerlink" href="#sparc.api.SparcAPI.categories" title="Link to this definition"></a></dt>
+<dd><p>Categories of parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.api.SparcAPI.parameters">
+<span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#sparc.api.SparcAPI.parameters" title="Link to this definition"></a></dt>
+<dd><p>Detailed parameters information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.api.SparcAPI.other_parameters">
+<span class="sig-name descname"><span class="pre">other_parameters</span></span><a class="headerlink" href="#sparc.api.SparcAPI.other_parameters" title="Link to this definition"></a></dt>
+<dd><p>Additional parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.api.SparcAPI.data_types">
+<span class="sig-name descname"><span class="pre">data_types</span></span><a class="headerlink" href="#sparc.api.SparcAPI.data_types" title="Link to this definition"></a></dt>
+<dd><p>Supported data types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.api.SparcAPI.get_parameter_dict">
+<span class="sig-name descname"><span class="pre">get_parameter_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/api.html#SparcAPI.get_parameter_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.api.SparcAPI.get_parameter_dict" title="Link to this definition"></a></dt>
+<dd><p>Retrieves dictionary for a specific parameter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.api.SparcAPI.help_info">
+<span class="sig-name descname"><span class="pre">help_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/api.html#SparcAPI.help_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.api.SparcAPI.help_info" title="Link to this definition"></a></dt>
+<dd><p>Provides detailed information about a parameter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.api.SparcAPI.validate_input">
+<span class="sig-name descname"><span class="pre">validate_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/api.html#SparcAPI.validate_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.api.SparcAPI.validate_input" title="Link to this definition"></a></dt>
+<dd><p>Validates user input against the expected parameter type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.api.SparcAPI.convert_string_to_value">
+<span class="sig-name descname"><span class="pre">convert_string_to_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/api.html#SparcAPI.convert_string_to_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.api.SparcAPI.convert_string_to_value" title="Link to this definition"></a></dt>
+<dd><p>Converts string input to the appropriate data type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.api.SparcAPI.convert_value_to_string">
+<span class="sig-name descname"><span class="pre">convert_value_to_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/api.html#SparcAPI.convert_value_to_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.api.SparcAPI.convert_value_to_string" title="Link to this definition"></a></dt>
+<dd><p>Converts a value to a string representation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">convert_string_to_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/api.html#SparcAPI.convert_string_to_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Converts a string input to the appropriate value type of the parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter</strong> (<em>str</em>) – The name of the parameter.</p></li>
+<li><p><strong>string</strong> (<em>str</em>) – The string input to convert.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The converted value, type depends on parameter’s expected type.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>TypeError</strong> – If the input is not a string.</p></li>
+<li><p><strong>ValueError</strong> – If the string is not a valid input for the parameter.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">convert_value_to_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/api.html#SparcAPI.convert_value_to_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><p>Converts a value to its string representation based on the parameter type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter</strong> (<em>str</em>) – The name of the parameter.</p></li>
+<li><p><strong>value</strong> – The value to convert.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The string representation of the value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the value is not valid for the parameter.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">get_parameter_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/api.html#SparcAPI.get_parameter_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd><p>Retrieves the dictionary for a specified parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parameter</strong> (<em>str</em>) – The name of the parameter.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing details of the parameter.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>KeyError</strong> – If the parameter is not known to the SPARC version.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">help_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/api.html#SparcAPI.help_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd><p>Provides a detailed information string for a given parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parameter</strong> (<em>str</em>) – The name of the parameter to get information for.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A formatted string with detailed information about the parameter.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">validate_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/api.html#SparcAPI.validate_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd><p>Validates if the given input is appropriate for the specified parameter’s type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter</strong> (<em>str</em>) – The name of the parameter.</p></li>
+<li><p><strong>input</strong> – The input to validate, can be of various types (string, int, float, numpy types).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if input is valid, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the data type of the parameter is not supported.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sparc.sparc_parsers.utils.html" class="btn btn-neutral float-left" title="sparc.sparc_parsers.utils module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sparc.calculator.html" class="btn btn-neutral float-right" title="sparc.calculator module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+sparc.calculator module
+=======================
+
+.. automodule:: sparc.calculator
+   :members:
+   :undoc-members:
+   :show-inheritance:

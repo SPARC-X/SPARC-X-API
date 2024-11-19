@@ -1,0 +1,23 @@
+sparc.sparc\_parsers package
+============================
+
+.. automodule:: sparc.sparc_parsers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   sparc.sparc_parsers.aimd
+   sparc.sparc_parsers.atoms
+   sparc.sparc_parsers.geopt
+   sparc.sparc_parsers.inpt
+   sparc.sparc_parsers.ion
+   sparc.sparc_parsers.out
+   sparc.sparc_parsers.pseudopotential
+   sparc.sparc_parsers.static
+   sparc.sparc_parsers.utils

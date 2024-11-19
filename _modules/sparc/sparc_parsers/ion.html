@@ -1,0 +1,341 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sparc.sparc_parsers.ion &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../sparc.html">sparc</a></li>
+      <li class="breadcrumb-item active">sparc.sparc_parsers.ion</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sparc.sparc_parsers.ion</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Thu Oct 18 14:16:21 2018</span>
+
+<span class="sd">Ben Comer (Georgia Tech)</span>
+
+<span class="sd">This file has been heavily modified since SPARC 0.1</span>
+
+<span class="sd">TODO: more descriptions about this file io parser</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">ase.units</span> <span class="kn">import</span> <span class="n">Bohr</span>
+
+<span class="c1"># Safe wrappers for both string and fd</span>
+<span class="kn">from</span> <span class="nn">ase.utils</span> <span class="kn">import</span> <span class="n">reader</span><span class="p">,</span> <span class="n">writer</span>
+
+<span class="kn">from</span> <span class="nn">..api</span> <span class="kn">import</span> <span class="n">SparcAPI</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">bisect_and_strip</span><span class="p">,</span>
+    <span class="n">make_reverse_mapping</span><span class="p">,</span>
+    <span class="n">read_block_input</span><span class="p">,</span>
+    <span class="n">strip_comments</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="InvalidSortingComment">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.ion.html#sparc.sparc_parsers.ion.InvalidSortingComment">[docs]</a>
+<span class="k">class</span> <span class="nc">InvalidSortingComment</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
+
+
+
+<span class="n">defaultAPI</span> <span class="o">=</span> <span class="n">SparcAPI</span><span class="p">()</span>
+
+
+<span class="nd">@reader</span>
+<span class="k">def</span> <span class="nf">_read_ion</span><span class="p">(</span><span class="n">fileobj</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">defaultAPI</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read information from the .ion file. Note, this method does not return an atoms object,</span>
+<span class="sd">    but rather return a dict. Thus the label option is not necessary to keep</span>
+
+
+<span class="sd">    Reads an ion file. Because some of the information necessary to create</span>
+<span class="sd">    an atoms object is found in the .inpt file, this function also attemtps to read</span>
+<span class="sd">    that as a source of data. If the file is not found or the information is invalid,</span>
+<span class="sd">    it will look for it in the comments of the ion file, as written.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">contents</span> <span class="o">=</span> <span class="n">fileobj</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="c1"># label = get_label(fileobj, &quot;.ion&quot;)</span>
+    <span class="n">data</span><span class="p">,</span> <span class="n">comments</span> <span class="o">=</span> <span class="n">strip_comments</span><span class="p">(</span><span class="n">contents</span><span class="p">)</span>
+    <span class="c1"># We do not read the cell at this time!</span>
+    <span class="n">sort</span><span class="p">,</span> <span class="n">resort</span><span class="p">,</span> <span class="n">new_comments</span> <span class="o">=</span> <span class="n">_read_sort_comment</span><span class="p">(</span><span class="n">comments</span><span class="p">)</span>
+
+    <span class="c1"># find the index for all atom type lines. They should be at the top of their block</span>
+    <span class="n">atom_type_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;ATOM_TYPE&quot;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)]</span>
+    <span class="n">atom_blocks</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">read_block_input</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">],</span> <span class="n">validator</span><span class="o">=</span><span class="n">validator</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">atom_type_bounds</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">atom_type_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="p">]</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;ion&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;atom_blocks&quot;</span><span class="p">:</span> <span class="n">atom_blocks</span><span class="p">,</span>
+            <span class="s2">&quot;comments&quot;</span><span class="p">:</span> <span class="n">new_comments</span><span class="p">,</span>
+            <span class="s2">&quot;sorting&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;sort&quot;</span><span class="p">:</span> <span class="n">sort</span><span class="p">,</span> <span class="s2">&quot;resort&quot;</span><span class="p">:</span> <span class="n">resort</span><span class="p">},</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+
+<span class="nd">@writer</span>
+<span class="k">def</span> <span class="nf">_write_ion</span><span class="p">(</span>
+    <span class="n">fileobj</span><span class="p">,</span>
+    <span class="n">data_dict</span><span class="p">,</span>
+    <span class="n">validator</span><span class="o">=</span><span class="n">defaultAPI</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Writes the ion file content from the atom_dict</span>
+
+<span class="sd">    Please note this is not a Atoms-compatible function!</span>
+
+<span class="sd">    The data_dict takes similar format as _read_ion</span>
+
+<span class="sd">    Basically, we want to ensure</span>
+<span class="sd">    data_dict = _read_ion(&quot;some.ion&quot;)</span>
+<span class="sd">    _write_ion(&quot;some.ion&quot;, data_dict)</span>
+<span class="sd">    shows the same format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ion_dict</span> <span class="o">=</span> <span class="n">data_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ion&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ion_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No ion data provided in the input!&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;atom_blocks&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ion_dict</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Must provide a data-section in the data_dict (blocks of atomic information)&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">comments</span> <span class="o">=</span> <span class="n">ion_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;comments&quot;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="n">banner</span> <span class="o">=</span> <span class="s2">&quot;Ion File Generated by SPARC ASE Calculator&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">comments</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">comments</span> <span class="o">=</span> <span class="p">[</span><span class="n">banner</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="s2">&quot;ASE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">comments</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">comments</span> <span class="o">=</span> <span class="p">[</span><span class="n">banner</span><span class="p">]</span> <span class="o">+</span> <span class="n">comments</span>
+
+    <span class="c1"># Handle the sorting mapping</span>
+    <span class="c1"># the line wrap is 80 words</span>
+    <span class="k">if</span> <span class="s2">&quot;sorting&quot;</span> <span class="ow">in</span> <span class="n">ion_dict</span><span class="p">:</span>
+        <span class="c1"># print(ion_dict[&quot;sorting&quot;])</span>
+        <span class="n">resort</span> <span class="o">=</span> <span class="n">ion_dict</span><span class="p">[</span><span class="s2">&quot;sorting&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;resort&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="c1"># Write resort information only when it&#39;s actually useful</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">resort</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">comments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;ASE-SORT:&quot;</span><span class="p">)</span>
+            <span class="n">index_lines</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">resort</span><span class="p">)),</span> <span class="n">width</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
+            <span class="n">comments</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">index_lines</span><span class="p">)</span>
+            <span class="n">comments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;END ASE-SORT&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">comments</span><span class="p">:</span>
+        <span class="n">fileobj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">fileobj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">blocks</span> <span class="o">=</span> <span class="n">ion_dict</span><span class="p">[</span><span class="s2">&quot;atom_blocks&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s2">&quot;ATOM_TYPE&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;N_TYPE_ATOM&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;PSEUDO_POT&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;COORD_FRAC&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;COORD&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;SPIN&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;RELAX&quot;</span><span class="p">,</span>
+        <span class="p">]:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="c1"># print(key, val)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;RELAX&quot;</span><span class="p">,</span> <span class="s2">&quot;COORD&quot;</span><span class="p">,</span> <span class="s2">&quot;COORD_FRAC&quot;</span><span class="p">,</span> <span class="s2">&quot;SPIN&quot;</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> is not provided! Abort writing ion file&quot;</span><span class="p">)</span>
+            <span class="c1"># TODO: change the API version</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">val_string</span> <span class="o">=</span> <span class="n">validator</span><span class="o">.</span><span class="n">convert_value_to_string</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            <span class="c1"># print(val_string)</span>
+            <span class="c1"># TODO: make sure 1 line is accepted</span>
+            <span class="c1"># TODO: write pads to vector lines</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">val_string</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+                <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;COORD_FRAC&quot;</span><span class="p">,</span> <span class="s2">&quot;COORD&quot;</span><span class="p">,</span> <span class="s2">&quot;RELAX&quot;</span><span class="p">,</span> <span class="s2">&quot;SPIN&quot;</span><span class="p">]</span>
+            <span class="p">):</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="si">{</span><span class="n">val_string</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">val_string</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">fileobj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+            <span class="c1"># TODO: check extra keys</span>
+            <span class="c1"># TODO: how to handle multiple psp files?</span>
+        <span class="c1"># Write a split line</span>
+        <span class="c1"># TODO: do we need to distinguish the last line?</span>
+        <span class="n">fileobj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span>
+
+
+<span class="k">def</span> <span class="nf">_ion_coord_to_ase_pos</span><span class="p">(</span><span class="n">data_dict</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert the COORD or COORD_FRAC from atom blocks to ASE&#39;s positions</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">    cell: a unit cell in ASE-unit (i.e. parsed from inpt._inpt_cell_to_ase_cell)</span>
+
+<span class="sd">    This function modifies the data_dict in-place to add a field &#39;_ase_positions&#39;</span>
+<span class="sd">    to the atom_blocks</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">treated_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">can_have_coord_frac</span> <span class="o">=</span> <span class="n">cell</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="n">ion_atom_blocks</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s2">&quot;ion&quot;</span><span class="p">][</span><span class="s2">&quot;atom_blocks&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">block</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ion_atom_blocks</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;COORD&quot;</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;COORD_FRAC&quot;</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;COORD and COORD_FRAC cannot co-exist!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">can_have_coord_frac</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;COORD_FRAC&quot;</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;COORD_FRAC must be acompanied by a cell!&quot;</span><span class="p">)</span>
+        <span class="n">coord</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;COORD&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">coord</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">coord</span> <span class="o">=</span> <span class="n">coord</span> <span class="o">*</span> <span class="n">Bohr</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">coord_frac</span> <span class="o">=</span> <span class="n">block</span><span class="p">[</span><span class="s2">&quot;COORD_FRAC&quot;</span><span class="p">]</span>
+            <span class="c1"># Cell is already in Bohr</span>
+            <span class="n">coord</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">coord_frac</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span>
+        <span class="n">data_dict</span><span class="p">[</span><span class="s2">&quot;ion&quot;</span><span class="p">][</span><span class="s2">&quot;atom_blocks&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;_ase_positions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coord</span>
+    <span class="k">return</span>
+
+
+<span class="k">def</span> <span class="nf">_read_sort_comment</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the atom sorting info from the comment lines</span>
+<span class="sd">    Format</span>
+
+<span class="sd">    ASE-SORT:</span>
+<span class="sd">    r_i r_j r_k ....</span>
+<span class="sd">    END ASE-SORT</span>
+<span class="sd">    where r_i etc are the indices in the original ASE atoms object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">resort</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">record</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">new_lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">bisect_and_strip</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;ASE-SORT&quot;</span><span class="p">:</span>
+            <span class="n">record</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;END ASE-SORT&quot;</span><span class="p">:</span>
+            <span class="n">record</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">break</span>
+        <span class="k">elif</span> <span class="n">record</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">resort</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Put original lines in new_lines</span>
+            <span class="n">new_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="c1"># Put all remaining lines in new_lines</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)):</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;ASE-SORT&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidSortingComment</span><span class="p">(</span>
+                <span class="s2">&quot;There appears to be multiple sorting information in the ion comment section!&quot;</span>
+            <span class="p">)</span>
+        <span class="n">new_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">record</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;ASE atoms resort comment block is not properly formatted, this may cause data loss!&quot;</span>
+        <span class="p">)</span>
+    <span class="n">sort</span> <span class="o">=</span> <span class="n">make_reverse_mapping</span><span class="p">(</span><span class="n">resort</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">sort</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">resort</span><span class="p">),</span> <span class="s2">&quot;Sort and resort info are of different length!&quot;</span>
+    <span class="k">return</span> <span class="n">sort</span><span class="p">,</span> <span class="n">resort</span><span class="p">,</span> <span class="n">new_lines</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

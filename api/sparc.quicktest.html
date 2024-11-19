@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sparc.quicktest module &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="sparc.socketio module" href="sparc.socketio.html" />
+    <link rel="prev" title="sparc.io module" href="sparc.io.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../package_components.html">SPARC-X-API Package Components</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="modules.html">sparc</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="sparc.html">sparc package</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="sparc.html#sparc.SPARCMissingDeps"><code class="docutils literal notranslate"><span class="pre">SPARCMissingDeps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sparc.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="sparc.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../package_components.html">SPARC-X-API Package Components</a></li>
+          <li class="breadcrumb-item"><a href="modules.html">sparc</a></li>
+          <li class="breadcrumb-item"><a href="sparc.html">sparc package</a></li>
+      <li class="breadcrumb-item active">sparc.quicktest module</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/sparc-x/SPARC-X-API/blob/master/doc/api/sparc.quicktest.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-sparc.quicktest">
+<span id="sparc-quicktest-module"></span><h1>sparc.quicktest module<a class="headerlink" href="#module-sparc.quicktest" title="Link to this heading"></a></h1>
+<p>A simple test module for sparc python api
+Usage:
+python -m sparc.quicktest</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="sparc.quicktest.ApiTest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.quicktest.</span></span><span class="sig-name descname"><span class="pre">ApiTest</span></span><a class="reference internal" href="../_modules/sparc/quicktest.html#ApiTest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.ApiTest" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sparc.quicktest.BaseTest" title="sparc.quicktest.BaseTest"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseTest</span></code></a></p>
+<p>Check if the API can be loaded, and store the Schema version.</p>
+<p># TODO: consider change to schema instead of api
+# TODO: allow config to change json file path
+Error handling:
+- Check if default JSON schema exists in</p>
+<blockquote>
+<div><p><cite>&lt;sparc-x-api-root&gt;/sparc_json_api/parameters.json</cite></p>
+</div></blockquote>
+<ul class="simple">
+<li><p>Use $SPARC_DOC_PATH to specify the raw LaTeX files</p></li>
+</ul>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.quicktest.ApiTest.display_name">
+<span class="sig-name descname"><span class="pre">display_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'JSON</span> <span class="pre">API'</span></em><a class="headerlink" href="#sparc.quicktest.ApiTest.display_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.quicktest.ApiTest.make_test">
+<span class="sig-name descname"><span class="pre">make_test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/quicktest.html#ApiTest.make_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.ApiTest.make_test" title="Link to this definition"></a></dt>
+<dd><p>Each class should implement ways to update <cite>result</cite> and <cite>info</cite></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sparc.quicktest.BaseTest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.quicktest.</span></span><span class="sig-name descname"><span class="pre">BaseTest</span></span><a class="reference internal" href="../_modules/sparc/quicktest.html#BaseTest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.BaseTest" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for all tests providing functionalities</p>
+<p>Each child class will implement its own <cite>run_test</cite> method to
+update the <cite>result</cite>, <cite>error_handling</cite> and <cite>info</cite> fields.</p>
+<p>If you wish to include a simple error handling message for each
+child class, add a line starting <cite>Error handling</cite> follows by the
+helper message at the end of the docstring</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="sparc.quicktest.BaseTest.dislay_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dislay_name</span></span><a class="headerlink" href="#sparc.quicktest.BaseTest.dislay_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.quicktest.BaseTest.display_docstring">
+<span class="sig-name descname"><span class="pre">display_docstring</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/quicktest.html#BaseTest.display_docstring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.BaseTest.display_docstring" title="Link to this definition"></a></dt>
+<dd><p>Convert the class’s docstring to error handling</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.quicktest.BaseTest.make_test">
+<span class="sig-name descname"><span class="pre">make_test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/quicktest.html#BaseTest.make_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.BaseTest.make_test" title="Link to this definition"></a></dt>
+<dd><p>Each class should implement ways to update <cite>result</cite> and <cite>info</cite></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.quicktest.BaseTest.run_test">
+<span class="sig-name descname"><span class="pre">run_test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/quicktest.html#BaseTest.run_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.BaseTest.run_test" title="Link to this definition"></a></dt>
+<dd><p>Run test and update result etc.
+If result is False, update the error handling message</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sparc.quicktest.CommandTest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.quicktest.</span></span><span class="sig-name descname"><span class="pre">CommandTest</span></span><a class="reference internal" href="../_modules/sparc/quicktest.html#CommandTest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.CommandTest" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sparc.quicktest.BaseTest" title="sparc.quicktest.BaseTest"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseTest</span></code></a></p>
+<p>Check validity of command to run SPARC calculation. This test
+also checks sparc version and socket compatibility</p>
+<p># TODO: check ase 3.23 config with separate binary
+Error handling:
+- The command prefix to run SPARC calculation should look like</p>
+<blockquote>
+<div><p><cite>&lt;mpi instructions&gt; &lt;sparc binary&gt;</cite></p>
+</div></blockquote>
+<ul class="simple">
+<li><p>Use $ASE_SPARC_COMMAND to set the command string</p></li>
+<li><p>Check HPC resources and compatibility (e.g. <cite>srun</cite> on a login node)</p></li>
+</ul>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.quicktest.CommandTest.display_name">
+<span class="sig-name descname"><span class="pre">display_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SPARC</span> <span class="pre">Command'</span></em><a class="headerlink" href="#sparc.quicktest.CommandTest.display_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.quicktest.CommandTest.make_test">
+<span class="sig-name descname"><span class="pre">make_test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/quicktest.html#CommandTest.make_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.CommandTest.make_test" title="Link to this definition"></a></dt>
+<dd><p>Each class should implement ways to update <cite>result</cite> and <cite>info</cite></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sparc.quicktest.FileIOCalcTest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.quicktest.</span></span><span class="sig-name descname"><span class="pre">FileIOCalcTest</span></span><a class="reference internal" href="../_modules/sparc/quicktest.html#FileIOCalcTest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.FileIOCalcTest" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sparc.quicktest.BaseTest" title="sparc.quicktest.BaseTest"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseTest</span></code></a></p>
+<p>Run a simple calculation in File IO mode.</p>
+<p># TODO: check ase 3.23 config
+Error handling:
+- Check if settings for pseudopotential files are correct
+- Check if SPARC binary exists and functional
+- Check if specific HPC requirements are met:</p>
+<blockquote>
+<div><p>(module files, libraries, parallel settings, resources)</p>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.quicktest.FileIOCalcTest.display_name">
+<span class="sig-name descname"><span class="pre">display_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Calculation</span> <span class="pre">(File</span> <span class="pre">I/O)'</span></em><a class="headerlink" href="#sparc.quicktest.FileIOCalcTest.display_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.quicktest.FileIOCalcTest.make_test">
+<span class="sig-name descname"><span class="pre">make_test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/quicktest.html#FileIOCalcTest.make_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.FileIOCalcTest.make_test" title="Link to this definition"></a></dt>
+<dd><p>Each class should implement ways to update <cite>result</cite> and <cite>info</cite></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sparc.quicktest.ImportTest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.quicktest.</span></span><span class="sig-name descname"><span class="pre">ImportTest</span></span><a class="reference internal" href="../_modules/sparc/quicktest.html#ImportTest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.ImportTest" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sparc.quicktest.BaseTest" title="sparc.quicktest.BaseTest"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseTest</span></code></a></p>
+<p>Check if external io format <cite>sparc</cite> can be registered in ASE</p>
+<p>Error handling:
+- Make sure SPARC-X-API is installed via conda / pip / setuptools
+- If you wish to work on SPARC-X-API source code, use <cite>pip install -e</cite></p>
+<blockquote>
+<div><p>instead of setting up $PYTHON_PATH</p>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.quicktest.ImportTest.display_name">
+<span class="sig-name descname"><span class="pre">display_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Import'</span></em><a class="headerlink" href="#sparc.quicktest.ImportTest.display_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.quicktest.ImportTest.make_test">
+<span class="sig-name descname"><span class="pre">make_test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/quicktest.html#ImportTest.make_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.ImportTest.make_test" title="Link to this definition"></a></dt>
+<dd><p>Each class should implement ways to update <cite>result</cite> and <cite>info</cite></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sparc.quicktest.PspTest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.quicktest.</span></span><span class="sig-name descname"><span class="pre">PspTest</span></span><a class="reference internal" href="../_modules/sparc/quicktest.html#PspTest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.PspTest" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sparc.quicktest.BaseTest" title="sparc.quicktest.BaseTest"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseTest</span></code></a></p>
+<p>Check at least one directory of Pseudopotential files exist
+info[<cite>psp_dir</cite>] contains the first psp dir found on system
+# TODO: check if all psp files can be located
+#TODO: update to the ASE 3.23 config method</p>
+<p>Error handling:
+- Default version of psp files can be downloaded by</p>
+<blockquote>
+<div><p><cite>python -m sparc.download_data</cite></p>
+</div></blockquote>
+<ul class="simple">
+<li><p>Alternatively, specify the variable $SPARC_PSP_PATH
+to the custom pseudopotential files</p></li>
+</ul>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.quicktest.PspTest.display_name">
+<span class="sig-name descname"><span class="pre">display_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Pseudopotential'</span></em><a class="headerlink" href="#sparc.quicktest.PspTest.display_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.quicktest.PspTest.make_test">
+<span class="sig-name descname"><span class="pre">make_test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/quicktest.html#PspTest.make_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.PspTest.make_test" title="Link to this definition"></a></dt>
+<dd><p>Each class should implement ways to update <cite>result</cite> and <cite>info</cite></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sparc.quicktest.SocketCalcTest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.quicktest.</span></span><span class="sig-name descname"><span class="pre">SocketCalcTest</span></span><a class="reference internal" href="../_modules/sparc/quicktest.html#SocketCalcTest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.SocketCalcTest" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#sparc.quicktest.BaseTest" title="sparc.quicktest.BaseTest"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseTest</span></code></a></p>
+<p>Run a simple calculation in Socket mode (UNIX socket).</p>
+<p># TODO: check ase 3.23 config
+Error handling:
+- The same as error handling in file I/O calculation test
+- Check if SPARC binary supports socket</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.quicktest.SocketCalcTest.display_name">
+<span class="sig-name descname"><span class="pre">display_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Calculation</span> <span class="pre">(UNIX</span> <span class="pre">socket)'</span></em><a class="headerlink" href="#sparc.quicktest.SocketCalcTest.display_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.quicktest.SocketCalcTest.make_test">
+<span class="sig-name descname"><span class="pre">make_test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/quicktest.html#SocketCalcTest.make_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.SocketCalcTest.make_test" title="Link to this definition"></a></dt>
+<dd><p>Each class should implement ways to update <cite>result</cite> and <cite>info</cite></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sparc.quicktest.main">
+<span class="sig-prename descclassname"><span class="pre">sparc.quicktest.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/quicktest.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.quicktest.main" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sparc.io.html" class="btn btn-neutral float-left" title="sparc.io module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sparc.socketio.html" class="btn btn-neutral float-right" title="sparc.socketio module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

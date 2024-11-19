@@ -1,0 +1,33 @@
+sparc package
+=============
+
+.. automodule:: sparc
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   sparc.sparc_parsers
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   sparc.api
+   sparc.calculator
+   sparc.cli
+   sparc.client
+   sparc.common
+   sparc.docparser
+   sparc.download_data
+   sparc.io
+   sparc.quicktest
+   sparc.socketio
+   sparc.utils

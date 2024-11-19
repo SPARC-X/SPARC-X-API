@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sparc.sparc_parsers.pseudopotential &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../sparc.html">sparc</a></li>
+      <li class="breadcrumb-item active">sparc.sparc_parsers.pseudopotential</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sparc.sparc_parsers.pseudopotential</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Provide a simple parser for pseudo potentials</span>
+
+<span class="sd">The psp8 format is defined in abinit manual</span>
+<span class="sd">https://docs.abinit.org/developers/psp8_info/</span>
+
+<span class="sd">The first</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">ase.data</span> <span class="kn">import</span> <span class="n">atomic_names</span><span class="p">,</span> <span class="n">chemical_symbols</span>
+
+
+<div class="viewcode-block" id="NotPSP8Format">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.NotPSP8Format">[docs]</a>
+<span class="k">class</span> <span class="nc">NotPSP8Format</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
+
+
+
+<div class="viewcode-block" id="NoMatchingPseudopotential">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.NoMatchingPseudopotential">[docs]</a>
+<span class="k">class</span> <span class="nc">NoMatchingPseudopotential</span><span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
+
+
+
+<div class="viewcode-block" id="MultiplePseudoPotentialFiles">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.MultiplePseudoPotentialFiles">[docs]</a>
+<span class="k">class</span> <span class="nc">MultiplePseudoPotentialFiles</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
+
+
+
+<div class="viewcode-block" id="parse_psp8_header">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.parse_psp8_header">[docs]</a>
+<span class="k">def</span> <span class="nf">parse_psp8_header</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the first 4 lines of psp8 text</span>
+<span class="sd">    if parsing failed, raise exception</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[:</span><span class="mi">4</span><span class="p">]</span>
+    <span class="c1"># Line 1</span>
+
+    <span class="n">psp8_magic</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;^\s*(?P&lt;symbol&gt;[\w]+)\s+ONCVPSP-(?P&lt;psp8ver&gt;[\d.\w]+)\s+r\_core=(?P&lt;r_core&gt;.*?)$&quot;</span>
+    <span class="n">psp8_data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">psp8_magic</span><span class="p">,</span> <span class="n">header</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">NotPSP8Format</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The pseudopotential file is not in PSP8 format!&quot;</span><span class="p">)</span>
+    <span class="n">mgroup</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mgroup</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;psp8ver&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mgroup</span><span class="p">[</span><span class="s2">&quot;psp8ver&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;r_core&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">mgroup</span><span class="p">[</span><span class="s2">&quot;r_core&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="c1"># Line 2</span>
+    <span class="n">zatom</span><span class="p">,</span> <span class="n">zion</span><span class="p">,</span> <span class="n">pspd</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;zatom&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zatom</span><span class="p">)</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;zion&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zion</span><span class="p">)</span>
+    <span class="c1"># TODO: should we make date in datetime object?</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;pspd&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pspd</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="c1"># Line 3</span>
+    <span class="n">pspcod</span><span class="p">,</span> <span class="n">pspxc</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">lloc</span><span class="p">,</span> <span class="n">mmax</span><span class="p">,</span> <span class="n">r2well</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;pspcod&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pspcod</span><span class="p">)</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;pspxc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pspxc</span><span class="p">)</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;lmax&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lmax</span><span class="p">)</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;lloc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lloc</span><span class="p">)</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;mmax&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mmax</span><span class="p">)</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;r2well&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">r2well</span><span class="p">)</span>
+
+    <span class="c1"># Line 4</span>
+    <span class="n">rchrg</span><span class="p">,</span> <span class="n">fchrg</span><span class="p">,</span> <span class="n">qchrg</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;rchrg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rchrg</span><span class="p">)</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;fchrg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">fchrg</span><span class="p">)</span>
+    <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;qchrg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">qchrg</span><span class="p">)</span>
+
+    <span class="c1"># Sanity check the symbol and zatom</span>
+    <span class="n">int_zatom</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;zatom&quot;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">chemical_symbols</span><span class="p">[</span><span class="n">int_zatom</span><span class="p">]</span> <span class="o">!=</span> <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="n">NotPSP8Format</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The symbol defined in pseudo potential </span><span class="si">{</span><span class="n">psp8_data</span><span class="p">[</span><span class="s1">&#39;symbol&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> does not match &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;the Z=</span><span class="si">{</span><span class="n">int_zatom</span><span class="si">}</span><span class="s2">!&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">psp8_data</span></div>
+
+
+
+<div class="viewcode-block" id="infer_pseudo_path">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.infer_pseudo_path">[docs]</a>
+<span class="k">def</span> <span class="nf">infer_pseudo_path</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">search_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Given an element symbol like &#39;Na&#39;, get the file name</span>
+<span class="sd">    of the search_path (resolved) that search through the search path</span>
+
+<span class="sd">    TODO: shall we support multiple directories?</span>
+<span class="sd">    TODO: add a `setup` option like VASP?</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">search_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">search_path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="n">potfiles</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">list</span><span class="p">(</span><span class="n">search_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.psp8&quot;</span><span class="p">))</span>
+        <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">search_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.psp&quot;</span><span class="p">))</span>
+        <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">search_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.pot&quot;</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="n">candidates</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">pf</span> <span class="ow">in</span> <span class="n">potfiles</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">psp8_data</span> <span class="o">=</span> <span class="n">parse_psp8_header</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">pf</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">psp8_data</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">psp8_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">symbol</span><span class="p">:</span>
+                <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pf</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">NoMatchingPseudopotential</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No pseudopotential file for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> found &quot;</span>
+                <span class="s2">&quot;under the search path </span><span class="si">{search_path}</span><span class="s2">!&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;There are multiple psp8 files for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">candidates</span><span class="si">}</span><span class="s2">. Please select the desired pseudopotential file!&quot;</span>
+        <span class="p">)</span>
+        <span class="k">raise</span> <span class="n">MultiplePseudoPotentialFiles</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="copy_psp_file">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.copy_psp_file">[docs]</a>
+<span class="k">def</span> <span class="nf">copy_psp_file</span><span class="p">(</span><span class="n">source_pot</span><span class="p">,</span> <span class="n">target_dir</span><span class="p">,</span> <span class="n">use_symbol</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Copy the pseudo potential file `source_pot` under `target_dir`</span>
+
+<span class="sd">    if use_symbol is True, rename the potential to &#39;{symbol}.psp8&#39;</span>
+
+<span class="sd">    the function returns the name of the pseudo potential file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">source_pot</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">source_pot</span><span class="p">)</span>
+    <span class="n">target_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">target_dir</span><span class="p">)</span>
+    <span class="n">psp8_data</span> <span class="o">=</span> <span class="n">parse_psp8_header</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">source_pot</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="n">symbol</span> <span class="o">=</span> <span class="n">psp8_data</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">use_symbol</span><span class="p">:</span>
+        <span class="n">potname</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">.psp8&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">potname</span> <span class="o">=</span> <span class="n">source_pot</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="n">target_pot</span> <span class="o">=</span> <span class="n">target_dir</span> <span class="o">/</span> <span class="n">potname</span>
+    <span class="c1"># shutil will copy</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">source_pot</span><span class="p">,</span> <span class="n">target_pot</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">potname</span></div>
+
+
+
+<div class="viewcode-block" id="find_pseudo_path">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.find_pseudo_path">[docs]</a>
+<span class="k">def</span> <span class="nf">find_pseudo_path</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">search_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pseudopotential_mapping</span><span class="o">=</span><span class="p">{}):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the pseudo potential file at best effort</span>
+
+<span class="sd">    Searching priorities</span>
+<span class="sd">    1) if pseudopotential_mapping has symbol as key, use the file name</span>
+<span class="sd">       There are two possibilities</span>
+<span class="sd">       i) filename does not contain directory information: i.e. Na-pbe.pot</span>
+<span class="sd">          use search_path / filename for the mapping</span>
+<span class="sd">       ii) filename contains directory information, directly use the file name</span>
+<span class="sd">    2) No pseudopotential_mapping is given, get the psp from search_path</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mapping_psp</span> <span class="o">=</span> <span class="n">pseudopotential_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mapping_psp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">search_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NoMatchingPseudopotential</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;No psudopotentials found for </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;because neither search_path nor psp name is provided.&quot;</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">infer_pseudo_path</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">search_path</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">str_psp</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">mapping_psp</span><span class="p">)</span>
+        <span class="n">mapping_psp</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">mapping_psp</span><span class="p">)</span>
+        <span class="c1"># if psp contains any path information (/, \\), treat is as a direct file</span>
+        <span class="n">is_node_file_name</span> <span class="o">=</span> <span class="p">(</span><span class="n">mapping_psp</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">str_psp</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">str_psp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_node_file_name</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">search_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">NoMatchingPseudopotential</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;You provide the pseudopotential name </span><span class="si">{</span><span class="n">mapping_psp</span><span class="si">}</span><span class="s2"> but no search path is defined. I cannot locate the pseudopotential file.&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="n">mapping_psp</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">search_path</span><span class="p">)</span> <span class="o">/</span> <span class="n">str_psp</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mapping_psp</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Pseudopotential file </span><span class="si">{</span><span class="n">mapping_psp</span><span class="si">}</span><span class="s2"> is defined by user input but cannot be found!</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot;Please check your setup. I&#39;ll write the .ion file anyway.&quot;</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">mapping_psp</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,533 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sparc.sparc_parsers.atoms &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../sparc.html">sparc</a></li>
+      <li class="breadcrumb-item active">sparc.sparc_parsers.atoms</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sparc.sparc_parsers.atoms</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Convert ase atoms to structured dict following SPARC format</span>
+<span class="sd">and vice versa</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Atoms</span>
+<span class="kn">from</span> <span class="nn">ase.constraints</span> <span class="kn">import</span> <span class="n">FixAtoms</span><span class="p">,</span> <span class="n">FixedLine</span><span class="p">,</span> <span class="n">FixedPlane</span>
+<span class="kn">from</span> <span class="nn">ase.units</span> <span class="kn">import</span> <span class="n">Bohr</span>
+
+<span class="kn">from</span> <span class="nn">.inpt</span> <span class="kn">import</span> <span class="n">_inpt_cell_to_ase_cell</span>
+<span class="kn">from</span> <span class="nn">.ion</span> <span class="kn">import</span> <span class="n">_ion_coord_to_ase_pos</span>
+<span class="kn">from</span> <span class="nn">.pseudopotential</span> <span class="kn">import</span> <span class="n">find_pseudo_path</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">make_reverse_mapping</span>
+
+<span class="c1"># from .sparc_parsers.ion import read_ion, write_ion</span>
+
+
+<div class="viewcode-block" id="atoms_to_dict">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.atoms_to_dict">[docs]</a>
+<span class="k">def</span> <span class="nf">atoms_to_dict</span><span class="p">(</span>
+    <span class="n">atoms</span><span class="p">,</span>
+    <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ignore_constraints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">psp_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">pseudopotentials</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">comments</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Given an ASE Atoms object, convert to SPARC ion and inpt data dict</span>
+
+<span class="sd">    psp_dir: search path for psp8 files pseudopotentials: a mapping</span>
+<span class="sd">    between symbol and psp file names, similar to QE like &#39;Na&#39;:</span>
+<span class="sd">    &#39;Na-pbe.psp8&#39;. If the file name does not contain path information,</span>
+<span class="sd">    use psp_dir / filname, otherwise use the file path.</span>
+
+<span class="sd">    We don&#39;t do any env variable replace ment for psp_dir, it should be handled by the</span>
+<span class="sd">    explicit _write_ion_and_inpt() function</span>
+
+<span class="sd">    At this step, the copy_psp is not applied, since we don&#39;t yet know the location to write</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Step 1: if we should sort the atoms?</span>
+    <span class="c1"># origin_atoms = atoms.copy()</span>
+    <span class="c1"># sort = True re-calculate the sorting information</span>
+    <span class="c1"># sort = list re-uses the sorting information</span>
+    <span class="k">if</span> <span class="n">sort</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sort</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">sort_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sort</span><span class="p">)</span>
+            <span class="n">resort_</span> <span class="o">=</span> <span class="n">make_reverse_mapping</span><span class="p">(</span><span class="n">sort_</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sort_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">(),</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">)</span>
+            <span class="n">resort_</span> <span class="o">=</span> <span class="n">make_reverse_mapping</span><span class="p">(</span><span class="n">sort_</span><span class="p">)</span>
+        <span class="c1"># This is the sorted atoms object</span>
+        <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="p">[</span><span class="n">sort_</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sort_</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">resort_</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Step 2: determine the counts of each element</span>
+    <span class="n">symbol_counts</span> <span class="o">=</span> <span class="n">count_symbols</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">())</span>
+    <span class="n">write_spin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_initial_magnetic_moments</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">has_charge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_initial_charges</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">has_charge</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;SPARC currently doesn&#39;t support changing total number of electrons! &quot;</span>
+            <span class="s2">&quot;via nomimal charges. The initial charges in the structure will be ignored.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">relax_mask</span> <span class="o">=</span> <span class="n">relax_from_all_constraints</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">))</span>
+    <span class="n">write_relax</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">relax_mask</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">ignore_constraints</span><span class="p">)</span>
+
+    <span class="n">atom_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># Step 3: write each block</span>
+    <span class="k">for</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">symbol_counts</span><span class="p">:</span>
+        <span class="n">block_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">block_dict</span><span class="p">[</span><span class="s2">&quot;ATOM_TYPE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">symbol</span>
+        <span class="n">block_dict</span><span class="p">[</span><span class="s2">&quot;N_TYPE_ATOM&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="c1"># TODO: make pseudo finding work</span>
+        <span class="c1"># TODO: write comment that psp file may not exist</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">psp_file</span> <span class="o">=</span> <span class="n">find_pseudo_path</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">psp_dir</span><span class="p">,</span> <span class="n">pseudopotentials</span><span class="p">)</span>
+            <span class="c1"># TODO: add option to determine if psp file exists!</span>
+            <span class="n">block_dict</span><span class="p">[</span><span class="s2">&quot;PSEUDO_POT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">psp_file</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Failed to find pseudo potential file for symbol </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">. I will use a dummy file name&quot;</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">block_dict</span><span class="p">[</span>
+                <span class="s2">&quot;PSEUDO_POT&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">-dummy.psp8        # Please replace with real psp file name!&quot;</span>
+        <span class="c1"># TODO: atomic mass?</span>
+        <span class="n">p_atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">p_atoms</span><span class="o">.</span><span class="n">get_scaled_positions</span><span class="p">(</span><span class="n">wrap</span><span class="o">=</span><span class="n">wrap</span><span class="p">)</span>
+            <span class="n">block_dict</span><span class="p">[</span><span class="s2">&quot;COORD_FRAC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pos</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># TODO: should we use default converter?</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">p_atoms</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(</span><span class="n">wrap</span><span class="o">=</span><span class="n">wrap</span><span class="p">)</span> <span class="o">/</span> <span class="n">Bohr</span>
+            <span class="n">block_dict</span><span class="p">[</span><span class="s2">&quot;COORD&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pos</span>
+        <span class="k">if</span> <span class="n">write_spin</span><span class="p">:</span>
+            <span class="c1"># TODO: should we process atoms with already calculated magmoms?</span>
+            <span class="n">n_atom</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">p_atoms</span><span class="p">)</span>
+            <span class="n">block_dict</span><span class="p">[</span><span class="s2">&quot;SPIN&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_atoms</span><span class="o">.</span><span class="n">get_initial_magnetic_moments</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_atom</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">write_relax</span><span class="p">:</span>
+            <span class="n">relax_this_block</span> <span class="o">=</span> <span class="n">relax_mask</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+            <span class="n">block_dict</span><span class="p">[</span><span class="s2">&quot;RELAX&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">relax_this_block</span>
+        <span class="c1"># TODO: get write_relax</span>
+        <span class="n">atom_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">block_dict</span><span class="p">)</span>
+
+    <span class="c1"># Step 4: inpt part</span>
+    <span class="c1"># TODO: what if atoms does not have cell?</span>
+    <span class="n">cell_au</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span> <span class="o">/</span> <span class="n">Bohr</span>
+    <span class="n">inpt_blocks</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;LATVEC&quot;</span><span class="p">:</span> <span class="n">cell_au</span><span class="p">,</span> <span class="s2">&quot;LATVEC_SCALE&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]}</span>
+
+    <span class="c1"># Step 5: retrieve boundary condition information</span>
+    <span class="c1"># TODO: have to use space to join the single keywords</span>
+    <span class="c1"># breakpoint()</span>
+    <span class="n">inpt_blocks</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">atoms_bc_to_sparc</span><span class="p">(</span><span class="n">atoms</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">comments</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">comments</span> <span class="o">=</span> <span class="n">comments</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">ion_data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;atom_blocks&quot;</span><span class="p">:</span> <span class="n">atom_blocks</span><span class="p">,</span>
+        <span class="s2">&quot;comments&quot;</span><span class="p">:</span> <span class="n">comments</span><span class="p">,</span>
+        <span class="s2">&quot;sorting&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;sort&quot;</span><span class="p">:</span> <span class="n">sort_</span><span class="p">,</span> <span class="s2">&quot;resort&quot;</span><span class="p">:</span> <span class="n">resort_</span><span class="p">},</span>
+    <span class="p">}</span>
+    <span class="n">inpt_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">inpt_blocks</span><span class="p">,</span> <span class="s2">&quot;comments&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;ion&quot;</span><span class="p">:</span> <span class="n">ion_data</span><span class="p">,</span> <span class="s2">&quot;inpt&quot;</span><span class="p">:</span> <span class="n">inpt_data</span><span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="dict_to_atoms">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.dict_to_atoms">[docs]</a>
+<span class="k">def</span> <span class="nf">dict_to_atoms</span><span class="p">(</span><span class="n">data_dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Given a SPARC struct dict, construct the ASE atoms object</span>
+
+<span class="sd">    Note: this method supports only 1 Atoms at a time</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ase_cell</span> <span class="o">=</span> <span class="n">_inpt_cell_to_ase_cell</span><span class="p">(</span><span class="n">data_dict</span><span class="p">)</span>
+    <span class="n">new_data_dict</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">data_dict</span><span class="p">)</span>
+    <span class="n">_ion_coord_to_ase_pos</span><span class="p">(</span><span class="n">new_data_dict</span><span class="p">,</span> <span class="n">ase_cell</span><span class="p">)</span>
+    <span class="c1"># Now the real thing to construct an atom object</span>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">()</span>
+    <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">ase_cell</span>
+    <span class="n">relax_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">atoms_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">atom_blocks</span> <span class="o">=</span> <span class="n">new_data_dict</span><span class="p">[</span><span class="s2">&quot;ion&quot;</span><span class="p">][</span><span class="s2">&quot;atom_blocks&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">atom_blocks</span><span class="p">:</span>
+        <span class="n">element</span> <span class="o">=</span> <span class="n">block</span><span class="p">[</span><span class="s2">&quot;ATOM_TYPE&quot;</span><span class="p">]</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="n">block</span><span class="p">[</span><span class="s2">&quot;_ase_positions&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">positions</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">positions</span> <span class="o">=</span> <span class="n">positions</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># Consider moving spins to another function</span>
+        <span class="n">spins</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SPIN&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">spins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">spins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">spin</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">spins</span><span class="p">):</span>
+            <span class="c1"># TODO: What about charge?</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Atom</span><span class="p">(</span><span class="n">symbol</span><span class="o">=</span><span class="n">element</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">magmom</span><span class="o">=</span><span class="n">spin</span><span class="p">))</span>
+        <span class="n">relax</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;RELAX&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]))</span>
+        <span class="c1"># Reshape relax into 2d array</span>
+        <span class="n">relax</span> <span class="o">=</span> <span class="n">relax</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">relax</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">atoms_count</span><span class="p">):</span>
+            <span class="n">relax_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
+        <span class="n">atoms_count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;sorting&quot;</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">[</span><span class="s2">&quot;ion&quot;</span><span class="p">]:</span>
+        <span class="n">resort</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s2">&quot;ion&quot;</span><span class="p">][</span><span class="s2">&quot;sorting&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;resort&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)))</span>
+        <span class="c1"># Resort may be None</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">resort</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">resort</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">resort</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">resort</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
+        <span class="c1"># TODO: new exception</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Length of resort mapping is different from the number of atoms!&quot;</span>
+        <span class="p">)</span>
+    <span class="c1"># TODO: check if this mapping is correct</span>
+    <span class="c1"># print(relax_dict)</span>
+    <span class="n">sort</span> <span class="o">=</span> <span class="n">make_reverse_mapping</span><span class="p">(</span><span class="n">resort</span><span class="p">)</span>
+    <span class="c1"># print(resort, sort)</span>
+    <span class="n">sorted_relax_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">sort</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="n">r</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relax_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="c1"># Now we do a sort on the atom indices. The atom positions read from</span>
+    <span class="c1"># .ion correspond to the `sort` and we use `resort` to transform</span>
+
+    <span class="c1"># TODO: should we store the sorting information in SparcBundle?</span>
+
+    <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="p">[</span><span class="n">resort</span><span class="p">]</span>
+    <span class="n">constraints</span> <span class="o">=</span> <span class="n">constraints_from_relax</span><span class="p">(</span><span class="n">sorted_relax_dict</span><span class="p">)</span>
+    <span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">constraints</span>
+
+    <span class="c1"># @2023.08.31 add support for PBC</span>
+    <span class="c1"># TODO: move to a more modular function</span>
+    <span class="c1"># TODO: Datatype for BC in the API, should it be string, or string array?</span>
+    <span class="n">sparc_bc</span> <span class="o">=</span> <span class="n">new_data_dict</span><span class="p">[</span><span class="s2">&quot;inpt&quot;</span><span class="p">][</span><span class="s2">&quot;params&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BC&quot;</span><span class="p">,</span> <span class="s2">&quot;P P P&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="n">twist_angle</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">new_data_dict</span><span class="p">[</span><span class="s2">&quot;inpt&quot;</span><span class="p">][</span><span class="s2">&quot;params&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TWIST_ANGLE&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">modify_atoms_bc</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">sparc_bc</span><span class="p">,</span> <span class="n">twist_angle</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">atoms</span></div>
+
+
+
+<div class="viewcode-block" id="count_symbols">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.count_symbols">[docs]</a>
+<span class="k">def</span> <span class="nf">count_symbols</span><span class="p">(</span><span class="n">symbols</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Count the number of consecutive elements.</span>
+<span class="sd">    Output tuple is: element, start, end</span>
+<span class="sd">    For example, &quot;CHCHHO&quot; --&gt; [(&#39;C&#39;, 0, 1), (&#39;H&#39;, 1, 2), (&#39;C&#39;, 2, 3), (&#39;H&#39;, 3, 5), (&#39;O&#39;, 5, 6)]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">current_count</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">current_symbol</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">symbols</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">symbol</span> <span class="o">==</span> <span class="n">current_symbol</span><span class="p">:</span>
+            <span class="n">current_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">counts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">current_symbol</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="n">current_count</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+            <span class="n">current_count</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">current_symbol</span> <span class="o">=</span> <span class="n">symbol</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">symbols</span><span class="p">)</span>
+    <span class="n">counts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">current_symbol</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">current_count</span><span class="p">,</span> <span class="n">end</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">counts</span></div>
+
+
+
+<div class="viewcode-block" id="constraints_from_relax">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.constraints_from_relax">[docs]</a>
+<span class="k">def</span> <span class="nf">constraints_from_relax</span><span class="p">(</span><span class="n">relax_dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert the SPARC RELAX fields to ASE&#39;s constraints</span>
+
+<span class="sd">    Arguments</span>
+<span class="sd">    relax: bool vector of size Nx3, i.e. [[True, True, True], [True, False, False]]</span>
+
+<span class="sd">    Supported ase constraints will be FixAtoms, FixedLine and FixedPlane.</span>
+<span class="sd">    For constraints in the same direction, all indices will be gathered.</span>
+
+<span class="sd">    Note: ase&gt;=3.22 will have FixedLine and FixedPlane accepting only 1 index at a time!</span>
+
+<span class="sd">    The relax vector must be already sorted!</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">relax_dict</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="n">cons_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># gathered_indices is an intermediate dict that contains</span>
+    <span class="c1"># key: relax mask if not all True</span>
+    <span class="c1"># indices: indices that share the same mask</span>
+    <span class="c1">#</span>
+    <span class="n">gathered_indices</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># breakpoint()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">relax_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">tolist</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">r</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gathered_indices</span><span class="p">:</span>
+            <span class="n">gathered_indices</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gathered_indices</span><span class="p">[</span><span class="n">r</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">relax_type</span><span class="p">,</span> <span class="n">indices</span> <span class="ow">in</span> <span class="n">gathered_indices</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">degree_freedom</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">-</span> <span class="n">relax_type</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># DegreeF == 0 --&gt; fix atom</span>
+        <span class="k">if</span> <span class="n">degree_freedom</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cons_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FixAtoms</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">))</span>
+        <span class="c1"># DegreeF == 1 --&gt; move along line, fix line</span>
+        <span class="k">elif</span> <span class="n">degree_freedom</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">:</span>
+                <span class="n">cons_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FixedLine</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">relax_type</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)))</span>
+        <span class="c1"># DegreeF == 1 --&gt; move along line, fix plane</span>
+        <span class="k">elif</span> <span class="n">degree_freedom</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">:</span>
+                <span class="n">cons_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FixedPlane</span><span class="p">(</span><span class="n">ind</span><span class="p">,</span> <span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">relax_type</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">cons_list</span></div>
+
+
+
+<div class="viewcode-block" id="relax_from_constraint">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.relax_from_constraint">[docs]</a>
+<span class="k">def</span> <span class="nf">relax_from_constraint</span><span class="p">(</span><span class="n">constraint</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;returns dict of {atom_index: relax_dimensions} for the given constraint&quot;&quot;&quot;</span>
+    <span class="n">type_name</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">todict</span><span class="p">()[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="n">FixAtoms</span><span class="p">):</span>
+        <span class="n">dimensions</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span>
+        <span class="n">expected_free</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="n">FixedLine</span><span class="p">):</span>
+        <span class="c1"># Only supports orthogonal basis!</span>
+        <span class="n">dimensions</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">constraint</span><span class="o">.</span><span class="n">dir</span><span class="p">]</span>
+        <span class="n">expected_free</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="n">FixedPlane</span><span class="p">):</span>
+        <span class="n">dimensions</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="o">!=</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">constraint</span><span class="o">.</span><span class="n">dir</span><span class="p">]</span>
+        <span class="n">expected_free</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;The constraint type </span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2"> is not supported by&quot;</span>
+            <span class="s2">&quot; SPARC&#39;s .ion format. This constraint will be&quot;</span>
+            <span class="s2">&quot; ignored&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">dimensions</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span> <span class="o">!=</span> <span class="n">expected_free</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;SPARC&#39;s .ion filetype can only support freezing entire &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;dimensions (x,y,z). The </span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2"> constraint will be ignored&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">dimensions</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">constraint</span><span class="o">.</span><span class="n">get_indices</span><span class="p">()}</span>  <span class="c1"># atom indices</span></div>
+
+
+
+<div class="viewcode-block" id="relax_from_all_constraints">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.relax_from_all_constraints">[docs]</a>
+<span class="k">def</span> <span class="nf">relax_from_all_constraints</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">natoms</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;converts ASE atom constraints to SPARC relaxed dimensions for the atoms&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="n">relax</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">],</span>
+    <span class="p">]</span> <span class="o">*</span> <span class="n">natoms</span>  <span class="c1"># assume relaxed in all dimensions for all atoms</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">constraints</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">atom_index</span><span class="p">,</span> <span class="n">rdims</span> <span class="ow">in</span> <span class="n">relax_from_constraint</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">atom_index</span> <span class="o">&gt;=</span> <span class="n">natoms</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;Number of total atoms smaller than the constraint indices!</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="s2">&quot;Please check your input&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="c1"># There might be multiple constraints applied on one index,</span>
+            <span class="c1"># always make it more constrained</span>
+            <span class="n">relax</span><span class="p">[</span><span class="n">atom_index</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">relax</span><span class="p">[</span><span class="n">atom_index</span><span class="p">],</span> <span class="n">rdims</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">relax</span></div>
+
+
+
+<div class="viewcode-block" id="modify_atoms_bc">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.modify_atoms_bc">[docs]</a>
+<span class="k">def</span> <span class="nf">modify_atoms_bc</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">sparc_bc</span><span class="p">,</span> <span class="n">twist_angle</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Modify the atoms boundary conditions in-place from the bc information</span>
+<span class="sd">    sparc_bc is a keyword from inpt</span>
+<span class="sd">    twist_angle is the helix twist angle in inpt</span>
+
+<span class="sd">    conversion rules:</span>
+<span class="sd">    BC: P --&gt; pbc=True</span>
+<span class="sd">    BC: D, H, C --&gt; pbc=False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ase_bc</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># print(sparc_bc, type(sparc_bc))</span>
+    <span class="k">for</span> <span class="n">bc_</span> <span class="ow">in</span> <span class="n">sparc_bc</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">bc_</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;H&quot;</span><span class="p">]:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="s2">&quot;Parsing SPARC&#39;s helix or cyclic boundary conditions&quot;</span>
+                    <span class="s2">&quot; into ASE atoms is only partially supported. &quot;</span>
+                    <span class="s2">&quot;Saving the atoms object into other format may cause &quot;</span>
+                    <span class="s2">&quot;data-loss of the SPARC-specific BC information.&quot;</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">pbc</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="kc">False</span>  <span class="c1"># Do not confuse ase-gui, we&#39;ll manually handle the visualization</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">bc_</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;D&quot;</span><span class="p">:</span>
+            <span class="n">pbc</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">bc_</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;P&quot;</span><span class="p">:</span>
+            <span class="n">pbc</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown BC keyword values!&quot;</span><span class="p">)</span>
+        <span class="n">ase_bc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pbc</span><span class="p">)</span>
+    <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;sparc_bc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">bc_</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">bc_</span> <span class="ow">in</span> <span class="n">sparc_bc</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">twist_angle</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;twist_angle (rad/Bohr)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">twist_angle</span>
+    <span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span> <span class="o">=</span> <span class="n">ase_bc</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="atoms_bc_to_sparc">
+<a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.atoms_bc_to_sparc">[docs]</a>
+<span class="k">def</span> <span class="nf">atoms_bc_to_sparc</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use atoms&#39; internal pbc and info to construct inpt blocks</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    a dict containing &#39;BC&#39; or &#39;TWIST_ANGLE&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sparc_bc</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;P&quot;</span> <span class="k">if</span> <span class="n">bc_</span> <span class="k">else</span> <span class="s2">&quot;D&quot;</span> <span class="k">for</span> <span class="n">bc_</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span><span class="p">]</span>
+
+    <span class="c1"># If &quot;sparc_bc&quot; info is stored in the atoms object, convert again</span>
+    <span class="k">if</span> <span class="s2">&quot;sparc_bc&quot;</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">converted_bc</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">stored_sparc_bc</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;sparc_bc&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">bc1</span><span class="p">,</span> <span class="n">bc2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sparc_bc</span><span class="p">,</span> <span class="n">stored_sparc_bc</span><span class="p">):</span>
+            <span class="c1"># We store helix and cyclic BCs as non-periodic in ase-atoms</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">bc1</span><span class="p">,</span> <span class="n">bc2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">bc1</span> <span class="o">==</span> <span class="s2">&quot;D&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">bc2</span> <span class="o">!=</span> <span class="s2">&quot;P&quot;</span><span class="p">))</span> <span class="ow">or</span> <span class="p">((</span><span class="n">bc1</span> <span class="o">==</span> <span class="s2">&quot;P&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">bc2</span> <span class="o">==</span> <span class="s2">&quot;P&quot;</span><span class="p">)):</span>
+                <span class="n">converted_bc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bc2</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Boundary conditions stored in ASE &quot;</span>
+                    <span class="s2">&quot;atoms.pbc and atoms.info[&#39;sparc_bc&#39;] &quot;</span>
+                    <span class="s2">&quot;are different!&quot;</span>
+                <span class="p">)</span>
+        <span class="n">sparc_bc</span> <span class="o">=</span> <span class="n">converted_bc</span>
+    <span class="n">block</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;BC&quot;</span><span class="p">:</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sparc_bc</span><span class="p">)}</span>
+    <span class="k">if</span> <span class="s2">&quot;twist_angle&quot;</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">block</span><span class="p">[</span><span class="s2">&quot;TWIST_ANGLE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;twist_angle (rad/Bohr)&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">block</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

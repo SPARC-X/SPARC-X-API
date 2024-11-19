@@ -1,0 +1,1325 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sparc.io &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../sparc.html">sparc</a></li>
+      <li class="breadcrumb-item active">sparc.io</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sparc.io</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Providing a new bundled SPARC file format</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">ase.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span>
+<span class="kn">from</span> <span class="nn">ase.calculators.singlepoint</span> <span class="kn">import</span> <span class="n">SinglePointDFTCalculator</span>
+
+<span class="c1"># various io formatters</span>
+<span class="kn">from</span> <span class="nn">.api</span> <span class="kn">import</span> <span class="n">SparcAPI</span>
+<span class="kn">from</span> <span class="nn">.common</span> <span class="kn">import</span> <span class="n">psp_dir</span> <span class="k">as</span> <span class="n">default_psp_dir</span>
+<span class="kn">from</span> <span class="nn">.download_data</span> <span class="kn">import</span> <span class="n">is_psp_download_complete</span>
+<span class="kn">from</span> <span class="nn">.sparc_parsers.aimd</span> <span class="kn">import</span> <span class="n">_read_aimd</span>
+<span class="kn">from</span> <span class="nn">.sparc_parsers.atoms</span> <span class="kn">import</span> <span class="n">atoms_to_dict</span><span class="p">,</span> <span class="n">dict_to_atoms</span>
+<span class="kn">from</span> <span class="nn">.sparc_parsers.geopt</span> <span class="kn">import</span> <span class="n">_read_geopt</span>
+<span class="kn">from</span> <span class="nn">.sparc_parsers.inpt</span> <span class="kn">import</span> <span class="n">_read_inpt</span><span class="p">,</span> <span class="n">_write_inpt</span>
+<span class="kn">from</span> <span class="nn">.sparc_parsers.ion</span> <span class="kn">import</span> <span class="n">_read_ion</span><span class="p">,</span> <span class="n">_write_ion</span>
+<span class="kn">from</span> <span class="nn">.sparc_parsers.out</span> <span class="kn">import</span> <span class="n">_read_out</span>
+<span class="kn">from</span> <span class="nn">.sparc_parsers.pseudopotential</span> <span class="kn">import</span> <span class="n">copy_psp_file</span><span class="p">,</span> <span class="n">parse_psp8_header</span>
+<span class="kn">from</span> <span class="nn">.sparc_parsers.static</span> <span class="kn">import</span> <span class="n">_add_cell_info</span><span class="p">,</span> <span class="n">_read_static</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">deprecated</span><span class="p">,</span> <span class="n">locate_api</span><span class="p">,</span> <span class="n">string2index</span>
+
+<span class="c1"># from .sparc_parsers.ion import read_ion, write_ion</span>
+<span class="n">defaultAPI</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="SparcBundle">
+<a class="viewcode-back" href="../../api/sparc.io.html#sparc.io.SparcBundle">[docs]</a>
+<span class="k">class</span> <span class="nc">SparcBundle</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Provide access to a calculation folder of SPARC as a simple bundle</span>
+
+<span class="sd">    The bundle can be optionally named as .sparc following the ASE&#39;s</span>
+<span class="sd">    .bundle format</span>
+
+<span class="sd">    Currently the write method only supports 1 image, while read method support reading</span>
+<span class="sd">    atoms results in following conditions</span>
+
+<span class="sd">    1) No calculation (minimal): .ion + .inpt file --&gt; 1 image</span>
+<span class="sd">    2) Single point calculation: .ion + .inpt + .out + .static --&gt; 1</span>
+<span class="sd">    image with calc</span>
+<span class="sd">    3) Multiple SP calculations: chain all</span>
+<span class="sd">    .out{digits} and .static{digitis} outputs 4) Relaxation: read from</span>
+<span class="sd">    .geopt and .out (supporting chaining) 5) AIMD: read from .aimd and</span>
+<span class="sd">    .out (support chaining)</span>
+
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        directory (Path): Path to the directory containing SPARC files.</span>
+<span class="sd">        mode (str): File access mode (&#39;r&#39;, &#39;w&#39;, or &#39;a&#39;).</span>
+<span class="sd">        label (str): Name of the main SPARC file.</span>
+<span class="sd">        init_atoms (Atoms): Initial atomic configuration.</span>
+<span class="sd">        init_inputs (dict): Initial input parameters.</span>
+<span class="sd">        psp_data (dict): Pseudopotential data.</span>
+<span class="sd">        raw_results (dict): Raw results from SPARC calculations.</span>
+<span class="sd">        psp_dir (Path): Directory containing pseudopotentials.</span>
+<span class="sd">        sorting (list): Sort order for atoms.</span>
+<span class="sd">        last_image (int): Index of the last image in a series of calculations.</span>
+<span class="sd">        validator (SparcAPI): API validator for SPARC calculations.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        __find_psp_dir(psp_dir=None): Finds the directory for SPARC pseudopotentials.</span>
+<span class="sd">        _find_files(): Finds all files matching the bundle label.</span>
+<span class="sd">        _make_label(label=None): Infers or sets the label for the SPARC bundle.</span>
+<span class="sd">        _indir(ext, label=None, occur=0, d_format=&quot;{:02d}&quot;): Finds a file with a specific extension in the bundle.</span>
+<span class="sd">        _read_ion_and_inpt(): Reads .ion and .inpt files together.</span>
+<span class="sd">        _write_ion_and_inpt(): Writes .ion and .inpt files to the bundle.</span>
+<span class="sd">        _read_results_from_index(index, d_format=&quot;{:02d}&quot;): Reads results from a specific calculation index.</span>
+<span class="sd">        _make_singlepoint(calc_results, images, raw_results): Converts results and images to SinglePointDFTCalculators.</span>
+<span class="sd">        _extract_static_results(raw_results, index=&quot;:&quot;): Extracts results from static calculations.</span>
+<span class="sd">        _extract_geopt_results(raw_results, index=&quot;:&quot;): Extracts results from geometric optimization calculations.</span>
+<span class="sd">        _extract_aimd_results(raw_results, index=&quot;:&quot;): Extracts results from AIMD calculations.</span>
+<span class="sd">        convert_to_ase(index=-1, include_all_files=False, **kwargs): Converts raw results to ASE Atoms with calculators.</span>
+<span class="sd">        read_raw_results(include_all_files=False): Parses all files in the bundle and merges results.</span>
+<span class="sd">        read_psp_info(): Parses pseudopotential information from the inpt file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">psp_env</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SPARC_PSP_PATH&quot;</span><span class="p">,</span> <span class="s2">&quot;SPARC_PP_PATH&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">directory</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span>
+        <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">psp_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">validator</span><span class="o">=</span><span class="n">defaultAPI</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes a SparcBundle for accessing SPARC calculation data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            directory (str or Path): The path to the directory containing the SPARC files.</span>
+<span class="sd">            mode (str, optional): The file access mode. Can be &#39;r&#39; (read), &#39;w&#39; (write), or &#39;a&#39; (append). Defaults to &#39;r&#39;.</span>
+<span class="sd">            atoms (Atoms, optional): The initial atomic configuration. Only relevant in write mode.</span>
+<span class="sd">            label (str, optional): A custom label for the bundle. If None, the label is inferred from the directory or files.</span>
+<span class="sd">            psp_dir (str or Path, optional): Path to the directory containing pseudopotentials. If None, the path is inferred.</span>
+<span class="sd">            validator (SparcAPI, optional): An instance of SparcAPI for validating and parsing SPARC parameters. Defaults to a default SparcAPI instance.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AssertionError: If an invalid mode is provided.</span>
+<span class="sd">            ValueError: If multiple .ion files are found and no label is specified.</span>
+<span class="sd">            Warning: If no .ion file is found in read-mode, or illegal characters are in the label.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="s2">&quot;r&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;w&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;a&quot;</span><span class="p">,</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Invalid mode </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s2">! Must one of &#39;r&#39;, &#39;w&#39; or &#39;a&#39;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_label</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_inputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psp_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psp_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__find_psp_dir</span><span class="p">(</span><span class="n">psp_dir</span><span class="p">)</span>
+        <span class="c1"># Sorting should be consistent across the whole bundle!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sorting</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validator</span> <span class="o">=</span> <span class="n">validator</span>
+
+<div class="viewcode-block" id="SparcBundle._find_files">
+<a class="viewcode-back" href="../../api/sparc.io.html#sparc.io.SparcBundle._find_files">[docs]</a>
+    <span class="k">def</span> <span class="nf">_find_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find all files matching &#39;{label}.*&#39;&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">.*&quot;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SparcBundle._make_label">
+<a class="viewcode-back" href="../../api/sparc.io.html#sparc.io.SparcBundle._make_label">[docs]</a>
+    <span class="k">def</span> <span class="nf">_make_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Infer the label from the bundle</span>
+
+<span class="sd">        Special cases if label is None:</span>
+<span class="sd">        1. read mode --&gt; get the ion file name</span>
+<span class="sd">        2. write mode --&gt; infer from the directory</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            label (str or None): Label to be used to write the .ion, .inpt files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="n">illegal_chars</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">/:*?&quot;&lt;&gt;|&#39;</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">label_</span> <span class="o">=</span> <span class="n">label</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;w&quot;</span><span class="p">:</span>
+            <span class="n">label_</span> <span class="o">=</span> <span class="n">prefix</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># read</span>
+            <span class="n">match_ion</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.ion&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">match_ion</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot read sparc bundle with multiple ion files without specifying the label!&quot;</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">match_ion</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">label_</span> <span class="o">=</span> <span class="n">match_ion</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># No file found, possibly an empty bundle</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;No .ion file found in the read-mode bundle.&quot;</span><span class="p">)</span>
+                <span class="n">label_</span> <span class="o">=</span> <span class="n">prefix</span>
+
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">c</span> <span class="ow">in</span> <span class="n">label_</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">illegal_chars</span><span class="p">]):</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Label name </span><span class="si">{</span><span class="n">label_</span><span class="si">}</span><span class="s2"> contains illegal characters! I&#39;ll make it &#39;SPARC&#39;&quot;</span>
+            <span class="p">)</span>
+            <span class="n">label_</span> <span class="o">=</span> <span class="s2">&quot;SPARC&quot;</span>
+        <span class="k">return</span> <span class="n">label_</span></div>
+
+
+    <span class="k">def</span> <span class="nf">__find_psp_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">psp_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use environmental variable to find the directory for SPARC</span>
+<span class="sd">        pseudopotentials</span>
+
+<span class="sd">        Searching priority:</span>
+<span class="sd">        1. User defined psp_dir</span>
+<span class="sd">        2. $SPARC_PSP_PATH</span>
+<span class="sd">        3. $SPARC_PP_PATH</span>
+<span class="sd">        4. psp bundled with sparc-api</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            psp_dir (str or PosixPath or None): the specific directory to search the psp files.</span>
+<span class="sd">                                                Each element can only have 1 psp file under psp_dir</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            PosixPath: Location of psp files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">psp_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">psp_dir</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">psp_env</span><span class="p">:</span>
+                <span class="n">env_psp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">env_psp_dir</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">env_psp_dir</span><span class="p">)</span>
+            <span class="c1"># At this point, we try to use the psp files bundled with sparc</span>
+            <span class="k">if</span> <span class="n">is_psp_download_complete</span><span class="p">(</span><span class="n">default_psp_dir</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">default_psp_dir</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;PSP directory bundled with SPARC-X-API is broken! &quot;</span>
+                        <span class="s2">&quot;Please use `sparc.download_data` to re-download them!&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Not found</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;w&quot;</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;No pseudopotential searching path was set and &quot;</span>
+                        <span class="s2">&quot;neither of $SPARC_PSP_PATH nor $SPARC_PP_PATH is set.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="s2">&quot;Please explicitly provide the pseudopotentials parameter when writing the sparc bundle.&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_indir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ext</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">occur</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find the file with {label}.{ext} under current dir,</span>
+<span class="sd">        if label is None, use the default</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            ext (str): Extension of file, e.g. &#39;.ion&#39; or &#39;ion&#39;</span>
+<span class="sd">            label (str or None): Label for the file. If None, use the parent directory name for searching</span>
+<span class="sd">            occur (int): Occurance index of the file, if occur &gt; 0, search for files with suffix like &#39;SPARC.out_01&#39;</span>
+<span class="sd">            d_format (str): Format for the index</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            PosixPath: Path to the target file under self.directory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">label</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ext</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+            <span class="n">ext</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">ext</span>
+        <span class="k">if</span> <span class="n">occur</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">d_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">occur</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">target</span>
+
+<div class="viewcode-block" id="SparcBundle._read_ion_and_inpt">
+<a class="viewcode-back" href="../../api/sparc.io.html#sparc.io.SparcBundle._read_ion_and_inpt">[docs]</a>
+    <span class="k">def</span> <span class="nf">_read_ion_and_inpt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the ion and inpt files together to obtain basic atomstic data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Atoms: atoms object from .ion and .inpt file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">f_ion</span><span class="p">,</span> <span class="n">f_inpt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indir</span><span class="p">(</span><span class="s2">&quot;.ion&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indir</span><span class="p">(</span><span class="s2">&quot;.inpt&quot;</span><span class="p">)</span>
+        <span class="n">ion_data</span> <span class="o">=</span> <span class="n">_read_ion</span><span class="p">(</span><span class="n">f_ion</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">validator</span><span class="p">)</span>
+        <span class="n">inpt_data</span> <span class="o">=</span> <span class="n">_read_inpt</span><span class="p">(</span><span class="n">f_inpt</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">validator</span><span class="p">)</span>
+        <span class="n">merged_data</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">ion_data</span><span class="p">,</span> <span class="o">**</span><span class="n">inpt_data</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">dict_to_atoms</span><span class="p">(</span><span class="n">merged_data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SparcBundle._write_ion_and_inpt">
+<a class="viewcode-back" href="../../api/sparc.io.html#sparc.io.SparcBundle._write_ion_and_inpt">[docs]</a>
+    <span class="k">def</span> <span class="nf">_write_ion_and_inpt</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">ignore_constraints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="c1"># Below are the parameters from v1</span>
+        <span class="c1"># scaled -&gt; direct, ignore_constraints --&gt; not add_constraints</span>
+        <span class="n">scaled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">add_constraints</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">copy_psp</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">input_parameters</span><span class="o">=</span><span class="p">{},</span>
+        <span class="c1"># Parameters that do not require type conversion</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the ion and inpt files to a bundle. This method only</span>
+<span class="sd">        supports writing 1 image.  If input_parameters are empty,</span>
+<span class="sd">        there will only be .ion writing the positions and .inpt</span>
+<span class="sd">        writing a minimal cell information</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            atoms (Atoms, optional): The Atoms object to write. If None, uses initialized atoms associated with SparcBundle.</span>
+<span class="sd">            label (str, optional): Custom label for the written files.</span>
+<span class="sd">            direct (bool, optional): If True, writes positions in direct coordinates.</span>
+<span class="sd">            sort (bool, optional): If True, sorts atoms before writing.</span>
+<span class="sd">            ignore_constraints (bool, optional): If True, ignores constraints on atoms.</span>
+<span class="sd">            wrap (bool, optional): If True, wraps atoms into the unit cell.</span>
+<span class="sd">            **kwargs: Additional keyword arguments for writing.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the bundle is not in write mode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">!=</span> <span class="s2">&quot;w&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot write input files while sparc bundle is opened in read or append mode!&quot;</span>
+            <span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">pseudopotentials</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;pseudopotentials&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="k">if</span> <span class="n">sort</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorting</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">old_sort</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorting</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sort&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">old_sort</span><span class="p">:</span>
+                    <span class="n">sort</span> <span class="o">=</span> <span class="n">old_sort</span>
+
+        <span class="n">data_dict</span> <span class="o">=</span> <span class="n">atoms_to_dict</span><span class="p">(</span>
+            <span class="n">atoms</span><span class="p">,</span>
+            <span class="n">direct</span><span class="o">=</span><span class="n">direct</span><span class="p">,</span>
+            <span class="n">sort</span><span class="o">=</span><span class="n">sort</span><span class="p">,</span>
+            <span class="n">ignore_constraints</span><span class="o">=</span><span class="n">ignore_constraints</span><span class="p">,</span>
+            <span class="n">psp_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">psp_dir</span><span class="p">,</span>
+            <span class="n">pseudopotentials</span><span class="o">=</span><span class="n">pseudopotentials</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">merged_inputs</span> <span class="o">=</span> <span class="n">input_parameters</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">merged_inputs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">data_dict</span><span class="p">[</span><span class="s2">&quot;inpt&quot;</span><span class="p">][</span><span class="s2">&quot;params&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">merged_inputs</span><span class="p">)</span>
+
+        <span class="c1"># If copy_psp, change the PSEUDO_POT field and copy the files</span>
+        <span class="k">if</span> <span class="n">copy_psp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">[</span><span class="s2">&quot;ion&quot;</span><span class="p">][</span><span class="s2">&quot;atom_blocks&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="s2">&quot;PSEUDO_POT&quot;</span> <span class="ow">in</span> <span class="n">block</span><span class="p">:</span>
+                    <span class="n">origin_psp</span> <span class="o">=</span> <span class="n">block</span><span class="p">[</span><span class="s2">&quot;PSEUDO_POT&quot;</span><span class="p">]</span>
+                    <span class="n">target_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span>
+                    <span class="n">target_fname</span> <span class="o">=</span> <span class="n">copy_psp_file</span><span class="p">(</span><span class="n">origin_psp</span><span class="p">,</span> <span class="n">target_dir</span><span class="p">)</span>
+                    <span class="n">block</span><span class="p">[</span><span class="s2">&quot;PSEUDO_POT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_fname</span>
+
+        <span class="n">_write_ion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indir</span><span class="p">(</span><span class="s2">&quot;.ion&quot;</span><span class="p">),</span> <span class="n">data_dict</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">validator</span><span class="p">)</span>
+        <span class="n">_write_inpt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indir</span><span class="p">(</span><span class="s2">&quot;.inpt&quot;</span><span class="p">),</span> <span class="n">data_dict</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">validator</span><span class="p">)</span>
+        <span class="c1"># Update the sorting information</span>
+        <span class="n">ion_dict</span> <span class="o">=</span> <span class="n">_read_ion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indir</span><span class="p">(</span><span class="s2">&quot;.ion&quot;</span><span class="p">))[</span><span class="s2">&quot;ion&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sorting</span> <span class="o">=</span> <span class="n">ion_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sorting&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="SparcBundle.read_raw_results">
+<a class="viewcode-back" href="../../api/sparc.io.html#sparc.io.SparcBundle.read_raw_results">[docs]</a>
+    <span class="k">def</span> <span class="nf">read_raw_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_all_files</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse all files using the given self.label.</span>
+<span class="sd">        The results are merged dict from all file formats</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            include_all_files (bool): Whether to include output files with different suffices</span>
+<span class="sd">                                      If true: include all files (e.g. SPARC.out, SPARC.out_01,</span>
+<span class="sd">                                      SPARC.out_02, etc).</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict or List: Dict containing all raw results. Only some of them will appear in the calculator&#39;s results</span>
+
+<span class="sd">        Sets:</span>
+<span class="sd">            self.raw_results (dict or List): the same as the return value</span>
+
+<span class="sd">        #TODO: @TT 2024-11-01 allow accepting indices</span>
+<span class="sd">        #TODO: @TT last_image is a bad name, it should refer to the occurance of images</span>
+<span class="sd">               the same goes with num_calculations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Find the max output index</span>
+        <span class="n">out_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">.out*&quot;</span><span class="p">)</span>
+        <span class="n">valid_out_files</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">f</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">out_files</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^\.out(?:_\d+)?$&quot;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="c1"># Combine and sort the file lists</span>
+        <span class="n">last_out</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">valid_out_files</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># No output file, only ion / inpt</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_out</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">suffix</span> <span class="o">=</span> <span class="n">last_out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">suffix</span>
+            <span class="k">if</span> <span class="n">suffix</span> <span class="o">==</span> <span class="s2">&quot;.out&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">suffix</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_calculations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_image</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="c1"># Always make sure ion / inpt results are parsed regardless of actual calculations</span>
+        <span class="k">if</span> <span class="n">include_all_files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_calculations</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_read_results_from_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_calculations</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_read_results_from_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_image</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_results_from_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_image</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_results</span> <span class="o">=</span> <span class="n">results</span>
+
+        <span class="k">if</span> <span class="n">include_all_files</span><span class="p">:</span>
+            <span class="n">init_raw_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">init_raw_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_results</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_atoms</span> <span class="o">=</span> <span class="n">dict_to_atoms</span><span class="p">(</span><span class="n">init_raw_results</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_inputs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ion&quot;</span><span class="p">:</span> <span class="n">init_raw_results</span><span class="p">[</span><span class="s2">&quot;ion&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;inpt&quot;</span><span class="p">:</span> <span class="n">init_raw_results</span><span class="p">[</span><span class="s2">&quot;inpt&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psp_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_psp_info</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_results</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_read_results_from_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">d_format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the results from one calculation index, and return a</span>
+<span class="sd">        single raw result dict, e.g. for index=0 --&gt; .static</span>
+<span class="sd">        and index=1 --&gt; .static_01.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            index (int): Index of image to return the results</span>
+<span class="sd">            d_format (str): Format for the index suffix</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Results for single image</span>
+
+<span class="sd">        #TODO: @TT should we call index --&gt; occurance?</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;ion&quot;</span><span class="p">,</span> <span class="s2">&quot;inpt&quot;</span><span class="p">):</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indir</span><span class="p">(</span><span class="n">ext</span><span class="p">,</span> <span class="n">occur</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="n">data_dict</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="sa">f</span><span class="s2">&quot;_read_</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">](</span><span class="n">f</span><span class="p">)</span>
+                <span class="n">results_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data_dict</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;geopt&quot;</span><span class="p">,</span> <span class="s2">&quot;static&quot;</span><span class="p">,</span> <span class="s2">&quot;aimd&quot;</span><span class="p">,</span> <span class="s2">&quot;out&quot;</span><span class="p">):</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indir</span><span class="p">(</span><span class="n">ext</span><span class="p">,</span> <span class="n">occur</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">d_format</span><span class="o">=</span><span class="n">d_format</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="n">data_dict</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="sa">f</span><span class="s2">&quot;_read_</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">](</span><span class="n">f</span><span class="p">)</span>
+                <span class="n">results_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data_dict</span><span class="p">)</span>
+
+        <span class="c1"># Must have files: ion, inpt</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;ion&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">results_dict</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&quot;inpt&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">results_dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Either ion or inpt files are missing from the bundle! &quot;</span>
+                <span class="s2">&quot;Your SPARC calculation may be corrupted.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Copy the sorting information, if not existing</span>
+        <span class="n">sorting</span> <span class="o">=</span> <span class="n">results_dict</span><span class="p">[</span><span class="s2">&quot;ion&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sorting&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sorting</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorting</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sorting</span> <span class="o">=</span> <span class="n">sorting</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Compare stored sorting</span>
+                <span class="k">assert</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sorting</span><span class="p">[</span><span class="s2">&quot;sort&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">sorting</span><span class="p">[</span><span class="s2">&quot;sort&quot;</span><span class="p">]))</span> <span class="ow">and</span> <span class="p">(</span>
+                    <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sorting</span><span class="p">[</span><span class="s2">&quot;resort&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">sorting</span><span class="p">[</span><span class="s2">&quot;resort&quot;</span><span class="p">])</span>
+                <span class="p">),</span> <span class="s2">&quot;Sorting information changed!&quot;</span>
+        <span class="k">return</span> <span class="n">results_dict</span>
+
+<div class="viewcode-block" id="SparcBundle.convert_to_ase">
+<a class="viewcode-back" href="../../api/sparc.io.html#sparc.io.SparcBundle.convert_to_ase">[docs]</a>
+    <span class="k">def</span> <span class="nf">convert_to_ase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">include_all_files</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the raw results from the bundle and create atoms with</span>
+<span class="sd">        single point calculators</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            index (int or str): Index or slice of the image(s) to convert. Uses the same format as ase.io.read</span>
+<span class="sd">            include_all_files (bool): If true, also read results with indexed suffices</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Atoms or List[Atoms]: ASE-atoms or images with single point results</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Convert to images!</span>
+        <span class="c1"># TODO: @TT 2024-11-01 read_raw_results should implement a more</span>
+        <span class="c1"># robust behavior handling index, as it is the entry point for all</span>
+        <span class="n">rs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_raw_results</span><span class="p">(</span><span class="n">include_all_files</span><span class="o">=</span><span class="n">include_all_files</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">raw_results</span> <span class="o">=</span> <span class="p">[</span><span class="n">rs</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">raw_results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">rs</span><span class="p">)</span>
+        <span class="n">res_images</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">raw_results</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;static&quot;</span> <span class="ow">in</span> <span class="n">entry</span><span class="p">:</span>
+                <span class="n">calc_results</span><span class="p">,</span> <span class="n">images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_static_results</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;geopt&quot;</span> <span class="ow">in</span> <span class="n">entry</span><span class="p">:</span>
+                <span class="n">calc_results</span><span class="p">,</span> <span class="n">images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_geopt_results</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;aimd&quot;</span> <span class="ow">in</span> <span class="n">entry</span><span class="p">:</span>
+                <span class="n">calc_results</span><span class="p">,</span> <span class="n">images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_aimd_results</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">calc_results</span><span class="p">,</span> <span class="n">images</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">init_atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()]</span>
+
+            <span class="k">if</span> <span class="n">images</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">calc_results</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_singlepoint</span><span class="p">(</span><span class="n">calc_results</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">entry</span><span class="p">)</span>
+                <span class="n">res_images</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">res_images</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">res_images</span><span class="p">[</span><span class="n">string2index</span><span class="p">(</span><span class="n">index</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="SparcBundle._make_singlepoint">
+<a class="viewcode-back" href="../../api/sparc.io.html#sparc.io.SparcBundle._make_singlepoint">[docs]</a>
+    <span class="k">def</span> <span class="nf">_make_singlepoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calc_results</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">raw_results</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a calculator dict and images of Atoms to list of</span>
+<span class="sd">        SinglePointDFTCalculators</span>
+
+<span class="sd">        The calculator also takes parameters from ion, inpt that exist</span>
+<span class="sd">        in self.raw_results.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            calc_results (List): Calculation results for all images</span>
+<span class="sd">            images (List): Corresponding Atoms images</span>
+<span class="sd">            raw_results (List): Full raw results dict to obtain additional information</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List(Atoms): ASE-atoms images with single point calculators attached</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">converted_images</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">res</span><span class="p">,</span> <span class="n">_atoms</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">calc_results</span><span class="p">,</span> <span class="n">images</span><span class="p">):</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="n">_atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">sp</span> <span class="o">=</span> <span class="n">SinglePointDFTCalculator</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+            <span class="c1"># Res can be empty at this point, leading to incomplete calc</span>
+            <span class="n">sp</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+            <span class="n">sp</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;sparc&quot;</span>
+            <span class="n">sp</span><span class="o">.</span><span class="n">kpts</span> <span class="o">=</span> <span class="n">raw_results</span><span class="p">[</span><span class="s2">&quot;inpt&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;KPOINT_GRID&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="c1"># There may be a better way handling the parameters...</span>
+            <span class="n">sp</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">raw_results</span><span class="p">[</span><span class="s2">&quot;inpt&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">sp</span><span class="o">.</span><span class="n">raw_parameters</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;ion&quot;</span><span class="p">:</span> <span class="n">raw_results</span><span class="p">[</span><span class="s2">&quot;ion&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;inpt&quot;</span><span class="p">:</span> <span class="n">raw_results</span><span class="p">[</span><span class="s2">&quot;inpt&quot;</span><span class="p">],</span>
+            <span class="p">}</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">sp</span>
+            <span class="n">converted_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">converted_images</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_extract_static_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_results</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract the static calculation results and atomic</span>
+<span class="sd">        structure(s) Returns: calc_results: dict with at least energy</span>
+<span class="sd">        value atoms: ASE atoms object The priority is to parse</span>
+<span class="sd">        position from static file first, then fallback from ion + inpt</span>
+
+<span class="sd">        Note: make all energy / forces resorted!</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            raw_results (dict): Raw results parsed from self.read_raw_results</span>
+<span class="sd">            index (str or int): Index or slice of images</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[results], List[Atoms]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">static_results</span> <span class="o">=</span> <span class="n">raw_results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;static&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">calc_results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Use extra lattice information to construct the positions</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_atoms</span><span class="o">.</span><span class="n">cell</span>
+        <span class="c1"># import pdb; pdb.set_trace()</span>
+        <span class="n">static_results</span> <span class="o">=</span> <span class="n">_add_cell_info</span><span class="p">(</span><span class="n">static_results</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">_images</span> <span class="o">=</span> <span class="p">[</span><span class="n">static_results</span><span class="p">[</span><span class="n">index</span><span class="p">]]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">_images</span> <span class="o">=</span> <span class="n">static_results</span><span class="p">[</span><span class="n">string2index</span><span class="p">(</span><span class="n">index</span><span class="p">)]</span>
+
+        <span class="n">ase_images</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">static_results</span> <span class="ow">in</span> <span class="n">_images</span><span class="p">:</span>
+            <span class="n">partial_results</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="s2">&quot;free energy&quot;</span> <span class="ow">in</span> <span class="n">static_results</span><span class="p">:</span>
+                <span class="n">partial_results</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">static_results</span><span class="p">[</span><span class="s2">&quot;free energy&quot;</span><span class="p">]</span>
+                <span class="n">partial_results</span><span class="p">[</span><span class="s2">&quot;free energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">static_results</span><span class="p">[</span><span class="s2">&quot;free energy&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;forces&quot;</span> <span class="ow">in</span> <span class="n">static_results</span><span class="p">:</span>
+                <span class="n">partial_results</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">static_results</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">resort</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;atomic_magnetization&quot;</span> <span class="ow">in</span> <span class="n">static_results</span><span class="p">:</span>
+                <span class="n">partial_results</span><span class="p">[</span><span class="s2">&quot;magmoms&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">static_results</span><span class="p">[</span><span class="s2">&quot;atomic_magnetization&quot;</span><span class="p">][</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">resort</span>
+                <span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;net_magnetization&quot;</span> <span class="ow">in</span> <span class="n">static_results</span><span class="p">:</span>
+                <span class="n">partial_results</span><span class="p">[</span><span class="s2">&quot;magmom&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">static_results</span><span class="p">[</span><span class="s2">&quot;net_magnetization&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;stress&quot;</span> <span class="ow">in</span> <span class="n">static_results</span><span class="p">:</span>
+                <span class="n">partial_results</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">static_results</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;stress_equiv&quot;</span> <span class="ow">in</span> <span class="n">static_results</span><span class="p">:</span>
+                <span class="n">partial_results</span><span class="p">[</span><span class="s2">&quot;stress_equiv&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">static_results</span><span class="p">[</span><span class="s2">&quot;stress_equiv&quot;</span><span class="p">]</span>
+
+            <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="c1"># import pdb; pdb.set_trace()</span>
+            <span class="k">if</span> <span class="s2">&quot;atoms&quot;</span> <span class="ow">in</span> <span class="n">static_results</span><span class="p">:</span>
+                <span class="n">atoms_dict</span> <span class="o">=</span> <span class="n">static_results</span><span class="p">[</span><span class="s2">&quot;atoms&quot;</span><span class="p">]</span>
+
+                <span class="c1"># The socket mode case. Reset all cell and positions</span>
+                <span class="c1"># Be careful,</span>
+                <span class="k">if</span> <span class="s2">&quot;lattice&quot;</span> <span class="ow">in</span> <span class="n">static_results</span><span class="p">:</span>
+                    <span class="n">lat</span> <span class="o">=</span> <span class="n">static_results</span><span class="p">[</span><span class="s2">&quot;lattice&quot;</span><span class="p">]</span>
+                    <span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">scale_atoms</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="s2">&quot;coord&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">atoms_dict</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                            <span class="s2">&quot;Coordination conversion failed in socket static output!&quot;</span>
+                        <span class="p">)</span>
+                    <span class="n">atoms</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span>
+                        <span class="n">atoms_dict</span><span class="p">[</span><span class="s2">&quot;coord&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">resort</span><span class="p">],</span> <span class="n">apply_constraint</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># Do not change cell information (normal static file)</span>
+                    <span class="k">if</span> <span class="s2">&quot;coord_frac&quot;</span> <span class="ow">in</span> <span class="n">atoms_dict</span><span class="p">:</span>
+                        <span class="n">atoms</span><span class="o">.</span><span class="n">set_scaled_positions</span><span class="p">(</span>
+                            <span class="n">atoms_dict</span><span class="p">[</span><span class="s2">&quot;coord_frac&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">resort</span><span class="p">]</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="s2">&quot;coord&quot;</span> <span class="ow">in</span> <span class="n">atoms_dict</span><span class="p">:</span>
+                        <span class="n">atoms</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span>
+                            <span class="n">atoms_dict</span><span class="p">[</span><span class="s2">&quot;coord&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">resort</span><span class="p">],</span> <span class="n">apply_constraint</span><span class="o">=</span><span class="kc">False</span>
+                        <span class="p">)</span>
+            <span class="n">ase_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+            <span class="n">calc_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">partial_results</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">calc_results</span><span class="p">,</span> <span class="n">ase_images</span>
+
+    <span class="k">def</span> <span class="nf">_extract_geopt_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_results</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract the static calculation results and atomic</span>
+<span class="sd">        structure(s) Returns: calc_results: dict with at least energy</span>
+<span class="sd">        value atoms: ASE atoms object The priority is to parse</span>
+<span class="sd">        position from static file first, then fallback from ion + inpt</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            raw_results (dict): Raw results parsed from self.read_raw_results</span>
+<span class="sd">            index (str or int): Index or slice of images</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[results], List[Atoms]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># print(&quot;RAW_RES:  &quot;, raw_results)</span>
+        <span class="n">geopt_results</span> <span class="o">=</span> <span class="n">raw_results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geopt&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">calc_results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">geopt_results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;Geopt file is empty! This is not an error if the calculation is continued from restart. &quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">_images</span> <span class="o">=</span> <span class="p">[</span><span class="n">geopt_results</span><span class="p">[</span><span class="n">index</span><span class="p">]]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">_images</span> <span class="o">=</span> <span class="n">geopt_results</span><span class="p">[</span><span class="n">string2index</span><span class="p">(</span><span class="n">index</span><span class="p">)]</span>
+
+        <span class="n">ase_images</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">_images</span><span class="p">:</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">partial_result</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="s2">&quot;energy&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">partial_result</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span>
+                <span class="n">partial_result</span><span class="p">[</span><span class="s2">&quot;free energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;forces&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">partial_result</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">resort</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;stress&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">partial_result</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">]</span>
+
+            <span class="c1"># Modify the atoms copy</span>
+            <span class="k">if</span> <span class="s2">&quot;positions&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">atoms</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span>
+                    <span class="n">result</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">resort</span><span class="p">],</span> <span class="n">apply_constraint</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="s2">&quot;ase_cell&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                    <span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;ase_cell&quot;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># For geopt and RELAX=2 (cell relaxation),</span>
+                <span class="c1"># the positions may not be written in .geopt file</span>
+                <span class="n">relax_flag</span> <span class="o">=</span> <span class="n">raw_results</span><span class="p">[</span><span class="s2">&quot;inpt&quot;</span><span class="p">][</span><span class="s2">&quot;params&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;RELAX_FLAG&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">relax_flag</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;.geopt file missing positions while RELAX!=2. &quot;</span>
+                        <span class="s2">&quot;Please check your setup ad output files.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">if</span> <span class="s2">&quot;ase_cell&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Cannot recover positions from .geopt file due to missing cell information. &quot;</span>
+                        <span class="s2">&quot;Please check your setup ad output files.&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;ase_cell&quot;</span><span class="p">],</span> <span class="n">scale_atoms</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># Unlike low-dimensional stress in static calculations, we need to convert</span>
+            <span class="c1"># stress_1d stress_2d to stress_equiv using the non-period cell dimension(s)</span>
+            <span class="c1"># This has to be done when the actual cell information is loaded</span>
+            <span class="k">if</span> <span class="s2">&quot;stress_1d&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">stress_1d</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stress_1d&quot;</span><span class="p">]</span>
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+                <span class="p">),</span> <span class="s2">&quot;Dimension of stress and PBC mismatch!&quot;</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">bc</span><span class="p">:</span>
+                        <span class="n">stress_1d</span> <span class="o">/=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">cellpar</span><span class="p">()[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">stress_equiv</span> <span class="o">=</span> <span class="n">stress_1d</span>
+                <span class="n">partial_result</span><span class="p">[</span><span class="s2">&quot;stress_equiv&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stress_equiv</span>
+
+            <span class="k">if</span> <span class="s2">&quot;stress_2d&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">stress_2d</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;stress_2d&quot;</span><span class="p">]</span>
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+                <span class="p">),</span> <span class="s2">&quot;Dimension of stress and PBC mismatch!&quot;</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">bc</span><span class="p">:</span>
+                        <span class="n">stress_2d</span> <span class="o">/=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">cellpar</span><span class="p">()[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">stress_equiv</span> <span class="o">=</span> <span class="n">stress_2d</span>
+                <span class="n">partial_result</span><span class="p">[</span><span class="s2">&quot;stress_equiv&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stress_equiv</span>
+
+            <span class="n">calc_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">partial_result</span><span class="p">)</span>
+            <span class="n">ase_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">calc_results</span><span class="p">,</span> <span class="n">ase_images</span>
+
+    <span class="k">def</span> <span class="nf">_extract_aimd_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_results</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract energy / forces from aimd results</span>
+
+<span class="sd">        For calculator, we only need the last image</span>
+
+<span class="sd">        We probably want more information for the AIMD calculations,</span>
+<span class="sd">        but I&#39;ll keep them for now</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            raw_results (dict): Raw results parsed from self.read_raw_results</span>
+<span class="sd">            index (str or int): Index or slice of images</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[results], List[Atoms]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">aimd_results</span> <span class="o">=</span> <span class="n">raw_results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;aimd&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">calc_results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">aimd_results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;Aimd file is empty! &quot;</span>
+                <span class="s2">&quot;This is not an error if the calculation &quot;</span>
+                <span class="s2">&quot;is continued from restart. &quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">_images</span> <span class="o">=</span> <span class="p">[</span><span class="n">aimd_results</span><span class="p">[</span><span class="n">index</span><span class="p">]]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">_images</span> <span class="o">=</span> <span class="n">aimd_results</span><span class="p">[</span><span class="n">string2index</span><span class="p">(</span><span class="n">index</span><span class="p">)]</span>
+
+        <span class="n">ase_images</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">_images</span><span class="p">:</span>
+            <span class="n">partial_result</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;total energy per atom&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">partial_result</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;total energy per atom&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;free energy per atom&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">partial_result</span><span class="p">[</span><span class="s2">&quot;free energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;free energy per atom&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span>
+                    <span class="n">atoms</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="s2">&quot;forces&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="c1"># The forces are already re-sorted!</span>
+                <span class="n">partial_result</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">resort</span><span class="p">]</span>
+
+            <span class="c1"># Modify the atoms in-place</span>
+            <span class="k">if</span> <span class="s2">&quot;positions&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot have aimd without positions information!&quot;</span><span class="p">)</span>
+
+            <span class="n">atoms</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span>
+                <span class="n">result</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">resort</span><span class="p">],</span> <span class="n">apply_constraint</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="s2">&quot;velocities&quot;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">atoms</span><span class="o">.</span><span class="n">set_velocities</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;velocities&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">resort</span><span class="p">])</span>
+
+            <span class="n">ase_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+            <span class="n">calc_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">partial_result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">calc_results</span><span class="p">,</span> <span class="n">ase_images</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrap the self.sorting dict. If sorting information does not exist,</span>
+<span class="sd">        use the default slicing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorting</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">sort</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorting</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sort&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sort</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sort</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">resort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrap the self.sorting dict. If sorting information does not exist,</span>
+<span class="sd">        use the default slicing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorting</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">resort</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorting</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;resort&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">resort</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resort</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SparcBundle.read_psp_info">
+<a class="viewcode-back" href="../../api/sparc.io.html#sparc.io.SparcBundle.read_psp_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">read_psp_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse the psp information from inpt file options</span>
+<span class="sd">        The psp file locations are relative to the bundle.</span>
+
+<span class="sd">        If the files cannot be found, the dict will only contain</span>
+<span class="sd">        the path</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inpt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_inputs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ion&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">blocks</span> <span class="o">=</span> <span class="n">inpt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;atom_blocks&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">psp_info</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">:</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="n">block</span><span class="p">[</span><span class="s2">&quot;ATOM_TYPE&quot;</span><span class="p">]</span>
+            <span class="n">pseudo_path</span> <span class="o">=</span> <span class="n">block</span><span class="p">[</span><span class="s2">&quot;PSEUDO_POT&quot;</span><span class="p">]</span>
+            <span class="n">real_path</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="n">pseudo_path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+            <span class="n">psp_info</span><span class="p">[</span><span class="n">element</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;rel_path&quot;</span><span class="p">:</span> <span class="n">pseudo_path</span><span class="p">}</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">real_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot locate pseudopotential </span><span class="si">{</span><span class="n">pseudo_path</span><span class="si">}</span><span class="s2">. &quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">header</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">real_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="n">psp_data</span> <span class="o">=</span> <span class="n">parse_psp8_header</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+                <span class="n">psp_info</span><span class="p">[</span><span class="n">element</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">psp_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">psp_info</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="read_sparc">
+<a class="viewcode-back" href="../../api/sparc.io.html#sparc.io.read_sparc">[docs]</a>
+<span class="k">def</span> <span class="nf">read_sparc</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">include_all_files</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a SPARC bundle, return an Atoms object or list of Atoms (image)</span>
+<span class="sd">    with embedded calculator result.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        filename (str or PosixPath): Filename to the sparc bundle</span>
+<span class="sd">        index (int or str): Index or slice of the images, following the ase.io.read convention</span>
+<span class="sd">        include_all_files (bool): If true, parse all output files with indexed suffices</span>
+<span class="sd">        **kwargs: Additional parameters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Atoms or List[Atoms]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># We rely on minimal api version choose, i.e. default or set from env</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">()</span>
+    <span class="n">sb</span> <span class="o">=</span> <span class="n">SparcBundle</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">api</span><span class="p">)</span>
+    <span class="n">atoms_or_images</span> <span class="o">=</span> <span class="n">sb</span><span class="o">.</span><span class="n">convert_to_ase</span><span class="p">(</span>
+        <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">include_all_files</span><span class="o">=</span><span class="n">include_all_files</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">atoms_or_images</span></div>
+
+
+
+<div class="viewcode-block" id="write_sparc">
+<a class="viewcode-back" href="../../api/sparc.io.html#sparc.io.write_sparc">[docs]</a>
+<span class="k">def</span> <span class="nf">write_sparc</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write sparc file. Images can only be Atoms object</span>
+<span class="sd">    or list of length 1</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        filename (str or PosixPath): Filename to the output sparc directory</span>
+<span class="sd">        images (Atoms or List(Atoms)): Atoms object to be written. Only supports writting 1 Atoms</span>
+<span class="sd">        **kwargs: Additional parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
+        <span class="n">atoms</span> <span class="o">=</span> <span class="n">images</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;SPARC format only supports writing one atoms object!&quot;</span><span class="p">)</span>
+        <span class="n">atoms</span> <span class="o">=</span> <span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">()</span>
+    <span class="n">sb</span> <span class="o">=</span> <span class="n">SparcBundle</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">api</span><span class="p">)</span>
+    <span class="n">sb</span><span class="o">.</span><span class="n">_write_ion_and_inpt</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+
+<span class="nd">@deprecated</span><span class="p">(</span>
+    <span class="s2">&quot;Reading individual .ion file is not recommended. Please use read_sparc instead.&quot;</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">read_sparc_ion</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse an .ion file inside the SPARC bundle using a wrapper around SparcBundle</span>
+<span class="sd">    The reader works only when other files (.inpt) exist.</span>
+
+<span class="sd">    The returned Atoms object of read_ion method only contains the initial positions</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        filename (str or PosixPath): Filename to the .ion file</span>
+<span class="sd">        index (int or str): Index or slice of the images, following the ase.io.read convention</span>
+<span class="sd">        **kwargs: Additional parameters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Atoms or List[Atoms]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">()</span>
+    <span class="n">parent_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+    <span class="n">sb</span> <span class="o">=</span> <span class="n">SparcBundle</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">parent_dir</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">api</span><span class="p">)</span>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="n">sb</span><span class="o">.</span><span class="n">_read_ion_and_inpt</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">atoms</span>
+
+
+<span class="c1"># Backward compatibity</span>
+<span class="n">read_ion</span> <span class="o">=</span> <span class="n">read_sparc_ion</span>
+
+
+<span class="nd">@deprecated</span><span class="p">(</span>
+    <span class="s2">&quot;Writing individual .ion file is not recommended. Please use write_sparc instead.&quot;</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">write_sparc_ion</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write .ion file using the SparcBundle wrapper. This method will also create the .inpt file</span>
+
+<span class="sd">    This is only for backward compatibility</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        filename (str or PosixPath): Filename to the .ion file</span>
+<span class="sd">        atoms (Atoms): atoms to be written</span>
+<span class="sd">        **kwargs: Additional parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">parent_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">()</span>
+    <span class="n">sb</span> <span class="o">=</span> <span class="n">SparcBundle</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">parent_dir</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">api</span><span class="p">)</span>
+    <span class="n">sb</span><span class="o">.</span><span class="n">_write_ion_and_inpt</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">atoms</span>
+
+
+<span class="c1"># Backward compatibility</span>
+<span class="n">write_ion</span> <span class="o">=</span> <span class="n">write_sparc_ion</span>
+
+
+<span class="nd">@deprecated</span><span class="p">(</span>
+    <span class="s2">&quot;Reading individual .static file is not recommended. Please use read_sparc instead.&quot;</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">read_sparc_static</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a .static file bundle using a wrapper around SparcBundle</span>
+<span class="sd">    The reader works only when other files (.ion, .inpt) exist.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        filename (str or PosixPath): Filename to the .static file</span>
+<span class="sd">        index (int or str): Index or slice of the images, following the ase.io.read convention</span>
+<span class="sd">        **kwargs: Additional parameters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Atoms or List[Atoms]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parent_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">()</span>
+    <span class="n">sb</span> <span class="o">=</span> <span class="n">SparcBundle</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">parent_dir</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">api</span><span class="p">)</span>
+    <span class="c1"># In most of the cases the user wants to inspect all images</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s2">&quot;include_all_files&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">include_all_files</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">atoms_or_images</span> <span class="o">=</span> <span class="n">sb</span><span class="o">.</span><span class="n">convert_to_ase</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">atoms_or_images</span>
+
+
+<span class="c1"># Backward compatibility</span>
+<span class="n">read_static</span> <span class="o">=</span> <span class="n">read_sparc_static</span>
+
+
+<span class="nd">@deprecated</span><span class="p">(</span>
+    <span class="s2">&quot;Reading individual .geopt file is not recommended. Please use read_sparc instead.&quot;</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">read_sparc_geopt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a .geopt file bundle using a wrapper around SparcBundle</span>
+<span class="sd">    The reader works only when other files (.ion, .inpt) exist.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        filename (str or PosixPath): Filename to the .geopt file</span>
+<span class="sd">        index (int or str): Index or slice of the images, following the ase.io.read convention</span>
+<span class="sd">        **kwargs: Additional parameters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Atoms or List[Atoms]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parent_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">()</span>
+    <span class="n">sb</span> <span class="o">=</span> <span class="n">SparcBundle</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">parent_dir</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">api</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s2">&quot;include_all_files&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">include_all_files</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">atoms_or_images</span> <span class="o">=</span> <span class="n">sb</span><span class="o">.</span><span class="n">convert_to_ase</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">atoms_or_images</span>
+
+
+<span class="c1"># Backward compatibility</span>
+<span class="n">read_geopt</span> <span class="o">=</span> <span class="n">read_sparc_geopt</span>
+
+
+<span class="nd">@deprecated</span><span class="p">(</span>
+    <span class="s2">&quot;Reading individual .aimd file is not recommended. Please use read_sparc instead.&quot;</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">read_sparc_aimd</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a .static file bundle using a wrapper around SparcBundle</span>
+<span class="sd">    The reader works only when other files (.ion, .inpt) exist.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        filename (str or PosixPath): Filename to the .aimd file</span>
+<span class="sd">        index (int or str): Index or slice of the images, following the ase.io.read convention</span>
+<span class="sd">        **kwargs: Additional parameters</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       Atoms or List[Atoms]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parent_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">()</span>
+    <span class="n">sb</span> <span class="o">=</span> <span class="n">SparcBundle</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">parent_dir</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">api</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s2">&quot;include_all_files&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">include_all_files</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">atoms_or_images</span> <span class="o">=</span> <span class="n">sb</span><span class="o">.</span><span class="n">convert_to_ase</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">atoms_or_images</span>
+
+
+<span class="c1"># Backward compatibility</span>
+<span class="n">read_aimd</span> <span class="o">=</span> <span class="n">read_sparc_aimd</span>
+
+
+<span class="k">def</span> <span class="nf">__register_new_filetype</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register the filetype() function that allows recognizing .sparc as directory</span>
+<span class="sd">    This method should only be called for ase==3.22 compatibility and for ase-gui</span>
+<span class="sd">    In future versions of ase gui where format is supported, this method should be removed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">sys</span>
+
+    <span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">formats</span> <span class="k">as</span> <span class="n">hacked_formats</span>
+    <span class="kn">from</span> <span class="nn">ase.io.formats</span> <span class="kn">import</span> <span class="n">filetype</span> <span class="k">as</span> <span class="n">_old_filetype</span>
+    <span class="kn">from</span> <span class="nn">ase.io.formats</span> <span class="kn">import</span> <span class="n">ioformats</span>
+
+    <span class="k">def</span> <span class="nf">_new_filetype</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">guess</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A hacked solution for the auto format recovery&quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">if</span> <span class="s2">&quot;.sparc&quot;</span> <span class="ow">in</span> <span class="n">ext</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;sparc&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.ion&quot;</span><span class="p">)))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.inpt&quot;</span><span class="p">)))</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="p">):</span>
+                    <span class="k">return</span> <span class="s2">&quot;sparc&quot;</span>
+            <span class="k">return</span> <span class="n">_old_filetype</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">read</span><span class="p">,</span> <span class="n">guess</span><span class="p">)</span>
+
+    <span class="n">hacked_formats</span><span class="o">.</span><span class="n">filetype</span> <span class="o">=</span> <span class="n">_new_filetype</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s2">&quot;ase.io.formats&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hacked_formats</span>
+    <span class="k">return</span>
+
+
+<span class="nd">@deprecated</span><span class="p">(</span>
+    <span class="s2">&quot;register_ase_io_sparc will be deprecated for future releases. Please upgrade ase&gt;=3.23.&quot;</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">register_ase_io_sparc</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    **Legacy register of io-formats for ase==3.22**</span>
+<span class="sd">    **For ase&gt;=3.23, use the package entrypoint registration**</span>
+<span class="sd">    Monkey patching the ase.io and ase.io.formats</span>
+<span class="sd">    So that the following formats can be used</span>
+<span class="sd">    after `import sparc`</span>
+
+<span class="sd">    ```</span>
+<span class="sd">    from ase.io import sparc</span>
+<span class="sd">    ase.io.read(&quot;test.sparc&quot;)</span>
+<span class="sd">    atoms.write(&quot;test.sparc&quot;)</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    The register method only aims to work for ase 3.22</span>
+<span class="sd">    the develope version of ase provides a much more powerful</span>
+<span class="sd">    register mechanism, we can wait.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">sys</span>
+    <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+    <span class="kn">import</span> <span class="nn">pkg_resources</span>
+    <span class="kn">from</span> <span class="nn">ase.io.formats</span> <span class="kn">import</span> <span class="n">define_io_format</span> <span class="k">as</span> <span class="n">F</span>
+    <span class="kn">from</span> <span class="nn">ase.io.formats</span> <span class="kn">import</span> <span class="n">ioformats</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ioformats</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">return</span>
+    <span class="n">desc</span> <span class="o">=</span> <span class="s2">&quot;SPARC .sparc bundle&quot;</span>
+
+    <span class="c1"># Step 1: patch the ase.io.sparc module</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">entry_points</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+            <span class="n">ep</span> <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">pkg_resources</span><span class="o">.</span><span class="n">iter_entry_points</span><span class="p">(</span><span class="s2">&quot;ase.io&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">ep</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;sparc&quot;</span>
+        <span class="p">)</span>
+        <span class="n">_monkey_mod</span> <span class="o">=</span> <span class="n">entry_points</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="s2">&quot;Failed to load entrypoint `ase.io.sparc`, &quot;</span>
+                <span class="s2">&quot;you may need to reinstall sparc python api.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;You may still use `sparc.read_sparc` and &quot;</span>
+                <span class="s2">&quot;`sparc.write_sparc` methods, &quot;</span>
+                <span class="s2">&quot;but not `ase.io.read`</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;The error is </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;ase.io.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_monkey_mod</span>
+    <span class="n">__register_new_filetype</span><span class="p">()</span>
+
+    <span class="c1"># Step 2: define a new format</span>
+    <span class="n">F</span><span class="p">(</span>
+        <span class="n">name</span><span class="p">,</span>
+        <span class="n">desc</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">=</span><span class="s2">&quot;+S&quot;</span><span class="p">,</span>  <span class="c1"># read_sparc has multi-image support</span>
+        <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ioformats</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">warn</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="s2">&quot;Registering .sparc format with ase.io failed. &quot;</span>
+                <span class="s2">&quot;You may still use `sparc.read_sparc` and &quot;</span>
+                <span class="s2">&quot;`sparc.write_sparc` methods. </span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;Please contact the developer to report this issue.&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="kn">import</span> <span class="nn">tempfile</span>
+
+    <span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span>
+
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.sparc&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">read</span><span class="p">(</span><span class="n">tmpdir</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s2">&quot;bundletrajectory&quot;</span> <span class="ow">in</span> <span class="n">emsg</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="s2">&quot;Atomatic format inference for sparc is not correctly registered. &quot;</span>
+                    <span class="s2">&quot;You may need to use format=sparc in ase.io.read and ase.io.write. &quot;</span>
+                <span class="p">)</span>
+    <span class="c1"># Add additional formats including .ion (r/w), .static, .geopt, .aimd</span>
+    <span class="n">F</span><span class="p">(</span>
+        <span class="s2">&quot;ion&quot;</span><span class="p">,</span>
+        <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;SPARC .ion file&quot;</span><span class="p">,</span>
+        <span class="n">module</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">=</span><span class="s2">&quot;1S&quot;</span><span class="p">,</span>
+        <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;ion&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">F</span><span class="p">(</span>
+        <span class="s2">&quot;static&quot;</span><span class="p">,</span>
+        <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;SPARC single point results&quot;</span><span class="p">,</span>
+        <span class="n">module</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">=</span><span class="s2">&quot;+S&quot;</span><span class="p">,</span>
+        <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;static&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">F</span><span class="p">(</span>
+        <span class="s2">&quot;geopt&quot;</span><span class="p">,</span>
+        <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;SPARC geometric optimization results&quot;</span><span class="p">,</span>
+        <span class="n">module</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">=</span><span class="s2">&quot;+S&quot;</span><span class="p">,</span>
+        <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;geopt&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">F</span><span class="p">(</span><span class="s2">&quot;aimd&quot;</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;SPARC AIMD results&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="s2">&quot;+S&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;aimd&quot;</span><span class="p">)</span>
+
+    <span class="c1"># TODO: remove print options as it may be redundant</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Successfully registered sparc formats with ase.io!&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># ase&gt;=3.23 uses new ExternalIOFormat as registered entrypoints</span>
+<span class="c1"># Please do not use from ase.io.formats import ExternalIOFormat!</span>
+<span class="c1"># This causes circular import</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">ase.utils.plugins</span> <span class="kn">import</span> <span class="n">ExternalIOFormat</span> <span class="k">as</span> <span class="n">EIF</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># Backward Compatibility</span>
+    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+    <span class="c1"># Copy definition from 3.23</span>
+    <span class="c1"># Name is defined in the entry point</span>
+    <span class="k">class</span> <span class="nc">ExternalIOFormat</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+        <span class="n">desc</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="n">code</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="n">module</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">glob</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ext</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">magic</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">magic_regex</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">EIF</span> <span class="o">=</span> <span class="n">ExternalIOFormat</span>
+
+<span class="n">format_sparc</span> <span class="o">=</span> <span class="n">EIF</span><span class="p">(</span>
+    <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;SPARC .sparc bundle&quot;</span><span class="p">,</span>
+    <span class="n">module</span><span class="o">=</span><span class="s2">&quot;sparc.io&quot;</span><span class="p">,</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;+S&quot;</span><span class="p">,</span>  <span class="c1"># read_sparc has multi-image support</span>
+    <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">format_ion</span> <span class="o">=</span> <span class="n">EIF</span><span class="p">(</span>
+    <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;SPARC .ion file&quot;</span><span class="p">,</span>
+    <span class="n">module</span><span class="o">=</span><span class="s2">&quot;sparc.io&quot;</span><span class="p">,</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;1S&quot;</span><span class="p">,</span>
+    <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;ion&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">format_static</span> <span class="o">=</span> <span class="n">EIF</span><span class="p">(</span>
+    <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;SPARC single point results&quot;</span><span class="p">,</span>
+    <span class="n">module</span><span class="o">=</span><span class="s2">&quot;sparc.io&quot;</span><span class="p">,</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;+S&quot;</span><span class="p">,</span>
+    <span class="n">glob</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;*.static&quot;</span><span class="p">,</span> <span class="s2">&quot;*.static_*&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">format_geopt</span> <span class="o">=</span> <span class="n">EIF</span><span class="p">(</span>
+    <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;SPARC geometric optimization results&quot;</span><span class="p">,</span>
+    <span class="n">module</span><span class="o">=</span><span class="s2">&quot;sparc.io&quot;</span><span class="p">,</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;+S&quot;</span><span class="p">,</span>
+    <span class="n">glob</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;*.geopt&quot;</span><span class="p">,</span> <span class="s2">&quot;*.geopt_*&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">format_aimd</span> <span class="o">=</span> <span class="n">EIF</span><span class="p">(</span>
+    <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;SPARC AIMD results&quot;</span><span class="p">,</span>
+    <span class="n">module</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">,</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;+S&quot;</span><span class="p">,</span>
+    <span class="n">glob</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;*.aimd*&quot;</span><span class="p">,</span> <span class="s2">&quot;*.geopt_*&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

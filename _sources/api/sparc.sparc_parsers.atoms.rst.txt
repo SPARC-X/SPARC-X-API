@@ -1,0 +1,7 @@
+sparc.sparc\_parsers.atoms module
+=================================
+
+.. automodule:: sparc.sparc_parsers.atoms
+   :members:
+   :undoc-members:
+   :show-inheritance:

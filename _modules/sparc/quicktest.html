@@ -1,0 +1,579 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sparc.quicktest &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../sparc.html">sparc</a></li>
+      <li class="breadcrumb-item active">sparc.quicktest</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sparc.quicktest</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;A simple test module for sparc python api</span>
+<span class="sd">Usage:</span>
+<span class="sd">python -m sparc.quicktest</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span> <span class="nn">ase.data</span> <span class="kn">import</span> <span class="n">chemical_symbols</span>
+
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">cprint</span>
+
+
+<div class="viewcode-block" id="BaseTest">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.BaseTest">[docs]</a>
+<span class="k">class</span> <span class="nc">BaseTest</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for all tests providing functionalities</span>
+
+<span class="sd">    Each child class will implement its own `run_test` method to</span>
+<span class="sd">    update the `result`, `error_handling` and `info` fields.</span>
+
+<span class="sd">    If you wish to include a simple error handling message for each</span>
+<span class="sd">    child class, add a line starting `Error handling` follows by the</span>
+<span class="sd">    helper message at the end of the docstring</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_handling</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">dislay_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span>
+
+<div class="viewcode-block" id="BaseTest.display_docstring">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.BaseTest.display_docstring">[docs]</a>
+    <span class="k">def</span> <span class="nf">display_docstring</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the class&#39;s docstring to error handling&quot;&quot;&quot;</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__doc__</span>
+        <span class="n">error_handling_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">begin_record</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">indent</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># indentation for the &quot;Error handling&quot; line</span>
+        <span class="k">if</span> <span class="n">doc</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Error handling&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">begin_record</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="s2">&quot;There are multiple Error handlings &quot;</span>
+                            <span class="s2">&quot;in the docstring of &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
+                        <span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="n">begin_record</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">indent</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())</span>
+                <span class="k">elif</span> <span class="n">begin_record</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">current_indent</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Only add non-empty lines</span>
+                        <span class="c1"># Compensate for the extra indentation</span>
+                        <span class="c1"># if current_indent &gt; indent</span>
+                        <span class="n">spaces</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">current_indent</span> <span class="o">-</span> <span class="n">indent</span><span class="p">)</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span>
+                        <span class="n">error_handling_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spaces</span> <span class="o">+</span> <span class="n">line</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">error_handling_string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">error_handling_lines</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">error_handling_string</span></div>
+
+
+<div class="viewcode-block" id="BaseTest.make_test">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.BaseTest.make_test">[docs]</a>
+    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Each class should implement ways to update `result` and `info`&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="BaseTest.run_test">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.BaseTest.run_test">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run test and update result etc.</span>
+<span class="sd">        If result is False, update the error handling message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">make_test</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Test result is not updated for &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> !&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error_handling</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_docstring</span><span class="p">()</span>
+        <span class="k">return</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ImportTest">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.ImportTest">[docs]</a>
+<span class="k">class</span> <span class="nc">ImportTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if external io format `sparc` can be registered in ASE</span>
+
+<span class="sd">    Error handling:</span>
+<span class="sd">    - Make sure SPARC-X-API is installed via conda / pip / setuptools</span>
+<span class="sd">    - If you wish to work on SPARC-X-API source code, use `pip install -e`</span>
+<span class="sd">      instead of setting up $PYTHON_PATH</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">display_name</span> <span class="o">=</span> <span class="s2">&quot;Import&quot;</span>
+
+<div class="viewcode-block" id="ImportTest.make_test">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.ImportTest.make_test">[docs]</a>
+    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cprint</span><span class="p">(</span><span class="s2">&quot;Testing import...&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;COMMENT&quot;</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">ase.io.formats</span> <span class="kn">import</span> <span class="n">ioformats</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;sparc&quot;</span> <span class="ow">in</span> <span class="n">ioformats</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Cannot find `sparc` as a valid &quot;</span> <span class="s2">&quot;external ioformat for ASE.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PspTest">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.PspTest">[docs]</a>
+<span class="k">class</span> <span class="nc">PspTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check at least one directory of Pseudopotential files exist</span>
+<span class="sd">    info[`psp_dir`] contains the first psp dir found on system</span>
+<span class="sd">    # TODO: check if all psp files can be located</span>
+<span class="sd">    #TODO: update to the ASE 3.23 config method</span>
+
+<span class="sd">    Error handling:</span>
+<span class="sd">    - Default version of psp files can be downloaded by</span>
+<span class="sd">      `python -m sparc.download_data`</span>
+<span class="sd">    - Alternatively, specify the variable $SPARC_PSP_PATH</span>
+<span class="sd">      to the custom pseudopotential files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">display_name</span> <span class="o">=</span> <span class="s2">&quot;Pseudopotential&quot;</span>
+
+<div class="viewcode-block" id="PspTest.make_test">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.PspTest.make_test">[docs]</a>
+    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cprint</span><span class="p">(</span><span class="s2">&quot;Testing pseudo potential path...&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;COMMENT&quot;</span><span class="p">)</span>
+        <span class="kn">import</span> <span class="nn">tempfile</span>
+
+        <span class="kn">from</span> <span class="nn">.io</span> <span class="kn">import</span> <span class="n">SparcBundle</span>
+        <span class="kn">from</span> <span class="nn">.sparc_parsers.pseudopotential</span> <span class="kn">import</span> <span class="n">find_pseudo_path</span>
+
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="n">sb</span> <span class="o">=</span> <span class="n">SparcBundle</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">)</span>
+            <span class="n">psp_dir</span> <span class="o">=</span> <span class="n">sb</span><span class="o">.</span><span class="n">psp_dir</span>
+
+        <span class="k">if</span> <span class="n">psp_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">psp_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">psp_dir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;psp_dir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">psp_dir</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">psp_dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;Pseudopotential files path &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">psp_dir</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="si">}</span><span class="s2"> does not exist.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">missing_elements</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="c1"># Default psp file are 1-57 + 72-83</span>
+                <span class="n">spms_elements</span> <span class="o">=</span> <span class="n">chemical_symbols</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">58</span><span class="p">]</span> <span class="o">+</span> <span class="n">chemical_symbols</span><span class="p">[</span><span class="mi">72</span><span class="p">:</span><span class="mi">84</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">spms_elements</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">find_pseudo_path</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">psp_dir</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                        <span class="n">missing_elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">missing_elements</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot;Pseudopotential files for &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">missing_elements</span><span class="p">)</span><span class="si">}</span><span class="s2"> elements are &quot;</span>
+                        <span class="s2">&quot;missing or incompatible: </span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">missing_elements</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;psp_dir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Pseudopotential file path not defined and/or &quot;</span>
+                <span class="s2">&quot;default psp files are incomplete.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ApiTest">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.ApiTest">[docs]</a>
+<span class="k">class</span> <span class="nc">ApiTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the API can be loaded, and store the Schema version.</span>
+
+<span class="sd">    # TODO: consider change to schema instead of api</span>
+<span class="sd">    # TODO: allow config to change json file path</span>
+<span class="sd">    Error handling:</span>
+<span class="sd">    - Check if default JSON schema exists in</span>
+<span class="sd">      `&lt;sparc-x-api-root&gt;/sparc_json_api/parameters.json`</span>
+<span class="sd">    - Use $SPARC_DOC_PATH to specify the raw LaTeX files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">display_name</span> <span class="o">=</span> <span class="s2">&quot;JSON API&quot;</span>
+
+<div class="viewcode-block" id="ApiTest.make_test">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.ApiTest.make_test">[docs]</a>
+    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">locate_api</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">()</span>
+            <span class="n">version</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">sparc_version</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;api_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">version</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;api_source&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">source</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;api_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;NaN&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;api_source&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;not found&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Error when locating a JSON schema or &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;LaTeX source files for SPARC. Error is </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CommandTest">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.CommandTest">[docs]</a>
+<span class="k">class</span> <span class="nc">CommandTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check validity of command to run SPARC calculation. This test</span>
+<span class="sd">    also checks sparc version and socket compatibility</span>
+
+<span class="sd">    # TODO: check ase 3.23 config with separate binary</span>
+<span class="sd">    Error handling:</span>
+<span class="sd">    - The command prefix to run SPARC calculation should look like</span>
+<span class="sd">      `&lt;mpi instructions&gt; &lt;sparc binary&gt;`</span>
+<span class="sd">    - Use $ASE_SPARC_COMMAND to set the command string</span>
+<span class="sd">    - Check HPC resources and compatibility (e.g. `srun` on a login node)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">display_name</span> <span class="o">=</span> <span class="s2">&quot;SPARC Command&quot;</span>
+
+<div class="viewcode-block" id="CommandTest.make_test">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.CommandTest.make_test">[docs]</a>
+    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">tempfile</span>
+
+        <span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;command&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;sparc_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">)</span>
+            <span class="c1"># Step 1: validity of sparc command</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">test_cmd</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">_make_command</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;command&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">test_cmd</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;command&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;not found&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error setting SPARC command:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="c1"># Step 2: check SPARC binary version</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sparc_version</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">detect_sparc_version</span><span class="p">()</span>
+                <span class="c1"># Version may be None if failed to retrieve</span>
+                <span class="k">if</span> <span class="n">sparc_version</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">&amp;</span> <span class="kc">True</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;sparc_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sparc_version</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;sparc_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;NaN&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">+=</span> <span class="s2">&quot;Error detecting SPARC version&quot;</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;sparc_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;NaN&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Error detecting SPARC version:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FileIOCalcTest">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.FileIOCalcTest">[docs]</a>
+<span class="k">class</span> <span class="nc">FileIOCalcTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a simple calculation in File IO mode.</span>
+
+<span class="sd">    # TODO: check ase 3.23 config</span>
+<span class="sd">    Error handling:</span>
+<span class="sd">    - Check if settings for pseudopotential files are correct</span>
+<span class="sd">    - Check if SPARC binary exists and functional</span>
+<span class="sd">    - Check if specific HPC requirements are met:</span>
+<span class="sd">      (module files, libraries, parallel settings, resources)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">display_name</span> <span class="o">=</span> <span class="s2">&quot;Calculation (File I/O)&quot;</span>
+
+<div class="viewcode-block" id="FileIOCalcTest.make_test">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.FileIOCalcTest.make_test">[docs]</a>
+    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">tempfile</span>
+
+        <span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">bulk</span>
+
+        <span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
+
+        <span class="c1"># 1x Al atoms with super bad calculation condition</span>
+        <span class="n">al</span> <span class="o">=</span> <span class="n">bulk</span><span class="p">(</span><span class="s2">&quot;Al&quot;</span><span class="p">,</span> <span class="n">cubic</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">tol_scf</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">al</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">calc</span>
+                <span class="n">al</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;Simple calculation in file I/O mode failed: </span><span class="se">\n</span><span class="s2">&quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SocketCalcTest">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.SocketCalcTest">[docs]</a>
+<span class="k">class</span> <span class="nc">SocketCalcTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a simple calculation in Socket mode (UNIX socket).</span>
+
+<span class="sd">    # TODO: check ase 3.23 config</span>
+<span class="sd">    Error handling:</span>
+<span class="sd">    - The same as error handling in file I/O calculation test</span>
+<span class="sd">    - Check if SPARC binary supports socket</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">display_name</span> <span class="o">=</span> <span class="s2">&quot;Calculation (UNIX socket)&quot;</span>
+
+<div class="viewcode-block" id="SocketCalcTest.make_test">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.SocketCalcTest.make_test">[docs]</a>
+    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">tempfile</span>
+
+        <span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">bulk</span>
+
+        <span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
+
+        <span class="c1"># Check SPARC binary socket compatibility</span>
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sparc_compat</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">detect_socket_compatibility</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;sparc_socket_compatibility&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sparc_compat</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;sparc_socket_compatibility&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># 1x Al atoms with super bad calculation condition</span>
+        <span class="n">al</span> <span class="o">=</span> <span class="n">bulk</span><span class="p">(</span><span class="s2">&quot;Al&quot;</span><span class="p">,</span> <span class="n">cubic</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span>
+                <span class="n">h</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">tol_scf</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">use_socket</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">tmpdir</span>
+            <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">al</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">calc</span>
+                <span class="n">al</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;Simple calculation in socket mode (UNIX socket) failed: </span><span class="se">\n</span><span class="s2">&quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+        <span class="k">return</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.main">[docs]</a>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">cprint</span><span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;Performing a quick test on your &quot;</span> <span class="s2">&quot;SPARC and python API setup&quot;</span><span class="p">),</span>
+        <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">test_classes</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">ImportTest</span><span class="p">(),</span>
+        <span class="n">PspTest</span><span class="p">(),</span>
+        <span class="n">ApiTest</span><span class="p">(),</span>
+        <span class="n">CommandTest</span><span class="p">(),</span>
+        <span class="n">FileIOCalcTest</span><span class="p">(),</span>
+        <span class="n">SocketCalcTest</span><span class="p">(),</span>
+    <span class="p">]</span>
+
+    <span class="n">system_info</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">test</span> <span class="ow">in</span> <span class="n">test_classes</span><span class="p">:</span>
+        <span class="n">test</span><span class="o">.</span><span class="n">run_test</span><span class="p">()</span>
+        <span class="n">system_info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">info</span><span class="p">)</span>
+
+    <span class="c1"># Header section</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+    <span class="n">cprint</span><span class="p">(</span>
+        <span class="s2">&quot;Summary&quot;</span><span class="p">,</span>
+        <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;HEADER&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+    <span class="n">cprint</span><span class="p">(</span><span class="s2">&quot;Configuration&quot;</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;HEADER&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">system_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+    <span class="c1"># Body section</span>
+    <span class="n">cprint</span><span class="p">(</span><span class="s2">&quot;Tests&quot;</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;HEADER&quot;</span><span class="p">)</span>
+
+    <span class="n">print_wiki</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">test</span> <span class="ow">in</span> <span class="n">test_classes</span><span class="p">:</span>
+        <span class="n">cprint</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">test</span><span class="o">.</span><span class="n">display_name</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">test</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">cprint</span><span class="p">(</span><span class="s2">&quot;  PASS&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;OKGREEN&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cprint</span><span class="p">(</span><span class="s2">&quot;  FAIL&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;FAIL&quot;</span><span class="p">)</span>
+            <span class="n">print_wiki</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+    <span class="c1"># Error information section</span>
+    <span class="n">has_print_error_header</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">test</span> <span class="ow">in</span> <span class="n">test_classes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">error_handling</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">has_print_error_header</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">cprint</span><span class="p">(</span>
+                    <span class="p">(</span><span class="s2">&quot;Some tests failed! &quot;</span> <span class="s2">&quot;Please check the following information.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">),</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;FAIL&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">has_print_error_header</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">cprint</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">test</span><span class="o">.</span><span class="n">display_name</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">cprint</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">test</span><span class="o">.</span><span class="n">error_msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;FAIL&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">error_handling</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">print_wiki</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span>
+        <span class="n">cprint</span><span class="p">(</span>
+            <span class="s2">&quot;Please check additional information from:</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;1. SPARC&#39;s documentation: https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;2. Python API documentation: https://github.com/alchem0x2A/SPARC-X-API/blob/master/README.md</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

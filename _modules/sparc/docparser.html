@@ -1,0 +1,938 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sparc.docparser &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../sparc.html">sparc</a></li>
+      <li class="breadcrumb-item active">sparc.docparser</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sparc.docparser</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A module to parse the latex documents provided by SPARC</span>
+<span class="sd">and convert to its Python API</span>
+
+<span class="sd">Created on Wed Mar  1 15:32:31 EST 2023</span>
+
+<span class="sd">Tian Tian (alchem0x2a@gmail.com)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># Some fields in master SPARC doc may cause auto type detection</span>
+<span class="c1"># to fail, need hard-coded post-processing for now</span>
+<span class="n">postprocess_items</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;RELAX_FLAG&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;allow_bool_input&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+    <span class="s2">&quot;NPT_SCALE_CONSTRAINTS&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;NPT_SCALE_VECS&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer array&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;TOL_POISSON&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;double&quot;</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="n">sparc_repo_url</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/SPARC-X/SPARC.git&quot;</span>
+
+
+<div class="viewcode-block" id="SparcDocParser">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.SparcDocParser">[docs]</a>
+<span class="k">class</span> <span class="nc">SparcDocParser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parses LaTeX documentation of SPARC-X and converts it into a Python API.</span>
+
+<span class="sd">    This class extracts parameter information from LaTeX source files,</span>
+<span class="sd">    organizing it into a structured format that can be easily used in</span>
+<span class="sd">    Python. It supports parsing of version details, parameter types,</span>
+<span class="sd">    units, and other relevant information.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        version (str): Parsed SPARC version, based on the documentation.</span>
+<span class="sd">        parameter_categories (list): Categories of parameters extracted.</span>
+<span class="sd">        parameters (dict): Extracted parameters with detailed information.</span>
+<span class="sd">        other_parameters (dict): Additional parameters not categorized.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        find_main_file(main_file_pattern): Finds the main LaTeX file based on a pattern.</span>
+<span class="sd">        get_include_files(): Retrieves a list of included LaTeX files.</span>
+<span class="sd">        parse_version(parse): Parses and sets the SPARC version.</span>
+<span class="sd">        parse_parameters(): Extracts parameters from LaTeX files.</span>
+<span class="sd">        postprocess(): Applies hard-coded post-processing to some parameters.</span>
+<span class="sd">        to_dict(): Converts parsed information into a dictionary.</span>
+<span class="sd">        json_from_directory(directory, include_subdirs, **kwargs): Class method to create JSON from a directory.</span>
+<span class="sd">        json_from_repo(url, version, include_subdirs, **kwargs): Class method to create JSON from a repository.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+        <span class="n">main_file</span><span class="o">=</span><span class="s2">&quot;*Manual.tex&quot;</span><span class="p">,</span>
+        <span class="n">intro_file</span><span class="o">=</span><span class="s2">&quot;Introduction.tex&quot;</span><span class="p">,</span>
+        <span class="n">params_from_intro</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">parse_version</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the doc parser pointing to the root of the doc file of SPARC</span>
+
+<span class="sd">        The SPARC doc is organized as follows:</span>
+<span class="sd">        SPARC/doc/.LaTeX/</span>
+<span class="sd">            |---- Manual.tex</span>
+<span class="sd">                  |---- Introduction.tex</span>
+<span class="sd">                        |---- {Section}.tex</span>
+
+<span class="sd">        For parameters additional to the standard SPARC options, such as the SQ / cyclix</span>
+<span class="sd">        options, we merge the dict from the sub-dirs</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            doc_root: root directory to the LaTeX files, may look like `SPARC/doc/.LaTeX`</span>
+<span class="sd">            main_file: main LaTeX file for the manual</span>
+<span class="sd">            intro_file: LaTeX file for the introduction</span>
+<span class="sd">            params_from_intro: only contain the parameters that can be parsed in `intro_file`</span>
+<span class="sd">            parse_date: get the SPARC version by date</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">main_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_main_file</span><span class="p">(</span><span class="n">main_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intro_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">/</span> <span class="n">intro_file</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">intro_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Introduction file </span><span class="si">{</span><span class="n">intro_file</span><span class="si">}</span><span class="s2"> is missing!&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_include_files</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params_from_intro</span> <span class="o">=</span> <span class="n">params_from_intro</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_version</span><span class="p">(</span><span class="n">parse_version</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_parameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">postprocess</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SparcDocParser.find_main_file">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.SparcDocParser.find_main_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">find_main_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">main_file_pattern</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds the main LaTeX file that matches the given pattern, e.g. Manual.tex or Manual_cyclix.te</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            main_file_pattern (str): Pattern to match the main LaTeX file name.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Path: Path to the main LaTeX file.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            FileNotFoundError: If no or multiple files match the pattern.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">main_file_pattern</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Main file </span><span class="si">{</span><span class="n">main_file_pattern</span><span class="si">}</span><span class="s2"> is missing or more than 1 exists!&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="SparcDocParser.get_include_files">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.SparcDocParser.get_include_files">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_include_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves a list of LaTeX files included in the main LaTeX document, e.g.  Manual.tex.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A list of paths to the included LaTeX files.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">begin\{document\}(.*?)</span><span class="se">\\</span><span class="s2">end\{document\}&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">main_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="c1"># Only the first begin/end document will be matched</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">pattern_include</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">include\{(.+?)\}&quot;</span>
+        <span class="n">include</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern_include</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+        <span class="n">include_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">include</span><span class="p">:</span>
+            <span class="n">tex_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.tex&quot;</span>
+            <span class="k">if</span> <span class="n">tex_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="n">include_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tex_file</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;TeX file </span><span class="si">{</span><span class="n">tex_file</span><span class="si">}</span><span class="s2"> is missing! It may be a typo in the document, &quot;</span>
+                        <span class="s2">&quot;ignore parameters from this file.&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">include_files</span></div>
+
+
+<div class="viewcode-block" id="SparcDocParser.parse_version">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.SparcDocParser.parse_version">[docs]</a>
+    <span class="k">def</span> <span class="nf">parse_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parse</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parses and sets the SPARC version based on the C-source file, if possible.</span>
+<span class="sd">        The date for the SPARC code is parsed from initialization.c in the &quot;YYYY.MM.DD&quot;</span>
+<span class="sd">        format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parse (bool): Whether to parse the version from the documentation.</span>
+
+<span class="sd">        Sets:</span>
+<span class="sd">            self.version (str): The parsed version in &#39;YYYY.MM.DD&#39; format or None,</span>
+<span class="sd">                                if either parse=False, or the C-source code is missing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">parse</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span>
+        <span class="n">init_c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="s2">&quot;src&quot;</span> <span class="o">/</span> <span class="s2">&quot;initialization.c&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">init_c</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39;Cannot find the c source file &quot;initialization.c&quot;, skip version parsing!&#39;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">init_c</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">pattern_version</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;SPARC\s+\(\s*?version(.*?)\)&quot;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern_version</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">match</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39;Parsing c source file &quot;initialization.c&quot; for version is unsuccessful!&#39;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span>
+        <span class="c1"># We need to add more spacing matching in case the source code includes extra</span>
+        <span class="n">date_str</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s+&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">))</span>
+        <span class="c1"># Older version of SPARC doc may contain abbreviated month format</span>
+        <span class="n">date_version</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;%b </span><span class="si">%d</span><span class="s2"> %Y&quot;</span><span class="p">,</span> <span class="s2">&quot;%B </span><span class="si">%d</span><span class="s2"> %Y&quot;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">date_version</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">date_str</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y.%m.</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">date_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot parse date time </span><span class="si">{</span><span class="n">date_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">date_version</span>
+        <span class="k">return</span></div>
+
+
+    <span class="k">def</span> <span class="nf">__parse_parameter_from_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse the parameters from a single LaTeX frame</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            frame (str): a string containing the LaTeX frame (e.g. \\begin{frame} ... \\end{frame})</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: a key-value paired dict parsed from the frame. Some field names include:</span>
+<span class="sd">                  name: TOL_POISSON</span>
+<span class="sd">                  type: Double | Integer | String | Character | Double array</span>
+<span class="sd">                  unit: specified in the doc</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pattern_label</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">texttt\{(.*?)\}.*?</span><span class="se">\\</span><span class="s2">label\{(.*?)\}&quot;</span>
+        <span class="n">pattern_block</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">begin\{block\}\{(.*?)\}([\s\S]*?)</span><span class="se">\\</span><span class="s2">end\{block\}&quot;</span>
+        <span class="n">match_label</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern_label</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">match_label</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Provided a non-structured frame for parsing, skip.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{}</span>
+        <span class="n">symbol</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">convert_tex_parameter</span><span class="p">(</span><span class="n">match_label</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()),</span>
+            <span class="n">match_label</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="c1"># Every match contains the (name, content) pair of the blocks</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern_block</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+        <span class="n">param_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;symbol&quot;</span><span class="p">:</span> <span class="n">symbol</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">label</span><span class="p">}</span>
+        <span class="c1"># TODO: add more type definition</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="c1"># Do not parse commented-out values</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">content</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">)):</span>
+                <span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameter </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> is disabled in the doc, ignore!&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;example&quot;</span><span class="p">,):</span>
+                <span class="n">content</span> <span class="o">=</span> <span class="n">convert_tex_example</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+            <span class="n">param_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">content</span>
+        <span class="c1"># Sanitize 1: Convert types</span>
+        <span class="n">param_dict</span> <span class="o">=</span> <span class="n">sanitize_type</span><span class="p">(</span><span class="n">param_dict</span><span class="p">)</span>
+        <span class="c1"># Sanitize 2: Convert default values</span>
+        <span class="n">param_dict</span> <span class="o">=</span> <span class="n">sanitize_default</span><span class="p">(</span><span class="n">param_dict</span><span class="p">)</span>
+        <span class="c1"># Sanitize 3: Remove TeX components in description and remark</span>
+        <span class="n">param_dict</span> <span class="o">=</span> <span class="n">sanitize_description</span><span class="p">(</span><span class="n">param_dict</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">param_dict</span>
+
+    <span class="k">def</span> <span class="nf">__parse_frames_from_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract all the frames that aren&#39;t commented in the text</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            text (str): Full LaTeX text</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Matched LaTeX Beamer frame fragments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pattern_frame</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">begin\{frame\}(.*?)</span><span class="se">\\</span><span class="s2">end\{frame\}&quot;</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern_frame</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">matches</span>
+
+    <span class="k">def</span> <span class="nf">__parse_intro_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse the introduction file</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            parameter_dict (dict): dictionary using the parameter category as the main key</span>
+<span class="sd">                            (following order in Introduction.tex)</span>
+<span class="sd">            parameter_categories (list): list of categories</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">text_intro</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intro_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">pattern_params</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">r</span><span class="s2">&quot;^</span><span class="se">\\</span><span class="s2">begin\{frame\}.*?\{Input file options\}.*?$(.*?)</span><span class="se">\\</span><span class="s2">end\{frame\}&quot;</span>
+        <span class="p">)</span>
+        <span class="n">pattern_block</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">begin\{block\}\{(.*?)\}([\s\S]*?)</span><span class="se">\\</span><span class="s2">end\{block\}&quot;</span>
+        <span class="n">pattern_line</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">hyperlink\{(.*?)\}{</span><span class="se">\\</span><span class="s2">texttt\{(.*?)\}\}&quot;</span>
+        <span class="n">text_params</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern_params</span><span class="p">,</span> <span class="n">text_intro</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)[</span>
+            <span class="mi">0</span>
+        <span class="p">]</span>
+        <span class="n">parameter_categories</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">parameter_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern_block</span><span class="p">,</span> <span class="n">text_params</span><span class="p">):</span>
+            <span class="n">cat</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="c1"># print(cat)</span>
+            <span class="k">if</span> <span class="n">cat</span> <span class="ow">in</span> <span class="n">parameter_categories</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s2"> already exists! You might have a wrong LaTeX doc file!&quot;</span>
+                <span class="p">)</span>
+            <span class="n">parameter_categories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cat</span><span class="p">)</span>
+            <span class="n">parameter_dict</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">param_lines</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">param_lines</span><span class="p">:</span>
+                <span class="n">matches</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern_line</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="c1"># Each match should contain 2 items, the &quot;Link&quot; that matches a reference in included-tex files</span>
+                <span class="c1"># symbol is the actual symbol name (in text-format)</span>
+                <span class="c1"># In most cases the link and symbol should be the same</span>
+                <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+                    <span class="n">label</span><span class="p">,</span> <span class="n">symbol</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">convert_tex_parameter</span><span class="p">(</span>
+                        <span class="k">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="p">)</span>
+                    <span class="n">parameter_dict</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">label</span><span class="p">,</span> <span class="s2">&quot;symbol&quot;</span><span class="p">:</span> <span class="n">symbol</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">parameter_categories</span><span class="p">,</span> <span class="n">parameter_dict</span>
+
+    <span class="k">def</span> <span class="nf">__parse_all_included_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pop up all known parameters from included files</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: All known parameters from included files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_files</span><span class="p">:</span>
+            <span class="c1"># Do not parse intro file since it&#39;s waste of time</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">intro_file</span><span class="o">.</span><span class="n">resolve</span><span class="p">():</span>
+                <span class="k">continue</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">frames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__parse_frames_from_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+                <span class="n">dic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__parse_parameter_from_frame</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dic</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">label</span> <span class="o">=</span> <span class="n">dic</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
+                    <span class="n">all_params</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">dic</span>
+        <span class="k">return</span> <span class="n">all_params</span>
+
+<div class="viewcode-block" id="SparcDocParser.parse_parameters">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.SparcDocParser.parse_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">parse_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The actual thing for parsing parameters</span>
+
+<span class="sd">        Sets:</span>
+<span class="sd">            parameters (dict): All parsed parameters</span>
+<span class="sd">            parameter_categoris (list): List of categories</span>
+<span class="sd">            other_parameters (dict): Any parameters that are not included in the categories</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parameter_categories</span><span class="p">,</span> <span class="n">parameter_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__parse_intro_file</span><span class="p">()</span>
+        <span class="n">all_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__parse_all_included_files</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameter_categories</span> <span class="o">=</span> <span class="n">parameter_categories</span>
+        <span class="c1"># parameters contain only the &quot;valid&quot; ones that are shown in the intro</span>
+        <span class="c1"># all others are clustered in &quot;other_parameters&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">cat</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">parameter_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
+                <span class="n">symbol</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span>
+                <span class="n">param_details</span> <span class="o">=</span> <span class="n">all_params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="k">if</span> <span class="n">param_details</span> <span class="o">!=</span> <span class="p">{}:</span>
+                    <span class="n">param_details</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cat</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_details</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">other_parameters</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">param_details</span> <span class="ow">in</span> <span class="n">all_params</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">symbol</span> <span class="o">=</span> <span class="n">param_details</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">other_parameters</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_details</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="SparcDocParser.postprocess">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.SparcDocParser.postprocess">[docs]</a>
+    <span class="k">def</span> <span class="nf">postprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use the hardcoded dict prostprocess_items to fix some issues&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">fix</span> <span class="ow">in</span> <span class="n">postprocess_items</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">param</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">fix</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="SparcDocParser.to_dict">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.SparcDocParser.to_dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Output a json dict from current document parser</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: All API schemes in dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;sparc_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span>
+        <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;categories&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameter_categories</span>
+        <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">())}</span>
+        <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;other_parameters&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">other_parameters</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="p">}</span>
+        <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;data_types&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">p</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">values</span><span class="p">()]))</span>
+        <span class="k">return</span> <span class="n">doc</span></div>
+
+
+<div class="viewcode-block" id="SparcDocParser.json_from_directory">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.SparcDocParser.json_from_directory">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">json_from_directory</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">include_subdirs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recursively add parameters from all Manual files</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            directory (str or PosixPath): The directory to the LaTeX files, e.g. &lt;sparc-root&gt;/doc/.LaTeX</span>
+<span class="sd">            include_subdirs (bool): If true, also parse the manual files in submodules, e.g. cyclix, highT</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Formatted json-string of the API</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+        <span class="n">root_dict</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">directory</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">include_subdirs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">sub_manual_tex</span> <span class="ow">in</span> <span class="n">directory</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*/*Manual.tex&quot;</span><span class="p">):</span>
+                <span class="n">subdir</span> <span class="o">=</span> <span class="n">sub_manual_tex</span><span class="o">.</span><span class="n">parent</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">sub_dict</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">subdir</span><span class="p">,</span> <span class="n">parse_version</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">subdir</span><span class="p">,</span> <span class="s2">&quot; Latex files not found. Check naming conventions for Manual.tex. Expects format *Manual.tex&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">param_desc</span> <span class="ow">in</span> <span class="n">sub_dict</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">param</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">root_dict</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]:</span>
+                        <span class="n">root_dict</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_desc</span>
+        <span class="n">json_string</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">root_dict</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json_string</span></div>
+
+
+<div class="viewcode-block" id="SparcDocParser.json_from_repo">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.SparcDocParser.json_from_repo">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">json_from_repo</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="n">sparc_repo_url</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;master&quot;</span><span class="p">,</span> <span class="n">include_subdirs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Download the source code from git and use json_from_directory to parse</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            url (str): URL for the repository of SPARC, default is &quot;https://github.com/SPARC-X/SPARC.git&quot;</span>
+<span class="sd">            version (str): Git version or commit hash of the SPARC repo</span>
+<span class="sd">            include_subdirs (bool): If true, also parse the manual files in submodules, e.g. cyclix, highT</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Formatted json-string of the API</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">tempfile</span>
+        <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">run</span>
+
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span>
+            <span class="n">download_dir</span> <span class="o">=</span> <span class="n">tmpdir</span> <span class="o">/</span> <span class="s2">&quot;SPARC&quot;</span>
+            <span class="n">download_cmds</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;clone&quot;</span><span class="p">,</span> <span class="s2">&quot;--depth&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="s2">&quot;SPARC&quot;</span><span class="p">]</span>
+            <span class="n">run</span><span class="p">(</span><span class="n">download_cmds</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;master&quot;</span><span class="p">,</span> <span class="s2">&quot;HEAD&quot;</span><span class="p">]:</span>
+                <span class="n">fetch_cmds</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;fetch&quot;</span><span class="p">,</span> <span class="s2">&quot;--depth&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">version</span><span class="p">)]</span>
+                <span class="n">run</span><span class="p">(</span><span class="n">fetch_cmds</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">download_dir</span><span class="p">)</span>
+                <span class="n">checkout_cmds</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;checkout&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">version</span><span class="p">)]</span>
+                <span class="n">run</span><span class="p">(</span><span class="n">checkout_cmds</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">download_dir</span><span class="p">)</span>
+            <span class="n">json_string</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">json_from_directory</span><span class="p">(</span>
+                <span class="n">directory</span><span class="o">=</span><span class="n">download_dir</span> <span class="o">/</span> <span class="s2">&quot;doc&quot;</span> <span class="o">/</span> <span class="s2">&quot;.LaTeX&quot;</span><span class="p">,</span>
+                <span class="n">include_subdirs</span><span class="o">=</span><span class="n">include_subdirs</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">json_string</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="convert_tex_parameter">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.convert_tex_parameter">[docs]</a>
+<span class="k">def</span> <span class="nf">convert_tex_parameter</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Conver a TeX string to non-escaped name (for parameter only)</span>
+<span class="sd">    Arguments:</span>
+<span class="sd">        text (str): Parameter name in LaTeX format</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Text with sanitized parameter</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;\_&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="convert_tex_example">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.convert_tex_example">[docs]</a>
+<span class="k">def</span> <span class="nf">convert_tex_example</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert TeX codes of examples as much as possible</span>
+<span class="sd">    The examples follow the format</span>
+<span class="sd">    SYMBOL: values (may contain new lines)</span>
+<span class="sd">    Arguments:</span>
+<span class="sd">        text (str): Single or multiline LaTeX contents</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Sanitized literal text</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mapper</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">texttt{&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;\_&quot;</span><span class="p">:</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot;}&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">}</span>
+    <span class="n">new_text</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">mapper</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">new_text</span> <span class="o">=</span> <span class="n">new_text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+    <span class="n">symbol</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="n">new_text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+    <span class="n">symbol</span> <span class="o">=</span> <span class="n">symbol</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">+&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">values</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="c1"># Remove all comment lines</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">l</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">)]</span>
+    <span class="p">)</span>
+    <span class="n">new_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">values</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">new_text</span></div>
+
+
+
+<div class="viewcode-block" id="convert_tex_default">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.convert_tex_default">[docs]</a>
+<span class="k">def</span> <span class="nf">convert_tex_default</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">desired_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert default values as much as possible.</span>
+<span class="sd">    The desire type will convert the default values</span>
+<span class="sd">    to the closest format</span>
+
+<span class="sd">    Currently supported conversions</span>
+<span class="sd">    1. Remove all surrounding text modifiers (texttt)</span>
+<span class="sd">    2. Remove all symbol wrappers $</span>
+<span class="sd">    3. Convert value to single or array</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        text (str): Raw text string for value</span>
+<span class="sd">        desired_type (str or None): Data type to be converted to. If None, preserve the string format</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        converted: Value converted from raw text</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mapper</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">texttt{&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;}&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;{&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">_&quot;</span><span class="p">:</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;\_&quot;</span><span class="p">:</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;</span><span class="se">\\\\</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;$&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">hyperlink\{.*?\}&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">times&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">mapper</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\n+&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="c1"># Remove all comment lines</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">l</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">)])</span>
+
+    <span class="c1"># print(text)</span>
+    <span class="n">converted</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">&quot;none&quot;</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="n">converted</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="s2">&quot;no default&quot;</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="n">converted</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="s2">&quot;automat&quot;</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="n">converted</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># try type conversion</span>
+        <span class="k">if</span> <span class="n">desired_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">converted</span> <span class="o">=</span> <span class="n">text</span>
+        <span class="k">elif</span> <span class="n">desired_type</span> <span class="o">==</span> <span class="s2">&quot;string&quot;</span><span class="p">:</span>
+            <span class="n">converted</span> <span class="o">=</span> <span class="n">text</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">converted</span> <span class="o">=</span> <span class="n">text2value</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">desired_type</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">converted</span></div>
+
+
+
+<div class="viewcode-block" id="convert_comment">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.convert_comment">[docs]</a>
+<span class="k">def</span> <span class="nf">convert_comment</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used to remove TeX-specific commands in description and remarks</span>
+<span class="sd">    as much as possible</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        text (str): Raw LaTeX code for the comment section in manual</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Sanitized plain text</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mapper</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">texttt{&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;}&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;{&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">_&quot;</span><span class="p">:</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;\_&quot;</span><span class="p">:</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;</span><span class="se">\\\\</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;$&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">hyperlink\{.*?\}&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">href\{.*?\}&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">times&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">mapper</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\n+&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="c1"># Remove all comment lines</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">l</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="n">text</span></div>
+
+
+
+<div class="viewcode-block" id="text2value">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.text2value">[docs]</a>
+<span class="k">def</span> <span class="nf">text2value</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">desired_type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert raw text to a desired type</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        text (str): Text contents for the value</span>
+<span class="sd">        desired_type (str): Target data type from &#39;string&#39;, &#39;integer&#39;,</span>
+<span class="sd">                            &#39;integer array&#39;, &#39;double&#39;, &#39;double array&#39;,</span>
+<span class="sd">                            &#39;bool&#39;, &#39;bool array&#39;</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        converted: Value converted to the desired type</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">desired_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">text</span>
+    <span class="n">desired_type</span> <span class="o">=</span> <span class="n">desired_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">desired_type</span> <span class="o">==</span> <span class="s2">&quot;string&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">(),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Some fields in </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2"> cannot converted to a numerical array, will skip conversion.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Cannot transform </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2"> to array, skip converting. Error message is:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">arr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># Upshape ndarray to at least 1D</span>
+    <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">():</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">converted</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">suppress</span>
+
+    <span class="c1"># Ignore all failures and make conversion None</span>
+    <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">desired_type</span> <span class="o">==</span> <span class="s2">&quot;integer&quot;</span><span class="p">:</span>
+            <span class="n">converted</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">desired_type</span> <span class="o">==</span> <span class="s2">&quot;bool&quot;</span><span class="p">:</span>
+            <span class="n">converted</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">desired_type</span> <span class="o">==</span> <span class="s2">&quot;double&quot;</span><span class="p">:</span>
+            <span class="n">converted</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">desired_type</span> <span class="o">==</span> <span class="s2">&quot;integer array&quot;</span><span class="p">:</span>
+            <span class="n">converted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">tolist</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">desired_type</span> <span class="o">==</span> <span class="s2">&quot;bool array&quot;</span><span class="p">:</span>
+            <span class="n">converted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">tolist</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">desired_type</span> <span class="o">==</span> <span class="s2">&quot;double array&quot;</span><span class="p">:</span>
+            <span class="n">converted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">tolist</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">converted</span></div>
+
+
+
+<div class="viewcode-block" id="is_array">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.is_array">[docs]</a>
+<span class="k">def</span> <span class="nf">is_array</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simply try to convert a string into a numpy array and compare if length is larger than 1</span>
+<span class="sd">    it is only used to compare a float / int value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="contain_only_bool">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.contain_only_bool">[docs]</a>
+<span class="k">def</span> <span class="nf">contain_only_bool</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a string only contains 0 1 or spaces&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">c</span> <span class="ow">in</span> <span class="n">text</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;E&quot;</span><span class="p">)]):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">digits</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[-+e\d]+&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">digits</span><span class="p">:</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="sanitize_description">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.sanitize_description">[docs]</a>
+<span class="k">def</span> <span class="nf">sanitize_description</span><span class="p">(</span><span class="n">param_dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sanitize the description and remark field</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        param_dict (dict): Raw dict for one parameter entry</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Sanitized parameter dict with comment, remark and description</span>
+<span class="sd">              converted to human-readable formats</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sanitized_dict</span> <span class="o">=</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">original_desc</span> <span class="o">=</span> <span class="n">sanitized_dict</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span>
+    <span class="n">sanitized_dict</span><span class="p">[</span><span class="s2">&quot;description_raw&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">original_desc</span>
+
+    <span class="n">original_remark</span> <span class="o">=</span> <span class="n">sanitized_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;remark&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">sanitized_dict</span><span class="p">[</span><span class="s2">&quot;remark_raw&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">original_remark</span>
+
+    <span class="n">sanitized_dict</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">convert_comment</span><span class="p">(</span><span class="n">original_desc</span><span class="p">)</span>
+    <span class="n">sanitized_dict</span><span class="p">[</span><span class="s2">&quot;remark&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">convert_comment</span><span class="p">(</span><span class="n">original_remark</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sanitized_dict</span></div>
+
+
+
+<div class="viewcode-block" id="sanitize_default">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.sanitize_default">[docs]</a>
+<span class="k">def</span> <span class="nf">sanitize_default</span><span class="p">(</span><span class="n">param_dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sanitize the default field</span>
+<span class="sd">    1. Create an extra field `default_remark` that copies original default</span>
+<span class="sd">    2. Use `convert_tex_default` to convert values as much as possible</span>
+
+<span class="sd">    This function should be called after sanitize_type</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sanitized_dict</span> <span class="o">=</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">original_default</span> <span class="o">=</span> <span class="n">sanitized_dict</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span>
+    <span class="n">sanitized_dict</span><span class="p">[</span><span class="s2">&quot;default_remark&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">original_default</span>
+    <span class="n">converted_default</span> <span class="o">=</span> <span class="n">convert_tex_default</span><span class="p">(</span><span class="n">original_default</span><span class="p">,</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">])</span>
+    <span class="n">sanitized_dict</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">converted_default</span>
+    <span class="k">return</span> <span class="n">sanitized_dict</span></div>
+
+
+
+<div class="viewcode-block" id="sanitize_type">
+<a class="viewcode-back" href="../../api/sparc.docparser.html#sparc.docparser.sanitize_type">[docs]</a>
+<span class="k">def</span> <span class="nf">sanitize_type</span><span class="p">(</span><span class="n">param_dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sanitize the param dict so that the type are more consistent</span>
+
+<span class="sd">    For example, if type is Double / Integer,</span>
+<span class="sd">    but parameter is a vector,</span>
+<span class="sd">    make a double vector or integer vector</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sanitized_dict</span> <span class="o">=</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">symbol</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;symbol&quot;</span><span class="p">]</span>
+    <span class="n">origin_type</span> <span class="o">=</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">origin_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Dict does not have type!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sanitized_dict</span>
+    <span class="n">origin_type</span> <span class="o">=</span> <span class="n">origin_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="n">sanitized_type</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">sanitized_dict</span><span class="p">[</span><span class="s2">&quot;allow_bool_input&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1"># First pass, remove all singular types</span>
+    <span class="k">if</span> <span class="n">origin_type</span> <span class="o">==</span> <span class="s2">&quot;0 or 1&quot;</span><span class="p">:</span>
+        <span class="n">origin_type</span> <span class="o">=</span> <span class="s2">&quot;integer&quot;</span>
+    <span class="k">elif</span> <span class="s2">&quot;permutation&quot;</span> <span class="ow">in</span> <span class="n">origin_type</span><span class="p">:</span>
+        <span class="n">sanitized_type</span> <span class="o">=</span> <span class="s2">&quot;integer&quot;</span>
+    <span class="k">elif</span> <span class="n">origin_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;character&quot;</span><span class="p">):</span>
+        <span class="n">sanitized_type</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
+    <span class="k">elif</span> <span class="s2">&quot;array&quot;</span> <span class="ow">in</span> <span class="n">origin_type</span><span class="p">:</span>
+        <span class="n">sanitized_type</span> <span class="o">=</span> <span class="n">origin_type</span>
+
+    <span class="c1"># Pass 2, test if int values are arrays</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">origin_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="s2">&quot;double&quot;</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sanitized_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;int&quot;</span> <span class="ow">in</span> <span class="n">origin_type</span><span class="p">:</span>
+            <span class="n">origin_type</span> <span class="o">=</span> <span class="s2">&quot;integer&quot;</span>
+        <span class="c1"># Test if the value from example is a single value or array</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">example_value</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;example&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">default</span> <span class="o">=</span> <span class="n">param_dict</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span>
+            <span class="n">_array_test</span> <span class="o">=</span> <span class="n">is_array</span><span class="p">(</span><span class="n">example_value</span><span class="p">)</span>
+            <span class="n">_bool_test</span> <span class="o">=</span> <span class="n">contain_only_bool</span><span class="p">(</span><span class="n">example_value</span><span class="p">)</span> <span class="ow">and</span> <span class="n">contain_only_bool</span><span class="p">(</span><span class="n">default</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Array conversion failed for </span><span class="si">{</span><span class="n">example_value</span><span class="si">}</span><span class="s2">, ignore.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;The error is </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">_array_test</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Retain</span>
+
+        <span class="k">if</span> <span class="n">_array_test</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">sanitized_type</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">origin_type</span><span class="si">}</span><span class="s2"> array&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sanitized_type</span> <span class="o">=</span> <span class="n">origin_type</span>
+
+        <span class="c1"># Pass 3: int to boolean test. This should be done very tight</span>
+        <span class="k">if</span> <span class="n">_bool_test</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;integer&quot;</span> <span class="ow">in</span> <span class="n">sanitized_type</span><span class="p">):</span>
+            <span class="n">sanitized_dict</span><span class="p">[</span><span class="s2">&quot;allow_bool_input&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="n">sanitized_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Currently there is only one NPT_NH_QMASS has this type</span>
+        <span class="c1"># TODO: think of a way to format a mixed array?</span>
+        <span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Type of </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> if not standard digit or array, mark as others.&quot;</span><span class="p">)</span>
+        <span class="n">sanitized_type</span> <span class="o">=</span> <span class="s2">&quot;other&quot;</span>
+        <span class="c1"># TODO: how about provide a true / false type?</span>
+    <span class="n">sanitized_dict</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sanitized_type</span>
+    <span class="k">return</span> <span class="n">sanitized_dict</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Run the module as independent script to extract a json-formatted parameter list</span>
+    <span class="kn">from</span> <span class="nn">argparse</span> <span class="kn">import</span> <span class="n">ArgumentParser</span>
+
+    <span class="n">argp</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Parse the LaTeX doc to json&quot;</span><span class="p">)</span>
+    <span class="n">argp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-o&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--output&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;parameters.json&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Output file name (json-formatted)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">argp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--include-subdirs&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Parse manual parameters from subdirs&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">argp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--git&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">)</span>
+    <span class="n">argp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--version&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;master&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Version of the doc. Only works when using git repo&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">argp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;root&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;?&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Root of the SPARC doc LaTeX files, or remote git repo link. If not provided and --git is enables, use the default github repo&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">argp</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">git</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">sparc_repo_url</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">root</span>
+        <span class="n">json_string</span> <span class="o">=</span> <span class="n">SparcDocParser</span><span class="o">.</span><span class="n">json_from_repo</span><span class="p">(</span>
+            <span class="n">url</span><span class="o">=</span><span class="n">root</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">include_subdirs</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">include_subdirs</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">json_string</span> <span class="o">=</span> <span class="n">SparcDocParser</span><span class="o">.</span><span class="n">json_from_directory</span><span class="p">(</span>
+            <span class="n">directory</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">root</span><span class="p">),</span> <span class="n">include_subdirs</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">include_subdirs</span>
+        <span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+        <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json_string</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SPARC parameter specifications written to </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">!&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;If you need to fintune the definitions, please edit them manually.&quot;</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

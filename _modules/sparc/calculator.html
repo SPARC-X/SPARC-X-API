@@ -1,0 +1,1494 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sparc.calculator &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../sparc.html">sparc</a></li>
+      <li class="breadcrumb-item active">sparc.calculator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sparc.calculator</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span><span class="p">,</span> <span class="n">warn_explicit</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">psutil</span>
+<span class="kn">from</span> <span class="nn">ase.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span>
+<span class="kn">from</span> <span class="nn">ase.calculators.calculator</span> <span class="kn">import</span> <span class="n">Calculator</span><span class="p">,</span> <span class="n">FileIOCalculator</span><span class="p">,</span> <span class="n">all_changes</span>
+<span class="kn">from</span> <span class="nn">ase.parallel</span> <span class="kn">import</span> <span class="n">world</span>
+<span class="kn">from</span> <span class="nn">ase.stress</span> <span class="kn">import</span> <span class="n">full_3x3_to_voigt_6_stress</span>
+<span class="kn">from</span> <span class="nn">ase.units</span> <span class="kn">import</span> <span class="n">Bohr</span><span class="p">,</span> <span class="n">GPa</span><span class="p">,</span> <span class="n">Hartree</span><span class="p">,</span> <span class="n">eV</span>
+<span class="kn">from</span> <span class="nn">ase.utils</span> <span class="kn">import</span> <span class="n">IOContext</span>
+
+<span class="kn">from</span> <span class="nn">.api</span> <span class="kn">import</span> <span class="n">SparcAPI</span>
+<span class="kn">from</span> <span class="nn">.io</span> <span class="kn">import</span> <span class="n">SparcBundle</span>
+<span class="kn">from</span> <span class="nn">.socketio</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SPARCProtocol</span><span class="p">,</span>
+    <span class="n">SPARCSocketClient</span><span class="p">,</span>
+    <span class="n">SPARCSocketServer</span><span class="p">,</span>
+    <span class="n">generate_random_socket_name</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_find_default_sparc</span><span class="p">,</span>
+    <span class="n">_find_mpi_process</span><span class="p">,</span>
+    <span class="n">_get_slurm_jobid</span><span class="p">,</span>
+    <span class="n">_locate_slurm_step</span><span class="p">,</span>
+    <span class="n">_slurm_signal</span><span class="p">,</span>
+    <span class="n">compare_dict</span><span class="p">,</span>
+    <span class="n">deprecated</span><span class="p">,</span>
+    <span class="n">h2gpts</span><span class="p">,</span>
+    <span class="n">locate_api</span><span class="p">,</span>
+    <span class="n">monitor_process</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Below are a list of ASE-compatible calculator input parameters that are</span>
+<span class="c1"># in Angstrom/eV units</span>
+<span class="c1"># Ideas are taken from GPAW calculator</span>
+<span class="n">sparc_python_inputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;xc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;h&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;kpts&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;convergence&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;gpts&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nbands&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="c1"># The socket mode in SPARC calculator uses a relay-based mechanism</span>
+<span class="c1"># Several scenarios:</span>
+<span class="c1"># 1) use_socket = False --&gt; Turn off all socket communications. SPARC runs from cold-start</span>
+<span class="c1"># 2) use_socket = True, port &lt; 0 --&gt; Only connect the sparc binary using ephemeral unix socket. Interface appears as if it is a normal calculator</span>
+<span class="c1"># 3) use_socket = True, port &gt; 0 --&gt; Use an out-going socket to relay information</span>
+<span class="c1"># 4) use_socket = True, server_only = True --&gt; Act as a SocketServer</span>
+<span class="c1"># We do not support outgoing unix socket because the limited user cases</span>
+<span class="n">default_socket_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;use_socket&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># Main switch to use socket or not</span>
+    <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>  <span class="c1"># Name of the socket host (only outgoing)</span>
+    <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Port number of the outgoing socket</span>
+    <span class="s2">&quot;allow_restart&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># If True, allow the socket server to restart</span>
+    <span class="s2">&quot;server_only&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># Start the calculator as a server</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="SPARC">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC">[docs]</a>
+<span class="k">class</span> <span class="nc">SPARC</span><span class="p">(</span><span class="n">FileIOCalculator</span><span class="p">,</span> <span class="n">IOContext</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculator interface to the SPARC codes via the FileIOCalculator&quot;&quot;&quot;</span>
+
+    <span class="n">implemented_properties</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="s2">&quot;forces&quot;</span><span class="p">,</span> <span class="s2">&quot;fermi&quot;</span><span class="p">,</span> <span class="s2">&quot;stress&quot;</span><span class="p">]</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;sparc&quot;</span>
+    <span class="n">ase_objtype</span> <span class="o">=</span> <span class="s2">&quot;sparc_calculator&quot;</span>  <span class="c1"># For JSON storage</span>
+    <span class="n">special_inputs</span> <span class="o">=</span> <span class="n">sparc_python_inputs</span>
+    <span class="n">default_params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;xc&quot;</span><span class="p">:</span> <span class="s2">&quot;pbe&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;kpts&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="s2">&quot;h&quot;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>  <span class="c1"># Angstrom equivalent to MESH_SPACING = 0.47</span>
+    <span class="p">}</span>
+    <span class="c1"># TODO: ASE 3.23 compatibility. should use profile</span>
+    <span class="c1"># TODO: remove the legacy command check for future releases</span>
+    <span class="n">_legacy_default_command</span> <span class="o">=</span> <span class="s2">&quot;sparc not initialized&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">restart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">command</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">psp_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">log</span><span class="o">=</span><span class="s2">&quot;sparc.log&quot;</span><span class="p">,</span>
+        <span class="n">sparc_json_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">sparc_doc_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">check_version</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">keep_old_files</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">use_socket</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">socket_params</span><span class="o">=</span><span class="p">{},</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the SPARC calculator similar to FileIOCalculator. The validator uses the JSON API guessed</span>
+<span class="sd">        from sparc_json_file or sparc_doc_path.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            restart (str or None): Path to the directory for restarting a calculation. If None, starts a new calculation.</span>
+<span class="sd">            directory (str or Path): Directory for SPARC calculation files.</span>
+<span class="sd">            label (str, optional): Custom label for identifying calculation files.</span>
+<span class="sd">            atoms (Atoms, optional): ASE Atoms object representing the system to be calculated.</span>
+<span class="sd">            command (str, optional): Command to execute SPARC. If None, it will be determined automatically.</span>
+<span class="sd">            psp_dir (str or Path, optional): Directory containing pseudopotentials.</span>
+<span class="sd">            log (str, optional): Name of the log file.</span>
+<span class="sd">            sparc_json_file (str, optional): Path to a JSON file with SPARC parameters.</span>
+<span class="sd">            sparc_doc_path (str, optional): Path to the SPARC doc LaTeX code for parsing parameters.</span>
+<span class="sd">            check_version (bool): Check if SPARC and document versions match</span>
+<span class="sd">            keep_old_files (bool): Whether older SPARC output files should be preserved.</span>
+<span class="sd">                                   If True, SPARC program will rewrite the output files</span>
+<span class="sd">                                   with suffix like .out_01, .out_02 etc</span>
+<span class="sd">            use_socket (bool): Main switch for the socket mode. Alias for socket_params[&quot;use_socket&quot;]</span>
+<span class="sd">            socket_params (dict): Parameters to control the socket behavior. Please check default_socket_params</span>
+<span class="sd">            **kwargs: Additional keyword arguments to set up the calculator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validator</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">(</span><span class="n">json_file</span><span class="o">=</span><span class="n">sparc_json_file</span><span class="p">,</span> <span class="n">doc_path</span><span class="o">=</span><span class="n">sparc_doc_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valid_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">special_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inpt_state</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Store the inpt file states</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system_state</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Store the system parameters (directory, bundle etc)</span>
+        <span class="n">FileIOCalculator</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">restart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">directory</span><span class="o">=</span><span class="n">directory</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># sparc bundle will set the label. self.label will be available after the init</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;SPARC&quot;</span> <span class="k">if</span> <span class="n">restart</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span> <span class="o">=</span> <span class="n">SparcBundle</span><span class="p">(</span>
+            <span class="n">directory</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">),</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span>
+            <span class="n">atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>  <span class="c1"># The order is tricky here. Use label not self.label</span>
+            <span class="n">psp_dir</span><span class="o">=</span><span class="n">psp_dir</span><span class="p">,</span>
+            <span class="n">validator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">validator</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Try restarting from an old calculation and set results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_restart</span><span class="p">(</span><span class="n">restart</span><span class="o">=</span><span class="n">restart</span><span class="p">)</span>
+
+        <span class="c1"># self.log = self.directory / log if log is not None else None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keep_old_files</span> <span class="o">=</span> <span class="n">keep_old_files</span>
+        <span class="k">if</span> <span class="n">check_version</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sparc_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detect_sparc_version</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sparc_version</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Partially update the socket params, so that when setting use_socket = True,</span>
+        <span class="c1"># User can directly use the socket client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket_params</span> <span class="o">=</span> <span class="n">default_socket_params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># Everything in argument socket_params will overwrite</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">use_socket</span><span class="o">=</span><span class="n">use_socket</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">socket_params</span><span class="p">)</span>
+
+        <span class="c1"># TODO: check parameter compatibility with socket params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># self.pid = None</span>
+
+        <span class="c1"># Initialize the socket settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_socket</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_socket</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ensure_socket</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_compare_system_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if system parameters like command etc have changed</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if all parameters are the same otherwise False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">old_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dump_system_state</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">old_state</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">new_val</span> <span class="o">=</span> <span class="n">new_state</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">compare_dict</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">new_val</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">val</span> <span class="o">==</span> <span class="n">new_val</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">new_state</span> <span class="o">==</span> <span class="p">{}:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_compare_calc_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if SPARC calculator parameters have changed</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if no change, otherwise False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_old_inpt_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inpt_state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">_new_inpt_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_inpt_state</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">_new_inpt_state</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">_old_inpt_state</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">old_val</span> <span class="ow">in</span> <span class="n">_old_inpt_state</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">new_val</span> <span class="o">=</span> <span class="n">_new_inpt_state</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="c1"># TODO: clean up bool</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="n">new_val</span> <span class="o">!=</span> <span class="n">old_val</span><span class="p">:</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="k">break</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="n">old_val</span><span class="p">):</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="k">break</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="n">old_val</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="k">break</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">_dump_system_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dict with current system parameters</span>
+
+<span class="sd">        changing these parameters will cause the calculator to reload</span>
+<span class="sd">        especially in the use_socket = True case</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">system_state</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+            <span class="s2">&quot;directory&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
+            <span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span>
+            <span class="s2">&quot;log&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
+            <span class="s2">&quot;socket_params&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket_params</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">system_state</span>
+
+<div class="viewcode-block" id="SPARC.ensure_socket">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.ensure_socket">[docs]</a>
+    <span class="k">def</span> <span class="nf">ensure_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># TODO: more ensure directory to other place?</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_socket</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_socket</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket_mode</span> <span class="o">==</span> <span class="s2">&quot;server&quot;</span><span class="p">:</span>
+                <span class="c1"># TODO: Exception for wrong port</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">in_socket</span> <span class="o">=</span> <span class="n">SPARCSocketServer</span><span class="p">(</span>
+                    <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">socket_params</span><span class="p">[</span><span class="s2">&quot;port&quot;</span><span class="p">],</span>
+                    <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">openfile</span><span class="p">(</span>
+                        <span class="n">file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_indir</span><span class="p">(</span><span class="n">ext</span><span class="o">=</span><span class="s2">&quot;.log&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;socket&quot;</span><span class="p">),</span>
+                        <span class="n">comm</span><span class="o">=</span><span class="n">world</span><span class="p">,</span>
+                        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">socket_name</span> <span class="o">=</span> <span class="n">generate_random_socket_name</span><span class="p">()</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating a socket server with name </span><span class="si">{</span><span class="n">socket_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">in_socket</span> <span class="o">=</span> <span class="n">SPARCSocketServer</span><span class="p">(</span>
+                    <span class="n">unixsocket</span><span class="o">=</span><span class="n">socket_name</span><span class="p">,</span>
+                    <span class="c1"># TODO: make the log fd persistent</span>
+                    <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">openfile</span><span class="p">(</span>
+                        <span class="n">file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_indir</span><span class="p">(</span><span class="n">ext</span><span class="o">=</span><span class="s2">&quot;.log&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;socket&quot;</span><span class="p">),</span>
+                        <span class="n">comm</span><span class="o">=</span><span class="n">world</span><span class="p">,</span>
+                        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="c1"># TODO: add the outbound socket client</span>
+        <span class="c1"># TODO: we may need to check an actual socket server at host:port?!</span>
+        <span class="c1"># At this stage, we will need to wait the actual client to join</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_socket</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket_mode</span> <span class="o">==</span> <span class="s2">&quot;client&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">out_socket</span> <span class="o">=</span> <span class="n">SPARCSocketClient</span><span class="p">(</span>
+                    <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">socket_params</span><span class="p">[</span><span class="s2">&quot;host&quot;</span><span class="p">],</span>
+                    <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">socket_params</span><span class="p">[</span><span class="s2">&quot;port&quot;</span><span class="p">],</span>
+                    <span class="c1"># TODO: change later</span>
+                    <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">openfile</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s2">&quot;out_socket.log&quot;</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="n">world</span><span class="p">),</span>
+                    <span class="c1"># TODO: add the log and timeout part</span>
+                    <span class="n">parent_calc</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                <span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset upon entering the context.&quot;&quot;&quot;</span>
+        <span class="n">IOContext</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Exiting the context manager and reset process&quot;&quot;&quot;</span>
+        <span class="n">IOContext</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">use_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket_params</span><span class="p">[</span><span class="s2">&quot;use_socket&quot;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">socket_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The mode of the socket calculator:</span>
+
+<span class="sd">        disabled: pure SPARC file IO interface</span>
+<span class="sd">        local: Serves as a local SPARC calculator with socket support</span>
+<span class="sd">        client: Relay SPARC calculation</span>
+<span class="sd">        server: Remote server</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_socket</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket_params</span><span class="p">[</span><span class="s2">&quot;port&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket_params</span><span class="p">[</span><span class="s2">&quot;server_only&quot;</span><span class="p">]:</span>
+                    <span class="k">return</span> <span class="s2">&quot;server&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="s2">&quot;client&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;local&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;disabled&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_indir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ext</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">occur</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">_indir</span><span class="p">(</span>
+            <span class="n">ext</span><span class="o">=</span><span class="n">ext</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">occur</span><span class="o">=</span><span class="n">occur</span><span class="p">,</span> <span class="n">d_format</span><span class="o">=</span><span class="n">d_format</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log</span>
+
+    <span class="nd">@log</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">):</span>
+        <span class="c1"># Stripe the parent direcoty information</span>
+        <span class="k">if</span> <span class="n">log</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">log</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log</span> <span class="o">=</span> <span class="s2">&quot;sparc.log&quot;</span>
+        <span class="k">return</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">in_socket_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># The actual socket name for inbound socket</span>
+        <span class="c1"># Return name as /tmp/ipi_sparc_&lt;hex&gt;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_socket</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_socket</span><span class="o">.</span><span class="n">socket_filename</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">directory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sparc_bundle&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">)</span>
+
+    <span class="nd">@directory</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sparc_bundle&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rewrite the label from Calculator class, since we don&#39;t want to contain pathsep&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sparc_bundle&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">label</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_label&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@label</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rewrite the label from Calculator class,</span>
+<span class="sd">        since we don&#39;t want to contain pathsep</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sparc_bundle&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">_make_label</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="n">label</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Like Vasp calculator</span>
+<span class="sd">        ASE atoms --&gt; sort --&gt; SPARC</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">sorting</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">sorting</span><span class="p">[</span><span class="s2">&quot;sort&quot;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">resort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Like Vasp calculator</span>
+<span class="sd">        SPARC --&gt; resort --&gt; ASE atoms</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">sorting</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">sorting</span><span class="p">[</span><span class="s2">&quot;resort&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SPARC.check_state">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.check_state">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updated check_state method.</span>
+<span class="sd">        By default self.atoms (cached from output files) contains the initial_magmoms,</span>
+<span class="sd">        so we add a zero magmoms to the atoms for comparison if it does not exist.</span>
+
+<span class="sd">        reading a result from the .out file has only precision up to 10 digits</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">atoms_copy</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;initial_magmoms&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">atoms_copy</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
+            <span class="n">atoms_copy</span><span class="o">.</span><span class="n">set_initial_magnetic_moments</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="mi">0</span><span class="p">,</span>
+                <span class="p">]</span>
+                <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms_copy</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">system_changes</span> <span class="o">=</span> <span class="n">FileIOCalculator</span><span class="o">.</span><span class="n">check_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms_copy</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
+        <span class="c1"># A few hard-written rules. Wrapping should only affect the position</span>
+        <span class="k">if</span> <span class="s2">&quot;positions&quot;</span> <span class="ow">in</span> <span class="n">system_changes</span><span class="p">:</span>
+            <span class="n">atoms_copy</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
+            <span class="n">new_system_changes</span> <span class="o">=</span> <span class="n">FileIOCalculator</span><span class="o">.</span><span class="n">check_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms_copy</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;positions&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_system_changes</span><span class="p">:</span>
+                <span class="n">system_changes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;positions&quot;</span><span class="p">)</span>
+
+        <span class="n">system_state_changed</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_system_state</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">system_state_changed</span><span class="p">:</span>
+            <span class="n">system_changes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;system_state&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">system_changes</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_make_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use $ASE_SPARC_COMMAND or self.command to determine the command</span>
+<span class="sd">        as a last resort, if `sparc` exists in the PATH, use that information</span>
+
+<span class="sd">        Extras will add additional arguments to the self.command,</span>
+<span class="sd">        e.g. -name, -socket etc</span>
+
+<span class="sd">        2024.09.05 @alchem0x2a</span>
+<span class="sd">        Note in ase&gt;=3.23 the FileIOCalculator.command will fallback</span>
+<span class="sd">        to self._legacy_default_command, which we should set to invalid value for now.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extras</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">extras</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">extras</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">extras</span> <span class="o">=</span> <span class="n">extras</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">SPARC</span><span class="o">.</span><span class="n">_legacy_default_command</span><span class="p">):</span>
+            <span class="n">command_env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ASE_SPARC_COMMAND&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">command_env</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">sparc_exe</span><span class="p">,</span> <span class="n">mpi_exe</span><span class="p">,</span> <span class="n">num_cores</span> <span class="o">=</span> <span class="n">_find_default_sparc</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">sparc_exe</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">EnvironmentError</span><span class="p">(</span>
+                        <span class="s2">&quot;Cannot find your sparc setup via $ASE_SPARC_COMMAND, SPARC.command, or &quot;</span>
+                        <span class="s2">&quot;infer from your $PATH. Please refer to the manual!&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">if</span> <span class="n">mpi_exe</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">command_env</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mpi_exe</span><span class="si">}</span><span class="s2"> -n </span><span class="si">{</span><span class="n">num_cores</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">sparc_exe</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">command_env</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sparc_exe</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Your sparc command is inferred to be </span><span class="si">{</span><span class="n">command_env</span><span class="si">}</span><span class="s2">, &quot;</span>
+                    <span class="s2">&quot;If this is not correct, &quot;</span>
+                    <span class="s2">&quot;please manually set $ASE_SPARC_COMMAND or SPARC.command!&quot;</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">=</span> <span class="n">command_env</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">extras</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<div class="viewcode-block" id="SPARC.check_input_atoms">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.check_input_atoms">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_input_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if input atoms are valid for SPARC inputs.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if the atoms structure is not suitable for SPARC input file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if the user accidentally provides atoms unit cell without vacuum</span>
+        <span class="k">if</span> <span class="n">atoms</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">cellpar</span><span class="p">()[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot setup SPARC calculation because at least one of the lattice dimension is zero!&quot;</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="ow">not</span> <span class="n">bc_</span> <span class="k">for</span> <span class="n">bc_</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span><span class="p">]):</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot; Please add a vacuum in the non-periodic direction of your input structure.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="c1"># SPARC only supports orthogonal lattice when Dirichlet BC is used</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="ow">not</span> <span class="n">bc_</span> <span class="k">for</span> <span class="n">bc_</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">angles</span><span class="p">(),</span> <span class="p">[</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">],</span> <span class="mf">1.0e-4</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;SPARC only supports orthogonal lattice when Dirichlet BC is used! &quot;</span>
+                        <span class="s2">&quot;Please modify your atoms structures&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bc_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">bc_</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="s2">&quot;xyz&quot;</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">min_pos</span><span class="p">,</span> <span class="n">max_pos</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">cell_len</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">lengths</span><span class="p">()[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">min_pos</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">max_pos</span> <span class="o">&gt;</span> <span class="n">cell_len</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;You have Dirichlet BC enabled for </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">-direction, &quot;</span>
+                        <span class="s2">&quot;but atoms positions are out of domain. &quot;</span>
+                        <span class="s2">&quot;SPARC calculator cannot continue. &quot;</span>
+                        <span class="s2">&quot;Please consider using atoms.center() to reposition your atoms.&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="c1"># Additionally, we should not allow use to calculate pbc=False with CALC_STRESS=1</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="ow">not</span> <span class="n">bc_</span> <span class="k">for</span> <span class="n">bc_</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span><span class="p">]):</span>  <span class="c1"># All Dirichlet</span>
+            <span class="n">calc_stress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;calc_stress&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">calc_stress</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot set CALC_STRESS=1 for non-periodic system in SPARC!&quot;</span>
+                <span class="p">)</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="SPARC.calculate">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.calculate">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">],</span> <span class="n">system_changes</span><span class="o">=</span><span class="n">all_changes</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform a calculation step&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_input_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+        <span class="n">Calculator</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">)</span>
+
+        <span class="c1"># Extra check for inpt parameters since check_state won&#39;t accept properties</span>
+        <span class="c1"># inpt should only change when write_inpt is actually called</span>
+        <span class="n">param_changed</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compare_calc_parameters</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">param_changed</span><span class="p">:</span>
+            <span class="n">system_changes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;parameters&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket_mode</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;client&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_with_socket</span><span class="p">(</span>
+                <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="o">=</span><span class="n">system_changes</span>
+            <span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket_mode</span> <span class="o">==</span> <span class="s2">&quot;server&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_as_server</span><span class="p">(</span>
+                <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="o">=</span><span class="n">system_changes</span>
+            <span class="p">)</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_results</span><span class="p">()</span>
+        <span class="c1"># Extra step, copy the atoms back to original atoms, if it&#39;s an</span>
+        <span class="c1"># geopt or aimd calculation</span>
+        <span class="c1"># This will not occur for socket calculator because it&#39;s using the static files</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;geopt&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_results</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&quot;aimd&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_results</span><span class="p">):</span>
+            <span class="c1"># Update the parent atoms</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">apply_constraint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span>
+            <span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span>
+            <span class="c1"># copy init magmom just to avoid check_state issue</span>
+            <span class="k">if</span> <span class="s2">&quot;initial_magmoms&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
+                <span class="n">atoms</span><span class="o">.</span><span class="n">set_initial_magnetic_moments</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_initial_magnetic_moments</span><span class="p">()</span>
+                <span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_calculate_as_server</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">],</span> <span class="n">system_changes</span><span class="o">=</span><span class="n">all_changes</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use the server component to send instructions to socket&quot;&quot;&quot;</span>
+        <span class="n">ret</span><span class="p">,</span> <span class="n">raw_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_socket</span><span class="o">.</span><span class="n">calculate_new_protocol</span><span class="p">(</span>
+            <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_results</span> <span class="o">=</span> <span class="n">raw_results</span>
+        <span class="k">if</span> <span class="s2">&quot;stress&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+            <span class="n">virial_from_socket</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;virial&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">))</span>
+            <span class="n">stress_from_socket</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="o">-</span><span class="n">full_3x3_to_voigt_6_stress</span><span class="p">(</span><span class="n">virial_from_socket</span><span class="p">)</span> <span class="o">/</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stress_from_socket</span>
+        <span class="c1"># Energy and forces returned in this case do not need</span>
+        <span class="c1"># resorting, since they are already in the same format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">_calculate_with_socket</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">],</span> <span class="n">system_changes</span><span class="o">=</span><span class="n">all_changes</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform one socket single point calculation&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: merge this part</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">detect_socket_compatibility</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;Your sparc binary is not compiled with socket support!&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">p</span> <span class="ow">in</span> <span class="n">system_changes</span>
+                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;numbers&quot;</span><span class="p">,</span> <span class="s2">&quot;pbc&quot;</span><span class="p">,</span> <span class="s2">&quot;parameters&quot;</span><span class="p">,</span> <span class="s2">&quot;system_state&quot;</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket_params</span><span class="p">[</span><span class="s2">&quot;allow_restart&quot;</span><span class="p">]:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;System has changed </span><span class="si">{</span><span class="n">system_changes</span><span class="si">}</span><span class="s2"> and the &quot;</span>
+                            <span class="s2">&quot;calculator needs to be restarted!</span><span class="se">\n</span><span class="s2">&quot;</span>
+                            <span class="s2">&quot;Please set socket_params[&#39;allow_restart&#39;] = True &quot;</span>
+                            <span class="s2">&quot;if you want to continue&quot;</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">system_changes</span><span class="si">}</span><span class="s2"> have changed since last calculation. Restart the socket process.&quot;</span>
+                    <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">keep_out_socket</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ensure_socket</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_input</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+            <span class="n">cmds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_command</span><span class="p">(</span>
+                <span class="n">extras</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;-socket </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">in_socket_filename</span><span class="si">}</span><span class="s2">:unix -name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="c1"># Use the IOContext class&#39;s lazy context manager</span>
+            <span class="c1"># TODO what if self.log is None</span>
+            <span class="n">fd_log</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">openfile</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="n">world</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+                <span class="n">cmds</span><span class="p">,</span>
+                <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">stdout</span><span class="o">=</span><span class="n">fd_log</span><span class="p">,</span>
+                <span class="n">stderr</span><span class="o">=</span><span class="n">fd_log</span><span class="p">,</span>
+                <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span>
+                <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">bufsize</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="c1"># in_socket is a server</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_socket</span><span class="o">.</span><span class="n">calculate_origin_protocol</span><span class="p">(</span><span class="n">atoms</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">sort</span><span class="p">])</span>
+        <span class="c1"># The results are parsed from file outputs (.static + .out)</span>
+        <span class="c1"># Except for stress, they should be exactly the same as socket returned results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_results</span><span class="p">()</span>  <span class="c1">#</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span>
+            <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span>
+        <span class="p">),</span> <span class="s2">&quot;Energy values from socket communication and output file are different! Please contact the developers.&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span>
+                <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">resort</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="s2">&quot;Force values from socket communication and output file are different! Please contact the developers.&quot;</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Force values cannot be accessed via the results dictionary. They may not be available in the output file. Ensure PRINT_FORCES: 1</span><span class="se">\n</span><span class="s2">Results:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
+        <span class="c1"># For stress information, we make sure that the stress is always present</span>
+        <span class="k">if</span> <span class="s2">&quot;stress&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+            <span class="n">virial_from_socket</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;virial&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">))</span>
+            <span class="n">stress_from_socket</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="o">-</span><span class="n">full_3x3_to_voigt_6_stress</span><span class="p">(</span><span class="n">virial_from_socket</span><span class="p">)</span> <span class="o">/</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;stress&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stress_from_socket</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dump_system_state</span><span class="p">()</span>
+        <span class="k">return</span>
+
+<div class="viewcode-block" id="SPARC.get_stress">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.get_stress">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_stress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Warn user the dimensionality change when using stress&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;stress_equiv&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;You&#39;re requesting stress in a low-dimensional system. Please use `calc.results[&#39;stress_equiv&#39;]` instead!&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_stress</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_check_input_exclusion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_parameters</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if mutually exclusive parameters are provided</span>
+
+<span class="sd">        The exclusion rules are taken from the SPARC manual and currently hard-coded.</span>
+<span class="sd">        We may need to have a clever way to do the automatic rule conversion in API</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Rule 1: ECUT, MESH_SPACING, FD_GRID</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ECUT&quot;</span><span class="p">,</span> <span class="s2">&quot;MESH_SPACING&quot;</span><span class="p">,</span> <span class="s2">&quot;FD_GRID&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">input_parameters</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;ECUT, MESH_SPACING, FD_GRID cannot be specified simultaneously!&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Rule 2: LATVEC_SCALE, CELL</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;LATVEC_SCALE&quot;</span> <span class="ow">in</span> <span class="n">input_parameters</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;CELL&quot;</span> <span class="ow">in</span> <span class="n">input_parameters</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;LATVEC_SCALE and CELL cannot be specified simultaneously!&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># When the cell is provided via ase object, we will forbid user to provide</span>
+        <span class="c1"># LATVEC, LATVEC_SCALE or CELL</span>
+        <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">p</span> <span class="ow">in</span> <span class="n">input_parameters</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;LATVEC&quot;</span><span class="p">,</span> <span class="s2">&quot;LATVEC_SCALE&quot;</span><span class="p">,</span> <span class="s2">&quot;CELL&quot;</span><span class="p">]]):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;When passing an ase atoms object, LATVEC, LATVEC_SCALE or CELL cannot be set simultaneously! </span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="s2">&quot;Please set atoms.cell instead&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_minimal_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_parameters</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the minimal input set is satisfied&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">,</span> <span class="s2">&quot;KPOINT_GRID&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">param</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">input_parameters</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameter </span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2"> is not provided.&quot;</span><span class="p">)</span>
+        <span class="c1"># At least one from ECUT, MESH_SPACING and FD_GRID must be provided</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">param</span> <span class="ow">in</span> <span class="n">input_parameters</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;ECUT&quot;</span><span class="p">,</span> <span class="s2">&quot;MESH_SPACING&quot;</span><span class="p">,</span> <span class="s2">&quot;FD_GRID&quot;</span><span class="p">)]</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;You should provide at least one of ECUT, MESH_SPACING or FD_GRID.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_generate_inpt_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a key:value pair to be written to inpt file</span>
+<span class="sd">        This is an immutable dict as the ground truth</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">converted_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_special_params</span><span class="p">(</span><span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">)</span>
+        <span class="n">input_parameters</span> <span class="o">=</span> <span class="n">converted_params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">input_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valid_params</span><span class="p">)</span>
+
+        <span class="c1"># Make sure desired properties are always ensured, but we don&#39;t modify the user inputs</span>
+        <span class="k">if</span> <span class="s2">&quot;forces&quot;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="n">input_parameters</span><span class="p">[</span><span class="s2">&quot;PRINT_FORCES&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="s2">&quot;stress&quot;</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+            <span class="n">input_parameters</span><span class="p">[</span><span class="s2">&quot;CALC_STRESS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_input_exclusion</span><span class="p">(</span><span class="n">input_parameters</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_minimal_input</span><span class="p">(</span><span class="n">input_parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">input_parameters</span>
+
+<div class="viewcode-block" id="SPARC.write_input">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.write_input">[docs]</a>
+    <span class="k">def</span> <span class="nf">write_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[],</span> <span class="n">system_changes</span><span class="o">=</span><span class="p">[]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create input files via SparcBundle</span>
+<span class="sd">        Will use the self.keep_sold_files options to keep old output files</span>
+<span class="sd">        like .out_01, .out_02 etc</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># import pdb; pdb.set_trace()</span>
+        <span class="n">FileIOCalculator</span><span class="o">.</span><span class="n">write_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">)</span>
+        <span class="n">input_parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_inpt_state</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">)</span>
+
+        <span class="c1"># TODO: make sure the sorting reset is justified (i.e. what about restarting?)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">sorting</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">_write_ion_and_inpt</span><span class="p">(</span>
+            <span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+            <span class="c1"># Pass the rest parameters from calculator!</span>
+            <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">ignore_constraints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">wrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="c1"># Below are the parameters from v1</span>
+            <span class="c1"># scaled -&gt; direct, ignore_constraints --&gt; not add_constraints</span>
+            <span class="n">scaled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">add_constraints</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">copy_psp</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">input_parameters</span><span class="o">=</span><span class="n">input_parameters</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">output_patterns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;.out&quot;</span><span class="p">,</span> <span class="s2">&quot;.static&quot;</span><span class="p">,</span> <span class="s2">&quot;.eigen&quot;</span><span class="p">,</span> <span class="s2">&quot;.aimd&quot;</span><span class="p">,</span> <span class="s2">&quot;geopt&quot;</span><span class="p">]</span>
+        <span class="c1"># We just remove the output files, in case the user has psp files manually copied</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">keep_old_files</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">())</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">output_patterns</span><span class="p">]</span>
+                <span class="p">):</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inpt_state</span> <span class="o">=</span> <span class="n">input_parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dump_system_state</span><span class="p">()</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="SPARC.execute">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.execute">[docs]</a>
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a normal SPARC calculation without socket. Note we probably need to use a better handling of background process!&quot;&quot;&quot;</span>
+        <span class="n">extras</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;-name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_command</span><span class="p">(</span><span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_sysinfo</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                        <span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">fd</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                    <span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="kc">None</span>
+                <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Failed to execute &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">EnvironmentError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span>
+
+        <span class="c1"># We probably don&#39;t want to wait the</span>
+        <span class="n">errorcode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">returncode</span>
+
+        <span class="k">if</span> <span class="n">errorcode</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;SPARC failed with command </span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="s2">&quot;</span> <span class="sa">f</span><span class="s2">&quot;with error code </span><span class="si">{</span><span class="n">errorcode</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="SPARC.close">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.close">[docs]</a>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keep_out_socket</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Close the socket communication, the SPARC process etc&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_socket</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_socket</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">in_socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_socket</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">keep_out_socket</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out_socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="c1"># In most cases if in_socket is closed, the SPARC process should also exit</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">time_limit</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">ret</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Force terminate the sparc process!&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_send_mpi_signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SPARC process exists with code </span><span class="si">{</span><span class="n">ret</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># TODO: check if in_socket should be merged</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_socket</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_out_socket</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out_socket</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_process</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_send_mpi_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send signal to the mpi process within self.process</span>
+<span class="sd">        If the process cannot be found, return without affecting the state</span>
+
+<span class="sd">        This is a method taken from the vasp_interactive project</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span>
+            <span class="n">psutil_proc</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;SPARC process no longer exists. Will reset the calculator.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reset_process</span><span class="p">()</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pid</span> <span class="o">==</span> <span class="n">pid</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;mpi_match&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_match</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># self.pid = pid</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">_find_mpi_process</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mpi_match</span> <span class="o">=</span> <span class="n">match</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">match</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">match</span><span class="p">[</span><span class="s2">&quot;process&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot find the mpi process or you&#39;re using different ompi wrapper. Will not send stop signal to mpi.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">elif</span> <span class="n">match</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;mpi&quot;</span><span class="p">:</span>
+            <span class="n">mpi_process</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s2">&quot;process&quot;</span><span class="p">]</span>
+            <span class="n">mpi_process</span><span class="o">.</span><span class="n">send_signal</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">match</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;slurm&quot;</span><span class="p">:</span>
+            <span class="n">slurm_step</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s2">&quot;process&quot;</span><span class="p">]</span>
+            <span class="n">_slurm_signal</span><span class="p">(</span><span class="n">slurm_step</span><span class="p">,</span> <span class="n">sig</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported process type!&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">_reset_process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the record for process in the calculator.</span>
+<span class="sd">        Useful if the process is missing or reset the calculator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Reset process tracker</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># self.pid = None</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;mpi_match&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mpi_match</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mpi_state</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The pid for the stored process&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">raw_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="p">,</span> <span class="s2">&quot;raw_results&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="nd">@raw_results</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">raw_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">raw_results</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span>
+
+<div class="viewcode-block" id="SPARC.read_results">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.read_results">[docs]</a>
+    <span class="k">def</span> <span class="nf">read_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse from the SparcBundle&quot;&quot;&quot;</span>
+        <span class="c1"># self.sparc_bundle.read_raw_results()</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">convert_to_ase</span><span class="p">(</span><span class="n">indices</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">include_all_files</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">last</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">last</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">results</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_restart</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reload the input parameters and atoms from previous calculation.</span>
+
+<span class="sd">        If self.parameters is already set, the parameters will not be loaded</span>
+<span class="sd">        If self.atoms is already set, the atoms will be not be read</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">restart</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">reload_atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="n">reload_parameters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_results</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">reload_atoms</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">reload_parameters</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_results</span><span class="p">[</span><span class="s2">&quot;inpt&quot;</span><span class="p">][</span><span class="s2">&quot;params&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">reload_parameters</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">reload_atoms</span><span class="p">):</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;Extra parameters or atoms are provided when restarting the SPARC calculator, &quot;</span>
+                <span class="s2">&quot;previous results will be cleared.&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">raw_results</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">get_fermi_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extra get-method for Fermi level, if calculated&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fermi&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SPARC.detect_sparc_version">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.detect_sparc_version">[docs]</a>
+    <span class="k">def</span> <span class="nf">detect_sparc_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a short sparc test to determine which sparc is used&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_command</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">EnvironmentError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running a short calculation to determine SPARC version....&quot;</span><span class="p">)</span>
+        <span class="c1"># check_version must be set to False to avoid recursive calling</span>
+        <span class="n">new_calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span>
+            <span class="n">command</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">psp_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">psp_dir</span><span class="p">,</span> <span class="n">check_version</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="n">new_calc</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s2">&quot;pbe&quot;</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">maxit_scf</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">)</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">([</span><span class="s2">&quot;H&quot;</span><span class="p">],</span> <span class="n">positions</span><span class="o">=</span><span class="p">[[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]],</span> <span class="n">cell</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">pbc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">new_calc</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="n">new_calc</span><span class="o">.</span><span class="n">raw_results</span><span class="p">[</span><span class="s2">&quot;out&quot;</span><span class="p">][</span><span class="s2">&quot;sparc_version&quot;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error handling simple calculation: &quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Warning information about version mismatch between binary and JSON API</span>
+        <span class="c1"># only when both are not None</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span><span class="n">sparc_version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">version</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span><span class="n">sparc_version</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;SPARC binary version </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2"> does not match JSON API version </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span><span class="n">sparc_version</span><span class="si">}</span><span class="s2">. &quot;</span>
+                        <span class="s2">&quot;You can set $SPARC_DOC_PATH to the SPARC documentation location.&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">version</span></div>
+
+
+<div class="viewcode-block" id="SPARC.run_client">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.run_client">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_stress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Main method to start the client code&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket_mode</span> <span class="o">==</span> <span class="s2">&quot;client&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot use SPARC.run_client if the calculator is not configured in client mode!&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_socket</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">use_stress</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SPARC.detect_socket_compatibility">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.detect_socket_compatibility">[docs]</a>
+    <span class="k">def</span> <span class="nf">detect_socket_compatibility</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Test if the sparc binary supports socket mode&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_command</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">EnvironmentError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+            <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;USAGE:&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">output</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">EnvironmentError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot find the sparc executable! Please make sure you have the correct setup&quot;</span>
+                <span class="p">)</span>
+            <span class="n">compatibility</span> <span class="o">=</span> <span class="s2">&quot;-socket&quot;</span> <span class="ow">in</span> <span class="n">output</span>
+        <span class="k">return</span> <span class="n">compatibility</span></div>
+
+
+<div class="viewcode-block" id="SPARC.set">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.set">[docs]</a>
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Overwrite the initial parameters&quot;&quot;&quot;</span>
+        <span class="c1"># Do not use JSON Schema for these arguments</span>
+        <span class="k">if</span> <span class="s2">&quot;label&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;directory&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="c1"># str() call to deal with pathlib objects</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;directory&quot;</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="s2">&quot;log&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;check_version&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_version</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;check_version&quot;</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="s2">&quot;keep_old_files&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keep_old_files</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;keep_old_files&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;atoms&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;atoms&quot;</span><span class="p">)</span>  <span class="c1"># Resets results</span>
+
+        <span class="k">if</span> <span class="s2">&quot;command&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;command&quot;</span><span class="p">)</span>
+
+        <span class="c1"># For now we don&#39;t let the user to hot-swap socket</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;use_socket&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&quot;socket_params&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Hot swapping socket parameter is not supported!&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sanitize_kwargs</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">set_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">set_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">special_params</span><span class="p">)</span>
+        <span class="n">set_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valid_params</span><span class="p">)</span>
+        <span class="n">changed</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="n">set_params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">changed</span> <span class="o">!=</span> <span class="p">{}:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">changed</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_sanitize_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert known parameters from JSON API&quot;&quot;&quot;</span>
+        <span class="n">validator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validator</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">special_params</span> <span class="o">==</span> <span class="p">{}:</span>
+            <span class="n">init</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">special_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">init</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># User input gpts will overwrite default h</span>
+        <span class="c1"># but user cannot put h and gpts both</span>
+        <span class="k">if</span> <span class="s2">&quot;gpts&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">special_params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">h</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">init</span><span class="p">):</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Parameter gpts will overwrite previously set parameter h.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;h&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">special_params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;gpts&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">gpts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">init</span><span class="p">):</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Parameter h will overwrite previously set parameter gpts.&quot;</span><span class="p">)</span>
+
+        <span class="n">upper_valid_params</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># Valid SPARC parameters in upper case</span>
+        <span class="c1"># SPARC API is case insensitive</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">special_inputs</span><span class="p">:</span>
+                <span class="c1"># Special case: ignore h when gpts provided</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">special_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">upper_valid_params</span><span class="p">:</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameter </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> (case-insentive) appears multiple times!&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">validator</span><span class="o">.</span><span class="n">validate_input</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">valid_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="n">upper_valid_params</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> for parameter </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> (case-insensitive) is invalid!&quot;</span>
+                    <span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">_convert_special_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert ASE-compatible parameters to SPARC compatible ones</span>
+<span class="sd">        parameters like `h`, `nbands` may need atoms information</span>
+
+<span class="sd">        Special rules:</span>
+<span class="sd">        h &lt;--&gt; gpts &lt;--&gt; FD_GRID, only when None of FD_GRID / ECUT or MESH_SPACING is provided</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">converted_sparc_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">validator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validator</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">special_params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># xc --&gt; EXCHANGE_CORRELATION</span>
+        <span class="k">if</span> <span class="s2">&quot;xc&quot;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="n">xc</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;xc&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;pbe&quot;</span><span class="p">:</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;GGA_PBE&quot;</span>
+            <span class="k">elif</span> <span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;lda&quot;</span><span class="p">:</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;LDA_PZ&quot;</span>
+            <span class="k">elif</span> <span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;rpbe&quot;</span><span class="p">:</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;GGA_RPBE&quot;</span>
+            <span class="k">elif</span> <span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;pbesol&quot;</span><span class="p">:</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;GGA_PBEsol&quot;</span>
+            <span class="k">elif</span> <span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;pbe0&quot;</span><span class="p">:</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;PBE0&quot;</span>
+            <span class="k">elif</span> <span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;hf&quot;</span><span class="p">:</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;HF&quot;</span>
+            <span class="c1"># backward compatibility for HSE03. Note HSE06 is not supported yet</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;hse&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;hse03&quot;</span><span class="p">):</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;HSE&quot;</span>
+            <span class="c1"># backward compatibility for VASP-style XCs</span>
+            <span class="k">elif</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;vdwdf1&quot;</span><span class="p">)</span>
+                <span class="ow">or</span> <span class="p">(</span><span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;vdw-df&quot;</span><span class="p">)</span>
+                <span class="ow">or</span> <span class="p">(</span><span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;vdw-df1&quot;</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;vdWDF1&quot;</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;vdwdf2&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;vdw-df2&quot;</span><span class="p">):</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;vdWDF2&quot;</span>
+            <span class="k">elif</span> <span class="n">xc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;scan&quot;</span><span class="p">:</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;SCAN&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;xc keyword value </span><span class="si">{</span><span class="n">xc</span><span class="si">}</span><span class="s2"> is invalid!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># h --&gt; gpts</span>
+        <span class="k">if</span> <span class="s2">&quot;h&quot;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;gpts&quot;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                    <span class="s2">&quot;h and gpts cannot be provided together in SPARC calculator!&quot;</span>
+                <span class="p">)</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)</span>
+            <span class="c1"># if atoms is None:</span>
+            <span class="c1">#     raise ValueError(</span>
+            <span class="c1">#         &quot;Must have an active atoms object to convert h --&gt; gpts!&quot;</span>
+            <span class="c1">#     )</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_params</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;FD_GRID&quot;</span><span class="p">,</span> <span class="s2">&quot;ECUT&quot;</span><span class="p">,</span> <span class="s2">&quot;MESH_SPACING&quot;</span><span class="p">)]</span>
+            <span class="p">):</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="s2">&quot;You have specified one of FD_GRID, ECUT or MESH_SPACING, &quot;</span>
+                    <span class="s2">&quot;conversion of h to mesh grid is ignored.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># gpts = h2gpts(h, atoms.cell)</span>
+                <span class="c1"># params[&quot;gpts&quot;] = gpts</span>
+                <span class="c1"># Use mesh_spacing instead of fd_grid to avoid parameters</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;MESH_SPACING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span> <span class="o">/</span> <span class="n">Bohr</span>
+
+        <span class="c1"># gpts --&gt; FD_GRID</span>
+        <span class="k">if</span> <span class="s2">&quot;gpts&quot;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="n">gpts</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;gpts&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">validator</span><span class="o">.</span><span class="n">validate_input</span><span class="p">(</span><span class="s2">&quot;FD_GRID&quot;</span><span class="p">,</span> <span class="n">gpts</span><span class="p">):</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;FD_GRID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gpts</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input parameter gpts has invalid value </span><span class="si">{</span><span class="n">gpts</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># kpts</span>
+        <span class="k">if</span> <span class="s2">&quot;kpts&quot;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="n">kpts</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;kpts&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">validator</span><span class="o">.</span><span class="n">validate_input</span><span class="p">(</span><span class="s2">&quot;KPOINT_GRID&quot;</span><span class="p">,</span> <span class="n">kpts</span><span class="p">):</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;KPOINT_GRID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kpts</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input parameter kpts has invalid value </span><span class="si">{</span><span class="n">kpts</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># nbands</span>
+        <span class="k">if</span> <span class="s2">&quot;nbands&quot;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="c1"># TODO: Check if the nbands are correct in current system</span>
+            <span class="c1"># TODO: default $N_e/2 \\times 1.2 + 5$</span>
+            <span class="n">nbands</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;nbands&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">validator</span><span class="o">.</span><span class="n">validate_input</span><span class="p">(</span><span class="s2">&quot;NSTATES&quot;</span><span class="p">,</span> <span class="n">nbands</span><span class="p">):</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;NSTATES&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nbands</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input parameter nbands has invalid value </span><span class="si">{</span><span class="n">nbands</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># convergence is a dict</span>
+        <span class="k">if</span> <span class="s2">&quot;convergence&quot;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="n">convergence</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;convergence&quot;</span><span class="p">)</span>
+            <span class="n">tol_e</span> <span class="o">=</span> <span class="n">convergence</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tol_e</span><span class="p">:</span>
+                <span class="c1"># TOL SCF: Ha / atom &lt;--&gt; energy tol: eV / atom</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;TOL_SCF&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tol_e</span> <span class="o">/</span> <span class="n">Hartree</span>
+
+            <span class="n">tol_f</span> <span class="o">=</span> <span class="n">convergence</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;relax&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tol_f</span><span class="p">:</span>
+                <span class="c1"># TOL SCF: Ha / Bohr &lt;--&gt; energy tol: Ha / Bohr</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;TOL_RELAX&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tol_f</span> <span class="o">/</span> <span class="n">Hartree</span> <span class="o">*</span> <span class="n">Bohr</span>
+
+            <span class="n">tol_dens</span> <span class="o">=</span> <span class="n">convergence</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;density&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tol_dens</span><span class="p">:</span>
+                <span class="c1"># TOL SCF: electrons / atom</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;TOL_PSEUDOCHARGE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tol_dens</span>
+
+            <span class="n">tol_stress</span> <span class="o">=</span> <span class="n">convergence</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stress&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tol_stress</span><span class="p">:</span>
+                <span class="c1"># TOL SCF: electrons / atom</span>
+                <span class="n">converted_sparc_params</span><span class="p">[</span><span class="s2">&quot;TOL_RELAX_CELL&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tol_stress</span> <span class="o">/</span> <span class="n">GPa</span>
+
+        <span class="k">return</span> <span class="n">converted_sparc_params</span>
+
+<div class="viewcode-block" id="SPARC.print_sysinfo">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.print_sysinfo">[docs]</a>
+    <span class="k">def</span> <span class="nf">print_sysinfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Record current runtime information&quot;&quot;&quot;</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">command</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;*&quot;</span> <span class="o">*</span> <span class="mi">80</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;SPARC program started by SPARC-X-API at </span><span class="si">{</span><span class="n">now</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;command: </span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">fd</span><span class="p">)</span></div>
+
+
+    <span class="c1">###############################################</span>
+    <span class="c1"># Below are deprecated functions from v1</span>
+    <span class="c1">###############################################</span>
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please use SPARC.set instead for setting grid&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">interpret_grid_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please use SPARC.set instead for setting kpoints&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">interpret_kpoint_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please use SPARC.set instead for setting downsampling parameter&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">interpret_downsampling_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please use SPARC.set instead for setting kpoint shift&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">interpret_kpoint_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please use SPARC.psp_dir instead&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_pseudopotential_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pseudo_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">psp_dir</span>
+
+<div class="viewcode-block" id="SPARC.get_nstates">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.get_nstates">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_nstates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Parsing nstates is not yet implemented.&quot;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please set the variables separatedly&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">setup_parallel_env</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please use SPARC._make_command instead&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">generate_command</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_command</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SPARC.estimate_memory">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.estimate_memory">[docs]</a>
+    <span class="k">def</span> <span class="nf">estimate_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;GB&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        a function to estimate the amount of memory required to run</span>
+<span class="sd">        the selected calculation. This function takes in **kwargs,</span>
+<span class="sd">        but if none are passed in, it will fall back on the parameters</span>
+<span class="sd">        input when the class was instantiated</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">conversion_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;MB&quot;</span><span class="p">:</span> <span class="mf">1e-6</span><span class="p">,</span>
+            <span class="s2">&quot;GB&quot;</span><span class="p">:</span> <span class="mf">1e-9</span><span class="p">,</span>
+            <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;byte&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;KB&quot;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">kwargs</span> <span class="o">==</span> <span class="p">{}:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span>
+        <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span>
+
+        <span class="n">nstates</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NSTATES&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">nstates</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nstates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nstates</span><span class="p">(</span><span class="n">atoms</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># some annoying code to figure out if it&#39;s a spin system</span>
+        <span class="n">spin_polarized</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nstates&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">spin_polarized</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">spin_polarized</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">spin_polarized</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">spin_polarized</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">spin_polarized</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">spin_factor</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">spin_factor</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="s2">&quot;MESH_SPACING&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="c1"># MESH_SPACING: Bohr; h: angstrom</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;MESH_SPACING&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">Bohr</span>
+        <span class="n">npoints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interpret_grid_input</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+
+        <span class="n">kpt_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpret_kpoint_input</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">kpt_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">kpt_grid</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># this is a pretty generous over-estimate</span>
+        <span class="n">estimate</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">npoints</span> <span class="o">*</span> <span class="n">nstates</span> <span class="o">*</span> <span class="n">kpt_factor</span> <span class="o">*</span> <span class="n">spin_factor</span> <span class="o">*</span> <span class="mi">8</span>  <span class="c1"># bytes</span>
+        <span class="n">converted_estimate</span> <span class="o">=</span> <span class="n">estimate</span> <span class="o">*</span> <span class="n">conversion_dict</span><span class="p">[</span><span class="n">units</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">converted_estimate</span></div>
+
+
+<div class="viewcode-block" id="SPARC.get_scf_steps">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.get_scf_steps">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_scf_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_uncompleted_last_step</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span></div>
+
+
+    <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Use SPARC.get_number_of_ionic_steps instead&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_geometric_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_uncompleted_last_step</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span>
+
+<div class="viewcode-block" id="SPARC.get_runtime">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.get_runtime">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_runtime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="SPARC.get_fermi_level">
+<a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.get_fermi_level">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_fermi_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span></div>
+
+
+    <span class="nd">@deprecated</span>
+    <span class="k">def</span> <span class="nf">concatinate_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;Functionality moved in sparc.SparcBundle.&quot;</span><span class="p">)</span>
+
+    <span class="nd">@deprecated</span>
+    <span class="k">def</span> <span class="nf">read_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span>
+            <span class="s2">&quot;Parsers for individual files have been moved to sparc.sparc_parsers module&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@deprecated</span>
+    <span class="k">def</span> <span class="nf">parse_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;Use SPARC.read_results for parsing results!&quot;</span><span class="p">)</span>
+
+    <span class="nd">@deprecated</span>
+    <span class="k">def</span> <span class="nf">parse_relax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;Use SPARC.read_results for parsing results!&quot;</span><span class="p">)</span>
+
+    <span class="nd">@deprecated</span>
+    <span class="k">def</span> <span class="nf">parse_MD</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;Use SPARC.read_results for parsing results!&quot;</span><span class="p">)</span>
+
+    <span class="nd">@deprecated</span>
+    <span class="k">def</span> <span class="nf">parse_input_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_block</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;Use SPARC.set for argument handling!&quot;</span><span class="p">)</span>
+
+    <span class="nd">@deprecated</span>
+    <span class="k">def</span> <span class="nf">recover_index_order_from_ion_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span>
+            <span class="s2">&quot;Use SPARC.sort and SPARC.resort for atomic index sorting!&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@deprecated</span>
+    <span class="k">def</span> <span class="nf">atoms_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="nd">@deprecated</span>
+    <span class="k">def</span> <span class="nf">dict_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

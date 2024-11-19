@@ -1,0 +1,473 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sparc.io module &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="sparc.quicktest module" href="sparc.quicktest.html" />
+    <link rel="prev" title="sparc.download_data module" href="sparc.download_data.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../package_components.html">SPARC-X-API Package Components</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="modules.html">sparc</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="sparc.html">sparc package</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="sparc.html#sparc.SPARCMissingDeps"><code class="docutils literal notranslate"><span class="pre">SPARCMissingDeps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="sparc.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="sparc.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../package_components.html">SPARC-X-API Package Components</a></li>
+          <li class="breadcrumb-item"><a href="modules.html">sparc</a></li>
+          <li class="breadcrumb-item"><a href="sparc.html">sparc package</a></li>
+      <li class="breadcrumb-item active">sparc.io module</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/sparc-x/SPARC-X-API/blob/master/doc/api/sparc.io.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-sparc.io">
+<span id="sparc-io-module"></span><h1>sparc.io module<a class="headerlink" href="#module-sparc.io" title="Link to this heading"></a></h1>
+<p>Providing a new bundled SPARC file format</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.io.</span></span><span class="sig-name descname"><span class="pre">SparcBundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode='r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psp_dir=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validator=&lt;sparc.api.SparcAPI</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#SparcBundle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.io.SparcBundle" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Provide access to a calculation folder of SPARC as a simple bundle</p>
+<p>The bundle can be optionally named as .sparc following the ASE’s
+.bundle format</p>
+<p>Currently the write method only supports 1 image, while read method support reading
+atoms results in following conditions</p>
+<ol class="arabic simple">
+<li><p>No calculation (minimal): .ion + .inpt file –&gt; 1 image</p></li>
+</ol>
+<p>2) Single point calculation: .ion + .inpt + .out + .static –&gt; 1
+image with calc
+3) Multiple SP calculations: chain all
+.out{digits} and .static{digitis} outputs 4) Relaxation: read from
+.geopt and .out (supporting chaining) 5) AIMD: read from .aimd and
+.out (support chaining)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.directory">
+<span class="sig-name descname"><span class="pre">directory</span></span><a class="headerlink" href="#sparc.io.SparcBundle.directory" title="Link to this definition"></a></dt>
+<dd><p>Path to the directory containing SPARC files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.mode">
+<span class="sig-name descname"><span class="pre">mode</span></span><a class="headerlink" href="#sparc.io.SparcBundle.mode" title="Link to this definition"></a></dt>
+<dd><p>File access mode (‘r’, ‘w’, or ‘a’).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.label">
+<span class="sig-name descname"><span class="pre">label</span></span><a class="headerlink" href="#sparc.io.SparcBundle.label" title="Link to this definition"></a></dt>
+<dd><p>Name of the main SPARC file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.init_atoms">
+<span class="sig-name descname"><span class="pre">init_atoms</span></span><a class="headerlink" href="#sparc.io.SparcBundle.init_atoms" title="Link to this definition"></a></dt>
+<dd><p>Initial atomic configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Atoms</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.init_inputs">
+<span class="sig-name descname"><span class="pre">init_inputs</span></span><a class="headerlink" href="#sparc.io.SparcBundle.init_inputs" title="Link to this definition"></a></dt>
+<dd><p>Initial input parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.psp_data">
+<span class="sig-name descname"><span class="pre">psp_data</span></span><a class="headerlink" href="#sparc.io.SparcBundle.psp_data" title="Link to this definition"></a></dt>
+<dd><p>Pseudopotential data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.raw_results">
+<span class="sig-name descname"><span class="pre">raw_results</span></span><a class="headerlink" href="#sparc.io.SparcBundle.raw_results" title="Link to this definition"></a></dt>
+<dd><p>Raw results from SPARC calculations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.psp_dir">
+<span class="sig-name descname"><span class="pre">psp_dir</span></span><a class="headerlink" href="#sparc.io.SparcBundle.psp_dir" title="Link to this definition"></a></dt>
+<dd><p>Directory containing pseudopotentials.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.sorting">
+<span class="sig-name descname"><span class="pre">sorting</span></span><a class="headerlink" href="#sparc.io.SparcBundle.sorting" title="Link to this definition"></a></dt>
+<dd><p>Sort order for atoms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.last_image">
+<span class="sig-name descname"><span class="pre">last_image</span></span><a class="headerlink" href="#sparc.io.SparcBundle.last_image" title="Link to this definition"></a></dt>
+<dd><p>Index of the last image in a series of calculations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.validator">
+<span class="sig-name descname"><span class="pre">validator</span></span><a class="headerlink" href="#sparc.io.SparcBundle.validator" title="Link to this definition"></a></dt>
+<dd><p>API validator for SPARC calculations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="sparc.api.html#sparc.api.SparcAPI" title="sparc.api.SparcAPI">SparcAPI</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.__find_psp_dir">
+<span class="sig-name descname"><span class="pre">__find_psp_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psp_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sparc.io.SparcBundle.__find_psp_dir" title="Link to this definition"></a></dt>
+<dd><p>Finds the directory for SPARC pseudopotentials.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle._find_files">
+<span class="sig-name descname"><span class="pre">_find_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#SparcBundle._find_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.io.SparcBundle._find_files" title="Link to this definition"></a></dt>
+<dd><p>Finds all files matching the bundle label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle._make_label">
+<span class="sig-name descname"><span class="pre">_make_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#SparcBundle._make_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.io.SparcBundle._make_label" title="Link to this definition"></a></dt>
+<dd><p>Infers or sets the label for the SPARC bundle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">_indir(ext,</span> <span class="pre">label=None,</span> <span class="pre">occur=0,</span> <span class="pre">d_format=&quot;{</span></span></dt>
+<dd><p>02d}”): Finds a file with a specific extension in the bundle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle._read_ion_and_inpt">
+<span class="sig-name descname"><span class="pre">_read_ion_and_inpt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#SparcBundle._read_ion_and_inpt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.io.SparcBundle._read_ion_and_inpt" title="Link to this definition"></a></dt>
+<dd><p>Reads .ion and .inpt files together.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle._write_ion_and_inpt">
+<span class="sig-name descname"><span class="pre">_write_ion_and_inpt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#SparcBundle._write_ion_and_inpt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.io.SparcBundle._write_ion_and_inpt" title="Link to this definition"></a></dt>
+<dd><p>Writes .ion and .inpt files to the bundle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">_read_results_from_index(index,</span> <span class="pre">d_format=&quot;{</span></span></dt>
+<dd><p>02d}”): Reads results from a specific calculation index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle._make_singlepoint">
+<span class="sig-name descname"><span class="pre">_make_singlepoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calc_results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_results</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#SparcBundle._make_singlepoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.io.SparcBundle._make_singlepoint" title="Link to this definition"></a></dt>
+<dd><p>Converts results and images to SinglePointDFTCalculators.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">_extract_static_results(raw_results,</span> <span class="pre">index=&quot;</span></span></dt>
+<dd><p>“): Extracts results from static calculations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">_extract_geopt_results(raw_results,</span> <span class="pre">index=&quot;</span></span></dt>
+<dd><p>“): Extracts results from geometric optimization calculations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">_extract_aimd_results(raw_results,</span> <span class="pre">index=&quot;</span></span></dt>
+<dd><p>“): Extracts results from AIMD calculations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.convert_to_ase">
+<span class="sig-name descname"><span class="pre">convert_to_ase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_all_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#SparcBundle.convert_to_ase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.io.SparcBundle.convert_to_ase" title="Link to this definition"></a></dt>
+<dd><p>Converts raw results to ASE Atoms with calculators.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.read_raw_results">
+<span class="sig-name descname"><span class="pre">read_raw_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_all_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#SparcBundle.read_raw_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.io.SparcBundle.read_raw_results" title="Link to this definition"></a></dt>
+<dd><p>Parses all files in the bundle and merges results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.read_psp_info">
+<span class="sig-name descname"><span class="pre">read_psp_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#SparcBundle.read_psp_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.io.SparcBundle.read_psp_info" title="Link to this definition"></a></dt>
+<dd><p>Parses pseudopotential information from the inpt file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">convert_to_ase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_all_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#SparcBundle.convert_to_ase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Read the raw results from the bundle and create atoms with
+single point calculators</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> (<em>int</em><em> or </em><em>str</em>) – Index or slice of the image(s) to convert. Uses the same format as ase.io.read</p></li>
+<li><p><strong>include_all_files</strong> (<em>bool</em>) – If true, also read results with indexed suffices</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ASE-atoms or images with single point results</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Atoms or List[Atoms]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.psp_env">
+<span class="sig-name descname"><span class="pre">psp_env</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['SPARC_PSP_PATH',</span> <span class="pre">'SPARC_PP_PATH']</span></em><a class="headerlink" href="#sparc.io.SparcBundle.psp_env" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">read_psp_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#SparcBundle.read_psp_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><p>Parse the psp information from inpt file options
+The psp file locations are relative to the bundle.</p>
+<p>If the files cannot be found, the dict will only contain
+the path</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">read_raw_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_all_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#SparcBundle.read_raw_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd><p>Parse all files using the given self.label.
+The results are merged dict from all file formats</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>include_all_files</strong> (<em>bool</em>) – Whether to include output files with different suffices
+If true: include all files (e.g. SPARC.out, SPARC.out_01,
+SPARC.out_02, etc).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict containing all raw results. Only some of them will appear in the calculator’s results</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict or List</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Sets:</dt><dd><p>self.raw_results (dict or List): the same as the return value</p>
+</dd>
+</dl>
+<p>#TODO: &#64;TT 2024-11-01 allow accepting indices
+#TODO: &#64;TT last_image is a bad name, it should refer to the occurance of images</p>
+<blockquote>
+<div><p>the same goes with num_calculations</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.resort">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resort</span></span><a class="headerlink" href="#sparc.io.SparcBundle.resort" title="Link to this definition"></a></dt>
+<dd><p>Wrap the self.sorting dict. If sorting information does not exist,
+use the default slicing</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sparc.io.SparcBundle.sort">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sort</span></span><a class="headerlink" href="#sparc.io.SparcBundle.sort" title="Link to this definition"></a></dt>
+<dd><p>Wrap the self.sorting dict. If sorting information does not exist,
+use the default slicing</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sparc.io.read_sparc">
+<span class="sig-prename descclassname"><span class="pre">sparc.io.</span></span><span class="sig-name descname"><span class="pre">read_sparc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_all_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#read_sparc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.io.read_sparc" title="Link to this definition"></a></dt>
+<dd><p>Parse a SPARC bundle, return an Atoms object or list of Atoms (image)
+with embedded calculator result.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em><em> or </em><em>PosixPath</em>) – Filename to the sparc bundle</p></li>
+<li><p><strong>index</strong> (<em>int</em><em> or </em><em>str</em>) – Index or slice of the images, following the ase.io.read convention</p></li>
+<li><p><strong>include_all_files</strong> (<em>bool</em>) – If true, parse all output files with indexed suffices</p></li>
+<li><p><strong>**kwargs</strong> – Additional parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Atoms or List[Atoms]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sparc.io.write_sparc">
+<span class="sig-prename descclassname"><span class="pre">sparc.io.</span></span><span class="sig-name descname"><span class="pre">write_sparc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/io.html#write_sparc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.io.write_sparc" title="Link to this definition"></a></dt>
+<dd><p>Write sparc file. Images can only be Atoms object
+or list of length 1</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em><em> or </em><em>PosixPath</em>) – Filename to the output sparc directory</p></li>
+<li><p><strong>images</strong> (<em>Atoms</em><em> or </em><em>List</em><em>(</em><em>Atoms</em><em>)</em>) – Atoms object to be written. Only supports writting 1 Atoms</p></li>
+<li><p><strong>**kwargs</strong> – Additional parameters</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sparc.download_data.html" class="btn btn-neutral float-left" title="sparc.download_data module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sparc.quicktest.html" class="btn btn-neutral float-right" title="sparc.quicktest module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

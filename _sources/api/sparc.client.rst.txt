@@ -1,0 +1,7 @@
+sparc.client module
+===================
+
+.. automodule:: sparc.client
+   :members:
+   :undoc-members:
+   :show-inheritance:
