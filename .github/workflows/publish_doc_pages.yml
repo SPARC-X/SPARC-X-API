@@ -1,15 +1,18 @@
 name: Publish Document Pages for SPARC-X-API
 
+# SPARC source code components are also parsed at each submission
 on:
   push:
     branches:
       - master
       - 'doc/**'
+      - 'sparc/**'
   pull_request:
     branches:
       - master
     paths:
       - 'doc/**'
+      - 'sparc/**'
 
   workflow_dispatch:
 
@@ -34,17 +37,19 @@ jobs:
         pip install -e ".[doc]"
     - name: Build sphix doc
       run: |
-        sphinx-build doc doc/_build
+        # sphinx-build doc doc/_build
+        cd doc
+        make clean && make html
     - name: Deploy to github pages
       uses: peaceiris/actions-gh-pages@v4
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_branch: gh_pages
-        publish_dir: doc/_build
+        publish_dir: doc/_build/html
     - name: Upload preview when creating pull request
       if: github.event_name == 'pull_request'
       uses: actions/upload-artifact@v3
       with:
         name: docs_build_preview
-        path: doc/_build
+        path: doc/_build/html

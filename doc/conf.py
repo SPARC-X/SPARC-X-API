@@ -8,7 +8,7 @@
 
 project = "SPARC-X-API"
 copyright = "2024, SPARC-X Developmers"
-author = "Tian Tian"
+author = "Tian Tian, Lucas R Timmerman, Ben Comer"
 
 
 # -- General configuration ---------------------------------------------------
@@ -16,12 +16,18 @@ author = "Tian Tian"
 
 extensions = [
     "sphinx.ext.githubpages",
+    "sphinx.ext.coverage",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",  # For Google/NumPy style docstrings
+    "sphinx.ext.autosummary",
+    "sphinx.ext.viewcode",  # Adds links to source code
     "myst_parser",
 ]
 
 source_suffix = {
     ".md": "markdown",
     ".txt": "markdown",
+    ".rst": "restructuredtext",
 }
 
 templates_path = ["_templates"]
@@ -44,3 +50,6 @@ html_context = {
 myst_enable_extensions = [
     "html_admonition",
 ]
+
+coverage_Show_missing_items = True
+autosummary_generate = True
