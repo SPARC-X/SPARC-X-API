@@ -48,7 +48,12 @@
 <li class="toctree-l1"><a class="reference internal" href="setup_environment.html">Configurations for SPARC-X-API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_usage.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#training-machine-learned-force-fields-using-sparc-and-the-sparc-x-api">Training Machine Learned Force Fields using SPARC and the SPARC-X-API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pairing-sparc-and-the-sparc-x-api-with-external-algorithms-via-ipi-socket-communication">Pairing SPARC and the SPARC-X-API with external algorithms via iPI socket communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-usage-training-mlff-on-the-fly-during-metadynamics-simulation">Advanced Usage: Training MLFF on-the-fly during metadynamics simulation</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_changes.html">Changes in API</a></li>
@@ -83,7 +88,162 @@
              
   <section id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
-<p>Examples can be found under the <code class="docutils literal notranslate"><span class="pre">examples/</span></code> directory.</p>
+<p>For template scripts utilizing the API in socket mode and via FileIO mode, see the <code class="docutils literal notranslate"><span class="pre">examples/</span></code> directory in the <a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/tree/master/examples">github repo</a>.</p>
+<section id="training-machine-learned-force-fields-using-sparc-and-the-sparc-x-api">
+<h2>Training Machine Learned Force Fields using SPARC and the SPARC-X-API<a class="headerlink" href="#training-machine-learned-force-fields-using-sparc-and-the-sparc-x-api" title="Link to this heading"></a></h2>
+<p>The SPARC source code has the ability to train MLFF on-the-fly using the SOAP descriptor and Bayesian Linear Regression. This feature can be accessed via the API by passing the appropriate sparc flags to the <code class="docutils literal notranslate"><span class="pre">SPARC</span></code> calculator object. An exhaustive list of MLFF parameters are available in the <a class="reference external" href="https://github.com/SPARC-X/SPARC/tree/master/doc">SPARC documentation</a>.</p>
+<p>The primary flag of interest is the <code class="docutils literal notranslate"><span class="pre">MLFF_FLAG</span></code> which must be set to <code class="docutils literal notranslate"><span class="pre">1</span></code> to train a MLFF from scratch. This needs to be included in a parameter dictionary that will later be passed to a SPARC calculator instance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calc_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">:</span> <span class="s2">&quot;GGA_PBE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KPOINT_GRID&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+    <span class="s2">&quot;MESH_SPACING&quot;</span><span class="p">:</span> <span class="mf">0.35</span><span class="p">,</span>
+    <span class="s2">&quot;TOL_SCF&quot;</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">,</span>
+    <span class="s2">&quot;MAXIT_SCF&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="s2">&quot;ELEC_TEMP_TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;fermi-dirac&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ELEC_TEMP&quot;</span><span class="p">:</span> <span class="mi">116</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_RESTART_FQ&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_ATOMS&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_FORCES&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;SPIN_TYP&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;MLFF_FLAG&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;MLFF_INITIAL_STEPS_TRAIN&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This parameter dictionary primes an on-the-fly simulation. The <code class="docutils literal notranslate"><span class="pre">MLFF_INITIAL_STEPS_TRAIN</span></code> keyword specifies the number of reference structures that will be added to the training set before the model is first trained. References structures can be generated using the SPARC calculator in FileIO mode with C SPARC’s internal relaxation or MD algorithms. Adding</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calc_params</span><span class="p">[</span><span class="s1">&#39;RELAX_FLAG&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calc_params</span><span class="p">[</span><span class="s1">&#39;MD_FLAG&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>to the parameter dictionary will train an ML model on-the-fly during relaxation or MD. Additional MD related parameters will be necessary such as the timestep and method. See the SPARC documentation for details. The simulations can be triggered by calling the familiar property functions on an <code class="docutils literal notranslate"><span class="pre">ASE</span></code> <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> object. Here, we use a water molecule:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
+<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">molecule</span>
+
+<span class="n">water</span> <span class="o">=</span> <span class="n">molecule</span><span class="p">(</span><span class="s1">&#39;H2O&#39;</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">water</span><span class="o">.</span><span class="n">pbc</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span><span class="kc">False</span><span class="p">,</span><span class="kc">False</span><span class="p">]</span>
+<span class="n">water</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="o">**</span><span class="n">calc_params</span><span class="p">)</span>
+<span class="n">energy</span> <span class="o">=</span> <span class="n">water</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This triggers an on-the-fly relaxation or MD simulation. Additional details are available in the SPARC documentation regarding hyperparameters and recommended settings.</p>
+</section>
+<section id="pairing-sparc-and-the-sparc-x-api-with-external-algorithms-via-ipi-socket-communication">
+<h2>Pairing SPARC and the SPARC-X-API with external algorithms via iPI socket communication<a class="headerlink" href="#pairing-sparc-and-the-sparc-x-api-with-external-algorithms-via-ipi-socket-communication" title="Link to this heading"></a></h2>
+<p>The iPI communication protocol embedded in SPARC and accessed via the SPARC-X-API allows users to treat SPARC as a DFT backend for many additional python libraries. For example, the reference structures for training MLFF on-the-fly can be generated via external algorithms such as <code class="docutils literal notranslate"><span class="pre">ASE</span></code> optimizers or MD engines. The DFT energies, forces, and stresses are computed by SPARC and parsed by the API to allow positions to be updated externally. The code from the previous section can be modified to use the <code class="docutils literal notranslate"><span class="pre">ASE</span></code> implementation of the BFGS algorithm:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
+<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">molecule</span>
+<span class="kn">from</span> <span class="nn">ase.optimize</span> <span class="kn">import</span> <span class="n">BFGS</span>
+
+<span class="n">water</span> <span class="o">=</span> <span class="n">molecule</span><span class="p">(</span><span class="s1">&#39;H2O&#39;</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">water</span><span class="o">.</span><span class="n">pbc</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span><span class="kc">False</span><span class="p">,</span><span class="kc">False</span><span class="p">]</span>
+
+<span class="n">calc_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">:</span> <span class="s2">&quot;GGA_PBE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KPOINT_GRID&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+    <span class="s2">&quot;MESH_SPACING&quot;</span><span class="p">:</span> <span class="mf">0.35</span><span class="p">,</span>
+    <span class="s2">&quot;TOL_SCF&quot;</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">,</span>
+    <span class="s2">&quot;MAXIT_SCF&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="s2">&quot;ELEC_TEMP_TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;fermi-dirac&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ELEC_TEMP&quot;</span><span class="p">:</span> <span class="mi">116</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_RESTART_FQ&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_ATOMS&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_FORCES&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;SPIN_TYP&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;MLFF_FLAG&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;MLFF_INITIAL_STEPS_TRAIN&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">with</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">use_socket</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_params</span><span class="p">)</span> <span class="k">as</span> <span class="n">calc</span><span class="p">:</span>
+    <span class="n">water</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">calc</span>
+    <span class="n">dyn</span> <span class="o">=</span> <span class="n">BFGS</span><span class="p">(</span><span class="n">water</span><span class="p">,</span> <span class="n">trajectory</span> <span class="o">=</span> <span class="s1">&#39;water-bfgs-opt.traj&#39;</span><span class="p">)</span>
+    <span class="n">dyn</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A MLFF is still trained on-the-fly using SPARC DFT energies, forces, and stresses; but the structures are generated from the <code class="docutils literal notranslate"><span class="pre">ASE</span></code> optimization algorithm.</p>
+</section>
+<section id="advanced-usage-training-mlff-on-the-fly-during-metadynamics-simulation">
+<h2>Advanced Usage: Training MLFF on-the-fly during metadynamics simulation<a class="headerlink" href="#advanced-usage-training-mlff-on-the-fly-during-metadynamics-simulation" title="Link to this heading"></a></h2>
+<p>The socket makes porting SPARC to external codes with python interfaces trivial. The PLUMED pacakge’s existing <code class="docutils literal notranslate"><span class="pre">ASE</span></code> interface can be coupled with the SPARC-X-API to train MLFF on-the-fly during metadynamics simulations. The setup on the SPARC side remains unchanged from other socket examples:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
+<span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">units</span>
+<span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">Atoms</span>
+<span class="kn">from</span> <span class="nn">ase.calculators.plumed</span> <span class="kn">import</span> <span class="n">Plumed</span>
+<span class="kn">from</span> <span class="nn">ase.md.nvtberendsen</span> <span class="kn">import</span> <span class="n">NVTBerendsen</span>
+
+<span class="n">calc_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">:</span> <span class="s2">&quot;GGA_PBE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KPOINT_GRID&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+    <span class="s2">&quot;MESH_SPACING&quot;</span><span class="p">:</span> <span class="mf">0.35</span><span class="p">,</span>
+    <span class="s2">&quot;TOL_SCF&quot;</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">,</span>
+    <span class="s2">&quot;MAXIT_SCF&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_RESTART_FQ&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_ATOMS&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_FORCES&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;SPIN_TYP&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;MLFF_FLAG&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;MLFF_INITIAL_STEPS_TRAIN&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># MD parameters</span>
+<span class="n">timestep</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">fs</span>  <span class="c1"># the units module contains the conversion factor to go from units.&lt;unit&gt; to ASE units via multiplication</span>
+<span class="n">ps</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">fs</span>
+</pre></div>
+</div>
+<p>Here, we will consider a 5 atom Ag cluster.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Ag_cluster</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="s1">&#39;Ag5&#39;</span><span class="p">,</span> <span class="n">positions</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.6579</span><span class="p">,</span> <span class="mf">0.9366</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.3587</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.4045</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.9358</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.6579</span><span class="p">,</span> <span class="mf">0.9366</span><span class="p">),</span>
+                                      <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.3587</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.4045</span><span class="p">)],</span>
+                  <span class="n">pbc</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">Ag_cluster</span><span class="o">.</span><span class="n">set_cell</span><span class="p">([</span><span class="mf">20.</span><span class="p">,</span> <span class="mf">24.</span><span class="p">,</span> <span class="mf">24.</span><span class="p">])</span>
+<span class="n">Ag_cluster</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We include PLUMED specific parameters to initialize the metadynamics simulations, taking care to be consistent with native <code class="docutils literal notranslate"><span class="pre">ASE</span></code> and PLUMED units.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">setup</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="sa">f</span><span class="s2">&quot;UNITS LENGTH=A TIME=</span><span class="si">{</span><span class="mi">1</span><span class="o">/</span><span class="n">ps</span><span class="si">}</span><span class="s2"> ENERGY=</span><span class="si">{</span><span class="n">units</span><span class="o">.</span><span class="n">mol</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">kJ</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>  <span class="c1"># Set units to match desired properties</span>
+
+    <span class="c1"># Calculate the center of mass of atoms 1-5</span>
+    <span class="s2">&quot;com: COM ATOMS=1-5&quot;</span><span class="p">,</span>
+
+    <span class="c1"># Define the coordination number (C)</span>
+    <span class="s2">&quot;c: COORDINATION GROUPA=1-5 SWITCH={RATIONAL R_0=3.0 NN=8 MM=16} NOPBC&quot;</span><span class="p">,</span>
+
+    <span class="c1"># Define the radius of gyration (R)</span>
+    <span class="s2">&quot;r: GYRATION TYPE=RADIUS ATOMS=1-5 NOPBC&quot;</span><span class="p">,</span>
+
+    <span class="c1"># Compute CV1 and CV2 as orthogonal linear combinations of C and R</span>
+    <span class="s2">&quot;cv1: COMBINE ARG=c,r COEFFICIENTS=0.99715,-0.07534 PERIODIC=NO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cv2: COMBINE ARG=c,r COEFFICIENTS=0.07534,0.99715 PERIODIC=NO&quot;</span><span class="p">,</span>
+
+    <span class="c1"># Apply lower wall on CV1 at 5.0 with harmonic constant 10 eV</span>
+    <span class="sa">f</span><span class="s2">&quot;LOWER_WALLS ARG=cv1 AT=5.0 KAPPA=10.0&quot;</span><span class="p">,</span>
+
+    <span class="c1"># Apply lower wall on CV2 at 3.0 with harmonic constant 50 eV</span>
+    <span class="sa">f</span><span class="s2">&quot;UPPER_WALLS ARG=cv2 AT=3.0 KAPPA=50.0&quot;</span><span class="p">,</span>
+
+    <span class="c1"># Perform well-tempered metadynamics on CV1 and CV2</span>
+    <span class="sa">f</span><span class="s2">&quot;METAD ARG=cv1,cv2 HEIGHT=0.3 PACE=500 SIGMA=0.3,0.03 GRID_MIN=0.0,0.0 GRID_MAX=10.0,5.0 GRID_BIN=500,500 BIASFACTOR=100 FILE=HILLS&quot;</span><span class="p">,</span>
+
+    <span class="c1"># Print out the collective variables for monitoring</span>
+    <span class="s2">&quot;PRINT ARG=cv1,cv2,c,r FILE=COLVAR STRIDE=1&quot;</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>And finally we run a brief simulation in socket mode:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">use_socket</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_params</span><span class="p">)</span> <span class="k">as</span> <span class="n">calc</span><span class="p">:</span>
+    <span class="n">Ag_cluster</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">Plumed</span><span class="p">(</span><span class="n">calc</span><span class="o">=</span><span class="n">calc</span><span class="p">,</span>
+                    <span class="nb">input</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span>
+                    <span class="n">timestep</span><span class="o">=</span><span class="n">timestep</span><span class="p">,</span>
+                    <span class="n">atoms</span><span class="o">=</span><span class="n">Ag_cluster</span><span class="p">,</span>
+                    <span class="n">kT</span><span class="o">=</span><span class="mf">0.00861733</span><span class="p">)</span> <span class="c1"># 10 K in eV thermal energy units</span>
+    <span class="n">dyn</span> <span class="o">=</span> <span class="n">NVTBerendsen</span><span class="p">(</span><span class="n">Ag_cluster</span><span class="p">,</span> <span class="n">timestep</span><span class="p">,</span> <span class="n">temperature_K</span><span class="o">=</span><span class="mf">0.00861733</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">kB</span><span class="p">,</span> <span class="n">taut</span><span class="o">=</span><span class="mi">50</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                <span class="n">fixcm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">trajectory</span><span class="o">=</span><span class="s1">&#39;Ag-cluster-metadynamics.traj&#39;</span><span class="p">)</span>
+    <span class="n">dyn</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 
 
