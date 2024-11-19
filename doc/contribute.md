@@ -96,7 +96,7 @@ pip install -e ".[doc]"
 To generate the doc files locally, run:
 ```bash
 cd SPARC-X-API
-sphinx doc doc/_build
+sphinx-build doc doc/_build
 ```
 and then open `doc/_build/index.html` in a browser.
 
