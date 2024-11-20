@@ -10,6 +10,7 @@ on:
       - 'doc/**'
       - 'sparc/**'
       - '.coverage'
+      - '.github/workflows/publish_doc_pages.yml'
   pull_request:
     branches:
       - master
@@ -18,6 +19,7 @@ on:
       - 'doc/**'
       - 'sparc/**'
       - '.coverage'
+      - '.github/workflows/publish_doc_pages.yml'
 
   workflow_dispatch:
 
@@ -39,7 +41,7 @@ jobs:
       run: |
         # cp coverage/* .
         ls -al .
-        ls -al coverages/
+        ls -al coverage/
     - uses: conda-incubator/setup-miniconda@v3
       with:
         python-version: "3.11"
