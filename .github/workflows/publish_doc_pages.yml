@@ -68,7 +68,7 @@ jobs:
         make clean && make html
     - name: Deploy to github pages
       uses: peaceiris/actions-gh-pages@v4
-      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+      if: github.ref == 'refs/heads/master' && (github.event_name != 'pull_request')
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_branch: gh_pages
