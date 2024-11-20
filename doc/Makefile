@@ -18,7 +18,7 @@ apidoc:
 	@$(SPHINXDOC) -f -e -M -o "$(SOURCEDIR)"/api "$(SOURCEDIR)"/../sparc
 
 
-.PHONY: help Makefile apidoc
+.PHONY: help Makefile apidoc coverage
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
