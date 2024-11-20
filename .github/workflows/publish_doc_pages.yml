@@ -5,14 +5,19 @@ on:
   push:
     branches:
       - master
-      - 'doc/**'
-      - 'sparc/**'
-  pull_request:
-    branches:
-      - master
+      - badges
     paths:
       - 'doc/**'
       - 'sparc/**'
+      - '.coverage'
+  pull_request:
+    branches:
+      - master
+      - badges
+    paths:
+      - 'doc/**'
+      - 'sparc/**'
+      - '.coverage'
 
   workflow_dispatch:
 
@@ -24,7 +29,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    - name: Checkout the latest .coverage file from badges branch
+      uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          .coverage
+        sparse-checkout-cone-mode: false
+        ref: badges
+        path: coverage
+    - name: List current files
+      run: |
+        ls -al .
     - uses: conda-incubator/setup-miniconda@v3
       with:
         python-version: "3.11"
@@ -35,9 +51,9 @@ jobs:
     - name: Install doc-build dependencies
       run: |
         pip install -e ".[doc]"
+
     - name: Build sphix doc
       run: |
-        # sphinx-build doc doc/_build
         cd doc
         make clean && make html
     - name: Deploy to github pages
