@@ -33,15 +33,13 @@ jobs:
     - name: Checkout the latest .coverage file from badges branch
       uses: actions/checkout@v4
       with:
-        sparse-checkout: |
-          .coverage
-        sparse-checkout-cone-mode: false
         ref: badges
         path: coverage
     - name: List current files
       run: |
-        cp coverage/* .
+        # cp coverage/* .
         ls -al .
+        ls -al coverages/
     - uses: conda-incubator/setup-miniconda@v3
       with:
         python-version: "3.11"
@@ -52,6 +50,8 @@ jobs:
     - name: Install doc-build dependencies
       run: |
         pip install -e ".[doc]"
+    - name: Generate coverage files
+      run: |
         if [ -f .coverage ]; then
             coverage html --omit="tests/*.py" -d doc/_static/htmlcov
         fi
