@@ -39,9 +39,11 @@ jobs:
         path: coverage
     - name: List current files
       run: |
-        # cp coverage/* .
-        ls -al .
+        if [ -f coverage/.coverage ]; then
+            cp coverage/.coverage .
+        fi
         ls -al coverage/
+        ls -al .
     - uses: conda-incubator/setup-miniconda@v3
       with:
         python-version: "3.11"
@@ -57,6 +59,8 @@ jobs:
         if [ -f .coverage ]; then
             coverage html --omit="tests/*.py" -d doc/_static/htmlcov
         fi
+        ls -al .
+        ls -al doc/_static
         ls -al doc/_static/htmlcov
     - name: Build sphix doc
       run: |
