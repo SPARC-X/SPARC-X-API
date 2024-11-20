@@ -55,7 +55,7 @@ jobs:
       run: |
         mkdir -p badges/
         # A coverage test badge
-        anybadge --value="${COVPERCENT}%" --file=badges/coverage.svg -l -m "%s" "Test Coverage"
+        anybadge --value="${COVPERCENT}%" --file=badges/coverage.svg -m "%s" -l "Test Coverage"
         # A version badge
         PIPVER=`pip show sparc-x-api | grep Version | cut -d ' ' -f2`
         anybadge --value=$PIPVER --file=badges/package.svg -l sparc-x-api
