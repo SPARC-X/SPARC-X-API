@@ -55,25 +55,23 @@ jobs:
       run: |
         mkdir -p badges/
         # A coverage test badge
-        anybadge --value=$COVPERCENT --file=badges/coverage.svg -l "Test Coverage"
+        anybadge --value=$COVPERCENT --file=badges/coverage.svg coverage
         # A version badge
         PIPVER=`pip show sparc-x-api | grep Version | cut -d ' ' -f2`
         anybadge --value=$PIPVER --file=badges/package.svg -l sparc-x-api
         # api version badge
         anybadge --value=${API_VERSION} --file=badges/api_version.svg -l "JSON schema version"
-    - name: Manually add git badges and .coverage file
+    - name: Manually add git badges
       run: |
         # Assuming a badges branch already exists!
         rm -rf /tmp/*.svg && cp badges/*.svg /tmp/
-        rm -rf /tmp/.coverage && mv .coverage /tmp/
         git fetch
         git switch badges || { echo "Could not check out badges branch. Have you created it on remote?"; exit 1; }
         git pull
         cp /tmp/*.svg badges/ && git add -f badges/*.svg && rm -rf /tmp/*.svg
-        cp /tmp/.coverage ./ && git add -f .coverage && rm -rf /tmp/.coverage
         git config --global user.email "alchem0x2a@gmail.com"
         git config --global user.name "Github Action Bot (badges only)"
-        git commit -m "Update badges and coverge file from run ${RID}" || true
+        git commit -m "Update badges from run ${RID}" || true
         git push -u origin badges || true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

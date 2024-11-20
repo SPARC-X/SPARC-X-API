@@ -1,5 +1,6 @@
 ```{include} ../README.md
-:relative-docs: doc/
+:language: md
+:relative-docs: docs/
 :relative-images:
 ```
 
