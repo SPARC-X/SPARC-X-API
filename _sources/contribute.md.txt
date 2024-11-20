@@ -78,6 +78,28 @@ environment variables are set (may subject to changes):
   - Setting up correct SPARC command (e.g. via `ASE_SPARC_COMMAND`)
   - Having socket-compatible SPARC binary
 
+### Checking test coverage
+
+You could use the `coverage` package to generate a coverage report for
+the test codes. The current coverage report for the master branch of
+SPARC-X-API can be accessed [here](test_coverage.md).
+
+If running locally, please use the following commands:
+```bash
+# Set up proper environment variables first
+# Run the code at the repo root
+coverage run -a -m pytest -svv tests/
+coverage html --omit="tests/*.py"
+```
+
+which will generate a folder `htmlcov` under the repo root. Open
+`htmlcov/index.html` in a browser to see the coverage broken down to
+files and lines, as shown in the following screenshot:
+```{figure} img/screenshots/coverage_example.png
+:figwidth: 80 %
+:align: center
+```
+
 ### Editing documentation
 
 Source files for documentation are placed under `doc/` directory,
@@ -115,7 +137,7 @@ that are important for demonstrating the functionalities of
 `SPARC-X-API` while the calculations can be finished using moderate
 computating power (e.g. a few minutes with 4 CPU cores).
 
-The examples can have the name in the format `ex[Number]-[purpose].py`.
+<!-- The examples can have the name in the format `ex[Number]-[purpose].py`. -->
 
 ## Notes for repo maintainers
 

@@ -59,6 +59,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#setting-up-environment">Setting up environment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#installing-sparc-c-c-binary">Installing SPARC C/C++ binary</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#running-tests">Running tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#checking-test-coverage">Checking test coverage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#editing-documentation">Editing documentation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#adding-examples">Adding examples</a></li>
 </ul>
@@ -173,6 +174,25 @@ environment variables are set (may subject to changes):</p>
 </li>
 </ul>
 </section>
+<section id="checking-test-coverage">
+<h3>Checking test coverage<a class="headerlink" href="#checking-test-coverage" title="Link to this heading"></a></h3>
+<p>You could use the <code class="docutils literal notranslate"><span class="pre">coverage</span></code> package to generate a coverage report for
+the test codes. The current coverage report for the master branch of
+SPARC-X-API can be accessed <a class="reference internal" href="test_coverage.html"><span class="std std-doc">here</span></a>.</p>
+<p>If running locally, please use the following commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set up proper environment variables first</span>
+<span class="c1"># Run the code at the repo root</span>
+coverage<span class="w"> </span>run<span class="w"> </span>-a<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-svv<span class="w"> </span>tests/
+coverage<span class="w"> </span>html<span class="w"> </span>--omit<span class="o">=</span><span class="s2">&quot;tests/*.py&quot;</span>
+</pre></div>
+</div>
+<p>which will generate a folder <code class="docutils literal notranslate"><span class="pre">htmlcov</span></code> under the repo root. Open
+<code class="docutils literal notranslate"><span class="pre">htmlcov/index.html</span></code> in a browser to see the coverage broken down to
+files and lines, as shown in the following screenshot:</p>
+<figure class="align-center" style="width: 80%">
+<img alt="_images/coverage_example.png" src="_images/coverage_example.png" />
+</figure>
+</section>
 <section id="editing-documentation">
 <h3>Editing documentation<a class="headerlink" href="#editing-documentation" title="Link to this heading"></a></h3>
 <p>Source files for documentation are placed under <code class="docutils literal notranslate"><span class="pre">doc/</span></code> directory,
@@ -208,7 +228,7 @@ sphinx-build<span class="w"> </span>doc<span class="w"> </span>doc/_build
 that are important for demonstrating the functionalities of
 <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> while the calculations can be finished using moderate
 computating power (e.g. a few minutes with 4 CPU cores).</p>
-<p>The examples can have the name in the format <code class="docutils literal notranslate"><span class="pre">ex[Number]-[purpose].py</span></code>.</p>
+<!-- The examples can have the name in the format `ex[Number]-[purpose].py`. -->
 </section>
 </section>
 <section id="notes-for-repo-maintainers">
