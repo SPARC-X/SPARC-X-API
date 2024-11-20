@@ -62,7 +62,6 @@ jobs:
         fi
         ls -al .
         ls -al doc/_static
-        ls -al doc/_static/htmlcov
     - name: Build sphix doc
       run: |
         cd doc
