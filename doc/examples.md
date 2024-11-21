@@ -21,9 +21,9 @@ like follows:
 from gpaw import GPAW, PW
 calc = GPAW(mode=PW(ecut),
             xc='PBE',
-			kpts=(8, 8, 8),
-			basis='dzp',
-			txt=f'Al-{ecut}.txt')
+            kpts=(8, 8, 8),
+            basis='dzp',
+            txt=f'Al-{ecut}.txt')
 ```
 
 We can create a SPARC-X-API calculator using similar parameters. Note
