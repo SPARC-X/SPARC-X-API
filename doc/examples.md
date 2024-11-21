@@ -2,9 +2,184 @@
 
 For template scripts utilizing the API in socket mode and via FileIO mode, see the `examples/` directory in the [github repo](https://github.com/SPARC-X/SPARC-X-API/tree/master/examples).
 
+
+## Simple DFT workflows with SPARC-X-API
+
+As documentation for [basic usage](basic_usage.md) shows, replacing an
+existing DFT-based workflow using SPARC-X-API calculator interface can
+be as easy as simply swapping the calculator instance to `sparc.SPARC`
+from other codes like VASP, QE or GPAW.
+
+Here we show a simple example that calculates the equation of state
+(EOS) of bulk aluminum and determine its optimal lattice constant,
+adapted from GPAW's
+[tutorial](https://wiki.fysik.dtu.dk/gpaw/tutorialsexercises/structureoptimization/lattice_constants/lattice_constants.html). In
+the GPAW tutorial, a GPAW calculator in Planewave (PW) mode is created
+like follows:
+
+```{code} python
+from gpaw import GPAW, PW
+calc = GPAW(mode=PW(ecut),
+            xc='PBE',
+			kpts=(8, 8, 8),
+			basis='dzp',
+			txt=f'Al-{ecut}.txt')
+```
+
+We can create a SPARC-X-API calculator using similar parameters. Note
+that in real-space DFT, the parameter mesh spacing (`h`) controls the
+convergence. To avoid large "egg-box effect" due to large mesh
+spacing, we recommend to use a smaller `h` value. For demonstration
+purpose a rather rough mesh spacing `h=0.25` (in Angstrom) and a 3x3x3
+k-points are used.
+
+```{code} python
+import numpy as np
+from ase.build import bulk
+from ase.eos import calculate_eos
+
+from sparc import SPARC
+
+
+def main():
+    # Al in conventional cell
+    atoms = bulk("Al", cubic=True)
+    calc = SPARC(h=0.25, kpts=(3, 3, 3), xc="pbe", directory="ex0-eos")
+    vol = atoms.get_volume()
+    atoms.calc = calc
+    eos = calculate_eos(atoms, npoints=5, eps=0.05, trajectory="al-eos-sparc.traj")
+    print("Original volume: Ang^3", vol)
+    v, e, B = eos.fit()
+    print("Fitted volume (Ang^3), energy (eV), modulus (eV/Ang^3)")
+    print(v, e, B)
+    a0 = v ** (1 / 3)
+    print(f"Optimal cell length (cubic): {a0} Ang")
+    atoms.set_cell([a0, a0, a0], scale_atoms=True)
+    e0_sparc = atoms.get_potential_energy()
+    print(f"Energy calculated by SPARC: {e0_sparc} eV")
+    print(f"Energy diff {abs(e0_sparc - e)} eV")
+    return
+
+
+if __name__ == "__main__":
+    main()
+```
+
+```{note}
+This example uses file I/O mode for demonstration purpose only. Consider choosing the [socket mode](advanced_socket.md) if you need more flexibility.
+```
+
+## Geometric optimization in file-I/O and socket modes
+
+When a DFT workflow requires multiple evaluations of single point
+calculations, running SPARC-X-API in socket mode will usually have
+advantage over the standard file-I/O mode. Here we use an example of
+optimizing an ammonia molecule to show the difference.
+
+First we construct a NH3 molecule in a box with Dirichlet boundary
+conditions, and optimize it with SPARC's internal geometric optimization
+(geopt) routine. We use a rough mesh spacing for demonstration purpose only.
+```{code} python
+import numpy as np
+from ase.build import molecule
+from ase.constraints import FixAtoms
+from sparc import SPARC
+
+nh3 = molecule("NH3", cell=(8, 8, 8), pbc=False)
+# Fix the N center
+nh3.constraints = [FixAtoms([0])]
+nh3.rattle()
+
+
+def optimize_sparc_internal():
+    atoms = nh3.copy()
+    calc = SPARC(
+        h=0.25,
+        kpts=(1, 1, 1),
+        xc="pbe",
+        convergence={"forces": 0.02},
+        relax_flag=True,
+        print_relaxout=True,
+        relax_method="LBFGS",
+        directory="ex1-sparc",
+    )
+    atoms.calc = calc
+    e_fin = atoms.get_potential_energy()
+    f_fin = atoms.get_forces()
+    nsteps = len(calc.raw_results["geopt"])
+    print("SPARC internal LBFGS:")
+    print(f"Final energy: {e_fin} eV")
+    print(f"Final fmax: {np.max(np.abs(f_fin))} eV/Ang")
+    print(f"N steps: {nsteps}")
+```
+
+Alternatively we can use any of the `ase.optimize` optimizers to perform
+the geometric relaxation, for example BFGS.
+The following code uses the file I/O mode:
+```{code} python
+def optimize_ase_bfgs():
+    atoms = nh3.copy()
+    calc = SPARC(
+        h=0.25,
+        kpts=(1, 1, 1),
+        xc="pbe",
+        directory="ex1-ase"
+    )
+    atoms.calc = calc
+    opt = BFGS(atoms)
+    opt.run(fmax=0.02)
+    e_fin = atoms.get_potential_energy()
+    f_fin = atoms.get_forces()
+    nsteps = opt.nsteps
+    print("ASE LBFGS")
+    print(f"Final energy: {e_fin} eV")
+    print(f"Final fmax: {np.max(np.abs(f_fin))} eV/Ang")
+    print(f"N steps: {nsteps}")
+```
+
+There are several drawbacks in file I/O mode with multiple single point
+calculations:
+
+1) The number of `.static` files can accumulate quickly (e.g. `.static_01`, `.static_02`, etc)
+2) In each calculation the density and orbital are re-calculated
+3) There are overhead when writing / loading files
+
+You can overcome these using the socket mode, effectively by just
+invoking the `use_socket=True` flag in above case.
+```{note}
+Make sure your SPARC binary is compiled with socket support. See [installation guide](installation.md) for more details.
+```
+
+```{code} python
+def optimize_ase_bfgs_socket():
+    atoms = nh3.copy()
+    calc = SPARC(
+        h=0.25, kpts=(1, 1, 1), xc="pbe", print_forces=True, directory="ex1-ase-socket",
+        use_socket=True,
+    )
+    atoms.calc = calc
+    with calc:
+        opt = BFGS(atoms)
+        opt.run(fmax=0.02)
+    e_fin = atoms.get_potential_energy()
+    f_fin = atoms.get_forces()
+    nsteps = opt.nsteps
+    print("ASE LBFGS")
+    print(f"Final energy: {e_fin} eV")
+    print(f"Final fmax: {np.max(np.abs(f_fin))} eV/Ang")
+    print(f"N steps: {nsteps}")
+```
+
+
+
 ## Training Machine Learned Force Fields using SPARC and the SPARC-X-API
 
-The SPARC source code has the ability to train MLFF on-the-fly using the SOAP descriptor and Bayesian Linear Regression. This feature can be accessed via the API by passing the appropriate sparc flags to the `SPARC` calculator object. An exhaustive list of MLFF parameters are available in the [SPARC documentation](https://github.com/SPARC-X/SPARC/tree/master/doc).
+The SPARC source code has the ability to train MLFF on-the-fly using
+the SOAP descriptor and Bayesian Linear Regression. This feature can
+be accessed via the API by passing the appropriate sparc flags to the
+`SPARC` calculator object. An exhaustive list of MLFF parameters are
+available in the [SPARC
+documentation](https://github.com/SPARC-X/SPARC/tree/master/doc).
 
 The primary flag of interest is the `MLFF_FLAG` which must be set to `1` to train a MLFF from scratch. This needs to be included in a parameter dictionary that will later be passed to a SPARC calculator instance:
 
@@ -87,7 +262,7 @@ with SPARC(use_socket=True, **calc_params) as calc:
 
 A MLFF is still trained on-the-fly using SPARC DFT energies, forces, and stresses; but the structures are generated from the `ASE` optimization algorithm.
 
-## Advanced Usage: Training MLFF on-the-fly during metadynamics simulation 
+## Advanced Usage: Training MLFF on-the-fly during metadynamics simulation
 
 The socket makes porting SPARC to external codes with python interfaces trivial. The PLUMED pacakge's existing `ASE` interface can be coupled with the SPARC-X-API to train MLFF on-the-fly during metadynamics simulations. The setup on the SPARC side remains unchanged from other socket examples:
 
