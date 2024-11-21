@@ -1,6 +1,6 @@
 # Simple DFT workflows with SPARC-X-API
 
-As documentation for [basic usage](basic_usage.md) shows, replacing an
+As documentation for [basic usage](../basic_usage.md) shows, replacing an
 existing DFT-based workflow using SPARC-X-API calculator interface can
 be as easy as simply swapping the calculator instance to `sparc.SPARC`
 from other codes like VASP, QE or GPAW.
