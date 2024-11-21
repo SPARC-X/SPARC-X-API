@@ -14,7 +14,10 @@ from ase.build import molecule
 from ase.constraints import FixAtoms
 from sparc import SPARC
 
-nh3 = molecule("NH3", cell=(8, 8, 8), pbc=False, center=True)
+nh3 = molecule("NH3", cell=(8, 8, 8), pbc=False)
+# All atoms must be within the domain when using
+# Dirichlet BC in SPARC
+nh3.center()
 # Fix the N center
 nh3.constraints = [FixAtoms([0])]
 nh3.rattle()
@@ -23,7 +26,7 @@ nh3.rattle()
 def optimize_sparc_internal():
     atoms = nh3.copy()
     calc = SPARC(
-        h=0.25,
+        h=0.18,
         kpts=(1, 1, 1),
         xc="pbe",
         convergence={"forces": 0.02},
@@ -49,7 +52,7 @@ The following code uses the file I/O mode:
 def optimize_ase_bfgs():
     atoms = nh3.copy()
     calc = SPARC(
-        h=0.25,
+        h=0.18,
         kpts=(1, 1, 1),
         xc="pbe",
         directory="ex1-ase"
@@ -83,7 +86,7 @@ Make sure your SPARC binary is compiled with socket support. See [installation g
 def optimize_ase_bfgs_socket():
     atoms = nh3.copy()
     calc = SPARC(
-        h=0.25, kpts=(1, 1, 1), xc="pbe", print_forces=True, directory="ex1-ase-socket",
+        h=0.18, kpts=(1, 1, 1), xc="pbe", print_forces=True, directory="ex1-ase-socket",
         use_socket=True,
     )
     atoms.calc = calc
@@ -99,7 +102,10 @@ def optimize_ase_bfgs_socket():
     print(f"N steps: {nsteps}")
 ```
 
-Possible outputs
+Example outputs from the different ways of running the optimization
+are as follows:
+
+SPARC internal LBFGS routine
 ```{raw}
 SPARC internal LBFGS:
 Final energy: -330.8388527992713 eV
@@ -107,6 +113,7 @@ Final fmax: 0.014610782237434465 eV/Ang
 N steps: 23
 ```
 
+ASE LBFGS + file I/O mode
 ```{raw}
 ASE LBFGS
 Final energy: -330.8460713860338 eV
@@ -114,9 +121,18 @@ Final fmax: 0.008090338967301871 eV/Ang
 N steps: 21
 ```
 
+ASE LBFGS + socket I/O mode
 ```{raw}
 ASE LBFGS (socket mode)
 Final energy: -330.8356141220578 eV
 Final fmax: 0.015431850436823448 eV/Ang
 N steps: 18
 ```
+
+```{note}
+The result may be slightly different when further reducing `h` and increase the box size. When running socket mode calculation with a large `h` the error accumulation may lead to divergence.
+```
+
+Although the numbers of relaxation steps are similar between file I/O
+and socket mode, the total self-consistent force (SCF) steps are
+reduced from 230 in the file I/O mode to 94 in socket mode.
