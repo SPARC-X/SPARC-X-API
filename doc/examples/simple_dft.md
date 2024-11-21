@@ -60,6 +60,15 @@ if __name__ == "__main__":
     main()
 ```
 
+The output from the above example may look like:
+```{raw}
+Fitted volume (Ang^3), energy (eV), modulus (eV/Ang^3)
+65.97840834969949 -253.07755156337953 2.9095110471623173
+Optimal cell length (cubic): 4.040799280428726 Ang
+Energy calculated by SPARC: -253.0552324051582 eV
+Energy diff 0.02231915822133601 eV
+```
+
 ```{note}
 This example uses file I/O mode for demonstration purpose only. Consider choosing the [socket mode](../advanced_socket.md) if you need more flexibility.
 ```

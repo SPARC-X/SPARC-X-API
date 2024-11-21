@@ -14,7 +14,7 @@ from ase.build import molecule
 from ase.constraints import FixAtoms
 from sparc import SPARC
 
-nh3 = molecule("NH3", cell=(8, 8, 8), pbc=False)
+nh3 = molecule("NH3", cell=(8, 8, 8), pbc=False, center=True)
 # Fix the N center
 nh3.constraints = [FixAtoms([0])]
 nh3.rattle()
@@ -97,4 +97,26 @@ def optimize_ase_bfgs_socket():
     print(f"Final energy: {e_fin} eV")
     print(f"Final fmax: {np.max(np.abs(f_fin))} eV/Ang")
     print(f"N steps: {nsteps}")
+```
+
+Possible outputs
+```{raw}
+SPARC internal LBFGS:
+Final energy: -330.8388527992713 eV
+Final fmax: 0.014610782237434465 eV/Ang
+N steps: 23
+```
+
+```{raw}
+ASE LBFGS
+Final energy: -330.8460713860338 eV
+Final fmax: 0.008090338967301871 eV/Ang
+N steps: 21
+```
+
+```{raw}
+ASE LBFGS (socket mode)
+Final energy: -330.8356141220578 eV
+Final fmax: 0.015431850436823448 eV/Ang
+N steps: 18
 ```
