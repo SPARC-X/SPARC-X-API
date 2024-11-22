@@ -76,40 +76,40 @@ real-space methods.
 
 # Statement of Need
 
-DFT has unargubaly become one of the cornerstones
-of electronic structure simulations in chemical and materials sciences due to
-its simplicity and wide range of applicability. While
-many researchers primarily associate DFT with the plane-wave
-pseudopotential method, due to the maturity and wide availability of
-such codes, these approaches do have limitations.  One long-standing
-challenge in DFT is to develop methods that overcomes the huge
-computational cost for solving the Kohn-Sham equation, which scales
-cubically with respect to the system size.  This becomes
-especially problematic in massively parallel computing environments,
-where the extensive global communication required during Fourier
-transformations limits the scalability, making it challenging to
-efficiently simulate very large systems in plane-wave DFT.
-In plane-wave methods, the global nature of the Fourier basis used limits the ability to
-achieve linear scaling [@bowler_order_n_dft_2012]. Moreover,
-the periodic nature of the Fourier basis enforces the use of periodic
-boundary conditions, making the simulation setup of isolated and
-semi-finite systems non-straightforward. A compelling
-alternative to overcome these limitations is to solve the Kohn-Sham
-equations using a finite-difference (FD) approach on real-space
-grids. The locality of the FD method makes real-space DFT methods
-inherently scalable, and paves the way for the development of
-linearly-scaling solutions to the Kohn-Sham equations.
-Real-space DFT also naturally supports both periodic and Dirichlet
-boundary conditions, and combinations thereof,
-allowing for the flexible treatment of systems in
-any dimensionality.
+DFT has unargubaly become one of the cornerstones of electronic
+structure simulations in chemical and materials sciences due to its
+simplicity and wide range of applicability.  Among the various
+numerical implementations of DFT, the plane-wave pseudopotential
+method has gained significant popularity, owing to both its robustness
+and the maturity of associated software packages. However, despite
+their widespread use, plane-wave methods are not without limitations.
+One long-standing challenge in DFT is to develop methods that
+overcomes the huge computational cost for solving the Kohn-Sham
+equation, which scales cubically with respect to the system size.
+This becomes especially problematic in massively parallel computing
+environments, where the extensive global communication required during
+Fourier transformations limits the scalability, making it challenging
+to efficiently simulate very large systems in plane-wave DFT.  In
+plane-wave methods, the global nature of the Fourier basis used limits
+the ability to achieve linear scaling
+[@bowler_order_n_dft_2012]. Moreover, the periodic nature of the
+Fourier basis enforces the use of periodic boundary conditions, making
+the simulation setup of isolated and semi-finite systems
+non-straightforward. A compelling alternative to overcome these
+limitations is to solve the Kohn-Sham equations using a
+finite-difference (FD) approach on real-space grids. The locality of
+the FD method makes real-space DFT methods inherently scalable, and
+paves the way for the development of linearly-scaling solutions to the
+Kohn-Sham equations.  Real-space DFT also naturally supports both
+periodic and Dirichlet boundary conditions, and combinations thereof,
+allowing for the flexible treatment of systems in any dimensionality.
 
 In the past few years, the SPARC-X project
 ([https://github.com/SPARC-X](https://github.com/SPARC-X)) has led
 efforts to develop an open-source, real-space DFT code that is both
 user-friendly and competitive with state-of-the-art plane-wave
 codes. The philosophy of the SPARC-X project is to provide codes that
-are highly efficient and portable (i.e. straightforward to install and
+are highly efficient and portable (i.e., straightforward to install and
 use across various computational environments). The codes also seek to
 be user-friendly and developer-friendly to facilitate the
 implementation of new algorithms. In line with this, SPARC-X offers
@@ -119,8 +119,8 @@ prototyping and small-system simulations, with no external
 dependencies other than Matlab itself, and 2) C/C++ based SPARC
 [@xu_sparc-1.0_2021; @zhang_sparc-2.0_2024] for large-scale production
 calculations that can accommodate a wide range of system sizes and
-requires only MPI and MKL/BLAS for compilation.  New development of
-SPARC has covered topics including spin-orbit coupling, dispersion
+requires only MPI and MKL/BLAS for compilation.  New features of
+SPARC include spin-orbit coupling, dispersion
 interactions, and advanced exchange-correlation (xc) functionals
 [@zhang_sparc-2.0_2024], linear-scaling Spectral Quadrature (SQ)
 method [@suryanarayana_sparc_sq_2018], cyclic/helical symmetry
@@ -160,36 +160,7 @@ in a few key aspects, including 1) supporting SPARC-specific features
 in an ASE-comatible API, 2) a parameter validation mechanism based on
 SPARC's `LaTeX` documentation, and 3) a versatile socket communication
 layer for efficient high-throughput calculations. Details will be
-discussed in the Features and Functionalities section.
-
-<!-- Firstly, the -->
-<!-- design of the API is closely aligned with the ASE interfaces of other -->
-<!-- popular DFT packages using the Angstrom-eV unit system. For advanced -->
-<!-- users, SPARC-X-API also supports raw input parameters in SPARC’s -->
-<!-- `.inpt` file using atomic units with full support for complex boundary -->
-<!-- conditions. Secondly, as SPARC’s feature set rapidly evolves, there is -->
-<!-- a growing need to ensure input compatibility with different SPARC -->
-<!-- versions, an issue common across many DFT codes. Instead of -->
-<!-- hard-coding parameter lists into the API, SPARC-X-API introduces a -->
-<!-- validation mechanism based on a JSON schema parsed directly from the -->
-<!-- official SPARC documentation. This allows SPARC-X-API to verify input -->
-<!-- parameters and check version compatibility at runtime, keeping the API -->
-<!-- and the main SPARC code as separate projects while ensuring -->
-<!-- compatibility. Lastly, SPARC-X-API provides an advanced and -->
-<!-- easy-to-use socket communication layer for direct interaction with the -->
-<!-- SPARC executable in high-throughput calculations. Users can easily -->
-<!-- switch from file-based I/O to a local UNIX socket with a single -->
-<!-- parameter change, without the need for manual socket setup. When -->
-<!-- performing calculations over remote machines, SPARC-X-API eliminates -->
-<!-- the need to manually restart the client code when the chemical -->
-<!-- composition changes or connection resets, which are usually -->
-<!-- encountered when using the `ase.calculators.socketio` -->
-<!-- module. Furthermore, the socket layer extends the i-PI protocol -->
-<!--  with additional -->
-<!-- message-passing capabilities, allowing for more precise control of -->
-<!-- SPARC routines in future development. A summary of the role -->
-<!-- SPARC-X-API in the SPARC-X project is shown in -->
-<!-- \ref{fig:sparc-overview}. -->
+discussed next.
 
 ![Overview of SPARC-X-API in the SPARC-X project system
 \label{fig:sparc-overview}
@@ -395,7 +366,7 @@ The SPARC-X-API is released as source code in github repository
 and as a `conda-forge` package
 [`sparc-x-api`](https://anaconda.org/conda-forge/sparc-x-api). When
 installed using `conda-forge`, the package is bundled with the
-optimized pseudopotentials [@shojaei_sparc_pseudopot_2023], and
+optimized SPMS pseudopotentials [@shojaei_sparc_pseudopot_2023], and
 compatible with the
 [`sparc`](https://anaconda.org/conda-forge/sparc-x) package that
 contains the compiled SPARC binary.
