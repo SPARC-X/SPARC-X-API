@@ -1,6 +1,6 @@
 # Advanced Usage: Training MLFF on-the-fly during metadynamics simulation
 
-The socket makes porting SPARC to external codes with python interfaces trivial. The [PLUMED](https://github.com/plumed/plumed2) pacakge's existing `ASE` interface can be coupled with the SPARC-X-API to train MLFF on-the-fly during metadynamics simulations.
+The socket makes porting SPARC to external codes with python interfaces trivial. The [PLUMED](https://github.com/plumed/plumed2) package's existing `ASE` interface can be coupled with the SPARC-X-API to train MLFF on-the-fly during metadynamics simulations.
 
 ```{note}
 Check the [PLUMED documentation](https://www.plumed.org/doc) for its installation and usage. In addition, the environmental variable `PLUMED_KERNEL` must be set to the location of the shared library `libplumedKernel.so`
