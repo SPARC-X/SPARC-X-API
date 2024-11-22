@@ -196,7 +196,7 @@ Example 2: GPAW (another real-space DFT code) vs SPARC
 ```python
 # Using GPAW
 from gpaw import GPAW
-calc = GPAW(xc="PBE", kpts=(9, 9, 9), h=0.25, directory="vasp-calc", convergence={"energy": 1.e-4})
+calc = GPAW(xc="PBE", kpts=(9, 9, 9), h=0.25, directory="gpaw-calc", convergence={"energy": 1.e-4})
 ```
 vs
 ```python

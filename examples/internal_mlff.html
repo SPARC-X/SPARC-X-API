@@ -1,0 +1,224 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Using Machine learning force fields (MLFF) in SPARC-X-API &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Advanced Usage: Training MLFF on-the-fly during metadynamics simulation" href="external_mlff.html" />
+    <link rel="prev" title="Geometric optimization in file-I/O and socket modes" href="geopt_compare.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="simple_dft.html">Simple DFT workflows with SPARC-X-API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geopt_compare.html">Geometric optimization in file-I/O and socket modes</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Using Machine learning force fields (MLFF) in SPARC-X-API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#training-machine-learned-force-fields-using-sparc-and-the-sparc-x-api">Training Machine Learned Force Fields using SPARC and the SPARC-X-API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pairing-sparc-and-the-sparc-x-api-with-external-algorithms-via-ipi-socket-communication">Pairing SPARC and the SPARC-X-API with external algorithms via iPI socket communication</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="external_mlff.html">Advanced Usage: Training MLFF on-the-fly during metadynamics simulation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../maintainers.html">Documentation for Maintainers</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Using Machine learning force fields (MLFF) in SPARC-X-API</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/sparc-x/SPARC-X-API/blob/master/doc/examples/internal_mlff.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="using-machine-learning-force-fields-mlff-in-sparc-x-api">
+<h1>Using Machine learning force fields (MLFF) in SPARC-X-API<a class="headerlink" href="#using-machine-learning-force-fields-mlff-in-sparc-x-api" title="Link to this heading"></a></h1>
+<section id="training-machine-learned-force-fields-using-sparc-and-the-sparc-x-api">
+<h2>Training Machine Learned Force Fields using SPARC and the SPARC-X-API<a class="headerlink" href="#training-machine-learned-force-fields-using-sparc-and-the-sparc-x-api" title="Link to this heading"></a></h2>
+<p>The SPARC source code has the ability to train MLFF on-the-fly using
+the SOAP descriptor and Bayesian Linear Regression. This feature can
+be accessed via the API by passing the appropriate sparc flags to the
+<code class="docutils literal notranslate"><span class="pre">SPARC</span></code> calculator object. An exhaustive list of MLFF parameters are
+available in the <a class="reference external" href="https://github.com/SPARC-X/SPARC/tree/master/doc">SPARC
+documentation</a>.</p>
+<p>The primary flag of interest is the <code class="docutils literal notranslate"><span class="pre">MLFF_FLAG</span></code> which must be set to <code class="docutils literal notranslate"><span class="pre">1</span></code> to train a MLFF from scratch. This needs to be included in a parameter dictionary that will later be passed to a SPARC calculator instance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calc_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">:</span> <span class="s2">&quot;GGA_PBE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KPOINT_GRID&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+    <span class="s2">&quot;MESH_SPACING&quot;</span><span class="p">:</span> <span class="mf">0.35</span><span class="p">,</span>
+    <span class="s2">&quot;TOL_SCF&quot;</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">,</span>
+    <span class="s2">&quot;MAXIT_SCF&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="s2">&quot;ELEC_TEMP_TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;fermi-dirac&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ELEC_TEMP&quot;</span><span class="p">:</span> <span class="mi">116</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_RESTART_FQ&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_ATOMS&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_FORCES&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;SPIN_TYP&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;MLFF_FLAG&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;MLFF_INITIAL_STEPS_TRAIN&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This parameter dictionary primes an on-the-fly simulation. The <code class="docutils literal notranslate"><span class="pre">MLFF_INITIAL_STEPS_TRAIN</span></code> keyword specifies the number of reference structures that will be added to the training set before the model is first trained. References structures can be generated using the SPARC calculator in FileIO mode with C SPARC’s internal relaxation or MD algorithms. Adding</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calc_params</span><span class="p">[</span><span class="s1">&#39;RELAX_FLAG&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calc_params</span><span class="p">[</span><span class="s1">&#39;MD_FLAG&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>to the parameter dictionary will train an ML model on-the-fly during
+relaxation or MD. Additional MD related parameters will be necessary
+such as the timestep and method. See the SPARC documentation for
+details. The simulations can be triggered by calling the familiar
+property functions on an <code class="docutils literal notranslate"><span class="pre">ASE</span></code> <code class="docutils literal notranslate"><span class="pre">Atoms</span></code> object. Here, we use a water
+molecule:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
+<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">molecule</span>
+
+<span class="n">water</span> <span class="o">=</span> <span class="n">molecule</span><span class="p">(</span><span class="s1">&#39;H2O&#39;</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">water</span><span class="o">.</span><span class="n">pbc</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span><span class="kc">False</span><span class="p">,</span><span class="kc">False</span><span class="p">]</span>
+<span class="n">water</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="o">**</span><span class="n">calc_params</span><span class="p">)</span>
+<span class="n">energy</span> <span class="o">=</span> <span class="n">water</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This triggers an on-the-fly relaxation or MD simulation. Additional
+details are available in the SPARC documentation regarding
+hyperparameters and recommended settings.</p>
+</section>
+<section id="pairing-sparc-and-the-sparc-x-api-with-external-algorithms-via-ipi-socket-communication">
+<h2>Pairing SPARC and the SPARC-X-API with external algorithms via iPI socket communication<a class="headerlink" href="#pairing-sparc-and-the-sparc-x-api-with-external-algorithms-via-ipi-socket-communication" title="Link to this heading"></a></h2>
+<p>The iPI communication protocol embedded in SPARC and accessed via the
+SPARC-X-API allows users to treat SPARC as a DFT backend for many
+additional python libraries. For example, the reference structures for
+training MLFF on-the-fly can be generated via external algorithms such
+as <code class="docutils literal notranslate"><span class="pre">ASE</span></code> optimizers or MD engines. The DFT energies, forces, and
+stresses are computed by SPARC and parsed by the API to allow
+positions to be updated externally. The code from the previous section
+can be modified to use the <code class="docutils literal notranslate"><span class="pre">ASE</span></code> implementation of the BFGS algorithm:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
+<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">molecule</span>
+<span class="kn">from</span> <span class="nn">ase.optimize</span> <span class="kn">import</span> <span class="n">BFGS</span>
+
+<span class="n">water</span> <span class="o">=</span> <span class="n">molecule</span><span class="p">(</span><span class="s1">&#39;H2O&#39;</span><span class="p">,</span> <span class="n">vacuum</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">water</span><span class="o">.</span><span class="n">pbc</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span><span class="kc">False</span><span class="p">,</span><span class="kc">False</span><span class="p">]</span>
+
+<span class="n">calc_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">:</span> <span class="s2">&quot;GGA_PBE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KPOINT_GRID&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+    <span class="s2">&quot;MESH_SPACING&quot;</span><span class="p">:</span> <span class="mf">0.35</span><span class="p">,</span>
+    <span class="s2">&quot;TOL_SCF&quot;</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">,</span>
+    <span class="s2">&quot;MAXIT_SCF&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="s2">&quot;ELEC_TEMP_TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;fermi-dirac&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ELEC_TEMP&quot;</span><span class="p">:</span> <span class="mi">116</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_RESTART_FQ&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_ATOMS&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;PRINT_FORCES&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;SPIN_TYP&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;MLFF_FLAG&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;MLFF_INITIAL_STEPS_TRAIN&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">with</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">use_socket</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_params</span><span class="p">)</span> <span class="k">as</span> <span class="n">calc</span><span class="p">:</span>
+    <span class="n">water</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">calc</span>
+    <span class="n">dyn</span> <span class="o">=</span> <span class="n">BFGS</span><span class="p">(</span><span class="n">water</span><span class="p">,</span> <span class="n">trajectory</span> <span class="o">=</span> <span class="s1">&#39;water-bfgs-opt.traj&#39;</span><span class="p">)</span>
+    <span class="n">dyn</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A MLFF is still trained on-the-fly using SPARC DFT energies, forces, and stresses; but the structures are generated from the <code class="docutils literal notranslate"><span class="pre">ASE</span></code> optimization algorithm.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="geopt_compare.html" class="btn btn-neutral float-left" title="Geometric optimization in file-I/O and socket modes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="external_mlff.html" class="btn btn-neutral float-right" title="Advanced Usage: Training MLFF on-the-fly during metadynamics simulation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
