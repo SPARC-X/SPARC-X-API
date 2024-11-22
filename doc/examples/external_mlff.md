@@ -2,8 +2,17 @@
 
 The socket makes porting SPARC to external codes with python interfaces trivial. The [PLUMED](https://github.com/plumed/plumed2) package's existing `ASE` interface can be coupled with the SPARC-X-API to train MLFF on-the-fly during metadynamics simulations.
 
+The ASE interface to PLUMED requires both the PLUMED binary and
+`py-plumed` library to work properly, check [ASE-PLUMED
+documentation](https://wiki.fysik.dtu.dk/ase//ase/calculators/plumed.html)
+for more details. The most convenient way to install the extra
+dependencies is through conda:
+```{code} bash
+conda install -c conda-forge py-plumed
+```
+
 ```{note}
-Check the [PLUMED documentation](https://www.plumed.org/doc) for its installation and usage. In addition, the environmental variable `PLUMED_KERNEL` must be set to the location of the shared library `libplumedKernel.so`
+Check the [PLUMED documentation](https://www.plumed.org/doc) for other installation options. In addition, the environmental variable `PLUMED_KERNEL` must be set to the location of the shared library `libplumedKernel.so` to work properly.
 ```
 
 
