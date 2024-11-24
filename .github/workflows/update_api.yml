@@ -19,10 +19,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: "3.10"
+        python-version: "3.11"
         mamba-version: "*"
         channels: conda-forge,alchem0x2a,defaults
         channel-priority: true
@@ -39,23 +39,40 @@ jobs:
     - name: Test if json api is newer than current
       id: probe
       run: |
+        # exit 0 --> no version change
         if python .github/workflows/api_version_probe.py; then
            echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
         else
            echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
         fi
+        echo UPDATE_NEEDED is "${UPDATE_NEEDED}"
+        echo API version is "${API_VERSION}"
       continue-on-error: true
     - name: Create Pull Request
-      if: env.UPDATE_NEEDED == true
+      if: env.UPDATE_NEEDED == 'true'
       run: |
         git config --global user.email "alchem0x2a@gmail.com"
         git config --global user.name "Github Action Bot"
         echo "New version is ${API_VERSION}"
-        git checkout -b api_version
+        BRANCH_NAME="update-api-${GITHUB_RUN_ID}"
+        echo "Checking new branch ${BRANCH_NAME}"
+        git checkout -b $BRANCH_NAME
         mv parameters.json sparc/sparc_json_api/
         git add sparc/sparc_json_api/parameters.json
         git commit -m "Add new json api version ${API_VERSION}"
-        git push --set-upstream origin api_version
-        gh pr create --base master --title "[PR Bot] New JSON API version ${API_VERSION}"  --body "Merge new JSON API version ${API_VERSION} into master" -R ${{ github.repository_owner }}/SPARC-X-API
+        git push --force --set-upstream origin ${BRANCH_NAME}
+        body_msg=""
+        body_msg="${body_msg}## Automated JSON API Update\n"
+        body_msg="${body_msg}Hello! This is an automatic pull request to merge the new JSON API version **${API_VERSION}** into the master branch.\n\n"
+        body_msg="${body_msg}### Details:\n"
+        body_msg="${body_msg}- **Workflow Trigger**: This update is triggered by the **Update JSON API (recurring job)** workflow.\n"
+        body_msg="${body_msg}- **Reason for Update**: A new JSON schema version was generated that differs from the existing one in the repository.\n\n"
+        body_msg="${body_msg}### Notes:\n"
+        body_msg="${body_msg}- If you notice any issues or have questions regarding this update, please contact @alchem0x2a or other maintainers of the repository.\n\n"
+        body_msg="${body_msg}Thank you for keeping the SPARC-X-API project up-to-date! 🚀\n"
+        gh pr create --base master \
+                     --title "[PR Bot] New JSON API version ${API_VERSION}"  \
+                     --body "${body_msg}" \
+                     -R ${{ github.repository_owner }}/SPARC-X-API
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

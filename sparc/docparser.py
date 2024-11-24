@@ -375,11 +375,23 @@ class SparcDocParser(object):
                 try:
                     sub_dict = cls(directory=subdir, parse_version=False).to_dict()
                 except FileNotFoundError:
-                    print(subdir, " Latex files not found. Check naming conventions for Manual.tex. Expects format *Manual.tex")
+                    print(
+                        subdir,
+                        " Latex files not found. Check naming conventions for Manual.tex. Expects format *Manual.tex",
+                    )
                     continue
                 for param, param_desc in sub_dict["parameters"].items():
                     if param not in root_dict["parameters"]:
                         root_dict["parameters"][param] = param_desc
+                # Combine the subdir categories
+                for sub_category in sub_dict["categories"]:
+                    if sub_category not in root_dict["categories"]:
+                        root_dict["categories"].append(sub_category)
+                # Combine data types
+                for sub_dt in sub_dict["data_types"]:
+                    if sub_dt not in root_dict["data_types"]:
+                        root_dict["data_types"].append(sub_dt)
+
         json_string = json.dumps(root_dict, indent=True)
         return json_string
 
