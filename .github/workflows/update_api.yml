@@ -39,14 +39,17 @@ jobs:
     - name: Test if json api is newer than current
       id: probe
       run: |
+        # exit 0 --> no version change
         if python .github/workflows/api_version_probe.py; then
            echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
         else
            echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
         fi
+        echo UPDATE_NEEDED is "${UPDATE_NEEDED}"
+        echo API version is "${API_VERSION}"
       continue-on-error: true
     - name: Create Pull Request
-      if: env.UPDATE_NEEDED == true
+      if: env.UPDATE_NEEDED == 'true'
       run: |
         git config --global user.email "alchem0x2a@gmail.com"
         git config --global user.name "Github Action Bot"
@@ -56,6 +59,9 @@ jobs:
         git add sparc/sparc_json_api/parameters.json
         git commit -m "Add new json api version ${API_VERSION}"
         git push --set-upstream origin api_version
-        gh pr create --base master --title "[PR Bot] New JSON API version ${API_VERSION}"  --body "Merge new JSON API version ${API_VERSION} into master" -R ${{ github.repository_owner }}/SPARC-X-API
+        gh pr create --base master \
+                     --title "[PR Bot] New JSON API version ${API_VERSION}"  \
+                     --body "Hello! This is an automatic PR to merge new JSON schema version ${API_VERSION} into master" \
+                     -R ${{ github.repository_owner }}/SPARC-X-API
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
