@@ -59,9 +59,18 @@ jobs:
         git add sparc/sparc_json_api/parameters.json
         git commit -m "Add new json api version ${API_VERSION}"
         git push --set-upstream origin api_version
+        body_msg=""
+        body_msg="${body_msg}## Automated JSON API Update\n"
+        body_msg="${body_msg}Hello! This is an automatic pull request to merge the new JSON API version **${API_VERSION}** into the master branch.\n\n"
+        body_msg="${body_msg}### Details:\n"
+        body_msg="${body_msg}- **Workflow Trigger**: This update is triggered by the **Update JSON API (recurring job)** workflow.\n"
+        body_msg="${body_msg}- **Reason for Update**: A new JSON schema version was generated that differs from the existing one in the repository.\n\n"
+        body_msg="${body_msg}### Notes:\n"
+        body_msg="${body_msg}- If you notice any issues or have questions regarding this update, please contact @alchem0x2a or other maintainers of the repository.\n\n"
+        body_msg="${body_msg}Thank you for keeping the SPARC-X-API project up-to-date! 🚀\n"
         gh pr create --base master \
                      --title "[PR Bot] New JSON API version ${API_VERSION}"  \
-                     --body "Hello! This is an automatic PR to merge new JSON schema version ${API_VERSION} into master" \
+                     --body ${body_msg} \
                      -R ${{ github.repository_owner }}/SPARC-X-API
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
