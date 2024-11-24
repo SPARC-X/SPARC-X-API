@@ -479,11 +479,23 @@
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">sub_dict</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">subdir</span><span class="p">,</span> <span class="n">parse_version</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
                 <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">subdir</span><span class="p">,</span> <span class="s2">&quot; Latex files not found. Check naming conventions for Manual.tex. Expects format *Manual.tex&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="n">subdir</span><span class="p">,</span>
+                        <span class="s2">&quot; Latex files not found. Check naming conventions for Manual.tex. Expects format *Manual.tex&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
                     <span class="k">continue</span>
                 <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">param_desc</span> <span class="ow">in</span> <span class="n">sub_dict</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="k">if</span> <span class="n">param</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">root_dict</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]:</span>
                         <span class="n">root_dict</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_desc</span>
+                <span class="c1"># Combine the subdir categories</span>
+                <span class="k">for</span> <span class="n">sub_category</span> <span class="ow">in</span> <span class="n">sub_dict</span><span class="p">[</span><span class="s2">&quot;categories&quot;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">sub_category</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">root_dict</span><span class="p">[</span><span class="s2">&quot;categories&quot;</span><span class="p">]:</span>
+                        <span class="n">root_dict</span><span class="p">[</span><span class="s2">&quot;categories&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_category</span><span class="p">)</span>
+                <span class="c1"># Combine data types</span>
+                <span class="k">for</span> <span class="n">sub_dt</span> <span class="ow">in</span> <span class="n">sub_dict</span><span class="p">[</span><span class="s2">&quot;data_types&quot;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">sub_dt</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">root_dict</span><span class="p">[</span><span class="s2">&quot;data_types&quot;</span><span class="p">]:</span>
+                        <span class="n">root_dict</span><span class="p">[</span><span class="s2">&quot;data_types&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_dt</span><span class="p">)</span>
+
         <span class="n">json_string</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">root_dict</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">json_string</span></div>
 
