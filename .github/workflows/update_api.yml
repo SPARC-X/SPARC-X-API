@@ -54,11 +54,13 @@ jobs:
         git config --global user.email "alchem0x2a@gmail.com"
         git config --global user.name "Github Action Bot"
         echo "New version is ${API_VERSION}"
-        git checkout -b api_version
+        BRANCH_NAME="update-api-${GITHUB_RUN_ID}"
+        echo "Checking new branch ${BRANCH_NAME}"
+        git checkout -b $BRANCH_NAME
         mv parameters.json sparc/sparc_json_api/
         git add sparc/sparc_json_api/parameters.json
         git commit -m "Add new json api version ${API_VERSION}"
-        git push --set-upstream origin api_version
+        git push --force --set-upstream origin api_version
         body_msg=""
         body_msg="${body_msg}## Automated JSON API Update\n"
         body_msg="${body_msg}Hello! This is an automatic pull request to merge the new JSON API version **${API_VERSION}** into the master branch.\n\n"
