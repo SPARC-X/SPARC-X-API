@@ -72,7 +72,7 @@ jobs:
         body_msg="${body_msg}Thank you for keeping the SPARC-X-API project up-to-date! 🚀\n"
         gh pr create --base master \
                      --title "[PR Bot] New JSON API version ${API_VERSION}"  \
-                     --body ${body_msg} \
+                     --body "${body_msg}" \
                      -R ${{ github.repository_owner }}/SPARC-X-API
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
