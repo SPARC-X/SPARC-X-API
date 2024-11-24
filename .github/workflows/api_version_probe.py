@@ -12,10 +12,10 @@ def compare_versions():
 
     if version.parse(default_version) < version.parse(new_version):
         print(f"Version changed from {default_version} to {new_version}")
-        sys.exit(1)  # Exit with a non-zero status to indicate change
+        sys.exit(1)
     else:
         print("No version change")
-        sys.exit(0)  # Exit with zero status to indicate no change
+        sys.exit(0)
 
 
 if __name__ == "__main__":
