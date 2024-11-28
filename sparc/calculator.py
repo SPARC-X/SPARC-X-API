@@ -147,6 +147,7 @@ class SPARC(FileIOCalculator, IOContext):
         if label is None:
             label = "SPARC" if restart is None else None
 
+        # Use psp dir from user input or env
         self.sparc_bundle = SparcBundle(
             directory=Path(self.directory),
             mode="w",
@@ -154,6 +155,7 @@ class SPARC(FileIOCalculator, IOContext):
             label=label,  # The order is tricky here. Use label not self.label
             psp_dir=psp_dir,
             validator=self.validator,
+            cfg=self.cfg,
         )
 
         # Try restarting from an old calculation and set results

@@ -8,6 +8,7 @@ from warnings import warn
 import numpy as np
 from ase.atoms import Atoms
 from ase.calculators.singlepoint import SinglePointDFTCalculator
+from ase.config import cfg as _cfg
 
 # various io formatters
 from .api import SparcAPI
@@ -21,10 +22,10 @@ from .sparc_parsers.ion import _read_ion, _write_ion
 from .sparc_parsers.out import _read_out
 from .sparc_parsers.pseudopotential import copy_psp_file, parse_psp8_header
 from .sparc_parsers.static import _add_cell_info, _read_static
-from .utils import deprecated, locate_api, string2index
+from .utils import deprecated, locate_api, sanitize_path, string2index
 
 # from .sparc_parsers.ion import read_ion, write_ion
-defaultAPI = locate_api()
+defaultAPI = locate_api(cfg=_cfg)
 
 
 class SparcBundle:
@@ -85,6 +86,7 @@ class SparcBundle:
         label=None,
         psp_dir=None,
         validator=defaultAPI,
+        cfg=_cfg,
     ):
         """
         Initializes a SparcBundle for accessing SPARC calculation data.
@@ -114,6 +116,7 @@ class SparcBundle:
         self.init_inputs = {}
         self.psp_data = {}
         self.raw_results = {}
+        self.cfg = cfg
         self.psp_dir = self.__find_psp_dir(psp_dir)
         # Sorting should be consistent across the whole bundle!
         self.sorting = None
@@ -182,9 +185,14 @@ class SparcBundle:
             return Path(psp_dir)
         else:
             for var in self.psp_env:
-                env_psp_dir = os.environ.get(var, None)
+                env_psp_dir = self.cfg.get(var, None)
                 if env_psp_dir:
                     return Path(env_psp_dir)
+            # Use pp_path field in cfg
+            parser = self.cfg.parser["sparc"] if "sparc" in self.cfg.parser else {}
+            psp_dir_ini = parser.get("pp_path", None)
+            if psp_dir_ini:
+                return sanitize_path(psp_dir_ini)
             # At this point, we try to use the psp files bundled with sparc
             if is_psp_download_complete(default_psp_dir):
                 return default_psp_dir
