@@ -1,0 +1,300 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maintaining SPARC C/C++ Code &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="SPARC-X-API package releases" href="sparc-x-api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../maintainers.html">Documentation for Maintainers</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="github.html">Github Settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="github.html#managing-ci-cd-pipelines">Managing CI/CD Pipelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sparc-x-api.html">SPARC-X-API package releases</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Maintaining SPARC C/C++ Code</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installation-of-sparc-c-c-code">Installation of SPARC C/C++ code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#test-cases">Test cases</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#socket-interface-test-cases">Socket interface test cases</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ci-cd-workflows">CI/CD workflows</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#unit-test-workflow">Unit test workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#documentation-and-parameters-validation-workflow">Documentation and parameters validation workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#maintaining-the-conda-forge-release">Maintaining the conda-forge release</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#revised-builds">Revised builds</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cross-platform-compilation">Cross-platform compilation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#future-development">Future development</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../maintainers.html">Documentation for Maintainers</a></li>
+      <li class="breadcrumb-item active">Maintaining SPARC C/C++ Code</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/sparc-x/SPARC-X-API/blob/master/doc/maintainers/sparc-c-c++.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="maintaining-sparc-c-c-code">
+<h1>Maintaining SPARC C/C++ Code<a class="headerlink" href="#maintaining-sparc-c-c-code" title="Link to this heading"></a></h1>
+<p>The documentation for SPARC C/C++ code is already complete as its
+own. This maintainers’ guide is aimed to cover topics like test cases,
+CI/CD management, and package release.</p>
+<section id="installation-of-sparc-c-c-code">
+<h2>Installation of SPARC C/C++ code<a class="headerlink" href="#installation-of-sparc-c-c-code" title="Link to this heading"></a></h2>
+<p>Please refer to SPARC’s
+<a class="reference external" href="https://github.com/SPARC-X/SPARC?tab=readme-ov-file#2-installation">README</a>
+for more details.</p>
+</section>
+<section id="test-cases">
+<h2>Test cases<a class="headerlink" href="#test-cases" title="Link to this heading"></a></h2>
+<p>To run the test cases, please refer to the <a class="reference external" href="https://github.com/SPARC-X/SPARC?tab=readme-ov-file#4-execution">main
+README</a>
+and <a class="reference external" href="https://github.com/SPARC-X/SPARC/blob/master/tests/README.md">tests’
+README</a>.</p>
+<p>The test script <code class="docutils literal notranslate"><span class="pre">SPARC_testing_script.py</span></code> was designed to parse SPARC
+outputs without the usage of SPARC-X-API, and could be used as a
+reference script for testing SPARC-X-API.</p>
+<section id="socket-interface-test-cases">
+<h3>Socket interface test cases<a class="headerlink" href="#socket-interface-test-cases" title="Link to this heading"></a></h3>
+<p>Currently, test cases for socket communication implemented in C/C++
+code are placed under
+<a class="reference external" href="https://github.com/SPARC-X/SPARC/tree/master/tests/Socket"><code class="docutils literal notranslate"><span class="pre">tests/Socket/</span></code></a>,
+and are not covered by the <code class="docutils literal notranslate"><span class="pre">SPARC_testing_script.py</span></code> script, as most
+of them are dependent on the socket calculator class in ASE.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As a rule of thumb, the test cases should not reply on SPARC-X-API’s
+<code class="docutils literal notranslate"><span class="pre">sparc.socketio</span></code> module (and <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator when <code class="docutils literal notranslate"><span class="pre">use_socket=True</span></code>),
+as the design of the Python API may change in the future.</p>
+</div>
+<p>These tests can be run in an environment with ASE and SPARC-X-API (for
+file I/O alone) installed. Assume that you have compiled <code class="docutils literal notranslate"><span class="pre">sparc</span></code> with socket support into <code class="docutils literal notranslate"><span class="pre">&lt;SPARC-root&gt;/lib/sparc</span></code>,a minimal setup could look like:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;ase&gt;=3.23&quot;</span>
+<span class="c1"># Use minimal SPARC-X-API version</span>
+pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/SPARC-X/SPARC-X-API.git@v1.0.5
+<span class="nb">cd</span><span class="w"> </span>tests/Socket
+<span class="c1"># Setup pseudopotential and SPARC command</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">ASE_SPARC_COMMAND</span><span class="o">=</span><span class="s2">&quot;mpirun -n 16 ../lib/sparc&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">SPARC_PSP_PATH</span><span class="o">=</span><span class="s2">&quot;../../psps&quot;</span>
+<span class="c1"># Run all the tests</span>
+bash<span class="w"> </span>run_all.sh
+</pre></div>
+</div>
+</section>
+</section>
+<section id="ci-cd-workflows">
+<h2>CI/CD workflows<a class="headerlink" href="#ci-cd-workflows" title="Link to this heading"></a></h2>
+<p>Currently there are 2 CI/CD workflows when submit commits / PRs to the
+public SPARC C/C++ repo:</p>
+<ol class="arabic simple">
+<li><p>Building SPARC binary and run unit test <a class="reference external" href="https://github.com/SPARC-X/SPARC/blob/master/.github/workflows/build-test.yml">link</a></p></li>
+<li><p>LaTeX documentation and parameters validation <a class="reference external" href="https://github.com/SPARC-X/SPARC/blob/master/.github/workflows/update-doc-pdf.yml">link</a></p></li>
+</ol>
+<p>Like all CI/CD workflows <a class="reference internal" href="github.html#cicd-sparc-x-api"><span class="std std-ref">in SPARC-X-API</span></a>, the
+workflows contain the <code class="docutils literal notranslate"><span class="pre">workflow_dispatch</span></code> keywords, allowing them to
+be manually executed / re-run from a personal fork. Please check the
+sections below for more details.</p>
+<section id="unit-test-workflow">
+<h3>Unit test workflow<a class="headerlink" href="#unit-test-workflow" title="Link to this heading"></a></h3>
+<p>This workflow contains two parts</p>
+<ol class="arabic simple">
+<li><p>Make sure the SPARC version date (defined in <code class="docutils literal notranslate"><span class="pre">initialization.c</span></code>) is
+synchronized with that in the <code class="docutils literal notranslate"><span class="pre">ChangeLog</span></code>. (Checked by <a class="reference external" href="https://github.com/SPARC-X/SPARC/blob/master/.github/workflows/test-missing-parameters.py"><code class="docutils literal notranslate"><span class="pre">test-missing-parameters.py</span></code></a>)</p></li>
+<li><p>Make sure the SPARC code compiles and runs on simple test cases</p></li>
+</ol>
+<p>The compilation of SPARC C/C++ code uses the <code class="docutils literal notranslate"><span class="pre">conda-build</span></code> recipe under <a class="reference external" href="https://github.com/SPARC-X/SPARC/blob/master/.conda/meta.yaml"><code class="docutils literal notranslate"><span class="pre">.conda/meta.yaml</span></code></a>, and
+Only the <code class="docutils literal notranslate"><span class="pre">quick_run</span></code> test cases are checked during this step</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>SPARC_testing_script.py<span class="w"> </span>quick_run
+</pre></div>
+</div>
+</section>
+<section id="documentation-and-parameters-validation-workflow">
+<h3>Documentation and parameters validation workflow<a class="headerlink" href="#documentation-and-parameters-validation-workflow" title="Link to this heading"></a></h3>
+<p>This is a quick test to ensure that:</p>
+<ol class="arabic simple">
+<li><p>The LaTeX documentation under <code class="docutils literal notranslate"><span class="pre">doc/.LaTeX</span></code> and subdirs can be
+compiled correctly</p></li>
+<li><p>All the parameter keywords from <code class="docutils literal notranslate"><span class="pre">.inpt</span></code> files
+under the <code class="docutils literal notranslate"><span class="pre">tests</span></code> directory have been documented. (Checked by <a class="reference external" href="https://github.com/SPARC-X/SPARC/blob/master/.github/workflows/test-outdated-package.py"><code class="docutils literal notranslate"><span class="pre">test-outdated-package.py</span></code></a>)</p></li>
+</ol>
+<p>The LaTeX files are compiled using the light-weight <a class="reference external" href="https://tectonic-typesetting.github.io/en-US/"><code class="docutils literal notranslate"><span class="pre">tectonic</span></code>
+engine</a>,</p>
+</section>
+</section>
+<section id="maintaining-the-conda-forge-release">
+<h2>Maintaining the conda-forge release<a class="headerlink" href="#maintaining-the-conda-forge-release" title="Link to this heading"></a></h2>
+<p>Compiled binary programs of SPARC C/C++ codes are released in
+conda-forge channel under the name
+<a class="reference external" href="https://anaconda.org/conda-forge/sparc-x"><code class="docutils literal notranslate"><span class="pre">sparc-x</span></code></a>.  The release is
+managed by
+<a class="reference external" href="https://github.com/conda-forge/sparc-x-feedstock"><code class="docutils literal notranslate"><span class="pre">sparc-x-feedstock</span></code></a>. Please
+note that this repository is under the conda-forge organization. If
+you wish to become a maintainer, please ping
+<a class="reference external" href="https://github.com/alchem0x2A">&#64;alchem0x2a</a>.</p>
+<p>The feedstock is set to track <a class="reference external" href="https://github.com/SPARC-X/SPARC/releases">new
+releases</a> in SPARC-X, and in most cases the changes should only be added to <a class="reference external" href="https://github.com/conda-forge/sparc-x-feedstock/blob/main/recipe/meta.yaml"><code class="docutils literal notranslate"><span class="pre">recipe/meta.yaml</span></code></a>.</p>
+<p>If the future release mechanism of SPARC changes, it should be
+reflected in both the release tag and the following lines in <code class="docutils literal notranslate"><span class="pre">recipe/meta.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">source</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/SPARC-X/{{ package_name }}/archive/refs/tags/v{{ version }}.zip</span>
+<span class="w">  </span><span class="nt">sha256</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;full</span><span class="nv"> </span><span class="s">sha256</span><span class="nv"> </span><span class="s">checksum</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">above</span><span class="nv"> </span><span class="s">zip&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>conda-forge does not allow direct download from the github commit. If a minor update (e.g. nightly builds) is to be distributed by conda-forge, please create a release in the SPARC main repo first.</p>
+</div>
+<p>Once a new release is created in the SPARC main repo, the auto bot
+will send a pull request with the updated recipe (or you can manually
+create the PR yourself). After confirming that all the checks have
+passed, you can merge the pull request to include the compiled
+binaries in the conda-forge channel.</p>
+<section id="revised-builds">
+<h3>Revised builds<a class="headerlink" href="#revised-builds" title="Link to this heading"></a></h3>
+<p>If by any chance you find the newly released SPARC binaries in
+conda-forge channel contain errors or missing parts (e.g. not working
+properly on one platform, missing a shared library, error from
+MPI/Lapack dependencies, etc) due to a bug in <code class="docutils literal notranslate"><span class="pre">recpie/meta.yaml</span></code>,
+please update the recipe and only change the build number. For example,
+if the current recipe contains following build information:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">build</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+</pre></div>
+</div>
+<p>After implementing the necessary changes in the recipe, please bump the build number to 1:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">build</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+</pre></div>
+</div>
+<p>This allows conda-forge to distinguish two builds without affecting the version number, as the actual package is named like <code class="docutils literal notranslate"><span class="pre">&lt;os&gt;-&lt;arch&gt;/sparc-x-2.0.0-&lt;hash&gt;_&lt;build&gt;.conda</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the error stems from the C/C++ itself, you should update the release in the SPARC github repo instead.</p>
+</div>
+</section>
+<section id="cross-platform-compilation">
+<h3>Cross-platform compilation<a class="headerlink" href="#cross-platform-compilation" title="Link to this heading"></a></h3>
+<p>Settings for the cross-platform compilation are defined in the
+<a class="reference external" href="https://github.com/conda-forge/sparc-x-feedstock/blob/main/conda-forge.yml"><code class="docutils literal notranslate"><span class="pre">conda-forge.yml</span></code></a>,
+which can be safely edited by yourself (the feedstock maintainer),
+although it is usually not required.</p>
+<p>Currently the <code class="docutils literal notranslate"><span class="pre">sparc-x</span></code> package is compiled on linux platform alone
+with <code class="docutils literal notranslate"><span class="pre">x86_64</span></code> and <code class="docutils literal notranslate"><span class="pre">aarch64</span></code> variants. To change the settings including
+host platforms, compilation toolchains (e.g. use native compilation vs
+cross-compilation), please refer to the <a class="reference external" href="https://conda-forge.org/docs/maintainer/conda_forge_yml/">conda-forge
+manual</a>.</p>
+</section>
+<section id="future-development">
+<h3>Future development<a class="headerlink" href="#future-development" title="Link to this heading"></a></h3>
+<p>There are
+several issues for future releases:</p>
+<ul class="simple">
+<li><p>Allow fetching dated releases of SPARC C/C++ code</p></li>
+<li><p>Add more build variants for MKL and MPICH</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sparc-x-api.html" class="btn btn-neutral float-left" title="SPARC-X-API package releases" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

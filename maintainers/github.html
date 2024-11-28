@@ -1,0 +1,215 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Github Settings &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SPARC-X-API package releases" href="sparc-x-api.html" />
+    <link rel="prev" title="Documentation for Maintainers" href="../maintainers.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../maintainers.html">Documentation for Maintainers</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Github Settings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#remote-branches">Remote Branches</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#github-pages">Github Pages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#secrets">Secrets</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#managing-ci-cd-pipelines">Managing CI/CD Pipelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sparc-x-api.html">SPARC-X-API package releases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sparc-c-c%2B%2B.html">Maintaining SPARC C/C++ Code</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../maintainers.html">Documentation for Maintainers</a></li>
+      <li class="breadcrumb-item active">Github Settings</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/sparc-x/SPARC-X-API/blob/master/doc/maintainers/github.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="github-settings">
+<h1>Github Settings<a class="headerlink" href="#github-settings" title="Link to this heading"></a></h1>
+<section id="remote-branches">
+<h2>Remote Branches<a class="headerlink" href="#remote-branches" title="Link to this heading"></a></h2>
+<p>There are multiple branches required for the CI/CD workflow in
+SPARC-X-API. Push / pull request to these branches should only be made by automatic github actions.</p>
+<ul>
+<li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/tree/badges"><code class="docutils literal notranslate"><span class="pre">badges</span></code></a>:
+branch for maintaining the svg badges (package version, CI status,
+etc.)</p>
+<p>A list of svg badges can be found under <code class="docutils literal notranslate"><span class="pre">badges/</span></code> directory of this
+branch. See <a class="reference internal" href="../contribute.html#doc-edit"><span class="std std-ref">the development guide</span></a> for how to add /
+modify badges to be shown in the README.</p>
+</li>
+<li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/tree/gh_pages"><code class="docutils literal notranslate"><span class="pre">gh_pages</span></code></a>:
+branch to publish the documentation site.</p></li>
+</ul>
+</section>
+<section id="github-pages">
+<h2>Github Pages<a class="headerlink" href="#github-pages" title="Link to this heading"></a></h2>
+<p>To allow pushed to the <code class="docutils literal notranslate"><span class="pre">gh_pages</span></code> branches to be automatically
+deployed to the document pages, go to the <a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/settings/pages">pages
+setting</a> and
+set the “Source” to “Deploy from a branch”, as well as “Branch” to
+“gh_pages”, as shown in the UI screenshot below:</p>
+<p><img alt="Github Pages Settings" src="maintainers/img/screenshots/github_pages_setting.png" /></p>
+</section>
+<section id="secrets">
+<h2>Secrets<a class="headerlink" href="#secrets" title="Link to this heading"></a></h2>
+<p>Environment secrets (such as PyPI access key) can be configured in the
+<a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/settings/secrets/actions">secrets
+setting</a>
+panel. Please check the <a class="reference external" href="https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions">github
+documentation</a>
+for more details.</p>
+</section>
+</section>
+<section id="managing-ci-cd-pipelines">
+<span id="cicd-sparc-x-api"></span><h1>Managing CI/CD Pipelines<a class="headerlink" href="#managing-ci-cd-pipelines" title="Link to this heading"></a></h1>
+<p>CI/CD pipelines in the SPARC-X-API repo are managed by Github
+workflows, consisting of multiple “Actions”. Workflow configuration
+YAML files are placed under <code class="docutils literal notranslate"><span class="pre">.github/workflows/</span></code> and the workflow
+status can be checked at the <a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/actions">Actions
+page</a>.  Please take a
+look at the official <a class="reference external" href="https://docs.github.com/en/actions">documentation for
+actions</a> to get familiar with the syntax.</p>
+<p>All workflows in the SPARC-X-API are designed to be able to run from
+manual dispatch (with the <code class="docutils literal notranslate"><span class="pre">workflow_dispatch</span></code> enabled in the YAML
+files) for debug purposes, from the “Run workflow” drop panel in the
+<a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/actions/workflows">actions
+page</a>, as
+shown in the screenshot below:</p>
+<p><img alt="Github Actions Manual Dispatch" src="maintainers/img/screenshots/github_action_dispatch.png" /></p>
+<ul>
+<li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/unit_test.yml">Unit-test
+workflow</a>
+includes several steps to run unit and coverage test.</p>
+<ul class="simple">
+<li><p>The steps <code class="docutils literal notranslate"><span class="pre">Create</span> <span class="pre">badges</span></code> and <code class="docutils literal notranslate">&#160; <span class="pre">Manually</span> <span class="pre">add</span> <span class="pre">git</span> <span class="pre">badges</span></code> defines how
+the status badges in <code class="docutils literal notranslate"><span class="pre">README.md</span></code> are created and pushed to the
+<code class="docutils literal notranslate"><span class="pre">badges</span></code> branch.</p></li>
+<li><p>When adding unit test examples involving real SPARC calculations,
+do not use more than 4 MPI cores (may subject to changes) due to
+the <a class="reference external" href="https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners">resource limitation</a>
+of hosted runners.</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/publish_doc_pages.yml">Publish doc pages
+workflow</a>
+uses Sphinx to convert <code class="docutils literal notranslate"><span class="pre">doc/</span></code> to doc html files.</p>
+<p>The rendered
+changes will only be pushed to the <code class="docutils literal notranslate"><span class="pre">gh_pages</span></code> branch with direct
+commit on the master branch or after one PR is merged.</p>
+</li>
+<li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/update_api.yml">Update JSON schema
+workflow</a>
+updates the JSON schema file after a new release in SPARC C/C++
+source code.</p>
+<p>The workflow is run both nightly and after normal push. Change the
+behavior as needed.</p>
+</li>
+<li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/publish-pypi.yml">Publish PyPI
+workflow</a>
+package the source as <code class="docutils literal notranslate"><span class="pre">sparc-x-api</span></code> and publish on PyPI. Only
+activates on new releases.</p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../maintainers.html" class="btn btn-neutral float-left" title="Documentation for Maintainers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sparc-x-api.html" class="btn btn-neutral float-right" title="SPARC-X-API package releases" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

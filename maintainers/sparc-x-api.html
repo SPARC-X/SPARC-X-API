@@ -1,0 +1,164 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPARC-X-API package releases &mdash; SPARC-X-API  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Maintaining SPARC C/C++ Code" href="sparc-c-c%2B%2B.html" />
+    <link rel="prev" title="Github Settings" href="github.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            SPARC-X-API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup_environment.html">Configurations for SPARC-X-API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_socket.html">Advanced Usage: SPARC-X-API as a Socket Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package_components.html">SPARC-X-API Package Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced_topics.html">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_changes.html">Changes in API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute.html">How to Contribute</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../maintainers.html">Documentation for Maintainers</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="github.html">Github Settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="github.html#managing-ci-cd-pipelines">Managing CI/CD Pipelines</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SPARC-X-API package releases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#on-conda-forge">On conda-forge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deploy-on-pypi">Deploy on PyPI</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sparc-c-c%2B%2B.html">Maintaining SPARC C/C++ Code</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SPARC-X-API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../maintainers.html">Documentation for Maintainers</a></li>
+      <li class="breadcrumb-item active">SPARC-X-API package releases</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/sparc-x/SPARC-X-API/blob/master/doc/maintainers/sparc-x-api.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="sparc-x-api-package-releases">
+<h1>SPARC-X-API package releases<a class="headerlink" href="#sparc-x-api-package-releases" title="Link to this heading"></a></h1>
+<section id="on-conda-forge">
+<h2>On conda-forge<a class="headerlink" href="#on-conda-forge" title="Link to this heading"></a></h2>
+<p>SPARC-X-API is packaged as
+<a class="reference external" href="https://anaconda.org/conda-forge/sparc-x-api"><code class="docutils literal notranslate"><span class="pre">sparc-x-api</span></code></a> in the
+conda-forge channel. The source code (feedstock) for the package is
+managed at
+<a class="reference external" href="https://github.com/conda-forge/sparc-x-api-feedstock"><code class="docutils literal notranslate"><span class="pre">sparc-x-api-feedstock</span></code></a>.
+Please note that this repository is under the conda-forge
+organization. If you wish to become a maintainer, please ping
+<a class="reference external" href="https://github.com/alchem0x2A">&#64;alchem0x2a</a>.</p>
+<p>The feedstock is set to track new releases in SPARC-X-API, and usually
+no major maintenance is required. The bot system will create a PR for
+a version bump, see <a class="reference external" href="https://github.com/conda-forge/sparc-x-api-feedstock/pull/2">one
+example</a>
+for the maintainers to modify and merge. Please also ensure:</p>
+<ul class="simple">
+<li><p>Only the <code class="docutils literal notranslate"><span class="pre">recipe/meta.yaml</span></code> needs to be changed.</p></li>
+<li><p>Follow the conda-forge’s own <a class="reference external" href="https://conda-forge.org/docs/maintainer/guidelines/">recipe standard</a></p></li>
+<li><p>Do not directly use the <a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/blob/master/.conda/meta.yaml"><code class="docutils literal notranslate"><span class="pre">.conda/meta.yaml</span></code></a> for conda-forge (it is designed for local packaging test)</p></li>
+<li><p>Bump the <code class="docutils literal notranslate"><span class="pre">build.number</span></code> if you need to change the recipe YAML on the same SPARC-X-API release.</p></li>
+</ul>
+</section>
+<section id="deploy-on-pypi">
+<h2>Deploy on PyPI<a class="headerlink" href="#deploy-on-pypi" title="Link to this heading"></a></h2>
+<p>SPARC-X-API is deployed on PyPI under the name
+<a class="reference external" href="https://pypi.org/project/sparc-x-api/"><code class="docutils literal notranslate"><span class="pre">sparc-x-api</span></code></a>. Please contact
+the current maintainer <a class="reference external" href="mailto:alchem0x2a&#37;&#52;&#48;gmail&#46;com"><span>&#64;</span>alchem0x2a</a> if
+you wish to become a co-contributor.</p>
+<p>Publishing on PyPI does not require setting an API token in the CI
+workflow. Instead, it uses the <a class="reference external" href="https://docs.pypi.org/trusted-publishers/">OIDC
+protocol</a> for a trusted
+publisher. The current settings on PyPI are like follows:</p>
+<p><img alt="pypi-setting" src="maintainers/img/screenshots/pypi_publisher_setup.png" /></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="github.html" class="btn btn-neutral float-left" title="Github Settings" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sparc-c-c%2B%2B.html" class="btn btn-neutral float-right" title="Maintaining SPARC C/C++ Code" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, SPARC-X Developmers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
