@@ -33,4 +33,4 @@ workflow. Instead, it uses the [OIDC
 protocol](https://docs.pypi.org/trusted-publishers/) for a trusted
 publisher. The current settings on PyPI are like follows:
 
-![pypi-setting](img/screenshots/pypi_publisher_setup.png)
+![pypi-setting](../img/screenshots/pypi_publisher_setup.png)

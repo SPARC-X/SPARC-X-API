@@ -118,7 +118,7 @@ deployed to the document pages, go to the <a class="reference external" href="ht
 setting</a> and
 set the “Source” to “Deploy from a branch”, as well as “Branch” to
 “gh_pages”, as shown in the UI screenshot below:</p>
-<p><img alt="Github Pages Settings" src="maintainers/img/screenshots/github_pages_setting.png" /></p>
+<p><img alt="Github Pages Settings" src="../_images/github_pages_setting.png" /></p>
 </section>
 <section id="secrets">
 <h2>Secrets<a class="headerlink" href="#secrets" title="Link to this heading"></a></h2>
@@ -145,7 +145,7 @@ files) for debug purposes, from the “Run workflow” drop panel in the
 <a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/actions/workflows">actions
 page</a>, as
 shown in the screenshot below:</p>
-<p><img alt="Github Actions Manual Dispatch" src="maintainers/img/screenshots/github_action_dispatch.png" /></p>
+<p><img alt="Github Actions Manual Dispatch" src="../_images/github_action_dispatch.png" /></p>
 <ul>
 <li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/unit_test.yml">Unit-test
 workflow</a>
@@ -170,9 +170,14 @@ commit on the master branch or after one PR is merged.</p>
 <li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/update_api.yml">Update JSON schema
 workflow</a>
 updates the JSON schema file after a new release in SPARC C/C++
-source code.</p>
-<p>The workflow is run both nightly and after normal push. Change the
-behavior as needed.</p>
+source code. The workflow is run both nightly and after normal
+push. You can change the behavior as needed.</p>
+<p>An example pull request created by the update workflow can be seen
+in the following screenshot:</p>
+<figure class="align-default">
+<img alt="PR on github" src="../_images/api_update_pr_github.png" />
+</figure>
+<p>Once the</p>
 </li>
 <li><p><a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/publish-pypi.yml">Publish PyPI
 workflow</a>
