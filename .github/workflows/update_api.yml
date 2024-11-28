@@ -62,7 +62,8 @@ jobs:
         echo "Thank you for keeping the SPARC-X-API project up-to-date! 🚀" >> pr_body.txt
         cat pr_body.txt
     - name: Create Pull Request
-      if: env.UPDATE_NEEDED == 'true'
+      # Do not create PR from another PR
+      if: (env.UPDATE_NEEDED == 'true') && (github.event_name != 'pull_request')
       run: |
         git config --global user.email "alchem0x2a@gmail.com"
         git config --global user.name "Github Action Bot"
