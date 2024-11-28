@@ -10,6 +10,10 @@ import numpy as np
 import psutil
 from ase.atoms import Atoms
 from ase.calculators.calculator import Calculator, FileIOCalculator, all_changes
+
+# 2024-11-28: @alchem0x2a add support for ase.config
+# In the first we only use cfg as parser for configurations
+from ase.config import cfg as _cfg
 from ase.parallel import world
 from ase.stress import full_3x3_to_voigt_6_stress
 from ase.units import Bohr, GPa, Hartree, eV
@@ -121,7 +125,10 @@ class SPARC(FileIOCalculator, IOContext):
             socket_params (dict): Parameters to control the socket behavior. Please check default_socket_params
             **kwargs: Additional keyword arguments to set up the calculator.
         """
-        self.validator = locate_api(json_file=sparc_json_file, doc_path=sparc_doc_path)
+        # 2024-11-28 @alchem0x2a added cfg
+        self.validator = locate_api(
+            json_file=sparc_json_file, doc_path=sparc_doc_path, cfg=self.cfg
+        )
         self.valid_params = {}
         self.special_params = {}
         self.inpt_state = {}  # Store the inpt file states
@@ -639,7 +646,10 @@ class SPARC(FileIOCalculator, IOContext):
                 ret["forces"][self.resort], self.results["forces"]
             ).all(), "Force values from socket communication and output file are different! Please contact the developers."
         except KeyError:
-            print("Force values cannot be accessed via the results dictionary. They may not be available in the output file. Ensure PRINT_FORCES: 1\nResults:\n",self.results)
+            print(
+                "Force values cannot be accessed via the results dictionary. They may not be available in the output file. Ensure PRINT_FORCES: 1\nResults:\n",
+                self.results,
+            )
         # For stress information, we make sure that the stress is always present
         if "stress" not in self.results:
             virial_from_socket = ret.get("virial", np.zeros(6))

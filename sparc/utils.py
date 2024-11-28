@@ -19,6 +19,9 @@ from warnings import warn
 import numpy as np
 import psutil
 
+# 2024-11-28 @alchem0x2a add config
+from ase.config import cfg as _cfg
+
 from .api import SparcAPI
 from .docparser import SparcDocParser
 
@@ -149,19 +152,33 @@ def cprint(content, color=None, bold=False, underline=False, **kwargs):
     return
 
 
-def locate_api(json_file=None, doc_path=None):
+def locate_api(json_file=None, doc_path=None, cfg=_cfg):
     """Find the default api in the following order
     1) User-provided json file path
     2) User-provided path to the doc
     3) If none of the above is provided, try to use SPARC_DOC_PATH
+       or equivalently cfg doc_path
     4) Fallback to the as-shipped json api
     """
     if json_file is not None:
         api = SparcAPI(json_file)
         return api
 
+    # import pdb; pdb.set_trace()
+    parser = cfg.parser["sparc"] if "sparc" in cfg.parser else None
+    if parser:
+        # "json_schema_file" takes higher priority
+        if parser.get("json_schema_file", None):
+            api = SparcAPI(parser.get("json_schema"))
+            return
+
+    # Env variable SPARC_DOC_PATH takes higher priority
     if doc_path is None:
-        doc_path = os.environ.get("SPARC_DOC_PATH", None)
+        doc_path = cfg.get("SPARC_DOC_PATH", None)
+
+    # Use cfg's doc_path
+    if doc_path is None:
+        doc_path = cfg.parser["sparc"].get("doc_path")
 
     if (doc_path is not None) and Path(doc_path).is_dir():
         try:
