@@ -152,55 +152,82 @@ def cprint(content, color=None, bold=False, underline=False, **kwargs):
     return
 
 
-def locate_api(json_file=None, doc_path=None, cfg=_cfg):
-    """Find the default api in the following order
-    1) User-provided json file path
-    2) User-provided path to the doc
-    3) If none of the above is provided, try to use SPARC_DOC_PATH
-       or equivalently cfg doc_path
-    4) Fallback to the as-shipped json api
+def sanitize_path(path_string):
+    """Sanitize path containing string in UNIX systems
+    Returns a PosixPath object
+
+    It is recommended to use this sanitize function
+    before passing any path-like strings from cfg parser
     """
-    if json_file is not None:
-        api = SparcAPI(json_file)
-        return api
+    if isinstance(path_string, str):
+        path = os.path.expandvars(os.path.expanduser(path_string))
+        path = path.resolve()
+    else:
+        path = Path(path_string).resolve()
+    return path
 
-    # import pdb; pdb.set_trace()
-    parser = cfg.parser["sparc"] if "sparc" in cfg.parser else None
-    if parser:
-        # "json_schema_file" takes higher priority
-        if parser.get("json_schema_file", None):
-            api = SparcAPI(parser.get("json_schema"))
-            return
 
-    # Env variable SPARC_DOC_PATH takes higher priority
-    if doc_path is None:
-        doc_path = cfg.get("SPARC_DOC_PATH", None)
+def locate_api(json_file=None, doc_path=None, cfg=_cfg):
+    """
+    Locate the SPARC API setup file with the following priority:
+    1) If `json_file` is provided (either from parameter or cfg), use it directly.
+    2) If `doc_path` is provided:
+       a) Function parameter takes precedence.
+       b) Environment variable SPARC_DOC_PATH comes next.
+       c) Configuration section [sparc] in the ini file is the last resort.
+    3) If both `json_file` and `doc_path` are provided, raise an exception.
+    4) Fallback to the default API setup if neither is provided.
+    """
+    parser = cfg.parser.get("sparc") if "sparc" in cfg.parser else {}
+    if not json_file:
+        json_file = parser.get("json_schema") if parser else None
 
-    # Use cfg's doc_path
-    if doc_path is None:
-        doc_path = cfg.parser["sparc"].get("doc_path")
+    # Environment variable SPARC_DOC_PATH can overwrite user settings
+    if not doc_path:
+        doc_path = cfg.get("SPARC_DOC_PATH")
 
-    if (doc_path is not None) and Path(doc_path).is_dir():
+    if not doc_path:
+        doc_path = parser.get("doc_path") if parser else None
+
+    json_file = sanitize_path(json_file) if json_file else None
+    doc_path = sanitize_path(doc_path) if doc_path else None
+
+    # Step 4: Ensure mutual exclusivity
+    if json_file and doc_path:
+        raise ValueError(
+            "Cannot set both the path of json file and documentation"
+            "at the same time!"
+        )
+
+    if json_file:
+        if not json_file.is_file():
+            raise FileNotFoundError(f"JSON file '{json_file}' does not exist.")
+        return SparcAPI(json_file)
+
+    if doc_path:
+        if not doc_path.is_dir():
+            raise FileNotFoundError(
+                f"Documentation path '{doc_path}' does not exist or is not a directory."
+            )
         try:
             with tempfile.TemporaryDirectory() as tmpdir:
-                tmpdir = Path(tmpdir)
-                tmpfile = tmpdir / "parameters.json"
+                tmpfile = Path(tmpdir) / "parameters.json"
                 with open(tmpfile, "w") as fd:
                     fd.write(
                         SparcDocParser.json_from_directory(
-                            Path(doc_path), include_subdirs=True
+                            doc_path, include_subdirs=True
                         )
                     )
                 api = SparcAPI(tmpfile)
-            api.source["path"] = Path(doc_path).resolve().as_posix()
-            api.source["type"] = "latex"
+            api.source = {"path": str(doc_path.resolve()), "type": "latex"}
             return api
         except Exception as e:
-            warn(f"Cannot load JSON schema from env {doc_path}, the error is {e}.")
-            pass
+            raise RuntimeError(
+                f"Failed to load API from documentation path '{doc_path}': {e}"
+            )
 
-    api = SparcAPI()
-    return api
+    # Fallback to default API
+    return SparcAPI()
 
 
 # Utilities taken from vasp_interactive project
