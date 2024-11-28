@@ -24,7 +24,7 @@ setting](https://github.com/SPARC-X/SPARC-X-API/settings/pages) and
 set the "Source" to "Deploy from a branch", as well as "Branch" to
 "gh_pages", as shown in the UI screenshot below:
 
-![Github Pages Settings](img/screenshots/github_pages_setting.png)
+![Github Pages Settings](../img/screenshots/github_pages_setting.png)
 
 
 ### Secrets
@@ -54,7 +54,7 @@ files) for debug purposes, from the "Run workflow" drop panel in the
 page](https://github.com/SPARC-X/SPARC-X-API/actions/workflows), as
 shown in the screenshot below:
 
-![Github Actions Manual Dispatch](img/screenshots/github_action_dispatch.png)
+![Github Actions Manual Dispatch](../img/screenshots/github_action_dispatch.png)
 
 - [Unit-test
   workflow](https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/unit_test.yml)
@@ -79,10 +79,17 @@ shown in the screenshot below:
 - [Update JSON schema
   workflow](https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/update_api.yml)
   updates the JSON schema file after a new release in SPARC C/C++
-  source code.
+  source code. The workflow is run both nightly and after normal
+  push. You can change the behavior as needed.
 
-  The workflow is run both nightly and after normal push. Change the
-  behavior as needed.
+  An example pull request created by the update workflow can be seen
+  in the following screenshot:
+
+  ```{figure} ../img/screenshots/api_update_pr_github.png
+  :alt: PR on github
+  ```
+
+  Once the
 
 - [Publish PyPI
   workflow](https://github.com/SPARC-X/SPARC-X-API/blob/master/.github/workflows/publish-pypi.yml)
