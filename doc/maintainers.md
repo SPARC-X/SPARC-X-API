@@ -20,8 +20,8 @@ SPARC-X-API. Push / pull request to these branches should only be made by automa
   A list of svg badges can be found under `badges/` directory of this
   branch.
 
-  See **TODO** for how to add / modify badges to be shown in
-  the README.
+  See [the development guide](#doc-edit) for how to add / modify
+  badges to be shown in the README.
 
 - [`gh_pages`](https://github.com/SPARC-X/SPARC-X-API/tree/gh_pages):
   branch to publish the documentation site.

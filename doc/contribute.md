@@ -100,6 +100,7 @@ files and lines, as shown in the following screenshot:
 :align: center
 ```
 
+(doc-edit)=
 ### Editing documentation
 
 Source files for documentation are placed under `doc/` directory,

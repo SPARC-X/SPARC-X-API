@@ -10,14 +10,15 @@ overhead typically associated with file I/O during calculation
 restarts. This feature is particularly beneficial for tasks involving
 repetitive operations like structural optimization and saddle point
 searches, where traditional file-based communication can become a
-bottleneck. The underlying software architecture is shown in [the following figure](#fig-3-sparc-electronic-calculations-with-socket-communication-across-hybrid-computing-platforms):
+bottleneck. The underlying software architecture is shown in
+[Fig. 1](#scheme-sparc-socket):
 
-<!-- #### Fig. 3. SPARC electronic calculations with socket communication across hybrid computing platforms -->
+```{figure} img/scheme_socket_hetero.png
+:alt: scheme-sparc-socket
+:name: scheme-sparc-socket
 
-![scheme-sparc-socket](img/scheme_socket_hetero.png)
-
-
-**TODO** change doc source
+Fig. 1. SPARC electronic calculations with socket communication across hybrid computing platforms.
+```
 
 **Requirements**: the SPARC binary must be manually compiled from the source
 code with [socket
@@ -35,19 +36,30 @@ The communication protocol implemented in SPARC and SPARC-X-API
 adheres to the [i-PI protocol](https://github.com/i-pi/i-pi)
 standard. Specifically, we implement the original i-PI protocol within
 the SPARC C-source code, while the python SPARC-X-API uses a
-backward-compatible protocol based on i-PI. The dual-mode design is aimed for both low-level and
-high-level interfacing of the DFT codes, providing the following features as shown in [Fig. 4](#fig-4-overview-of-the-sparc-protocol-as-an-extension-to-the-standard-i-pi-protocol):
+backward-compatible protocol based on i-PI. The dual-mode design is
+aimed for both low-level and high-level interfacing of the DFT codes,
+providing the following features as shown in [Fig. 2](#SPARC-protocol-overview):
 
-### Fig. 4. Overview of the SPARC protocol as an extension to the standard i-PI protocol.
-![scheme-sparc-protocol](img/scheme_sparc_protocol.png)
+(scheme-sparc-protocol)=
+```{figure} img/scheme_sparc_protocol.png
+:alt: scheme-sparc-protocol
 
-Based on the scenarios, the socket communication layer can be accessed via the following approaches as shown in [Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode):
+Fig. 2. Overview of the SPARC protocol as an extension to the standard i-PI protocol.
+```
 
-### Fig. 5. Different ways of using SPARC's socket mode.
-![scheme-sparc-modes](img/scheme-SPARC-socket-modes.png)
+Based on the scenarios, the socket communication layer can be accessed
+via the following approaches as shown in
+[Fig. 3](#scheme-sparc-modes):
+
+(scheme-sparc-modes)=
+```{figure} img/scheme-SPARC-socket-modes.png
+:alt: scheme-sparc-modes
+
+Fig. 3. Different ways of using SPARC's socket mode.
+```
 
 
-1. **SPARC binary only** ([Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode) **a**)
+1. **SPARC binary only** ([Fig. 3](#scheme-sparc-modes) **a**)
 
    SPARC binary with socket support can be readily coupled with any i-PI compatible socker server, such as
    `ase.calculators.socketio.SocketIOCalculator`, for example
@@ -69,7 +81,7 @@ Based on the scenarios, the socket communication layer can be accessed via the f
    to be run on a single computer system.
 
 
-2. **Local-only Mode** ([Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode) **b**)
+2. **Local-only Mode** ([Fig. 3](#scheme-sparc-modes) **b**)
 
    Ideal for standalone calculations, this mode simulates a conventional calculator while benefiting from socket-based efficiency.
 
@@ -79,7 +91,7 @@ Based on the scenarios, the socket communication layer can be accessed via the f
    ```
    For most users we recommend using this mode when performing a calculation on a single HPC node.
 
-3. **Client (Relay) Mode** ([Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode) **c**)
+3. **Client (Relay) Mode** ([Fig. 3](#scheme-sparc-modes) **c**)
 
    In this mode, the `sparc.SPARC` calculator servers as a passive
    client which listens to a remote i-PI-compatible server. When
@@ -107,7 +119,7 @@ Based on the scenarios, the socket communication layer can be accessed via the f
    automatically determine if it is necessary to restart the SPARC
    subprocess.
 
-4. **Server Mode** ([Fig. 5](#fig-5-different-ways-of-using-sparcs-socket-mode) **d**)
+4. **Server Mode** ([Fig. 3](#scheme-sparc-modes) **d**)
 
    Paired with the client mode in (3), SPARC-X-API can be run as a
    socket server, isolated from the node that performs the
@@ -132,7 +144,7 @@ Based on the scenarios, the socket communication layer can be accessed via the f
 
 ## (In-progress) Controlling SPARC routines from socket interface
 
-As shown in [Fig. 4](#fig-4-overview-of-the-sparc-protocol-as-an-extension-to-the-standard-i-pi-protocol),
+As shown in [Fig. 2](#scheme-sparc-protocol),
 the SPARC socket protocol designs allows bidirectional control of
 internal SPARC routines. Local- or server-mode `sparc.SPARC`
 calculators can communicate with the SPARC binary via functions like
