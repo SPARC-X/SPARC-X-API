@@ -788,3 +788,7 @@ examples/ex1-ase/
 /paper/jats/
 /doc/_build/
 /doc/api/
+/paper/paper.tex
+/paper/paper.out
+/paper/paper.log
+/paper/TT-JOSS-arxiv-submission/
