@@ -161,7 +161,7 @@ def sanitize_path(path_string):
     """
     if isinstance(path_string, str):
         path = os.path.expandvars(os.path.expanduser(path_string))
-        path = path.resolve()
+        path = Path(path).resolve()
     else:
         path = Path(path_string).resolve()
     return path
@@ -178,7 +178,7 @@ def locate_api(json_file=None, doc_path=None, cfg=_cfg):
     3) If both `json_file` and `doc_path` are provided, raise an exception.
     4) Fallback to the default API setup if neither is provided.
     """
-    parser = cfg.parser.get("sparc") if "sparc" in cfg.parser else {}
+    parser = cfg.parser["sparc"] if "sparc" in cfg.parser else {}
     if not json_file:
         json_file = parser.get("json_schema") if parser else None
 

@@ -125,7 +125,7 @@ class SPARC(FileIOCalculator, IOContext):
             socket_params (dict): Parameters to control the socket behavior. Please check default_socket_params
             **kwargs: Additional keyword arguments to set up the calculator.
         """
-        # 2024-11-28 @alchem0x2a added cfg
+        # 2024-11-28 @alchem0x2a added cfg as the default validator
         self.validator = locate_api(
             json_file=sparc_json_file, doc_path=sparc_doc_path, cfg=self.cfg
         )
@@ -451,30 +451,62 @@ class SPARC(FileIOCalculator, IOContext):
         2024.09.05 @alchem0x2a
         Note in ase>=3.23 the FileIOCalculator.command will fallback
         to self._legacy_default_command, which we should set to invalid value for now.
+
+        2024.11.28 @alchem0x2a
+        Make use of the ase.config to set up the command
         """
         if isinstance(extras, (list, tuple)):
             extras = " ".join(extras)
         else:
             extras = extras.strip()
-        if (self.command is None) or (self.command == SPARC._legacy_default_command):
-            command_env = os.environ.get("ASE_SPARC_COMMAND", None)
-            if command_env is None:
-                sparc_exe, mpi_exe, num_cores = _find_default_sparc()
-                if sparc_exe is None:
-                    raise EnvironmentError(
-                        "Cannot find your sparc setup via $ASE_SPARC_COMMAND, SPARC.command, or "
-                        "infer from your $PATH. Please refer to the manual!"
-                    )
-                if mpi_exe is not None:
-                    command_env = f"{mpi_exe} -n {num_cores} {sparc_exe}"
-                else:
-                    command_env = f"{sparc_exe}"
-                warn(
-                    f"Your sparc command is inferred to be {command_env}, "
-                    "If this is not correct, "
-                    "please manually set $ASE_SPARC_COMMAND or SPARC.command!"
+
+        # User-provided command (and properly initialized) should have
+        # highest priority
+        if (self.command is not None) and (
+            self.command != SPARC._legacy_default_command
+        ):
+            return f"{self.command} {extras}"
+
+        parser = self.cfg.parser["sparc"] if "sparc" in self.cfg.parser else {}
+        # Get sparc command from either env variable or ini
+        command_env = self.cfg.get("ASE_SPARC_COMMAND", None) or parser.get(
+            "sparc_command", None
+        )
+
+        # Get sparc binary and mpi-prefix (alternative)
+        sparc_exe = parser.get("sparc_exe", None)
+        mpi_prefix = parser.get("mpi_prefix", None)
+        if (sparc_exe is None) != (mpi_prefix is None):
+            raise ValueError(
+                "Both 'sparc_exe' and 'mpi_prefix' must be specified together, "
+                "or neither should be set in the configuration."
+            )
+        if command_env and sparc_exe:
+            raise ValueError(
+                "Cannot set both sparc_command and sparc_exe in the config ini file!"
+            )
+
+        if sparc_exe:
+            command_env = f"{mpi_prefix} {sparc_exe}"
+
+        # Fallback
+        if command_env is None:
+            sparc_exe, mpi_exe, num_cores = _find_default_sparc()
+            if sparc_exe is None:
+                raise EnvironmentError(
+                    "Cannot find your sparc setup via $ASE_SPARC_COMMAND, SPARC.command, or "
+                    "infer from your $PATH. Please refer to the dmanual!"
                 )
-            self.command = command_env
+            if mpi_exe is not None:
+                command_env = f"{mpi_exe} -n {num_cores} {sparc_exe}"
+            else:
+                command_env = str(sparc_exe)
+            warn(
+                f"Your sparc command is inferred to be {command_env}, "
+                "If this is not correct, "
+                "please manually set $ASE_SPARC_COMMAND or SPARC.command!"
+            )
+        self.command = command_env
         return f"{self.command} {extras}"
 
     def check_input_atoms(self, atoms):
