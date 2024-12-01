@@ -13,7 +13,7 @@ file format:
 ```python
 import sparc
 from ase.io import read, write
-atoms = read("test.sparc", index=-1)
+atoms = read("test.sparc", index=-1, format="sparc")
 ```
 *Note*: To read multiple output files from the same directory, e.g., SPARC.aimd, SPARC.aimd\_01, pass the keyword argument `include_all_files=True` to `read()`
 
@@ -24,7 +24,11 @@ import sparc
 from ase.io import read, write
 from ase.build import Bulk
 atoms = Bulk("Al") * [4, 4, 4]
-atoms.write("test.sparc")
+atoms.write("test.sparc", format="sparc")
+```
+
+```{note}
+You need to specify `format="sparc"` when using the `read` and `write` functions from `ase.io`, as automatic file extension detection doesn't work for directories.
 ```
 
 For a deeper dive into the bundle I/O format, see [Advanced Topics](advanced_topics.md).

@@ -68,12 +68,14 @@ in-/output files as a bundle:
 
 - Read from a SPARC bundle
 ```python
+# `format="sparc"` should be specified
 from ase.io import read
 atoms = read("sparc_calc_dir/", format="sparc")
 ```
 
 - Write input files
 ```python
+# `format="sparc"` should be specified
 from ase.build import Bulk
 atoms = Bulk("Al") * [4, 4, 4]
 atoms.write("sparc_calc_dir/", format="sparc")
