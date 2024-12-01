@@ -60,6 +60,22 @@ Install the pre-compiled SPARC binary alongside SPARC-X-API (Linux only).
 conda install -c conda-forge sparc-x
 ```
 
+### Setup SPARC-X-API
+
+Preferences for SPARC-X-API and SPARC C/C++ code can be defined in ASE [configuration file](https://wiki.fysik.dtu.dk/ase/ase/calculators/calculators.html#calculator-configuration), located at `~/.config/ase/config.ini`, such as following example:
+
+```ini
+[sparc]
+; `command`: full shell command (include MPI directives) to run SPARC
+command = srun -n 24 path/to/sparc
+
+; `pp_path`: directory containing pseudopotential files (optional)
+pp_path = path/to/SPARC/psps
+
+; `doc_path`: directory for SPARC LaTeX documentation to build JSON schema on the fly (optional)
+doc_path = path/to/SPARC/doc/.LaTeX/
+```
+
 ### Reading / Writing SPARC files
 
 SPARC-X-API provides a file format `sparc` compatible with the ASE
