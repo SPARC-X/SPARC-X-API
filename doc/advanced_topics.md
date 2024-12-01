@@ -93,7 +93,7 @@ old_atoms.get_potential_energy()
 ```
 
 
-
+(rule-input-param)=
 ## Rules for input parameters in `sparc.SPARC` calculator
 
 When constructing the `sparc.SPARC` calculator using the syntax

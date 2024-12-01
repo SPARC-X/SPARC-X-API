@@ -160,7 +160,7 @@ python -c "from sparc.common import psp_dir; print(psp_dir)"
 ```
 
 (sparc-cmd-setting)=
-### SPARC Command Configuration
+### SPARC command configuration
 
 The command to execute SPARC calculations is determined based on the
 following priority:
@@ -291,7 +291,7 @@ sparc_socket_compatibility: False
 --------------------------------------------------------------------------------
 Please check additional information from:
 1. SPARC&apos;s documentation: https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf
-2. Python API documentation: https://github.com/alchem0x2A/SPARC-X-API/blob/master/README.md
+2. Python API documentation: https://github.com/SPARC-X/SPARC-X-API/blob/master/README.md
 
 </pre>
 </div>

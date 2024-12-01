@@ -407,7 +407,7 @@ def main():
         cprint(
             "Please check additional information from:\n"
             "1. SPARC's documentation: https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf \n"
-            "2. Python API documentation: https://github.com/alchem0x2A/SPARC-X-API/blob/master/README.md\n",
+            "2. Python API documentation: https://sparc-x.github.io/SPARC-X-API\n",
             color=None,
         )
 

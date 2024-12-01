@@ -122,10 +122,10 @@ jobs:
     needs: test-linux
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: conda-incubator/setup-miniconda@v3
       with:
-        python-version: "3.10"
+        python-version: "3.11"
         mamba-version: "*"
         channels: conda-forge,defaults
         channel-priority: true
@@ -140,8 +140,8 @@ jobs:
         python -m sparc.download_data
     - name: Download SPARC output files to SPARC-master
       run: |
-        # TODO: merge to master
-        wget -O SPARC-socket.zip https://codeload.github.com/alchem0x2A/SPARC/zip/refs/heads/socket
+        # Use latest SPARC public code with socket support
+        wget -O SPARC-socket.zip https://codeload.github.com/SPARC-X/SPARC/zip/99e4b7e94ca6f7b4ca1dde9135bea4075b0678f4
         unzip SPARC-socket.zip
     - name: Compile SPARC with socket
       run: |

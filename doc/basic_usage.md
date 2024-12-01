@@ -109,7 +109,7 @@ If you want to extract more information about the MD simulation steps, take a lo
 
 4. Geometric optimization using ASE's optimizers
 
-The power of `SPARC-X-API` is to combine single point `SPARC` calculations with advanced ASE optimizers, such as BFGS, FIRE or GPMin. Example 2 can be re-written as:
+The power of `SPARC-X-API` is to combine single point `SPARC` calculations with advanced ASE optimizers, such as `BFGS`, `FIRE` or `GPMin`. Example 2 can be re-written as:
 
 ```python
 from sparc.calculator import SPARC
@@ -133,11 +133,14 @@ for the visualization of atomistic structures. Depending on the
 bundle's contents, this could display individual atoms or multiple
 images.
 
-[Fig. 2](#fig-2-a-screenshot-of-the-sparc-ase-program) is a screenshot showing the usage of `sparc-ase gui` to visualize a
-short [MD trajectory](tests/outputs/NH3_sort_lbfgs_opt.sparc).
+[Fig. 1](#fig-screenshot-sparc-ase) is a screenshot showing the usage of `sparc-ase gui` to visualize a
+short MD trajectory.
 
-#### Fig 2. A screenshot of the `sparc-ase` program
-<img width="1200" alt="image" src="https://github.com/alchem0x2A/SPARC-X-API/assets/6829706/e72329ff-7194-4819-94f8-486ef2218844">
+(fig-screenshot-sparc-ase)=
+```{figure} https://github.com/alchem0x2A/SPARC-X-API/assets/6829706/e72329ff-7194-4819-94f8-486ef2218844
+
+Fig 1. A screenshot of the `sparc-ase` program
+```
 
 ### Parameters and units used in `SPARC-X-API`
 
@@ -149,7 +152,7 @@ atoms.calc = SPARC(h=0.25, REFERENCE_CUTOFF=0.5, EXX_RANGE_PBE=0.16, **params)
 ```
 inputs following ASE's convention (e.g., `h`) adopt eV/Angstrom units (thus the same setting can be applied to other DFT calculators),
 On the other hand, all SPARC-specific parameters, which can often be recognized by their capitalized format (like `REFERENCE_CUTOFF`, `EXX_RANGE_PBE`), retain their original values consistent with their representation in the `.inpt` files.
-The reasoning and details about unit conversion can be found in the [Rules for Input Parameters](https://github.com/alchem0x2A/SPARC-X-API/blob/master/doc/advanced_topics.md#rules-for-input-parameters-in-sparcsparc-calculator)  in Advanced Topics.
+The reasoning and details about unit conversion can be found in the [Rules for Input Parameters](#rule-input-param)  in Advanced Topics.
 
 
 In order for `SPARC-X-API` to be compatible with other ASE-based DFT calculators,
