@@ -190,7 +190,7 @@ class SparcBundle:
                     return Path(env_psp_dir)
             # Use pp_path field in cfg
             parser = self.cfg.parser["sparc"] if "sparc" in self.cfg.parser else {}
-            psp_dir_ini = parser.get("pp_path", None)
+            psp_dir_ini = parser.get("psp_path", None)
             if psp_dir_ini:
                 return sanitize_path(psp_dir_ini)
             # At this point, we try to use the psp files bundled with sparc

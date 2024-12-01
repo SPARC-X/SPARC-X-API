@@ -42,9 +42,9 @@ are grouped in sections. An example of the SPARC-specific section may look like 
 ;            has the same effect as `ASE_SPARC_COMMAND`
 command = srun -n 24 ~/bin/sparc
 
-; `pp_path`: directory containing pseudopotential files
-;            has the same effect as `SPARC_PP_PATH`
-pp_path = ~/dev_SPARC/psps
+; `psp_path`: directory containing pseudopotential files
+;            has the same effect as `SPARC_PSP_PATH`
+psp_path = ~/dev_SPARC/psps
 
 ; `doc_path`: directory for SPARC LaTeX documentation
 ;             has the same effect as `SPARC_DOC_PATH`
@@ -60,7 +60,7 @@ The available options in the configuration file are:
    define a custom JSON schema file, or `doc_path` for parsing the
    LaTeX documentation on-the-fly. See [JSON schema
    configuration](#json-schema-setting) for more details.
-3. Pseudopotential settings (*Optional*): use `pp_path` for the
+3. Pseudopotential settings (*Optional*): use `psp_path` for the
    location of pseudopotential files. See [pseudopotential files settings](#pseudopot-setting)
    for more details.
 

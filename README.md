@@ -69,8 +69,8 @@ Preferences for SPARC-X-API and SPARC C/C++ code can be defined in ASE [configur
 ; `command`: full shell command (include MPI directives) to run SPARC
 command = srun -n 24 path/to/sparc
 
-; `pp_path`: directory containing pseudopotential files (optional)
-pp_path = path/to/SPARC/psps
+; `psp_path`: directory containing pseudopotential files (optional)
+psp_path = path/to/SPARC/psps
 
 ; `doc_path`: directory for SPARC LaTeX documentation to build JSON schema on the fly (optional)
 doc_path = path/to/SPARC/doc/.LaTeX/
