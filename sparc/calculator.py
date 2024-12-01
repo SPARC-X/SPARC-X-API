@@ -462,6 +462,8 @@ class SPARC(FileIOCalculator, IOContext):
         else:
             extras = extras.strip()
 
+        print(self.command)
+
         # User-provided command (and properly initialized) should have
         # highest priority
         if (self.command is not None) and (
@@ -472,7 +474,7 @@ class SPARC(FileIOCalculator, IOContext):
         parser = self.cfg.parser["sparc"] if "sparc" in self.cfg.parser else {}
         # Get sparc command from either env variable or ini
         command_env = self.cfg.get("ASE_SPARC_COMMAND", None) or parser.get(
-            "sparc_command", None
+            "command", None
         )
 
         # Get sparc binary and mpi-prefix (alternative)
