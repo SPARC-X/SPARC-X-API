@@ -71,12 +71,14 @@ def checksum_all(psp_dir=psp_dir, extension="*.psp8"):
     # Use sorted to make sure file order is correct
     for filename in sorted(psp_dir.glob(extension)):
         # Open the file in binary mode and update the group checksum
+        print(f"Checking {filename}")
         with open(filename, "r") as f:
             f_checker = hashlib.md5()
             content = f.read().encode("utf8")
             f_checker.update(content)
             checker.update(f_checker.hexdigest().encode("ascii"))
     final_checksum = checker.hexdigest()
+    print(f"Final checksum is {final_checksum}")
     return final_checksum
 
 
