@@ -121,6 +121,16 @@ create the PR yourself). After confirming that all the checks have
 passed, you can merge the pull request to include the compiled
 binaries in the conda-forge channel.
 
+### Debug the recipe using local build
+
+Building the recipe locally is identical to the steps for [`sparc-x-api-feedstock`](#conda-forge-build-locally-api).
+You need
+both the [docker engine](https://docs.docker.com/engine/) and a [conda distribution](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) installed on your local
+machine, and run the following command at the root of the local clone of `sparc-x-feedstock`:
+```{code} bash
+python build-locally.py
+```
+
 ### Revised builds
 
 If by any chance you find the newly released SPARC binaries in
@@ -140,7 +150,9 @@ build:
   number: 1
 ```
 
-This allows conda-forge to distinguish two builds without affecting the version number, as the actual package is named like `<os>-<arch>/sparc-x-2.0.0-<hash>_<build>.conda`.
+This allows conda-forge to distinguish two builds without affecting
+the version number, as the actual package is named like
+`<os>-<arch>/sparc-x-2.0.0-<hash>_<build>.conda`.
 
 ```{note}
 If the error stems from the C/C++ itself, you should update the release in the SPARC github repo instead.
