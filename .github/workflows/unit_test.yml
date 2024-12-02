@@ -143,8 +143,8 @@ jobs:
         # Use latest SPARC public code with socket support
         HASH=99e4b7e94ca6f7b4ca1dde9135bea4075b0678f4
         wget -O SPARC-socket.zip https://codeload.github.com/SPARC-X/SPARC/zip/$HASH
+        unzip SPARC-socket.zip && rm -rf SPARC-socket.zip
         mv SPARC-$HASH SPARC-socket
-        unzip SPARC-socket.zip
     - name: Compile SPARC with socket
       run: |
         cd SPARC-socket/src
