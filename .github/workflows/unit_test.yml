@@ -141,7 +141,7 @@ jobs:
     - name: Download SPARC output files to SPARC-master
       run: |
         # Use latest SPARC public code with socket support
-        HASH=SPARC-99e4b7e94ca6f7b4ca1dde9135bea4075b0678f4
+        HASH=99e4b7e94ca6f7b4ca1dde9135bea4075b0678f4
         wget -O SPARC-socket.zip https://codeload.github.com/SPARC-X/SPARC/zip/$HASH
         mv SPARC-$HASH SPARC-socket
         unzip SPARC-socket.zip
