@@ -158,12 +158,14 @@
     <span class="c1"># Use sorted to make sure file order is correct</span>
     <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">psp_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">extension</span><span class="p">)):</span>
         <span class="c1"># Open the file in binary mode and update the group checksum</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Checking </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f_checker</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">()</span>
             <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span>
             <span class="n">f_checker</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
             <span class="n">checker</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">f_checker</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">))</span>
     <span class="n">final_checksum</span> <span class="o">=</span> <span class="n">checker</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final checksum is </span><span class="si">{</span><span class="n">final_checksum</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">final_checksum</span></div>
 
 

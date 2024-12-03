@@ -21,6 +21,18 @@ for the maintainers to modify and merge. Please also ensure:
 - Do not directly use the [`.conda/meta.yaml`](https://github.com/SPARC-X/SPARC-X-API/blob/master/.conda/meta.yaml) for conda-forge (it is designed for local packaging test)
 - Bump the `build.number` if you need to change the recipe YAML on the same SPARC-X-API release.
 
+(conda-forge-build-locally-api)=
+### Debug the recipe using local build
+
+The build toolchain in conda-forge is slightly different from the
+standard `conda-build` command. If the build workflow fails after
+submitting the PR, you may run the recipe locally to debug. You need
+both the [docker engine](https://docs.docker.com/engine/) and a [conda distribution](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) on your local
+machine. Run the following command at the root of the local clone of `sparc-x-api-feedstock`:
+```{code} bash
+python build-locally.py
+```
+
 ## Deploy on PyPI
 
 SPARC-X-API is deployed on PyPI under the name

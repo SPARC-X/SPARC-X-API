@@ -90,6 +90,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">ase.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span>
 <span class="kn">from</span> <span class="nn">ase.calculators.singlepoint</span> <span class="kn">import</span> <span class="n">SinglePointDFTCalculator</span>
+<span class="kn">from</span> <span class="nn">ase.config</span> <span class="kn">import</span> <span class="n">cfg</span> <span class="k">as</span> <span class="n">_cfg</span>
 
 <span class="c1"># various io formatters</span>
 <span class="kn">from</span> <span class="nn">.api</span> <span class="kn">import</span> <span class="n">SparcAPI</span>
@@ -103,10 +104,10 @@
 <span class="kn">from</span> <span class="nn">.sparc_parsers.out</span> <span class="kn">import</span> <span class="n">_read_out</span>
 <span class="kn">from</span> <span class="nn">.sparc_parsers.pseudopotential</span> <span class="kn">import</span> <span class="n">copy_psp_file</span><span class="p">,</span> <span class="n">parse_psp8_header</span>
 <span class="kn">from</span> <span class="nn">.sparc_parsers.static</span> <span class="kn">import</span> <span class="n">_add_cell_info</span><span class="p">,</span> <span class="n">_read_static</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">deprecated</span><span class="p">,</span> <span class="n">locate_api</span><span class="p">,</span> <span class="n">string2index</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">deprecated</span><span class="p">,</span> <span class="n">locate_api</span><span class="p">,</span> <span class="n">sanitize_path</span><span class="p">,</span> <span class="n">string2index</span>
 
 <span class="c1"># from .sparc_parsers.ion import read_ion, write_ion</span>
-<span class="n">defaultAPI</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">()</span>
+<span class="n">defaultAPI</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">_cfg</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="SparcBundle">
@@ -169,6 +170,7 @@
         <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">psp_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">validator</span><span class="o">=</span><span class="n">defaultAPI</span><span class="p">,</span>
+        <span class="n">cfg</span><span class="o">=</span><span class="n">_cfg</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initializes a SparcBundle for accessing SPARC calculation data.</span>
@@ -198,6 +200,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">init_inputs</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">psp_data</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">raw_results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">psp_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__find_psp_dir</span><span class="p">(</span><span class="n">psp_dir</span><span class="p">)</span>
         <span class="c1"># Sorting should be consistent across the whole bundle!</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sorting</span> <span class="o">=</span> <span class="kc">None</span>
@@ -272,9 +275,14 @@
             <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">psp_dir</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">psp_env</span><span class="p">:</span>
-                <span class="n">env_psp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">env_psp_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">env_psp_dir</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">env_psp_dir</span><span class="p">)</span>
+            <span class="c1"># Use pp_path field in cfg</span>
+            <span class="n">parser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">parser</span><span class="p">[</span><span class="s2">&quot;sparc&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;sparc&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">parser</span> <span class="k">else</span> <span class="p">{}</span>
+            <span class="n">psp_dir_ini</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;psp_path&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">psp_dir_ini</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">sanitize_path</span><span class="p">(</span><span class="n">psp_dir_ini</span><span class="p">)</span>
             <span class="c1"># At this point, we try to use the psp files bundled with sparc</span>
             <span class="k">if</span> <span class="n">is_psp_download_complete</span><span class="p">(</span><span class="n">default_psp_dir</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">default_psp_dir</span>

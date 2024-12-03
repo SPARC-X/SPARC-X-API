@@ -58,7 +58,10 @@
 <li class="toctree-l2"><a class="reference internal" href="github.html">Github Settings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="github.html#managing-ci-cd-pipelines">Managing CI/CD Pipelines</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">SPARC-X-API package releases</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#on-conda-forge">On conda-forge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#on-conda-forge">On conda-forge</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#debug-the-recipe-using-local-build">Debug the recipe using local build</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#deploy-on-pypi">Deploy on PyPI</a></li>
 </ul>
 </li>
@@ -115,6 +118,17 @@ for the maintainers to modify and merge. Please also ensure:</p>
 <li><p>Do not directly use the <a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/blob/master/.conda/meta.yaml"><code class="docutils literal notranslate"><span class="pre">.conda/meta.yaml</span></code></a> for conda-forge (it is designed for local packaging test)</p></li>
 <li><p>Bump the <code class="docutils literal notranslate"><span class="pre">build.number</span></code> if you need to change the recipe YAML on the same SPARC-X-API release.</p></li>
 </ul>
+<section id="debug-the-recipe-using-local-build">
+<span id="conda-forge-build-locally-api"></span><h3>Debug the recipe using local build<a class="headerlink" href="#debug-the-recipe-using-local-build" title="Link to this heading"></a></h3>
+<p>The build toolchain in conda-forge is slightly different from the
+standard <code class="docutils literal notranslate"><span class="pre">conda-build</span></code> command. If the build workflow fails after
+submitting the PR, you may run the recipe locally to debug. You need
+both the <a class="reference external" href="https://docs.docker.com/engine/">docker engine</a> and a <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">conda distribution</a> on your local
+machine. Run the following command at the root of the local clone of <code class="docutils literal notranslate"><span class="pre">sparc-x-api-feedstock</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>build-locally.py
+</pre></div>
+</div>
+</section>
 </section>
 <section id="deploy-on-pypi">
 <h2>Deploy on PyPI<a class="headerlink" href="#deploy-on-pypi" title="Link to this heading"></a></h2>

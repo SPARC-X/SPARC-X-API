@@ -21,10 +21,14 @@ Fig. 1. SPARC electronic calculations with socket communication across hybrid co
 ```
 
 **Requirements**: the SPARC binary must be manually compiled from the source
-code with [socket
-support](https://github.com/alchem0x2A/SPARC/tree/socket) and with the
+code with socket
+support and with the
 `USE_SOCKET=1` flag enabled (see the [installation
-instructions](https://github.com/alchem0x2A/SPARC/tree/socket).
+instructions](https://github.com/SPARC-X/SPARC?tab=readme-ov-file#2-installation).
+
+```{note}
+You need SPARC C/C++ after version 2024.11.18 to enable socket support.
+```
 
 ## Usage
 The socket communication layer in SPARC and SPARC-X-API are designed for:
@@ -38,11 +42,11 @@ standard. Specifically, we implement the original i-PI protocol within
 the SPARC C-source code, while the python SPARC-X-API uses a
 backward-compatible protocol based on i-PI. The dual-mode design is
 aimed for both low-level and high-level interfacing of the DFT codes,
-providing the following features as shown in [Fig. 2](#SPARC-protocol-overview):
+providing the following features as shown in [Fig. 2](#scheme-sparc-protocol):
 
-(scheme-sparc-protocol)=
 ```{figure} img/scheme_sparc_protocol.png
 :alt: scheme-sparc-protocol
+:name: scheme-sparc-protocol
 
 Fig. 2. Overview of the SPARC protocol as an extension to the standard i-PI protocol.
 ```
@@ -51,8 +55,8 @@ Based on the scenarios, the socket communication layer can be accessed
 via the following approaches as shown in
 [Fig. 3](#scheme-sparc-modes):
 
-(scheme-sparc-modes)=
 ```{figure} img/scheme-SPARC-socket-modes.png
+:name: scheme-sparc-modes
 :alt: scheme-sparc-modes
 
 Fig. 3. Different ways of using SPARC's socket mode.
@@ -81,7 +85,7 @@ Fig. 3. Different ways of using SPARC's socket mode.
    to be run on a single computer system.
 
 
-2. **Local-only Mode** ([Fig. 3](#scheme-sparc-modes) **b**)
+2. **Local-only mode** ([Fig. 3](#scheme-sparc-modes) **b**)
 
    Ideal for standalone calculations, this mode simulates a conventional calculator while benefiting from socket-based efficiency.
 
@@ -91,7 +95,7 @@ Fig. 3. Different ways of using SPARC's socket mode.
    ```
    For most users we recommend using this mode when performing a calculation on a single HPC node.
 
-3. **Client (Relay) Mode** ([Fig. 3](#scheme-sparc-modes) **c**)
+3. **Client (Relay) mode** ([Fig. 3](#scheme-sparc-modes) **c**)
 
    In this mode, the `sparc.SPARC` calculator servers as a passive
    client which listens to a remote i-PI-compatible server. When
@@ -119,7 +123,7 @@ Fig. 3. Different ways of using SPARC's socket mode.
    automatically determine if it is necessary to restart the SPARC
    subprocess.
 
-4. **Server Mode** ([Fig. 3](#scheme-sparc-modes) **d**)
+4. **Server mode** ([Fig. 3](#scheme-sparc-modes) **d**)
 
    Paired with the client mode in (3), SPARC-X-API can be run as a
    socket server, isolated from the node that performs the

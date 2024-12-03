@@ -138,6 +138,21 @@ standard for seamless integration into other computational workflows.</p>
 </pre></div>
 </div>
 </section>
+<section id="setup-sparc-x-api">
+<h3>Setup SPARC-X-API<a class="headerlink" href="#setup-sparc-x-api" title="Link to this heading"></a></h3>
+<p>Preferences for SPARC-X-API and SPARC C/C++ code can be defined in ASE <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/calculators/calculators.html#calculator-configuration">configuration file</a>, located at <code class="docutils literal notranslate"><span class="pre">~/.config/ase/config.ini</span></code>, such as following example:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[sparc]</span>
+<span class="c1">; `command`: full shell command (include MPI directives) to run SPARC</span>
+<span class="na">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">srun -n 24 path/to/sparc</span>
+
+<span class="c1">; `psp_path`: directory containing pseudopotential files (optional)</span>
+<span class="na">psp_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">path/to/SPARC/psps</span>
+
+<span class="c1">; `doc_path`: directory for SPARC LaTeX documentation to build JSON schema on the fly (optional)</span>
+<span class="na">doc_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">path/to/SPARC/doc/.LaTeX/</span>
+</pre></div>
+</div>
+</section>
 <section id="reading-writing-sparc-files">
 <h3>Reading / Writing SPARC files<a class="headerlink" href="#reading-writing-sparc-files" title="Link to this heading"></a></h3>
 <p>SPARC-X-API provides a file format <code class="docutils literal notranslate"><span class="pre">sparc</span></code> compatible with the ASE
@@ -146,14 +161,16 @@ in-/output files as a bundle:</p>
 <ul class="simple">
 <li><p>Read from a SPARC bundle</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># `format=&quot;sparc&quot;` should be specified</span>
+<span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span>
 <span class="n">atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s2">&quot;sparc_calc_dir/&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p>Write input files</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">Bulk</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># `format=&quot;sparc&quot;` should be specified</span>
+<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">Bulk</span>
 <span class="n">atoms</span> <span class="o">=</span> <span class="n">Bulk</span><span class="p">(</span><span class="s2">&quot;Al&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
 <span class="n">atoms</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;sparc_calc_dir/&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">)</span>
 </pre></div>

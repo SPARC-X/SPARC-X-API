@@ -92,6 +92,10 @@
 <span class="kn">import</span> <span class="nn">psutil</span>
 <span class="kn">from</span> <span class="nn">ase.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span>
 <span class="kn">from</span> <span class="nn">ase.calculators.calculator</span> <span class="kn">import</span> <span class="n">Calculator</span><span class="p">,</span> <span class="n">FileIOCalculator</span><span class="p">,</span> <span class="n">all_changes</span>
+
+<span class="c1"># 2024-11-28: @alchem0x2a add support for ase.config</span>
+<span class="c1"># In the first we only use cfg as parser for configurations</span>
+<span class="kn">from</span> <span class="nn">ase.config</span> <span class="kn">import</span> <span class="n">cfg</span> <span class="k">as</span> <span class="n">_cfg</span>
 <span class="kn">from</span> <span class="nn">ase.parallel</span> <span class="kn">import</span> <span class="n">world</span>
 <span class="kn">from</span> <span class="nn">ase.stress</span> <span class="kn">import</span> <span class="n">full_3x3_to_voigt_6_stress</span>
 <span class="kn">from</span> <span class="nn">ase.units</span> <span class="kn">import</span> <span class="n">Bohr</span><span class="p">,</span> <span class="n">GPa</span><span class="p">,</span> <span class="n">Hartree</span><span class="p">,</span> <span class="n">eV</span>
@@ -205,7 +209,10 @@
 <span class="sd">            socket_params (dict): Parameters to control the socket behavior. Please check default_socket_params</span>
 <span class="sd">            **kwargs: Additional keyword arguments to set up the calculator.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">validator</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">(</span><span class="n">json_file</span><span class="o">=</span><span class="n">sparc_json_file</span><span class="p">,</span> <span class="n">doc_path</span><span class="o">=</span><span class="n">sparc_doc_path</span><span class="p">)</span>
+        <span class="c1"># 2024-11-28 @alchem0x2a added cfg as the default validator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validator</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">(</span>
+            <span class="n">json_file</span><span class="o">=</span><span class="n">sparc_json_file</span><span class="p">,</span> <span class="n">doc_path</span><span class="o">=</span><span class="n">sparc_doc_path</span><span class="p">,</span> <span class="n">cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">valid_params</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">special_params</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inpt_state</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Store the inpt file states</span>
@@ -224,6 +231,7 @@
         <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;SPARC&quot;</span> <span class="k">if</span> <span class="n">restart</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
 
+        <span class="c1"># Use psp dir from user input or env</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span> <span class="o">=</span> <span class="n">SparcBundle</span><span class="p">(</span>
             <span class="n">directory</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">),</span>
             <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span>
@@ -231,6 +239,7 @@
             <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>  <span class="c1"># The order is tricky here. Use label not self.label</span>
             <span class="n">psp_dir</span><span class="o">=</span><span class="n">psp_dir</span><span class="p">,</span>
             <span class="n">validator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">validator</span><span class="p">,</span>
+            <span class="n">cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># Try restarting from an old calculation and set results</span>
@@ -534,30 +543,64 @@
 <span class="sd">        2024.09.05 @alchem0x2a</span>
 <span class="sd">        Note in ase&gt;=3.23 the FileIOCalculator.command will fallback</span>
 <span class="sd">        to self._legacy_default_command, which we should set to invalid value for now.</span>
+
+<span class="sd">        2024.11.28 @alchem0x2a</span>
+<span class="sd">        Make use of the ase.config to set up the command</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extras</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
             <span class="n">extras</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">extras</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">extras</span> <span class="o">=</span> <span class="n">extras</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="n">SPARC</span><span class="o">.</span><span class="n">_legacy_default_command</span><span class="p">):</span>
-            <span class="n">command_env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ASE_SPARC_COMMAND&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">command_env</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">sparc_exe</span><span class="p">,</span> <span class="n">mpi_exe</span><span class="p">,</span> <span class="n">num_cores</span> <span class="o">=</span> <span class="n">_find_default_sparc</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">sparc_exe</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">EnvironmentError</span><span class="p">(</span>
-                        <span class="s2">&quot;Cannot find your sparc setup via $ASE_SPARC_COMMAND, SPARC.command, or &quot;</span>
-                        <span class="s2">&quot;infer from your $PATH. Please refer to the manual!&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">if</span> <span class="n">mpi_exe</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">command_env</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mpi_exe</span><span class="si">}</span><span class="s2"> -n </span><span class="si">{</span><span class="n">num_cores</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">sparc_exe</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">command_env</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sparc_exe</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="n">warn</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Your sparc command is inferred to be </span><span class="si">{</span><span class="n">command_env</span><span class="si">}</span><span class="s2">, &quot;</span>
-                    <span class="s2">&quot;If this is not correct, &quot;</span>
-                    <span class="s2">&quot;please manually set $ASE_SPARC_COMMAND or SPARC.command!&quot;</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">)</span>
+
+        <span class="c1"># User-provided command (and properly initialized) should have</span>
+        <span class="c1"># highest priority</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">!=</span> <span class="n">SPARC</span><span class="o">.</span><span class="n">_legacy_default_command</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">extras</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">parser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">parser</span><span class="p">[</span><span class="s2">&quot;sparc&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;sparc&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">parser</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="c1"># Get sparc command from either env variable or ini</span>
+        <span class="n">command_env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ASE_SPARC_COMMAND&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;command&quot;</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Get sparc binary and mpi-prefix (alternative)</span>
+        <span class="n">sparc_exe</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sparc_exe&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">mpi_prefix</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mpi_prefix&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">sparc_exe</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">mpi_prefix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Both &#39;sparc_exe&#39; and &#39;mpi_prefix&#39; must be specified together, &quot;</span>
+                <span class="s2">&quot;or neither should be set in the configuration.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">command_env</span> <span class="ow">and</span> <span class="n">sparc_exe</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot set both sparc_command and sparc_exe in the config ini file!&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">sparc_exe</span><span class="p">:</span>
+            <span class="n">command_env</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mpi_prefix</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">sparc_exe</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Fallback</span>
+        <span class="k">if</span> <span class="n">command_env</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sparc_exe</span><span class="p">,</span> <span class="n">mpi_exe</span><span class="p">,</span> <span class="n">num_cores</span> <span class="o">=</span> <span class="n">_find_default_sparc</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">sparc_exe</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">EnvironmentError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot find your sparc setup via $ASE_SPARC_COMMAND, SPARC.command, or &quot;</span>
+                    <span class="s2">&quot;infer from your $PATH. Please refer to the dmanual!&quot;</span>
                 <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">=</span> <span class="n">command_env</span>
+            <span class="k">if</span> <span class="n">mpi_exe</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">command_env</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mpi_exe</span><span class="si">}</span><span class="s2"> -n </span><span class="si">{</span><span class="n">num_cores</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">sparc_exe</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">command_env</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sparc_exe</span><span class="p">)</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Your sparc command is inferred to be </span><span class="si">{</span><span class="n">command_env</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="s2">&quot;If this is not correct, &quot;</span>
+                <span class="s2">&quot;please manually set $ASE_SPARC_COMMAND or SPARC.command!&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">command</span> <span class="o">=</span> <span class="n">command_env</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">extras</span><span class="si">}</span><span class="s2">&quot;</span>
 
 <div class="viewcode-block" id="SPARC.check_input_atoms">
@@ -735,7 +778,10 @@
                 <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">resort</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span>
             <span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="s2">&quot;Force values from socket communication and output file are different! Please contact the developers.&quot;</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Force values cannot be accessed via the results dictionary. They may not be available in the output file. Ensure PRINT_FORCES: 1</span><span class="se">\n</span><span class="s2">Results:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;Force values cannot be accessed via the results dictionary. They may not be available in the output file. Ensure PRINT_FORCES: 1</span><span class="se">\n</span><span class="s2">Results:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="c1"># For stress information, we make sure that the stress is always present</span>
         <span class="k">if</span> <span class="s2">&quot;stress&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
             <span class="n">virial_from_socket</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;virial&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">))</span>

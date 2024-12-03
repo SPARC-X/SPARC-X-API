@@ -18,10 +18,57 @@ configurations. The default configurations are:
 
 ## Custom configurations
 
-**TODO** use sparc ini config.
+You can configure the setup for SPARC-X-API using either of the
+following methods:
+1. (Recommended) use the [ASE configuration file](https://wiki.fysik.dtu.dk/ase/ase/calculators/calculators.html#calculator-configuration)
+2. Use environmental variables. Please note although environmental
+   variables have long been the standard approach to set
+   ASE-calculators, they may be obsolete in future releases of ASE.
 
-Please check the following steps for detailed setup:
+```{note}
+The environmental variables will have **higher priority** than the equivalent fields in the configure file, if both are set.
+```
 
+### Editing the configuration file
+
+ASE will look for a configuration file at `~/.config/ase/config.ini`
+for package-specific settings. The configuration file follows the [INI
+format](https://en.wikipedia.org/wiki/INI_file), where key-value pairs
+are grouped in sections. An example of the SPARC-specific section may look like follows:
+
+```{code} ini
+[sparc]
+; `command`: full shell command (include MPI directives) to run SPARC calculation
+;            has the same effect as `ASE_SPARC_COMMAND`
+command = srun -n 24 ~/bin/sparc
+
+; `psp_path`: directory containing pseudopotential files
+;            has the same effect as `SPARC_PSP_PATH`
+psp_path = ~/dev_SPARC/psps
+
+; `doc_path`: directory for SPARC LaTeX documentation
+;             has the same effect as `SPARC_DOC_PATH`
+doc_path = ~/dev_SPARC/doc/.LaTeX/
+```
+
+The available options in the configuration file are:
+1. SPARC command: either use `command` to set a full shell string to
+   run the SPARC program, or use the combination of `sparc_exe` and
+   `mpi_prefix`. See [SPARC command configuration](#sparc-cmd-setting)
+   for more details.
+2. JSON schema settings (*Optional*): use either `json_schema` to
+   define a custom JSON schema file, or `doc_path` for parsing the
+   LaTeX documentation on-the-fly. See [JSON schema
+   configuration](#json-schema-setting) for more details.
+3. Pseudopotential settings (*Optional*): use `psp_path` for the
+   location of pseudopotential files. See [pseudopotential files settings](#pseudopot-setting)
+   for more details.
+
+
+You can overwrite the location of the configuration file by the
+environmental variable `ASE_CONFIG_PATH`.
+
+(json-schema-setting)=
 ### JSON schema
 
 Each version of SPARC-X-API ships with a JSON schema compatible with a
@@ -31,19 +78,23 @@ dated-version of SPARC C/C++ code. You can find that version in the README badge
 
 If that does not match your local SPARC version, you can configure the location of JSON schema using one of the following methods:
 
-1. Set the `$SPARC_DOC_PATH` variable
+#### Option 1. Parse LaTeX documentation on-the-fly
 
-`$SPARC_DOC_PATH` will direct SPARC-X-API to look for a local directory containing LaTeX documentation, for example:
+The environment variable `SPARC_DOC_PATH` (equivalent to `doc_path` field in configuration file)  will direct SPARC-X-API to look for a local directory containing LaTeX documentation to parse on-the-fly, for example:
 ```bash
 export SPARC_DOC_PATH=<local-SPARC-dir>/doc/.LaTeX
 ```
-and parse the JSON schema on-the-fly.
+or configuration file setting:
+```{code} ini
+doc_path: <local-SPARC-dir>/doc/.LaTeX
+```
 
-2. Use your own `parameters.json`
+
+#### 2. Use your own `parameters.json`
 
 In some cases an experimental feature may not have been updated in the
-official doc. You can create and edit your own `parameters.json` file to
-temporarily test a local version of SPARC:
+official doc. You can create and edit your own `parameters.json` file
+to temporarily test a local version of SPARC:
 
 First parse the LaTeX files into `parameters.json`
 ```bash
@@ -72,66 +123,31 @@ Then add / edit missing parameters in the `parameters` section in
   },
 ```
 
-**TODO** make sure the json parameters are included.
-Finally, set up **TODO**.
+Finally, set the `json_schema` field in the configuration file to the
+newly generated json file, for example:
+```{code} ini
+[sparc]
+; `json_schema`: custom schema file parsed from LaTeX documentation
+json_schema: ~/SPARC/parameters.json
+```
 
-<!--t `SPARC-X-API` is engineered for compatibility with the SPARC -->
-<!-- C-code. It achieves this by loading a JSON schema for --> <!--
-parameter validation and unit conversion. You can review the default
---> <!-- schema used by the API at
-sparc.sparc_json_api.default_json_api -->
+```{warning}
+`json_schema` and `doc_path` fields cannot be both present in the configuration file!
+```
 
-<!-- ```json -->
-<!-- "FD_GRID": { -\-> -->
-<!-- "symbol": "FD_GRID", -\-> -->
-<!-- <\!--    "label": "FD_GRID", -\-> -->
-<!-- <\!--    "type": "integer array", -\-> -->
-<!-- <\!--    "default": null, -\-> -->
-<!-- <\!--    "unit": "No unit", -\-> -->
-<!-- <\!--    "example": "FD_GRID: 26 26 30", -\-> -->
-<!-- <\!--    "description": "#<Some description...>", -\-> -->
-<!-- <\!--    "allow_bool_input": false, -\-> -->
-<!-- <\!--    "category": "system" -\-> -->
-<!-- <\!--   }, -\-> -->
-<!-- <\!-- ``` -\-> -->
-
-<!-- <\!-- The schema file is generated from SPARC's LaTeX documentation.  In -\-> -->
-<!-- <\!-- upcoming releases of `SPARC-X-API`, we're aiming to provide users the -\-> -->
-<!-- <\!-- flexibility to use their own custom schema files. This would be -\-> -->
-<!-- <\!-- particularly useful for those who might be testing a development -\-> -->
-<!-- <\!-- branch of SPARC. By default, the JSON schema is packaged under -\-> -->
-<!-- <\!-- `sparc/sparc_json_api` directory. If you have another version of SPARC -\-> -->
-<!-- source code, you can set the environment variable `$SPARC_DOC_PATH` to -->
-<!-- the directory containing the LaTeX codes for the documentation, such -->
-<!-- as `<SPARC-source-code-root>/doc/.LaTeX`. If you obtain `sparc-x` from -->
-<!-- the conda method as mentioned above, By default, the JSON schema is -->
-<!-- packaged under `sparc/sparc_json_api` directory. If you have another -->
-<!-- version of SPARC source code, you can set the environment variable -->
-<!-- `$SPARC_DOC_PATH` is automatically set to -->
-<!-- `<conda-env-root>/share/doc/sparc/.LaTeX`. Setting up the environment -->
-<!-- variable `$SPARC_DOC_PATH` helps loading the correct JSON schame that -->
-<!-- is compatible with your SPARC binary code. -->
-
-
+(pseudopot-setting)=
 ### Pseudopotential files
 
-Pseudopotential files (in `Abinit` [psp8 format](https://docs.abinit.org/developers/psp8_info/) are loaded in the
-following order:
 
-<!-- 1. Via the `psp_dir` argument passed to the `sparc.SPARC` calculator. -->
-<!-- 2. Through the environment variables `$SPARC_PSP_PATH` or `$SPARC_PP_PATH` (this is the -->
-<!--  method employed by [`conda` installation](#use-conda)). -->
-<!-- (manual-psp8)= -->
-<!-- 3. By using `psp8` files bundled with the SPARC-X-API installation (see the -->
-<!-- [pip installation](#pip-install)). -->
-
-To specify a custom path for your pseudopotential files (in Abinit [psp8 format]()),
-use the environment variable `$SPARC_PSP_PATH` or `$SPARC_PP_PATH` variable:
+To specify a custom path for your pseudopotential files (in Abinit [psp8 format](https://docs.abinit.org/developers/psp8_info/#:~:text=The%20format%208%20for%20ABINIT,great%20flexibility%20in%20doing%20so.),
+you can either use the environment variable `SPARC_PSP_PATH`:
 ```bash
 export SPARC_PSP_PATH=path/to/your/psp8/directory
 ```
-
-**TODO** we should sunset the `SPARC_PP_PATH`
+or the equivalent keyword `psp_path` in configuration file
+```{code} ini
+psp_path: path/to/your/psp8/directory
+```
 
 When installing SPARC [via `conda-forge`](#use-conda),
 `$SPARC_PSP_PATH` is already included in the activate script of the
@@ -143,26 +159,37 @@ To determine the location of default psp8 files (as in [manual pip installation]
 python -c "from sparc.common import psp_dir; print(psp_dir)"
 ```
 
-
-### SPARC Command Configuration
+(sparc-cmd-setting)=
+### SPARC command configuration
 
 The command to execute SPARC calculations is determined based on the
 following priority:
 
 1. The command argument provided directly to the `sparc.SPARC` calculator.
-2. The environment variable `$ASE_SPARC_COMMAND`
+2. Command defined by environment variable `ASE_SPARC_COMMAND` or configuration file
 3. If neither of the above is defined, `SPARC-X-API` looks for the SPARC binary under current `$PATH` and combine with the suitable MPI command prefix.
 
-Example to set `$ASE_SPARC_COMMAND`
+#### Use full command
+
+The variable `ASE_SPARC_COMMAND` (or `command` field in configuration file)
+contain the *full command* to run a SPARC calculation. depending on the system, you may choose one of the following:
 
 1. Using `mpirun` (e.g. on a single test machine)
 ```bash
 export ASE_SPARC_COMMAND="mpirun -n 8 -mca orte_abort_on_non_zero_status 1 /path/to/sparc -name PREFIX"
 ```
+or in configuration file
+```{code} ini
+command: mpirun -n 8 -mca orte_abort_on_non_zero_status 1 /path/to/sparc -name PREFIX
+```
 
 2. Using `srun` (e.g. [SLURM](https://slurm.schedmd.com/documentation.html) job system HPCs)
 ```bash
 export ASE_SPARC_COMMAND="srun -n 8 --kill-on-bad-exit /path/to/sparc -name PREFIX"
+```
+or in configuration file
+```{code} ini
+command: srun -n 8 --kill-on-bad-exit /path/to/sparc -name PREFIX" /path/to/sparc -name PREFIX
 ```
 
 ```{note}
@@ -170,6 +197,10 @@ export ASE_SPARC_COMMAND="srun -n 8 --kill-on-bad-exit /path/to/sparc -name PREF
 
 2. We recommend adding kill switches for your MPI commands like the examples above when running `sparc` to avoid unexpected behaviors with exit signals.
 ```
+
+#### Specifying MPI binary location
+
+It is also possible to construct the SPARC command from two
 
 ## Post-installation check
 
@@ -260,7 +291,7 @@ sparc_socket_compatibility: False
 --------------------------------------------------------------------------------
 Please check additional information from:
 1. SPARC&apos;s documentation: https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf
-2. Python API documentation: https://github.com/alchem0x2A/SPARC-X-API/blob/master/README.md
+2. Python API documentation: https://github.com/SPARC-X/SPARC-X-API/blob/master/README.md
 
 </pre>
 </div>

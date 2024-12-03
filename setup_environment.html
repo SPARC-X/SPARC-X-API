@@ -48,9 +48,18 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Configurations for SPARC-X-API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#default-configurations">Default configurations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#custom-configurations">Custom configurations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#json-schema">JSON schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#editing-the-configuration-file">Editing the configuration file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#json-schema">JSON schema</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#option-1-parse-latex-documentation-on-the-fly">Option 1. Parse LaTeX documentation on-the-fly</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#use-your-own-parameters-json">2. Use your own <code class="docutils literal notranslate"><span class="pre">parameters.json</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#pseudopotential-files">Pseudopotential files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#sparc-command-configuration">SPARC Command Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sparc-command-configuration">SPARC command configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#use-full-command">Use full command</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#specifying-mpi-binary-location">Specifying MPI binary location</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#post-installation-check">Post-installation check</a></li>
@@ -111,28 +120,77 @@ configurations. The default configurations are:</p>
 </section>
 <section id="custom-configurations">
 <h2>Custom configurations<a class="headerlink" href="#custom-configurations" title="Link to this heading"></a></h2>
-<p><strong>TODO</strong> use sparc ini config.</p>
-<p>Please check the following steps for detailed setup:</p>
+<p>You can configure the setup for SPARC-X-API using either of the
+following methods:</p>
+<ol class="arabic simple">
+<li><p>(Recommended) use the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/calculators/calculators.html#calculator-configuration">ASE configuration file</a></p></li>
+<li><p>Use environmental variables. Please note although environmental
+variables have long been the standard approach to set
+ASE-calculators, they may be obsolete in future releases of ASE.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The environmental variables will have <strong>higher priority</strong> than the equivalent fields in the configure file, if both are set.</p>
+</div>
+<section id="editing-the-configuration-file">
+<h3>Editing the configuration file<a class="headerlink" href="#editing-the-configuration-file" title="Link to this heading"></a></h3>
+<p>ASE will look for a configuration file at <code class="docutils literal notranslate"><span class="pre">~/.config/ase/config.ini</span></code>
+for package-specific settings. The configuration file follows the <a class="reference external" href="https://en.wikipedia.org/wiki/INI_file">INI
+format</a>, where key-value pairs
+are grouped in sections. An example of the SPARC-specific section may look like follows:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[sparc]</span>
+<span class="c1">; `command`: full shell command (include MPI directives) to run SPARC calculation</span>
+<span class="c1">;            has the same effect as `ASE_SPARC_COMMAND`</span>
+<span class="na">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">srun -n 24 ~/bin/sparc</span>
+
+<span class="c1">; `psp_path`: directory containing pseudopotential files</span>
+<span class="c1">;            has the same effect as `SPARC_PSP_PATH`</span>
+<span class="na">psp_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">~/dev_SPARC/psps</span>
+
+<span class="c1">; `doc_path`: directory for SPARC LaTeX documentation</span>
+<span class="c1">;             has the same effect as `SPARC_DOC_PATH`</span>
+<span class="na">doc_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">~/dev_SPARC/doc/.LaTeX/</span>
+</pre></div>
+</div>
+<p>The available options in the configuration file are:</p>
+<ol class="arabic simple">
+<li><p>SPARC command: either use <code class="docutils literal notranslate"><span class="pre">command</span></code> to set a full shell string to
+run the SPARC program, or use the combination of <code class="docutils literal notranslate"><span class="pre">sparc_exe</span></code> and
+<code class="docutils literal notranslate"><span class="pre">mpi_prefix</span></code>. See <a class="reference internal" href="#sparc-cmd-setting">SPARC command configuration</a>
+for more details.</p></li>
+<li><p>JSON schema settings (<em>Optional</em>): use either <code class="docutils literal notranslate"><span class="pre">json_schema</span></code> to
+define a custom JSON schema file, or <code class="docutils literal notranslate"><span class="pre">doc_path</span></code> for parsing the
+LaTeX documentation on-the-fly. See <a class="reference internal" href="#json-schema-setting">JSON schema
+configuration</a> for more details.</p></li>
+<li><p>Pseudopotential settings (<em>Optional</em>): use <code class="docutils literal notranslate"><span class="pre">psp_path</span></code> for the
+location of pseudopotential files. See <a class="reference internal" href="#pseudopot-setting">pseudopotential files settings</a>
+for more details.</p></li>
+</ol>
+<p>You can overwrite the location of the configuration file by the
+environmental variable <code class="docutils literal notranslate"><span class="pre">ASE_CONFIG_PATH</span></code>.</p>
+</section>
 <section id="json-schema">
-<h3>JSON schema<a class="headerlink" href="#json-schema" title="Link to this heading"></a></h3>
+<span id="json-schema-setting"></span><h3>JSON schema<a class="headerlink" href="#json-schema" title="Link to this heading"></a></h3>
 <p>Each version of SPARC-X-API ships with a JSON schema compatible with a
 dated-version of SPARC C/C++ code. You can find that version in the README badge like follows:</p>
 <p><img alt="API badge" src="https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/api_version.svg" /></p>
 <p>If that does not match your local SPARC version, you can configure the location of JSON schema using one of the following methods:</p>
-<ol class="arabic simple">
-<li><p>Set the <code class="docutils literal notranslate"><span class="pre">$SPARC_DOC_PATH</span></code> variable</p></li>
-</ol>
-<p><code class="docutils literal notranslate"><span class="pre">$SPARC_DOC_PATH</span></code> will direct SPARC-X-API to look for a local directory containing LaTeX documentation, for example:</p>
+<section id="option-1-parse-latex-documentation-on-the-fly">
+<h4>Option 1. Parse LaTeX documentation on-the-fly<a class="headerlink" href="#option-1-parse-latex-documentation-on-the-fly" title="Link to this heading"></a></h4>
+<p>The environment variable <code class="docutils literal notranslate"><span class="pre">SPARC_DOC_PATH</span></code> (equivalent to <code class="docutils literal notranslate"><span class="pre">doc_path</span></code> field in configuration file)  will direct SPARC-X-API to look for a local directory containing LaTeX documentation to parse on-the-fly, for example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">SPARC_DOC_PATH</span><span class="o">=</span>&lt;local-SPARC-dir&gt;/doc/.LaTeX
 </pre></div>
 </div>
-<p>and parse the JSON schema on-the-fly.</p>
-<ol class="arabic simple" start="2">
-<li><p>Use your own <code class="docutils literal notranslate"><span class="pre">parameters.json</span></code></p></li>
-</ol>
+<p>or configuration file setting:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">doc_path</span><span class="o">:</span><span class="w"> </span><span class="s">&lt;local-SPARC-dir&gt;/doc/.LaTeX</span>
+</pre></div>
+</div>
+</section>
+<section id="use-your-own-parameters-json">
+<h4>2. Use your own <code class="docutils literal notranslate"><span class="pre">parameters.json</span></code><a class="headerlink" href="#use-your-own-parameters-json" title="Link to this heading"></a></h4>
 <p>In some cases an experimental feature may not have been updated in the
-official doc. You can create and edit your own <code class="docutils literal notranslate"><span class="pre">parameters.json</span></code> file to
-temporarily test a local version of SPARC:</p>
+official doc. You can create and edit your own <code class="docutils literal notranslate"><span class="pre">parameters.json</span></code> file
+to temporarily test a local version of SPARC:</p>
 <p>First parse the LaTeX files into <code class="docutils literal notranslate"><span class="pre">parameters.json</span></code></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>sparc.docparser<span class="w">  </span>&lt;local-SPARC-dir&gt;/doc/.LaTeX<span class="w"> </span><span class="se">\</span>
 <span class="w">                           </span>--output<span class="w"> </span>parameters.json<span class="w"> </span><span class="se">\</span>
@@ -158,59 +216,30 @@ temporarily test a local version of SPARC:</p>
 <span class="w">  </span><span class="p">},</span>
 </pre></div>
 </div>
-<p><strong>TODO</strong> make sure the json parameters are included.
-Finally, set up <strong>TODO</strong>.</p>
-<!--t `SPARC-X-API` is engineered for compatibility with the SPARC -->
-<!-- C-code. It achieves this by loading a JSON schema for --> <!--
-<p>parameter validation and unit conversion. You can review the default
-–&gt; <!-- schema used by the API at
-sparc.sparc_json_api.default_json_api --></p>
-<!-- ```json -->
-<!-- "FD_GRID": { -\-> -->
-<!-- "symbol": "FD_GRID", -\-> -->
-<!-- <\!--    "label": "FD_GRID", -\-> -->
-<!-- <\!--    "type": "integer array", -\-> -->
-<!-- <\!--    "default": null, -\-> -->
-<!-- <\!--    "unit": "No unit", -\-> -->
-<!-- <\!--    "example": "FD_GRID: 26 26 30", -\-> -->
-<!-- <\!--    "description": "#<Some description...>", -\-> -->
-<!-- <\!--    "allow_bool_input": false, -\-> -->
-<!-- <\!--    "category": "system" -\-> -->
-<!-- <\!--   }, -\-> -->
-<!-- <\!-- ``` -\-> -->
-<!-- <\!-- The schema file is generated from SPARC's LaTeX documentation.  In -\-> -->
-<!-- <\!-- upcoming releases of `SPARC-X-API`, we're aiming to provide users the -\-> -->
-<!-- <\!-- flexibility to use their own custom schema files. This would be -\-> -->
-<!-- <\!-- particularly useful for those who might be testing a development -\-> -->
-<!-- <\!-- branch of SPARC. By default, the JSON schema is packaged under -\-> -->
-<!-- <\!-- `sparc/sparc_json_api` directory. If you have another version of SPARC -\-> -->
-<!-- source code, you can set the environment variable `$SPARC_DOC_PATH` to -->
-<!-- the directory containing the LaTeX codes for the documentation, such -->
-<!-- as `<SPARC-source-code-root>/doc/.LaTeX`. If you obtain `sparc-x` from -->
-<!-- the conda method as mentioned above, By default, the JSON schema is -->
-<!-- packaged under `sparc/sparc_json_api` directory. If you have another -->
-<!-- version of SPARC source code, you can set the environment variable -->
-<!-- `$SPARC_DOC_PATH` is automatically set to -->
-<!-- `<conda-env-root>/share/doc/sparc/.LaTeX`. Setting up the environment -->
-<!-- variable `$SPARC_DOC_PATH` helps loading the correct JSON schame that -->
-<!-- is compatible with your SPARC binary code. -->
+<p>Finally, set the <code class="docutils literal notranslate"><span class="pre">json_schema</span></code> field in the configuration file to the
+newly generated json file, for example:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[sparc]</span>
+<span class="c1">; `json_schema`: custom schema file parsed from LaTeX documentation</span>
+<span class="na">json_schema</span><span class="o">:</span><span class="w"> </span><span class="s">~/SPARC/parameters.json</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code class="docutils literal notranslate"><span class="pre">json_schema</span></code> and <code class="docutils literal notranslate"><span class="pre">doc_path</span></code> fields cannot be both present in the configuration file!</p>
+</div>
+</section>
 </section>
 <section id="pseudopotential-files">
-<h3>Pseudopotential files<a class="headerlink" href="#pseudopotential-files" title="Link to this heading"></a></h3>
-<p>Pseudopotential files (in <code class="docutils literal notranslate"><span class="pre">Abinit</span></code> <a class="reference external" href="https://docs.abinit.org/developers/psp8_info/">psp8 format</a> are loaded in the
-following order:</p>
-<!-- 1. Via the `psp_dir` argument passed to the `sparc.SPARC` calculator. -->
-<!-- 2. Through the environment variables `$SPARC_PSP_PATH` or `$SPARC_PP_PATH` (this is the -->
-<!--  method employed by [`conda` installation](#use-conda)). -->
-<!-- (manual-psp8)= -->
-<!-- 3. By using `psp8` files bundled with the SPARC-X-API installation (see the -->
-<!-- [pip installation](#pip-install)). -->
-<p>To specify a custom path for your pseudopotential files (in Abinit <a class="reference internal" href="#"><span class="xref myst">psp8 format</span></a>),
-use the environment variable <code class="docutils literal notranslate"><span class="pre">$SPARC_PSP_PATH</span></code> or <code class="docutils literal notranslate"><span class="pre">$SPARC_PP_PATH</span></code> variable:</p>
+<span id="pseudopot-setting"></span><h3>Pseudopotential files<a class="headerlink" href="#pseudopotential-files" title="Link to this heading"></a></h3>
+<p>To specify a custom path for your pseudopotential files (in Abinit <a class="reference external" href="https://docs.abinit.org/developers/psp8_info/#:~:text=The%20format%208%20for%20ABINIT,great%20flexibility%20in%20doing%20so.">psp8 format</a>,
+you can either use the environment variable <code class="docutils literal notranslate"><span class="pre">SPARC_PSP_PATH</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">SPARC_PSP_PATH</span><span class="o">=</span>path/to/your/psp8/directory
 </pre></div>
 </div>
-<p><strong>TODO</strong> we should sunset the <code class="docutils literal notranslate"><span class="pre">SPARC_PP_PATH</span></code></p>
+<p>or the equivalent keyword <code class="docutils literal notranslate"><span class="pre">psp_path</span></code> in configuration file</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">psp_path</span><span class="o">:</span><span class="w"> </span><span class="s">path/to/your/psp8/directory</span>
+</pre></div>
+</div>
 <p>When installing SPARC <a class="reference internal" href="installation.html#use-conda"><span class="std std-ref">via <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code></span></a>,
 <code class="docutils literal notranslate"><span class="pre">$SPARC_PSP_PATH</span></code> is already included in the activate script of the
 conda environment.</p>
@@ -220,25 +249,36 @@ conda environment.</p>
 </div>
 </section>
 <section id="sparc-command-configuration">
-<h3>SPARC Command Configuration<a class="headerlink" href="#sparc-command-configuration" title="Link to this heading"></a></h3>
+<span id="sparc-cmd-setting"></span><h3>SPARC command configuration<a class="headerlink" href="#sparc-command-configuration" title="Link to this heading"></a></h3>
 <p>The command to execute SPARC calculations is determined based on the
 following priority:</p>
 <ol class="arabic simple">
 <li><p>The command argument provided directly to the <code class="docutils literal notranslate"><span class="pre">sparc.SPARC</span></code> calculator.</p></li>
-<li><p>The environment variable <code class="docutils literal notranslate"><span class="pre">$ASE_SPARC_COMMAND</span></code></p></li>
+<li><p>Command defined by environment variable <code class="docutils literal notranslate"><span class="pre">ASE_SPARC_COMMAND</span></code> or configuration file</p></li>
 <li><p>If neither of the above is defined, <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> looks for the SPARC binary under current <code class="docutils literal notranslate"><span class="pre">$PATH</span></code> and combine with the suitable MPI command prefix.</p></li>
 </ol>
-<p>Example to set <code class="docutils literal notranslate"><span class="pre">$ASE_SPARC_COMMAND</span></code></p>
+<section id="use-full-command">
+<h4>Use full command<a class="headerlink" href="#use-full-command" title="Link to this heading"></a></h4>
+<p>The variable <code class="docutils literal notranslate"><span class="pre">ASE_SPARC_COMMAND</span></code> (or <code class="docutils literal notranslate"><span class="pre">command</span></code> field in configuration file)
+contain the <em>full command</em> to run a SPARC calculation. depending on the system, you may choose one of the following:</p>
 <ol class="arabic simple">
 <li><p>Using <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> (e.g. on a single test machine)</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">ASE_SPARC_COMMAND</span><span class="o">=</span><span class="s2">&quot;mpirun -n 8 -mca orte_abort_on_non_zero_status 1 /path/to/sparc -name PREFIX&quot;</span>
 </pre></div>
 </div>
+<p>or in configuration file</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">command</span><span class="o">:</span><span class="w"> </span><span class="s">mpirun -n 8 -mca orte_abort_on_non_zero_status 1 /path/to/sparc -name PREFIX</span>
+</pre></div>
+</div>
 <ol class="arabic simple" start="2">
 <li><p>Using <code class="docutils literal notranslate"><span class="pre">srun</span></code> (e.g. <a class="reference external" href="https://slurm.schedmd.com/documentation.html">SLURM</a> job system HPCs)</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">ASE_SPARC_COMMAND</span><span class="o">=</span><span class="s2">&quot;srun -n 8 --kill-on-bad-exit /path/to/sparc -name PREFIX&quot;</span>
+</pre></div>
+</div>
+<p>or in configuration file</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">command</span><span class="o">:</span><span class="w"> </span><span class="s">srun -n 8 --kill-on-bad-exit /path/to/sparc -name PREFIX&quot; /path/to/sparc -name PREFIX</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -248,6 +288,11 @@ following priority:</p>
 <li><p>We recommend adding kill switches for your MPI commands like the examples above when running <code class="docutils literal notranslate"><span class="pre">sparc</span></code> to avoid unexpected behaviors with exit signals.</p></li>
 </ol>
 </div>
+</section>
+<section id="specifying-mpi-binary-location">
+<h4>Specifying MPI binary location<a class="headerlink" href="#specifying-mpi-binary-location" title="Link to this heading"></a></h4>
+<p>It is also possible to construct the SPARC command from two</p>
+</section>
 </section>
 </section>
 <section id="post-installation-check">
@@ -331,7 +376,7 @@ sparc_socket_compatibility: False
 --------------------------------------------------------------------------------
 Please check additional information from:
 1. SPARC&apos;s documentation: https://github.com/SPARC-X/SPARC/blob/master/doc/Manual.pdf
-2. Python API documentation: https://github.com/alchem0x2A/SPARC-X-API/blob/master/README.md
+2. Python API documentation: https://github.com/SPARC-X/SPARC-X-API/blob/master/README.md
 
 </pre>
 </div><div class="admonition note">

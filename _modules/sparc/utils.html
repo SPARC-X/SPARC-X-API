@@ -101,6 +101,9 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">psutil</span>
 
+<span class="c1"># 2024-11-28 @alchem0x2a add config</span>
+<span class="kn">from</span> <span class="nn">ase.config</span> <span class="kn">import</span> <span class="n">cfg</span> <span class="k">as</span> <span class="n">_cfg</span>
+
 <span class="kn">from</span> <span class="nn">.api</span> <span class="kn">import</span> <span class="n">SparcAPI</span>
 <span class="kn">from</span> <span class="nn">.docparser</span> <span class="kn">import</span> <span class="n">SparcDocParser</span>
 
@@ -246,43 +249,87 @@
 
 
 
+<div class="viewcode-block" id="sanitize_path">
+<a class="viewcode-back" href="../../api/sparc.utils.html#sparc.utils.sanitize_path">[docs]</a>
+<span class="k">def</span> <span class="nf">sanitize_path</span><span class="p">(</span><span class="n">path_string</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sanitize path containing string in UNIX systems</span>
+<span class="sd">    Returns a PosixPath object</span>
+
+<span class="sd">    It is recommended to use this sanitize function</span>
+<span class="sd">    before passing any path-like strings from cfg parser</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path_string</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">path_string</span><span class="p">))</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path_string</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">path</span></div>
+
+
+
 <div class="viewcode-block" id="locate_api">
 <a class="viewcode-back" href="../../api/sparc.utils.html#sparc.utils.locate_api">[docs]</a>
-<span class="k">def</span> <span class="nf">locate_api</span><span class="p">(</span><span class="n">json_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doc_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the default api in the following order</span>
-<span class="sd">    1) User-provided json file path</span>
-<span class="sd">    2) User-provided path to the doc</span>
-<span class="sd">    3) If none of the above is provided, try to use SPARC_DOC_PATH</span>
-<span class="sd">    4) Fallback to the as-shipped json api</span>
+<span class="k">def</span> <span class="nf">locate_api</span><span class="p">(</span><span class="n">json_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doc_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cfg</span><span class="o">=</span><span class="n">_cfg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Locate the SPARC API setup file with the following priority:</span>
+<span class="sd">    1) If `json_file` is provided (either from parameter or cfg), use it directly.</span>
+<span class="sd">    2) If `doc_path` is provided:</span>
+<span class="sd">       a) Function parameter takes precedence.</span>
+<span class="sd">       b) Environment variable SPARC_DOC_PATH comes next.</span>
+<span class="sd">       c) Configuration section [sparc] in the ini file is the last resort.</span>
+<span class="sd">    3) If both `json_file` and `doc_path` are provided, raise an exception.</span>
+<span class="sd">    4) Fallback to the default API setup if neither is provided.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">json_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">api</span> <span class="o">=</span> <span class="n">SparcAPI</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">api</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">parser</span><span class="p">[</span><span class="s2">&quot;sparc&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;sparc&quot;</span> <span class="ow">in</span> <span class="n">cfg</span><span class="o">.</span><span class="n">parser</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">json_file</span><span class="p">:</span>
+        <span class="n">json_file</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;json_schema&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">parser</span> <span class="k">else</span> <span class="kc">None</span>
 
-    <span class="k">if</span> <span class="n">doc_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">doc_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SPARC_DOC_PATH&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="c1"># Environment variable SPARC_DOC_PATH can overwrite user settings</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">doc_path</span><span class="p">:</span>
+        <span class="n">doc_path</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SPARC_DOC_PATH&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">doc_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">Path</span><span class="p">(</span><span class="n">doc_path</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">doc_path</span><span class="p">:</span>
+        <span class="n">doc_path</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;doc_path&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">parser</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="n">json_file</span> <span class="o">=</span> <span class="n">sanitize_path</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span> <span class="k">if</span> <span class="n">json_file</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">doc_path</span> <span class="o">=</span> <span class="n">sanitize_path</span><span class="p">(</span><span class="n">doc_path</span><span class="p">)</span> <span class="k">if</span> <span class="n">doc_path</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="c1"># Step 4: Ensure mutual exclusivity</span>
+    <span class="k">if</span> <span class="n">json_file</span> <span class="ow">and</span> <span class="n">doc_path</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Cannot set both the path of json file and documentation&quot;</span>
+            <span class="s2">&quot;at the same time!&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">json_file</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">json_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;JSON file &#39;</span><span class="si">{</span><span class="n">json_file</span><span class="si">}</span><span class="s2">&#39; does not exist.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">SparcAPI</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">doc_path</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">doc_path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Documentation path &#39;</span><span class="si">{</span><span class="n">doc_path</span><span class="si">}</span><span class="s2">&#39; does not exist or is not a directory.&quot;</span>
+            <span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
-                <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span>
-                <span class="n">tmpfile</span> <span class="o">=</span> <span class="n">tmpdir</span> <span class="o">/</span> <span class="s2">&quot;parameters.json&quot;</span>
+                <span class="n">tmpfile</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;parameters.json&quot;</span>
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tmpfile</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
                     <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
                         <span class="n">SparcDocParser</span><span class="o">.</span><span class="n">json_from_directory</span><span class="p">(</span>
-                            <span class="n">Path</span><span class="p">(</span><span class="n">doc_path</span><span class="p">),</span> <span class="n">include_subdirs</span><span class="o">=</span><span class="kc">True</span>
+                            <span class="n">doc_path</span><span class="p">,</span> <span class="n">include_subdirs</span><span class="o">=</span><span class="kc">True</span>
                         <span class="p">)</span>
                     <span class="p">)</span>
                 <span class="n">api</span> <span class="o">=</span> <span class="n">SparcAPI</span><span class="p">(</span><span class="n">tmpfile</span><span class="p">)</span>
-            <span class="n">api</span><span class="o">.</span><span class="n">source</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">doc_path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span>
-            <span class="n">api</span><span class="o">.</span><span class="n">source</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;latex&quot;</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">doc_path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()),</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;latex&quot;</span><span class="p">}</span>
             <span class="k">return</span> <span class="n">api</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot load JSON schema from env </span><span class="si">{</span><span class="n">doc_path</span><span class="si">}</span><span class="s2">, the error is </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-            <span class="k">pass</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Failed to load API from documentation path &#39;</span><span class="si">{</span><span class="n">doc_path</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
 
-    <span class="n">api</span> <span class="o">=</span> <span class="n">SparcAPI</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">api</span></div>
+    <span class="c1"># Fallback to default API</span>
+    <span class="k">return</span> <span class="n">SparcAPI</span><span class="p">()</span></div>
 
 
 

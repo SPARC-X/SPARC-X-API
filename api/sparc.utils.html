@@ -138,12 +138,21 @@ Only a few color names are provided</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sparc.utils.locate_api">
-<span class="sig-prename descclassname"><span class="pre">sparc.utils.</span></span><span class="sig-name descname"><span class="pre">locate_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/utils.html#locate_api"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.utils.locate_api" title="Link to this definition"></a></dt>
-<dd><p>Find the default api in the following order
-1) User-provided json file path
-2) User-provided path to the doc
-3) If none of the above is provided, try to use SPARC_DOC_PATH
-4) Fallback to the as-shipped json api</p>
+<span class="sig-prename descclassname"><span class="pre">sparc.utils.</span></span><span class="sig-name descname"><span class="pre">locate_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_file=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_path=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg=&lt;ase.config.Config</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/utils.html#locate_api"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.utils.locate_api" title="Link to this definition"></a></dt>
+<dd><p>Locate the SPARC API setup file with the following priority:
+1) If <cite>json_file</cite> is provided (either from parameter or cfg), use it directly.
+2) If <cite>doc_path</cite> is provided:</p>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li><p>Function parameter takes precedence.</p></li>
+<li><p>Environment variable SPARC_DOC_PATH comes next.</p></li>
+<li><p>Configuration section [sparc] in the ini file is the last resort.</p></li>
+</ol>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p>If both <cite>json_file</cite> and <cite>doc_path</cite> are provided, raise an exception.</p></li>
+<li><p>Fallback to the default API setup if neither is provided.</p></li>
+</ol>
 </dd></dl>
 
 <dl class="py function">
@@ -161,6 +170,15 @@ try:</p>
 <dt>except TimeoutException:</dt><dd><p>raise</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sparc.utils.sanitize_path">
+<span class="sig-prename descclassname"><span class="pre">sparc.utils.</span></span><span class="sig-name descname"><span class="pre">sanitize_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_string</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/utils.html#sanitize_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.utils.sanitize_path" title="Link to this definition"></a></dt>
+<dd><p>Sanitize path containing string in UNIX systems
+Returns a PosixPath object</p>
+<p>It is recommended to use this sanitize function
+before passing any path-like strings from cfg parser</p>
 </dd></dl>
 
 <dl class="py function">

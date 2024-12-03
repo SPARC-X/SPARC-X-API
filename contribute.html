@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Documentation for Maintainers" href="maintainers.html" />
+    <link rel="next" title="Test Coverage Report" href="test_coverage.html" />
     <link rel="prev" title="Troubleshooting" href="troubleshooting.html" /> 
 </head>
 
@@ -64,7 +64,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#adding-examples">Adding examples</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#notes-for-repo-maintainers">Notes for repo maintainers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#notes-for-repo-maintainers">Notes for repo maintainers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="test_coverage.html">Test Coverage Report</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="maintainers.html">Documentation for Maintainers</a></li>
@@ -145,7 +148,7 @@ for pre-commit hooks used in this project, and change them if needed.</p>
 <p>If you need to test running DFT using the API, compile or install the
 <code class="docutils literal notranslate"><span class="pre">sparc</span></code> executables following the
 <a class="reference external" href="https://github.com/SPARC-X/SPARC/blob/master/README.md">manual</a>. Check
-<a class="reference internal" href="#install-the-sparc-binary-code"><span class="xref myst">some examples</span></a> for our recommended
+<a class="reference internal" href="installation.html#install-binary"><span class="std std-ref">some examples</span></a> for our recommended
 approaches.</p>
 </section>
 <section id="running-tests">
@@ -200,7 +203,7 @@ which are written using <a class="reference external" href="https://myst-parser.
 flavor</a> of
 Markdown. The source <code class="docutils literal notranslate"><span class="pre">.md</span></code> files, together with the main <code class="docutils literal notranslate"><span class="pre">README.md</span></code>
 are then rendered to html files using <code class="docutils literal notranslate"><span class="pre">sphinx</span></code>.</p>
-<p>After <a class="reference internal" href="#setting-up-environment"><span class="xref myst">setting up the test environment</span></a>,
+<p>After <a class="reference internal" href="setup_environment.html"><span class="std std-doc">setting up the test environment</span></a>,
 additional packages for doc rendering can be installed via:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>SPARC-X-API
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[doc]&quot;</span>
@@ -235,50 +238,11 @@ computating power (e.g. a few minutes with 4 CPU cores).</p>
 <h2>Notes for repo maintainers<a class="headerlink" href="#notes-for-repo-maintainers" title="Link to this heading"></a></h2>
 <p>Please check the <a class="reference internal" href="maintainers.html"><span class="std std-doc">maintenance guide</span></a> for roles
 involving admin privileges.</p>
-<!-- ### Code structure -->
-<!-- Below is a brief overview of the modules in `SPARC-X-API` with simple explanations -->
-<!-- ``` -->
-<!-- sparc -->
-<!-- ├── __init__.py -->
-<!-- ├── api.py                 # Includes SparcAPI class for parameter validation -->
-<!-- ├── calculator.py          # Interface to the SPARC DFT code -->
-<!-- ├── cli.py                 # `sparc-ase` interface -->
-<!-- ├── common.py              # Definition of common directories -->
-<!-- ├── docparser.py           # Function and cli interface for parsing the SPARC DFT document -->
-<!-- ├── download_data.py       # Cli tool to download pseudopotential files -->
-<!-- ├── io.py                  # Provides `SparcBundle` class, `read_sparc` and `write_sparc` functions -->
-<!-- ├── quicktest.py           # Cli tool for post-installation sanity check -->
-<!-- ├── utils.py               # Common utilities -->
-<!-- ├── psp/                   # Place-holder directory for pseudopotentials (used for `download_data.py`) -->
-<!-- ├── sparc_json_api         # Directory for maintaining the JSON API -->
-<!-- │   └── parameters.json -->
-<!-- ├── sparc_parsers          # Parsers for individual SPARC in-/output formats -->
-<!-- │   ├── __init__.py -->
-<!-- │   ├── aimd.py -->
-<!-- │   ├── atoms.py -->
-<!-- │   ├── geopt.py -->
-<!-- │   ├── inpt.py -->
-<!-- │   ├── ion.py -->
-<!-- │   ├── out.py -->
-<!-- │   ├── pseudopotential.py -->
-<!-- │   ├── static.py -->
-<!-- │   └── utils.py -->
-<!-- ``` -->
-<!-- ### CI/CD by Github Actions -->
-<!-- The repo contains a few CI/CD pipelines based on Github Actions. You -->
-<!-- may need to take care of the settings if you're one of the -->
-<!-- maintainers. For normal code contributors, this section may be -->
-<!-- omitted. -->
-<!-- - Unit test -->
-<!-- The steps are described [here](.github/workflows/installation_test.yml). -->
-<!-- Please make sure to exclude any computationally-heavy tests from the step "Test with pytest". -->
-<!-- - Coverage -->
-<!-- The CI workflow contains a coverage report step based on the unit test -->
-<!-- and generates a [coverage -->
-<!-- badge](https://github.com/SPARC-X/SPARC-X-API/blob/badges/badges/coverage.svg) -->
-<!-- on the [`badges` -->
-<!-- branch](https://github.com/SPARC-X/SPARC-X-API/tree/badges). -->
-<!-- For repo maintainers, please make sure the `badges` branch is present and **do not merge to this branch**. -->
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="test_coverage.html">Test Coverage Report</a></li>
+</ul>
+</div>
 </section>
 </section>
 
@@ -287,7 +251,7 @@ involving admin privileges.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="troubleshooting.html" class="btn btn-neutral float-left" title="Troubleshooting" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="maintainers.html" class="btn btn-neutral float-right" title="Documentation for Maintainers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="test_coverage.html" class="btn btn-neutral float-right" title="Test Coverage Report" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
