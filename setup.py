@@ -25,7 +25,7 @@ doc_requires = [
 
 setup(
     name="sparc-x-api",
-    version="1.0.5",
+    version="1.0.6",
     python_requires=">=3.8",
     description="Python API for the SPARC DFT Code",
     long_description=open("README.md").read(),
