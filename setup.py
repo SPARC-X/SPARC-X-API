@@ -51,6 +51,6 @@ setup(
         "test": test_requires,
         "doc": test_requires + doc_requires,
     },
-    package_data={"sparc": ["psp/*.psp8", "sparc_json_api/*.json"]},
+    package_data={"sparc": ["psp/*", "sparc_json_api/*.json"]},
     include_package_data=True,
 )
