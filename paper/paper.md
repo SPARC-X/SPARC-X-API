@@ -10,7 +10,7 @@ authors:
   - name: Tian Tian
     orcid: 0000-0003-0634-0455
     corresponding: true
-    affiliation: [1,3]
+    affiliation: "1, 3"
   - name: Lucas R Timmerman
     orcid: 0000-0001-5664-5762
     affiliation: 1
@@ -27,7 +27,7 @@ authors:
   - name: Phanish Suryanarayana
     orcid: 0000-0001-5172-0049
     corresponding: true
-    affiliation: [1, 2]
+    affiliation: "1, 2"
 affiliations:
   - name: College of Engineering, Georgia Institute of Technology, Atlanta, GA 30332, USA
     index: 1
