@@ -1,5 +1,5 @@
 {
- "sparc_version": "2024.12.10",
+ "sparc_version": "2024.12.11",
  "categories": [
   "system",
   "scf",
@@ -2500,19 +2500,19 @@
    "remark_raw": "%\n%",
    "category": "mlff"
   },
-  "MLFF_TOL_FORCE": {
-   "symbol": "{MLFF_TOL_FORCE",
-   "label": "MLFF_TOL_FORCE",
-   "type": "double",
-   "default": 5e-10,
+  "MLFF_SPLINE_NGRID": {
+   "symbol": "{MLFF_SPLINE_NGRID",
+   "label": "MLFF_SPLINE_NGRID",
+   "type": "integer",
+   "default": 100,
    "unit": "No unit",
-   "example": "MLFF_TOL_FORCE: 1e-10",
-   "description": "The initial value of \\sigma_\\rm tol.",
-   "remark": "",
+   "example": "MLFF_SPLINE_NGRID: 100",
+   "description": "Number of grid points to use for spline interpolation of hnl.",
+   "remark": "A larger number can result in better accuracy of MLFF forces.",
    "allow_bool_input": false,
-   "default_remark": "5e-10",
-   "description_raw": "The initial value of $\\sigma_{\\rm tol}$.",
-   "remark_raw": "%\n%",
+   "default_remark": "100",
+   "description_raw": "Number of grid points to use for spline interpolation of hnl.",
+   "remark_raw": "A larger number can result in better accuracy of MLFF forces.",
    "category": "mlff"
   },
   "TWIST_ANGLE": {
