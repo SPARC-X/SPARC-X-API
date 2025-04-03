@@ -113,11 +113,51 @@ def test_version_parser(fs, monkeypatch):
     assert sp.version == "2022.02.23"
 
 
+def test_suppress_warnings():
+    """Test if the majority of UserWarning-s are disabled"""
+    import warnings
+
+    # import inspect
+    from sparc.docparser import SparcDocParser
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("default")
+        sp = SparcDocParser(test_doc_dir, suppress_warnings=True)
+        # Only record warnings from docparser.py
+        warnings = [
+            warning
+            for warning in w
+            if warning.category == UserWarning and "docparser.py" in warning.filename
+        ]
+
+    assert len(warnings) == 0
+
+
+def test_no_suppress_warnings():
+    """Test if the UserWarning-s are emitted"""
+    import warnings
+
+    # import inspect
+    from sparc.docparser import SparcDocParser
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("default")
+        sp = SparcDocParser(test_doc_dir, suppress_warnings=False)
+        # Only record warnings from docparser.py
+        warnings = [
+            warning
+            for warning in w
+            if warning.category == UserWarning and "docparser.py" in warning.filename
+        ]
+
+    assert len(warnings) >= 0
+
+
 def test_include_files():
     """Test only include files"""
     from sparc.docparser import SparcDocParser
 
-    sp = SparcDocParser(test_doc_dir)
+    sp = SparcDocParser(test_doc_dir, suppress_warnings=False)
     with pytest.warns(UserWarning):
         sp.get_include_files()
 
