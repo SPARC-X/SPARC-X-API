@@ -82,18 +82,22 @@ contribute](#setting-up-environment) page for setting up a dev-environment for S
 
 To utilize the API for drive SPARC calculations, please following the
 [SPARC manual](https://github.com/SPARC-X/SPARC) for compilation and
-installation of the SPARC DFT code itself. The examples shown here
-compile the SPARC binary code with the following options:
-- Use
+installation of the SPARC DFT code itself. Manual compilation of the latest SPARC
+C/C++ code is relatively straightforward as it depends on only a few standard external libraries.
 
-We recommend using the [`conda-forge` package](#use-conda) to install
-the pre-compiled SPARC binary. If you want to compile the latest SPARC
-C/C++, it is also straightforward:
+<!-- We recommend using the [`conda-forge` package](#use-conda) to install -->
+<!-- the pre-compiled SPARC binary. -->
+The examples shown here
+compile the SPARC binary code with the following options:
+- `USE_MKL=0`: Use `openblas` instead of `MKL` as numerical library.
+- `USE_SCALAPACK=1`: Link SPARC with standalone `scalapack` library.
+- `USE_FFTW=1`: Use standalone `fftw` for van der Waals functionals.
+- `USE_SOCKET=1`: Enable socket communication layer in SPARC.
 
 ### Use `conda` toolchains
 
 In the previously configured `sparc-env` environment, install the
-build dependencies and compile.
+build dependencies of SPARC and compile use the `makefile` provided.
 
 The following process compilers SPARC
 with OpenMPI/OpenBLAS/Scalapack toolchains.
@@ -106,6 +110,8 @@ conda install -c conda-forge \
 				 openblas openmpi scalapack
 git clone https://github.com/SPARC-X/SPARC.git
 cd SPARC/src
+# Always inspect the contents of the makefile before continue
+cat makefile
 make USE_MKL=0 USE_SCALAPACK=1 USE_FFTW=1 USE_SOCKET=1
 ```
 
