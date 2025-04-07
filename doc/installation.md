@@ -133,10 +133,16 @@ cd SPARC/src
 # Always inspect the contents of the makefile before continue
 cat makefile
 make USE_MKL=0 USE_SCALAPACK=1 USE_FFTW=1 USE_SOCKET=1
+cd ../..
 ```
 
 The compiled binary will be at `SPARC/lib/sparc`, and will run when
 `sparc-env` environment is activated.
+
+Run a simple command to make sure the SPARC compilation works:
+```bash
+mpirun -n 1 SPARC/lib/sparc
+```
 
 ### Compiling SPARC on HPC
 
