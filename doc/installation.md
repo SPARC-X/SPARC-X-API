@@ -17,9 +17,8 @@ pseudopotentials installed:
 
 ```bash
 # Change 'sparc-env' to your desired name if needed
-conda create -n sparc-env python=3.11 pip mamba
+conda create -c conda-forge -n sparc-env python=3.11 sparc-x-api
 conda activate sparc-env
-conda install -c conda-forge sparc-x-api
 ```
 
 
@@ -31,6 +30,15 @@ pre-compiled SPARC DFT binaries alongside the API:
 conda install -c conda-forge sparc-x
 # Re-activate to have the env variables effective
 conda activate sparc-env
+```
+
+```{note}
+The SPARC binary code distributed by the official conda-forge channel
+is **NOT** compiled with socket support (yet). Please refer to the [manual installation](#install-binary) if you wish to install socket-compatible SPARC binary.
+```
+
+```{note}
+You may choose [`mamba`](https://github.com/mamba-org/mamba) instead of `conda` as the conda engine for faster dependency resolving and installation.
 ```
 
 (pypi-install)=
@@ -70,11 +78,13 @@ For developers, please check the [how to
 contribute](#setting-up-environment) page for setting up a dev-environment for SPARC-X-API.
 
 (install-binary)=
-## Install the SPARC binary code
+## Manual compilation of the SPARC binary code
 
 To utilize the API for drive SPARC calculations, please following the
 [SPARC manual](https://github.com/SPARC-X/SPARC) for compilation and
-installation of the SPARC DFT code itself.
+installation of the SPARC DFT code itself. The examples shown here
+compile the SPARC binary code with the following options:
+- Use
 
 We recommend using the [`conda-forge` package](#use-conda) to install
 the pre-compiled SPARC binary. If you want to compile the latest SPARC
@@ -90,19 +100,17 @@ with OpenMPI/OpenBLAS/Scalapack toolchains.
 
 ```bash
 conda activate sparc-env
-mamba install -c conda-forge \
+conda install -c conda-forge \
                  make compilers \
 				 fftw=*=mpi_openmpi_* \
 				 openblas openmpi scalapack
 git clone https://github.com/SPARC-X/SPARC.git
 cd SPARC/src
-make USE_MKL=0 USE_SCALAPACK=1 USE_FFTW=1
+make USE_MKL=0 USE_SCALAPACK=1 USE_FFTW=1 USE_SOCKET=1
 ```
 
 The compiled binary will be at `SPARC/lib/sparc`, and will run when
 `sparc-env` environment is activated.
-
-**TODO** MKL available?
 
 ### Compiling SPARC on HPC
 
@@ -113,15 +121,13 @@ SPARC with existing MPI/MKL/BLAS libraries to ensure optimal
 performance. The following example shows the compilation with Intel
 MKL/MPICH on Georgia Tech's [Pheonix Cluster](https://sites.gatech.edu/ewanparktest/phoenix-cluster/):
 
-**TODO** make sure modules are correct.
+
 ```bash
 module load git intel-one-api fftw
 git clone https://github.com/SPARC-X/SPARC.git
 cd SPARC/src
-make USE_MKL=1 USE_SCALAPACK=0 USE_FFTW=1
+make USE_MKL=1 USE_SCALAPACK=0 USE_FFTW=1 USE_SOCKET=1
 ```
-
-**TODO** add module in script.
 
 The compiled binary will be at `SPARC/lib/sparc`, and running it
 requires the dependent modules to be loaded at runtime.

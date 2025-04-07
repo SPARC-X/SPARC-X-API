@@ -60,6 +60,8 @@ Install the pre-compiled SPARC binary alongside SPARC-X-API (Linux only).
 conda install -c conda-forge sparc-x
 ```
 
+*Note: the official SPARC binary in the conda-forge channel does not come with [socket support]() yet. Please follow this [instruction]() if you wish to install socket-compatible SPARC code*
+
 ### Setup SPARC-X-API
 
 Preferences for SPARC-X-API and SPARC C/C++ code can be defined in ASE [configuration file](https://wiki.fysik.dtu.dk/ase/ase/calculators/calculators.html#calculator-configuration), located at `~/.config/ase/config.ini`, such as following example:
@@ -146,13 +148,14 @@ Run a single point DFT calculation with Dirichlet boundary conditions:
 ```python
 from sparc.calculator import SPARC
 from ase.build import molecule
-atoms = molecule("H2", cell=(10, 10, 10), pbc=False, directory="run_sp")
-atoms.calc = SPARC(h=0.25) # 0.25 Å mesh spacing
+atoms = molecule("H2", cell=(10, 10, 10), pbc=False)
+atoms.calc = SPARC(h=0.25, directory="run_sp") # 0.25 Å mesh spacing
 atoms.get_potential_energy()
 atoms.get_forces()
 ```
 
 #### Socket mode
+*Note: A socket-compatible SPARC binary installation is required. Please check this [instruction]() for more details.*
 
 Switching to the socket mode requires just a few parameters, ideal for
 workflows with hundreds or thousands of single point DFT calls with
@@ -163,9 +166,9 @@ using socket mode and ASE optimizer:
 from sparc.calculator import SPARC
 from ase.build import molecule
 from ase.optimize import BFGS
-atoms = molecule("H2", cell=(10, 10, 10), pbc=False, directory="run_sp")
+atoms = molecule("H2", cell=(10, 10, 10), pbc=False)
 atoms.center()
-atoms.calc = SPARC(h=0.25, use_socket=True) # 0.25 Å mesh spacing
+atoms.calc = SPARC(h=0.25, , directory="run_sp", use_socket=True) # 0.25 Å mesh spacing
 opt = BFGS(atoms)
 with atoms.calc:
     opt.run(fmax=0.01)
@@ -180,7 +183,7 @@ guidelines.
 ## How to cite
 If you find SPARC-X-API help, please consider cite the relevant
 publications below:
-- The SPARC-X-API package itself: [Tian et al. 2024]() **TBD**
+- The SPARC-X-API package itself: [Tian et al. 2024]()
 - The SPARC C/C++ code
   - v2.0 [Zhang et al., 2024](https://doi.org/10.1016/j.simpa.2024.100649)
   - v1.0 [Xu et al., 2021](https://doi.org/10.1016/j.softx.2021.100709)
