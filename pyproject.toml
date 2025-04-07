@@ -1,0 +1,9 @@
+# A minimal pyproject.toml to make the pip installation
+# future-proof. The latest setuptools should be able to
+# suppress deprecation warnings for editable installation
+# https://github.com/pypa/pip/issues/11457
+#
+# Note: the actual installation is still handled by setup.py
+[build-system]
+requires = ["setuptools >= 64", "wheel"]
+build-backend = "setuptools.build_meta"
