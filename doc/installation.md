@@ -64,6 +64,10 @@ python -m pip install sparc-x-api
 
 The pseudopotential files will also be installed in this approach. If you wish to compile the SPARC C/C++ code, please refer to the [manual installation](#install-binary).
 
+```{note}
+Please avoid mixing `conda` and `pip` installations for the same package like `sparc-x-api` in the same environment, as this may lead to unexpected behavior.
+```
+
 
 (pip-install)=
 ### Installing from latest source code
@@ -88,6 +92,10 @@ python -m sparc.download_data
 
 For developers, please check the [how to
 contribute](#setting-up-environment) page for setting up a dev-environment for SPARC-X-API.
+
+```{note}
+Please avoid mixing `conda` and `pip` installations for the same package like `sparc-x-api` in the same environment, as this may lead to unexpected behavior.
+```
 
 (install-binary)=
 ## Manual compilation of the SPARC binary code
