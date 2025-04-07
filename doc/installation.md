@@ -9,7 +9,19 @@ SPARC-X-API may be installed via the following approaches:
 You can use any of [`anaconda`](https://docs.anaconda.com/),
 [`miniconda`](https://docs.anaconda.com/miniconda/), or
 [`micromamba`](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html)
-tools to install a `conda` package engine.  The rest of the steps will
+tools to install a `conda` package engine. The installation step varies by the platform and CPU architecture. The following example shows the commands to install the latest `miniconda` on x86_64 Linux:
+
+```bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+# Always inspect the installation script content and checksum before installation
+more Miniconda3-latest-Linux-x86_64.sh
+# The interactive installation involves several yes | no promts
+bash Miniconda3-latest-Linux-x86_64.sh
+# When finished, start another shell session to activate the base environment
+```
+
+
+The rest of the steps will
 be made in a [conda
 environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands)
 to get the latest release of SPARC-X-API that comes with the
