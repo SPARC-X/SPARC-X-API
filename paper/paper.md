@@ -66,9 +66,9 @@ features including 1) support of SPARC-specific setups, including
 complex boundary conditions and unit conversion, 2) a JSON schema
 parsed from SPARC's documentation for parameter validation and
 compatibility checks, and 3) a comprehensive socket communication layer
-derived from the i-PI protol [@ceriotti_i-pi-1.0_2014;
+derived from the i-PI protocol [@ceriotti_i-pi-1.0_2014;
 @kapil_i-pi-2.0_2019] facilitating message passing between low-level C
-code and the Python interface.  The goal of the SPARC-X-API is to provide a
+code and the Python interface.  The goal of the SPARC-X-API is to provide an
 easy-to-use interface for users with diverse needs and levels of
 expertise, allowing for minimal effort in adapting SPARC to existing
 computational workflows, while also supporting developers of advanced
@@ -76,7 +76,7 @@ real-space methods.
 
 # Statement of Need
 
-DFT has unargubaly become one of the cornerstones of electronic
+DFT has unarguably become one of the cornerstones of electronic
 structure simulations in chemical and materials sciences due to its
 simplicity and wide range of applicability.  Among the various
 numerical implementations of DFT, the plane-wave pseudopotential
@@ -84,7 +84,7 @@ method has gained significant popularity, owing to both its robustness
 and the maturity of associated software packages. However, despite
 their widespread use, plane-wave methods are not without limitations.
 One long-standing challenge in DFT is to develop methods that
-overcomes the huge computational cost for solving the Kohn-Sham
+overcome the huge computational cost for solving the Kohn-Sham
 equation, which scales cubically with respect to the system size.
 This becomes especially problematic in massively parallel computing
 environments, where the extensive global communication required during
@@ -98,9 +98,9 @@ the simulation setup of isolated and semi-finite systems
 non-straightforward. A compelling alternative to overcome these
 limitations is to solve the Kohn-Sham equations using a
 finite-difference (FD) approach on real-space grids. The locality of
-the FD method makes real-space DFT methods inherently scalable, and
+the FD method makes real-space DFT methods inherently scalable and
 paves the way for the development of linearly-scaling solutions to the
-Kohn-Sham equations.  Real-space DFT also naturally supports both
+Kohn-Sham equations.  Real-space DFT also naturally supports
 periodic and Dirichlet boundary conditions, and combinations thereof,
 allowing for the flexible treatment of systems in any dimensionality.
 
@@ -157,7 +157,7 @@ SPARC-X-API in the SPARC-X project is shown in
 \autoref{fig:sparc-overview}.  In addition to the capabilities
 inherited from ASE, SPARC-X-API seeks to enhance the user experience
 in a few key aspects, including 1) supporting SPARC-specific features
-in an ASE-comatible API, 2) a parameter validation mechanism based on
+in an ASE-compatible API, 2) a parameter validation mechanism based on
 SPARC's `LaTeX` documentation, and 3) a versatile socket communication
 layer for efficient high-throughput calculations. Details will be
 discussed next.
@@ -175,7 +175,7 @@ its key functionalities is provided below; for current detailed
 documentation, please refer to the [official
 documentation](https://sparc-x.github.io/SPARC-X-API).
 
-## `sparc.io`: File I/O Manupulation
+## `sparc.io`: File I/O Manipulation
 
 In SPARC and M-SPARC calculations, input information is provided
 by two files: a `.inpt` (cell dimensions, boundary conditions,
@@ -237,7 +237,7 @@ supported data types and parameter categories. Validation is handled via the `sp
 
 Each release of the SPARC-X-API contains a copy of a JSON schema linked
 with the latest SPARC release as the default validator, although the
-user is can select different combination of SPARC versions and
+users can select different combination of SPARC versions and
 schemas depending on the version they are using. The separation between the
 SPARC-X-API and the core SPARC code not only
 prevents the need for hard-coding parameter lists into the API, but
@@ -332,7 +332,7 @@ additional setup. More importantly, the design of the SPARC protocol
 allows easy and seamless integration in distributed computational
 systems, offering the following features: 1) flexible client
 initialization / restart 2) efficient data transfer 3) heterogeneous
-computational setup.
+computational setups.
 The design of the SPARC protocol allows insertion of bidirectional
 additional routines between two DFT calls, allowing further control
 over the low-level C/C++ code.
@@ -355,7 +355,7 @@ installation and testing, including:
 - `sparc.docparser`: a submodule to convert existing `LaTeX`
   documentation included in SPARC source code into JSON schema.
 - `sparc.download_data`: a tool to download the latest ONCV
-  pseudopotentials released by SPARC.
+  pseudopotentials distributed by SPARC.
 - `sparc-ase`: an extension to the commandline `ase` tool, adding
   compatibility with SPARC file formats.
 
