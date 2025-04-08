@@ -17,7 +17,6 @@ examples.md
 package_components.md
 advanced_topics.md
 api_changes.md
-troubleshooting.md
 contribute.md
 maintainers.md
 ```

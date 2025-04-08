@@ -64,6 +64,10 @@ python -m pip install sparc-x-api
 
 The pseudopotential files will also be installed in this approach. If you wish to compile the SPARC C/C++ code, please refer to the [manual installation](#install-binary).
 
+```{note}
+Please avoid mixing `conda` and `pip` installations for the same package like `sparc-x-api` in the same environment, as this may lead to unexpected behavior.
+```
+
 
 (pip-install)=
 ### Installing from latest source code
@@ -88,6 +92,10 @@ python -m sparc.download_data
 
 For developers, please check the [how to
 contribute](#setting-up-environment) page for setting up a dev-environment for SPARC-X-API.
+
+```{note}
+Please avoid mixing `conda` and `pip` installations for the same package like `sparc-x-api` in the same environment, as this may lead to unexpected behavior.
+```
 
 (install-binary)=
 ## Manual compilation of the SPARC binary code
@@ -118,17 +126,61 @@ with OpenMPI/OpenBLAS/Scalapack toolchains.
 conda activate sparc-env
 conda install -c conda-forge \
                  make compilers \
-				 fftw=*=mpi_openmpi_* \
-				 openblas openmpi scalapack
+		 fftw=*=mpi_openmpi_* \
+		 openblas openmpi scalapack
 git clone https://github.com/SPARC-X/SPARC.git
 cd SPARC/src
 # Always inspect the contents of the makefile before continue
 cat makefile
 make USE_MKL=0 USE_SCALAPACK=1 USE_FFTW=1 USE_SOCKET=1
+cd ../..
 ```
 
 The compiled binary will be at `SPARC/lib/sparc`, and will run when
 `sparc-env` environment is activated.
+
+Run a simple command to make sure the SPARC compilation works:
+```bash
+mpirun -n 1 SPARC/lib/sparc
+```
+
+You should see the usage info printed like following:
+```
+USAGE:
+    mpirun -np <nproc> {SPARCROOT}/lib/sparc -name <filename>
+
+    {SPARCROOT} is the location of the SPARC folder
+
+REQUIRED ARGUMENT:
+    -name <filename>
+           The filename shared by .inpt file and .ion
+           file (without extension)
+
+OPTIONS:
+    -h, --help
+           Display help (from command line).
+    -n <number of Nodes>
+    -c <number of CPUs per node>
+    -a <number of Accelerators (e.g., GPUs) per node>
+    -socket <socket>
+            <socket> can be either  <host>:<port> or <unix_socket>:UNIX.
+            Note: socket (driver) mode is an experimental feature.
+
+EXAMPLE:
+
+    mpirun -np 8 {SPARCROOT}/lib/sparc -name test
+
+    The example command runs sparc with 8 cores, with input file named
+    test.inpt, and ion file named test.ion.
+
+NOTE:
+    This is a short description of the usage of SPARC. For a detailed
+    discription, refer to the manual online at
+
+        https://github.com/SPARC-X/SPARC/tree/master/doc
+```
+
+Note that `-socket` is now an accepted option for the SPARC binary.
 
 ### Compiling SPARC on HPC
 
@@ -148,7 +200,9 @@ make USE_MKL=1 USE_SCALAPACK=0 USE_FFTW=1 USE_SOCKET=1
 ```
 
 The compiled binary will be at `SPARC/lib/sparc`, and running it
-requires the dependent modules to be loaded at runtime.
+requires the dependent modules to be loaded at runtime. You can
+perform the same quick test in the previous section to confirm the
+compilation is successful.
 
 
 Now head to the [setup tutorial](setup_environment.md) to finetune

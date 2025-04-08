@@ -78,7 +78,12 @@ def optimize_ase_bfgs_socket():
     print(f"N steps: {nsteps}")
 
 
-if __name__ == "__main__":
-    # optimize_sparc_internal()
-    # optimize_ase_bfgs()
+def main():
+    # Comment out specific ones if the examples run too long
+    optimize_sparc_internal()
+    optimize_ase_bfgs()
     optimize_ase_bfgs_socket()
+
+
+if __name__ == "__main__":
+    main()

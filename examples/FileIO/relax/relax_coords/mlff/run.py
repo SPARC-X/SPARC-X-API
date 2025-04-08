@@ -1,14 +1,15 @@
 # Using SPARC
-from sparc.calculator import SPARC
-from ase.build import molecule
 import numpy as np
+from ase.build import molecule
 
-water = molecule('H2O', vacuum=7)
-water.pbc = [False,False,False]
+from sparc.calculator import SPARC
+
+water = molecule("H2O", vacuum=7)
+water.pbc = [False, False, False]
 
 calc_params = {
     "EXCHANGE_CORRELATION": "GGA_PBE",
-    "KPOINT_GRID": [1,1,1],
+    "KPOINT_GRID": [1, 1, 1],
     "MESH_SPACING": 0.35,
     "TOL_SCF": 0.0001,
     "MAXIT_SCF": 100,
@@ -23,9 +24,18 @@ calc_params = {
     "MLFF_INITIAL_STEPS_TRAIN": 3,
 }
 
-water.calc = SPARC(**calc_params)
-energy = water.get_potential_energy()
-forces = water.get_forces()
 
-print('Energy:', energy)
-print('Max Force:', np.max(forces))
+def main():
+    """Geometric optimization of a water molecule using
+    SPARC-MLFF in FileIO mode
+    """
+    water.calc = SPARC(**calc_params)
+    energy = water.get_potential_energy()
+    forces = water.get_forces()
+
+    print("Energy:", energy)
+    print("Max Force:", np.max(forces))
+
+
+if __name__ == "__main__":
+    main()

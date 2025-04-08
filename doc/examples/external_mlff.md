@@ -101,3 +101,5 @@ with SPARC(use_socket=True, **calc_params) as calc:
                 fixcm=False, trajectory='Ag-cluster-metadynamics.traj')
     dyn.run(10)
 ```
+
+The full script can be downloaded [here](https://github.com/SPARC-X/SPARC-X-API/blob/master/examples/socket/md/mlff/plumed/run.py).

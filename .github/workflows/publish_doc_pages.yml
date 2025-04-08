@@ -75,7 +75,7 @@ jobs:
         publish_dir: doc/_build/html
     - name: Upload preview when creating pull request
       if: github.event_name == 'pull_request'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docs_build_preview
         path: doc/_build/html
