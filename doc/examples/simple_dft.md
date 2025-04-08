@@ -8,7 +8,9 @@ from other codes like VASP, QE or GPAW.
 Here we show a simple example that calculates the equation of state
 (EOS) of bulk aluminum and determine its optimal lattice constant,
 adapted from GPAW's
-[tutorial](https://wiki.fysik.dtu.dk/gpaw/tutorialsexercises/structureoptimization/lattice_constants/lattice_constants.html). In
+[tutorial](https://wiki.fysik.dtu.dk/gpaw/tutorialsexercises/structureoptimization/lattice_constants/lattice_constants.html). The full python script for this example can be downloaded [here](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/refs/heads/master/examples/simple_examples/ex0-eos.py).
+
+In
 the GPAW tutorial, a GPAW calculator in Planewave (PW) mode is created
 like follows:
 

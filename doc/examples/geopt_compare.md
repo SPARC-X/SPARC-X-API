@@ -3,7 +3,7 @@
 When a DFT workflow requires multiple evaluations of single point
 calculations, running SPARC-X-API in socket mode will usually have
 advantage over the standard file-I/O mode. Here we use an example of
-optimizing an ammonia molecule to show the difference.
+optimizing an ammonia molecule to show the difference. The full python script for this example can be downloaded [here](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/refs/heads/master/examples/simple_examples/ex1-ase-optimize.py).
 
 First we construct a NH3 molecule in a box with Dirichlet boundary
 conditions, and optimize it with SPARC's internal geometric optimization
