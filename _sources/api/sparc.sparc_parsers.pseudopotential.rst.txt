@@ -3,5 +3,5 @@ sparc.sparc\_parsers.pseudopotential module
 
 .. automodule:: sparc.sparc_parsers.pseudopotential
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

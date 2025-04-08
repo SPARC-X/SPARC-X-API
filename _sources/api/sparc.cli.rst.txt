@@ -3,5 +3,5 @@ sparc.cli module
 
 .. automodule:: sparc.cli
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

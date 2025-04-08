@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.socketio module &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
@@ -63,7 +63,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -100,7 +99,7 @@
 <p>A i-PI compatible socket protocol implemented in SPARC</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="sparc.socketio.SPARCProtocol">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.socketio.</span></span><span class="sig-name descname"><span class="pre">SPARCProtocol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">socket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/socketio.html#SPARCProtocol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.socketio.SPARCProtocol" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.socketio.</span></span><span class="sig-name descname"><span class="pre">SPARCProtocol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">socket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/socketio.html#SPARCProtocol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.socketio.SPARCProtocol" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IPIProtocol</span></code></p>
 <p>Extending the i-PI protocol to support extra routines</p>
 <dl class="py method">
@@ -153,7 +152,7 @@ The actual behavior regarding how the calculator would be (re)-initialized, depe
 
 <dl class="py class">
 <dt class="sig sig-object py" id="sparc.socketio.SPARCSocketClient">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.socketio.</span></span><span class="sig-name descname"><span class="pre">SPARCSocketClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'localhost'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unixsocket</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_calc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/socketio.html#SPARCSocketClient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.socketio.SPARCSocketClient" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.socketio.</span></span><span class="sig-name descname"><span class="pre">SPARCSocketClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'localhost'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unixsocket</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_calc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/socketio.html#SPARCSocketClient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.socketio.SPARCSocketClient" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SocketClient</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="sparc.socketio.SPARCSocketClient.calculate">
@@ -180,7 +179,7 @@ error about needinit error.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="sparc.socketio.SPARCSocketServer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.socketio.</span></span><span class="sig-name descname"><span class="pre">SPARCSocketServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unixsocket</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/socketio.html#SPARCSocketServer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.socketio.SPARCSocketServer" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.socketio.</span></span><span class="sig-name descname"><span class="pre">SPARCSocketServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unixsocket</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/socketio.html#SPARCSocketServer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.socketio.SPARCSocketServer" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SocketServer</span></code></p>
 <p>We only implement the unix socket version due to simplicity</p>
 <p>parent: the SPARC parent calculator</p>
@@ -199,7 +198,7 @@ wait for the client to finish the calculation.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="sparc.socketio.SPARCSocketServer.proc">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">proc</span></span><a class="headerlink" href="#sparc.socketio.SPARCSocketServer.proc" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">proc</span></span><a class="headerlink" href="#sparc.socketio.SPARCSocketServer.proc" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -212,7 +211,7 @@ The params should be assignable to SPARC.set</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="sparc.socketio.SPARCSocketServer.socket_filename">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">socket_filename</span></span><a class="headerlink" href="#sparc.socketio.SPARCSocketServer.socket_filename" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">socket_filename</span></span><a class="headerlink" href="#sparc.socketio.SPARCSocketServer.socket_filename" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>

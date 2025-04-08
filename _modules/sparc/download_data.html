@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.download_data &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -49,7 +49,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -87,17 +86,17 @@
 <span class="sd">python -m sparc.download_data</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">hashlib</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">import</span> <span class="nn">tempfile</span>
-<span class="kn">import</span> <span class="nn">zipfile</span>
-<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="c1"># import urllib.request</span>
-<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.request</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlopen</span>
 
-<span class="kn">from</span> <span class="nn">.common</span> <span class="kn">import</span> <span class="n">psp_dir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">psp_dir</span>
 
 <span class="n">sparc_tag</span> <span class="o">=</span> <span class="s2">&quot;b702c1061400a2d23c0e223e32182609d7958156&quot;</span>
 <span class="n">sparc_source_url</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/SPARC-X/SPARC/archive/</span><span class="si">{sparc_tag}</span><span class="s2">.zip&quot;</span>
@@ -107,7 +106,7 @@
 
 <div class="viewcode-block" id="download_psp">
 <a class="viewcode-back" href="../../api/sparc.download_data.html#sparc.download_data.download_psp">[docs]</a>
-<span class="k">def</span> <span class="nf">download_psp</span><span class="p">(</span><span class="n">sparc_tag</span><span class="o">=</span><span class="n">sparc_tag</span><span class="p">,</span> <span class="n">psp_dir</span><span class="o">=</span><span class="n">psp_dir</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_psp</span><span class="p">(</span><span class="n">sparc_tag</span><span class="o">=</span><span class="n">sparc_tag</span><span class="p">,</span> <span class="n">psp_dir</span><span class="o">=</span><span class="n">psp_dir</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Download the external PSPs into the sparc/psp folder</span>
 
 <span class="sd">    Arguments:</span>
@@ -142,7 +141,7 @@
 
 <div class="viewcode-block" id="checksum_all">
 <a class="viewcode-back" href="../../api/sparc.download_data.html#sparc.download_data.checksum_all">[docs]</a>
-<span class="k">def</span> <span class="nf">checksum_all</span><span class="p">(</span><span class="n">psp_dir</span><span class="o">=</span><span class="n">psp_dir</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;*.psp8&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">checksum_all</span><span class="p">(</span><span class="n">psp_dir</span><span class="o">=</span><span class="n">psp_dir</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;*.psp8&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Checksum all the files under the psp_dir to make sure the psp8 files</span>
 <span class="sd">    are the same as intended</span>
 
@@ -172,7 +171,7 @@
 
 <div class="viewcode-block" id="is_psp_download_complete">
 <a class="viewcode-back" href="../../api/sparc.download_data.html#sparc.download_data.is_psp_download_complete">[docs]</a>
-<span class="k">def</span> <span class="nf">is_psp_download_complete</span><span class="p">(</span><span class="n">psp_dir</span><span class="o">=</span><span class="n">psp_dir</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_psp_download_complete</span><span class="p">(</span><span class="n">psp_dir</span><span class="o">=</span><span class="n">psp_dir</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">checksum_all</span><span class="p">(</span><span class="n">psp_dir</span><span class="p">)</span> <span class="o">==</span> <span class="n">all_psp8_checksum</span></div>
 
 

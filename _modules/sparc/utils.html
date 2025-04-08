@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.utils &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -49,7 +49,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -82,37 +81,37 @@
   <h1>Source code for sparc.utils</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Utilities that are loosely related to core sparc functionalities</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">_thread</span>
-<span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">import</span> <span class="nn">signal</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">tempfile</span>
-<span class="kn">import</span> <span class="nn">threading</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">_thread</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">signal</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">psutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">psutil</span>
 
 <span class="c1"># 2024-11-28 @alchem0x2a add config</span>
-<span class="kn">from</span> <span class="nn">ase.config</span> <span class="kn">import</span> <span class="n">cfg</span> <span class="k">as</span> <span class="n">_cfg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">cfg</span> <span class="k">as</span> <span class="n">_cfg</span>
 
-<span class="kn">from</span> <span class="nn">.api</span> <span class="kn">import</span> <span class="n">SparcAPI</span>
-<span class="kn">from</span> <span class="nn">.docparser</span> <span class="kn">import</span> <span class="n">SparcDocParser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparcAPI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.docparser</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparcDocParser</span>
 
 
 <div class="viewcode-block" id="deprecated">
 <a class="viewcode-back" href="../../api/sparc.utils.html#sparc.utils.deprecated">[docs]</a>
-<span class="k">def</span> <span class="nf">deprecated</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-        <span class="k">def</span> <span class="nf">new_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">deprecated</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">new_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="n">warn</span><span class="p">(</span>
                 <span class="s2">&quot;Function </span><span class="si">{}</span><span class="s2"> is deprecated! </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">message</span><span class="p">),</span>
                 <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">,</span>
@@ -127,7 +126,7 @@
 
 <div class="viewcode-block" id="compare_dict">
 <a class="viewcode-back" href="../../api/sparc.utils.html#sparc.utils.compare_dict">[docs]</a>
-<span class="k">def</span> <span class="nf">compare_dict</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">compare_dict</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper function to compare dictionaries&quot;&quot;&quot;</span>
     <span class="c1"># Use symmetric difference to find keys which aren&#39;t shared</span>
     <span class="c1"># for python 2.7 compatibility</span>
@@ -144,7 +143,7 @@
 
 <div class="viewcode-block" id="string2index">
 <a class="viewcode-back" href="../../api/sparc.utils.html#sparc.utils.string2index">[docs]</a>
-<span class="k">def</span> <span class="nf">string2index</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">string2index</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert index string to either int or slice</span>
 <span class="sd">    This method is a copy of ase.io.formats.string2index</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -168,7 +167,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">_find_default_sparc</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_default_sparc</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the default sparc by $PATH and mpi location&quot;&quot;&quot;</span>
     <span class="n">sparc_exe</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">&quot;sparc&quot;</span><span class="p">)</span>
 
@@ -200,7 +199,7 @@
 
 <div class="viewcode-block" id="h2gpts">
 <a class="viewcode-back" href="../../api/sparc.utils.html#sparc.utils.h2gpts">[docs]</a>
-<span class="k">def</span> <span class="nf">h2gpts</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">cell_cv</span><span class="p">,</span> <span class="n">idiv</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">h2gpts</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">cell_cv</span><span class="p">,</span> <span class="n">idiv</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a h-parameter (Angstrom) to gpts&quot;&quot;&quot;</span>
     <span class="n">cell_cv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cell_cv</span><span class="p">)</span>
     <span class="n">cell_lengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">cell_cv</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -212,7 +211,7 @@
 
 <div class="viewcode-block" id="cprint">
 <a class="viewcode-back" href="../../api/sparc.utils.html#sparc.utils.cprint">[docs]</a>
-<span class="k">def</span> <span class="nf">cprint</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">underline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cprint</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">underline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Color print wrapper for ansi terminal.</span>
 <span class="sd">    Only a few color names are provided</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -251,7 +250,7 @@
 
 <div class="viewcode-block" id="sanitize_path">
 <a class="viewcode-back" href="../../api/sparc.utils.html#sparc.utils.sanitize_path">[docs]</a>
-<span class="k">def</span> <span class="nf">sanitize_path</span><span class="p">(</span><span class="n">path_string</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sanitize_path</span><span class="p">(</span><span class="n">path_string</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Sanitize path containing string in UNIX systems</span>
 <span class="sd">    Returns a PosixPath object</span>
 
@@ -269,7 +268,7 @@
 
 <div class="viewcode-block" id="locate_api">
 <a class="viewcode-back" href="../../api/sparc.utils.html#sparc.utils.locate_api">[docs]</a>
-<span class="k">def</span> <span class="nf">locate_api</span><span class="p">(</span><span class="n">json_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doc_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cfg</span><span class="o">=</span><span class="n">_cfg</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">locate_api</span><span class="p">(</span><span class="n">json_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doc_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cfg</span><span class="o">=</span><span class="n">_cfg</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Locate the SPARC API setup file with the following priority:</span>
 <span class="sd">    1) If `json_file` is provided (either from parameter or cfg), use it directly.</span>
@@ -338,7 +337,7 @@
 
 <div class="viewcode-block" id="TimeoutException">
 <a class="viewcode-back" href="../../api/sparc.utils.html#sparc.utils.TimeoutException">[docs]</a>
-<span class="k">class</span> <span class="nc">TimeoutException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TimeoutException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple class for timeout&quot;&quot;&quot;</span>
 
     <span class="k">pass</span></div>
@@ -348,7 +347,7 @@
 <div class="viewcode-block" id="time_limit">
 <a class="viewcode-back" href="../../api/sparc.utils.html#sparc.utils.time_limit">[docs]</a>
 <span class="nd">@contextmanager</span>
-<span class="k">def</span> <span class="nf">time_limit</span><span class="p">(</span><span class="n">seconds</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">time_limit</span><span class="p">(</span><span class="n">seconds</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Usage:</span>
 <span class="sd">    try:</span>
 <span class="sd">        with time_limit(60):</span>
@@ -357,7 +356,7 @@
 <span class="sd">        raise</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">signal_handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">signal_handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">TimeoutException</span><span class="p">(</span><span class="s2">&quot;Timed out closing sparc process.&quot;</span><span class="p">)</span>
 
     <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGALRM</span><span class="p">,</span> <span class="n">signal_handler</span><span class="p">)</span>
@@ -371,7 +370,7 @@
 
 <div class="viewcode-block" id="ProcessReturned">
 <a class="viewcode-back" href="../../api/sparc.utils.html#sparc.utils.ProcessReturned">[docs]</a>
-<span class="k">class</span> <span class="nc">ProcessReturned</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProcessReturned</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple class for process that has returned&quot;&quot;&quot;</span>
 
     <span class="k">pass</span></div>
@@ -381,7 +380,7 @@
 <div class="viewcode-block" id="monitor_process">
 <a class="viewcode-back" href="../../api/sparc.utils.html#sparc.utils.monitor_process">[docs]</a>
 <span class="nd">@contextmanager</span>
-<span class="k">def</span> <span class="nf">monitor_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">monitor_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Usage:</span>
 <span class="sd">    try:</span>
 <span class="sd">        with monitor_process(process):</span>
@@ -390,12 +389,12 @@
 <span class="sd">        raise</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">signal_handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">signal_handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">ProcessReturned</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Process </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="si">}</span><span class="s2"> has returned with exit code </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span><span class="si">}</span><span class="s2">!&quot;</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">check_process</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_process</span><span class="p">():</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># signal.alarm(0)</span>
@@ -421,7 +420,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">_find_mpi_process</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">mpi_program</span><span class="o">=</span><span class="s2">&quot;mpirun&quot;</span><span class="p">,</span> <span class="n">sparc_program</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_mpi_process</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">mpi_program</span><span class="o">=</span><span class="s2">&quot;mpirun&quot;</span><span class="p">,</span> <span class="n">sparc_program</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Recursively search children processes with PID=pid and return the one</span>
 <span class="sd">    that mpirun (or synonyms) are the main command.</span>
 
@@ -468,14 +467,14 @@
     <span class="k">return</span> <span class="n">match</span>
 
 
-<span class="k">def</span> <span class="nf">_get_slurm_jobid</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_slurm_jobid</span><span class="p">():</span>
     <span class="n">jobid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SLURM_JOB_ID&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">jobid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">jobid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SLURM_JOBID&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">jobid</span>
 
 
-<span class="k">def</span> <span class="nf">_locate_slurm_step</span><span class="p">(</span><span class="n">program</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_locate_slurm_step</span><span class="p">(</span><span class="n">program</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;If slurm job system is involved, search for the slurm step id</span>
 <span class="sd">    that matches vasp_std (or other vasp commands)</span>
 
@@ -517,7 +516,7 @@
     <span class="k">return</span> <span class="n">proc</span>
 
 
-<span class="k">def</span> <span class="nf">_slurm_signal</span><span class="p">(</span><span class="n">stepid</span><span class="p">,</span> <span class="n">sig</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTSTP</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_slurm_signal</span><span class="p">(</span><span class="n">stepid</span><span class="p">,</span> <span class="n">sig</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTSTP</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,)):</span>
         <span class="n">sig</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,)):</span>
@@ -530,7 +529,7 @@
     <span class="k">return</span>
 
 
-<span class="k">def</span> <span class="nf">_run_process</span><span class="p">(</span><span class="n">commands</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">print_cmd</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_run_process</span><span class="p">(</span><span class="n">commands</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">print_cmd</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap around subprocess.run</span>
 <span class="sd">    Returns the process object</span>
 <span class="sd">    &quot;&quot;&quot;</span>

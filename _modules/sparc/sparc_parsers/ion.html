@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.sparc_parsers.ion &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -49,7 +49,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -89,17 +88,17 @@
 
 <span class="sd">TODO: more descriptions about this file io parser</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">textwrap</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">ase.units</span> <span class="kn">import</span> <span class="n">Bohr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bohr</span>
 
 <span class="c1"># Safe wrappers for both string and fd</span>
-<span class="kn">from</span> <span class="nn">ase.utils</span> <span class="kn">import</span> <span class="n">reader</span><span class="p">,</span> <span class="n">writer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">reader</span><span class="p">,</span> <span class="n">writer</span>
 
-<span class="kn">from</span> <span class="nn">..api</span> <span class="kn">import</span> <span class="n">SparcAPI</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..api</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparcAPI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">bisect_and_strip</span><span class="p">,</span>
     <span class="n">make_reverse_mapping</span><span class="p">,</span>
     <span class="n">read_block_input</span><span class="p">,</span>
@@ -109,8 +108,8 @@
 
 <div class="viewcode-block" id="InvalidSortingComment">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.ion.html#sparc.sparc_parsers.ion.InvalidSortingComment">[docs]</a>
-<span class="k">class</span> <span class="nc">InvalidSortingComment</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">InvalidSortingComment</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
 
 
@@ -119,7 +118,7 @@
 
 
 <span class="nd">@reader</span>
-<span class="k">def</span> <span class="nf">_read_ion</span><span class="p">(</span><span class="n">fileobj</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">defaultAPI</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_ion</span><span class="p">(</span><span class="n">fileobj</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">defaultAPI</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read information from the .ion file. Note, this method does not return an atoms object,</span>
 <span class="sd">    but rather return a dict. Thus the label option is not necessary to keep</span>
@@ -153,7 +152,7 @@
 
 
 <span class="nd">@writer</span>
-<span class="k">def</span> <span class="nf">_write_ion</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_write_ion</span><span class="p">(</span>
     <span class="n">fileobj</span><span class="p">,</span>
     <span class="n">data_dict</span><span class="p">,</span>
     <span class="n">validator</span><span class="o">=</span><span class="n">defaultAPI</span><span class="p">,</span>
@@ -239,7 +238,7 @@
     <span class="k">return</span>
 
 
-<span class="k">def</span> <span class="nf">_ion_coord_to_ase_pos</span><span class="p">(</span><span class="n">data_dict</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_ion_coord_to_ase_pos</span><span class="p">(</span><span class="n">data_dict</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert the COORD or COORD_FRAC from atom blocks to ASE&#39;s positions</span>
 
 <span class="sd">    Arguments:</span>
@@ -267,7 +266,7 @@
     <span class="k">return</span>
 
 
-<span class="k">def</span> <span class="nf">_read_sort_comment</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_sort_comment</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the atom sorting info from the comment lines</span>
 <span class="sd">    Format</span>
 

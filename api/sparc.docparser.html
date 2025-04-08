@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.docparser module &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
@@ -63,7 +63,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -103,7 +102,7 @@ and convert to its Python API</p>
 <p>Tian Tian (<a class="reference external" href="mailto:alchem0x2a&#37;&#52;&#48;gmail&#46;com">alchem0x2a<span>&#64;</span>gmail<span>&#46;</span>com</a>)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="sparc.docparser.SparcDocParser">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.docparser.</span></span><span class="sig-name descname"><span class="pre">SparcDocParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'*Manual.tex'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intro_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Introduction.tex'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_from_intro</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parse_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#SparcDocParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.docparser.SparcDocParser" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.docparser.</span></span><span class="sig-name descname"><span class="pre">SparcDocParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'*Manual.tex'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intro_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Introduction.tex'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_from_intro</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parse_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#SparcDocParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.docparser.SparcDocParser" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Parses LaTeX documentation of SPARC-X and converts it into a Python API.</p>
 <p>This class extracts parameter information from LaTeX source files,
@@ -150,6 +149,17 @@ units, and other relevant information.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sparc.docparser.SparcDocParser.suppress_warnings">
+<span class="sig-name descname"><span class="pre">suppress_warnings</span></span><a class="headerlink" href="#sparc.docparser.SparcDocParser.suppress_warnings" title="Link to this definition"></a></dt>
+<dd><p>Whether the doc parser suppress UserWarning (may be annoying during class import)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -238,7 +248,7 @@ units, and other relevant information.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="id2">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">json_from_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_subdirs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#SparcDocParser.json_from_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">json_from_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_subdirs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#SparcDocParser.json_from_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
 <dd><p>Recursively add parameters from all Manual files
 :param directory: The directory to the LaTeX files, e.g. &lt;sparc-root&gt;/doc/.LaTeX
 :type directory: str or PosixPath
@@ -256,7 +266,7 @@ units, and other relevant information.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="id3">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">json_from_repo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://github.com/SPARC-X/SPARC.git'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'master'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_subdirs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#SparcDocParser.json_from_repo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">json_from_repo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://github.com/SPARC-X/SPARC.git'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'master'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_subdirs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#SparcDocParser.json_from_repo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
 <dd><p>Download the source code from git and use json_from_directory to parse
 :param url: URL for the repository of SPARC, default is “<a class="reference external" href="https://github.com/SPARC-X/SPARC.git">https://github.com/SPARC-X/SPARC.git</a>”
 :type url: str
@@ -354,7 +364,7 @@ as much as possible</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sparc.docparser.convert_tex_default">
-<span class="sig-prename descclassname"><span class="pre">sparc.docparser.</span></span><span class="sig-name descname"><span class="pre">convert_tex_default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#convert_tex_default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.docparser.convert_tex_default" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">sparc.docparser.</span></span><span class="sig-name descname"><span class="pre">convert_tex_default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#convert_tex_default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.docparser.convert_tex_default" title="Link to this definition"></a></dt>
 <dd><p>Convert default values as much as possible.
 The desire type will convert the default values
 to the closest format</p>
@@ -421,7 +431,7 @@ it is only used to compare a float / int value</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sparc.docparser.sanitize_default">
-<span class="sig-prename descclassname"><span class="pre">sparc.docparser.</span></span><span class="sig-name descname"><span class="pre">sanitize_default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#sanitize_default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.docparser.sanitize_default" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">sparc.docparser.</span></span><span class="sig-name descname"><span class="pre">sanitize_default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#sanitize_default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.docparser.sanitize_default" title="Link to this definition"></a></dt>
 <dd><p>Sanitize the default field
 1. Create an extra field <cite>default_remark</cite> that copies original default
 2. Use <cite>convert_tex_default</cite> to convert values as much as possible</p>
@@ -451,7 +461,7 @@ it is only used to compare a float / int value</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sparc.docparser.sanitize_type">
-<span class="sig-prename descclassname"><span class="pre">sparc.docparser.</span></span><span class="sig-name descname"><span class="pre">sanitize_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#sanitize_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.docparser.sanitize_type" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">sparc.docparser.</span></span><span class="sig-name descname"><span class="pre">sanitize_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#sanitize_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.docparser.sanitize_type" title="Link to this definition"></a></dt>
 <dd><p>Sanitize the param dict so that the type are more consistent</p>
 <p>For example, if type is Double / Integer,
 but parameter is a vector,
@@ -460,7 +470,7 @@ make a double vector or integer vector</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sparc.docparser.text2value">
-<span class="sig-prename descclassname"><span class="pre">sparc.docparser.</span></span><span class="sig-name descname"><span class="pre">text2value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#text2value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.docparser.text2value" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">sparc.docparser.</span></span><span class="sig-name descname"><span class="pre">text2value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/docparser.html#text2value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.docparser.text2value" title="Link to this definition"></a></dt>
 <dd><p>Convert raw text to a desired type</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -469,6 +479,7 @@ make a double vector or integer vector</p>
 <li><p><strong>desired_type</strong> (<em>str</em>) – Target data type from ‘string’, ‘integer’,
 ‘integer array’, ‘double’, ‘double array’,
 ‘bool’, ‘bool array’</p></li>
+<li><p><strong>suppress_warnings</strong> (<em>bool</em>) – Suppress UserWarning if overwhelming for end-users</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

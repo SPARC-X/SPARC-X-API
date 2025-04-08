@@ -3,5 +3,5 @@ sparc.socketio module
 
 .. automodule:: sparc.socketio
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

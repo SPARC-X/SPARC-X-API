@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.sparc_parsers.pseudopotential &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -49,7 +49,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -89,43 +88,43 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">ase.data</span> <span class="kn">import</span> <span class="n">atomic_names</span><span class="p">,</span> <span class="n">chemical_symbols</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">atomic_names</span><span class="p">,</span> <span class="n">chemical_symbols</span>
 
 
 <div class="viewcode-block" id="NotPSP8Format">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.NotPSP8Format">[docs]</a>
-<span class="k">class</span> <span class="nc">NotPSP8Format</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NotPSP8Format</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
 
 
 
 <div class="viewcode-block" id="NoMatchingPseudopotential">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.NoMatchingPseudopotential">[docs]</a>
-<span class="k">class</span> <span class="nc">NoMatchingPseudopotential</span><span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NoMatchingPseudopotential</span><span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
 
 
 
 <div class="viewcode-block" id="MultiplePseudoPotentialFiles">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.MultiplePseudoPotentialFiles">[docs]</a>
-<span class="k">class</span> <span class="nc">MultiplePseudoPotentialFiles</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MultiplePseudoPotentialFiles</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
 
 
 
 <div class="viewcode-block" id="parse_psp8_header">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.parse_psp8_header">[docs]</a>
-<span class="k">def</span> <span class="nf">parse_psp8_header</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_psp8_header</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the first 4 lines of psp8 text</span>
 <span class="sd">    if parsing failed, raise exception</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -178,7 +177,7 @@
 
 <div class="viewcode-block" id="infer_pseudo_path">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.infer_pseudo_path">[docs]</a>
-<span class="k">def</span> <span class="nf">infer_pseudo_path</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">search_path</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">infer_pseudo_path</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">search_path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Given an element symbol like &#39;Na&#39;, get the file name</span>
 <span class="sd">    of the search_path (resolved) that search through the search path</span>
 
@@ -223,7 +222,7 @@
 
 <div class="viewcode-block" id="copy_psp_file">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.copy_psp_file">[docs]</a>
-<span class="k">def</span> <span class="nf">copy_psp_file</span><span class="p">(</span><span class="n">source_pot</span><span class="p">,</span> <span class="n">target_dir</span><span class="p">,</span> <span class="n">use_symbol</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">copy_psp_file</span><span class="p">(</span><span class="n">source_pot</span><span class="p">,</span> <span class="n">target_dir</span><span class="p">,</span> <span class="n">use_symbol</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Copy the pseudo potential file `source_pot` under `target_dir`</span>
 
 <span class="sd">    if use_symbol is True, rename the potential to &#39;{symbol}.psp8&#39;</span>
@@ -249,7 +248,7 @@
 
 <div class="viewcode-block" id="find_pseudo_path">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.pseudopotential.html#sparc.sparc_parsers.pseudopotential.find_pseudo_path">[docs]</a>
-<span class="k">def</span> <span class="nf">find_pseudo_path</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">search_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pseudopotential_mapping</span><span class="o">=</span><span class="p">{}):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_pseudo_path</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">search_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pseudopotential_mapping</span><span class="o">=</span><span class="p">{}):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the pseudo potential file at best effort</span>
 
 <span class="sd">    Searching priorities</span>

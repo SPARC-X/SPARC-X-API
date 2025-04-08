@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Geometric optimization in file-I/O and socket modes &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
@@ -58,7 +58,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -93,14 +92,14 @@
 <p>When a DFT workflow requires multiple evaluations of single point
 calculations, running SPARC-X-API in socket mode will usually have
 advantage over the standard file-I/O mode. Here we use an example of
-optimizing an ammonia molecule to show the difference.</p>
+optimizing an ammonia molecule to show the difference. The full python script for this example can be downloaded <a class="reference external" href="https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/refs/heads/master/examples/simple_examples/ex1-ase-optimize.py">here</a>.</p>
 <p>First we construct a NH3 molecule in a box with Dirichlet boundary
 conditions, and optimize it with SPARC’s internal geometric optimization
 (geopt) routine. We use a rough mesh spacing for demonstration purpose only.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">molecule</span>
-<span class="kn">from</span> <span class="nn">ase.constraints</span> <span class="kn">import</span> <span class="n">FixAtoms</span>
-<span class="kn">from</span> <span class="nn">sparc</span> <span class="kn">import</span> <span class="n">SPARC</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">molecule</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.constraints</span><span class="w"> </span><span class="kn">import</span> <span class="n">FixAtoms</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sparc</span><span class="w"> </span><span class="kn">import</span> <span class="n">SPARC</span>
 
 <span class="n">nh3</span> <span class="o">=</span> <span class="n">molecule</span><span class="p">(</span><span class="s2">&quot;NH3&quot;</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">pbc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="c1"># All atoms must be within the domain when using</span>
@@ -111,7 +110,7 @@ conditions, and optimize it with SPARC’s internal geometric optimization
 <span class="n">nh3</span><span class="o">.</span><span class="n">rattle</span><span class="p">()</span>
 
 
-<span class="k">def</span> <span class="nf">optimize_sparc_internal</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">optimize_sparc_internal</span><span class="p">():</span>
     <span class="n">atoms</span> <span class="o">=</span> <span class="n">nh3</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span>
         <span class="n">h</span><span class="o">=</span><span class="mf">0.18</span><span class="p">,</span>
@@ -136,7 +135,7 @@ conditions, and optimize it with SPARC’s internal geometric optimization
 <p>Alternatively we can use any of the <code class="docutils literal notranslate"><span class="pre">ase.optimize</span></code> optimizers to perform
 the geometric relaxation, for example BFGS.
 The following code uses the file I/O mode:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">optimize_ase_bfgs</span><span class="p">():</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">optimize_ase_bfgs</span><span class="p">():</span>
     <span class="n">atoms</span> <span class="o">=</span> <span class="n">nh3</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span>
         <span class="n">h</span><span class="o">=</span><span class="mf">0.18</span><span class="p">,</span>
@@ -169,7 +168,7 @@ invoking the <code class="docutils literal notranslate"><span class="pre">use_so
 <p class="admonition-title">Note</p>
 <p>Make sure your SPARC binary is compiled with socket support. See <a class="reference internal" href="#installation.md"><span class="xref myst">installation guide</span></a> for more details.</p>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">optimize_ase_bfgs_socket</span><span class="p">():</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">optimize_ase_bfgs_socket</span><span class="p">():</span>
     <span class="n">atoms</span> <span class="o">=</span> <span class="n">nh3</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span>
         <span class="n">h</span><span class="o">=</span><span class="mf">0.18</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">xc</span><span class="o">=</span><span class="s2">&quot;pbe&quot;</span><span class="p">,</span> <span class="n">print_forces</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;ex1-ase-socket&quot;</span><span class="p">,</span>

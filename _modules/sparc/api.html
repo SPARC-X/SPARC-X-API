@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.api &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -49,7 +49,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -80,12 +79,12 @@
            <div itemprop="articleBody">
              
   <h1>Source code for sparc.api</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="n">curdir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
 <span class="n">default_api_dir</span> <span class="o">=</span> <span class="n">curdir</span> <span class="o">/</span> <span class="s2">&quot;sparc_json_api&quot;</span>
@@ -94,7 +93,7 @@
 
 <div class="viewcode-block" id="SparcAPI">
 <a class="viewcode-back" href="../../api/sparc.api.html#sparc.api.SparcAPI">[docs]</a>
-<span class="k">class</span> <span class="nc">SparcAPI</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SparcAPI</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    An interface to the parameter settings in SPARC-X calculator. User can use the</span>
 <span class="sd">    SparcAPI instance to validate and translate parameters that matches a certain</span>
@@ -115,7 +114,7 @@
 <span class="sd">        convert_value_to_string(parameter, value): Converts a value to a string representation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_api</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_api</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">json_api</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">json_api</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">default_json_api</span><span class="p">)</span>
@@ -135,7 +134,7 @@
 
 <div class="viewcode-block" id="SparcAPI.get_parameter_dict">
 <a class="viewcode-back" href="../../api/sparc.api.html#sparc.api.SparcAPI.get_parameter_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_parameter_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_parameter_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieves the dictionary for a specified parameter.</span>
 
@@ -158,7 +157,7 @@
 
 <div class="viewcode-block" id="SparcAPI.help_info">
 <a class="viewcode-back" href="../../api/sparc.api.html#sparc.api.SparcAPI.help_info">[docs]</a>
-    <span class="k">def</span> <span class="nf">help_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">help_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Provides a detailed information string for a given parameter.</span>
 
 <span class="sd">        Args:</span>
@@ -189,7 +188,7 @@
 
 <div class="viewcode-block" id="SparcAPI.validate_input">
 <a class="viewcode-back" href="../../api/sparc.api.html#sparc.api.SparcAPI.validate_input">[docs]</a>
-    <span class="k">def</span> <span class="nf">validate_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Validates if the given input is appropriate for the specified parameter&#39;s type.</span>
 
@@ -273,7 +272,7 @@
 
 <div class="viewcode-block" id="SparcAPI.convert_string_to_value">
 <a class="viewcode-back" href="../../api/sparc.api.html#sparc.api.SparcAPI.convert_string_to_value">[docs]</a>
-    <span class="k">def</span> <span class="nf">convert_string_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert_string_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Converts a string input to the appropriate value type of the parameter.</span>
 
@@ -340,7 +339,7 @@
 
 <div class="viewcode-block" id="SparcAPI.convert_value_to_string">
 <a class="viewcode-back" href="../../api/sparc.api.html#sparc.api.SparcAPI.convert_value_to_string">[docs]</a>
-    <span class="k">def</span> <span class="nf">convert_value_to_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert_value_to_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Converts a value to its string representation based on the parameter type.</span>
 
@@ -389,7 +388,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">_array_to_string</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="nb">format</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_array_to_string</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="nb">format</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Converts an array to a string representation based on the specified format.</span>
 

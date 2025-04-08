@@ -3,5 +3,5 @@ sparc.sparc\_parsers.geopt module
 
 .. automodule:: sparc.sparc_parsers.geopt
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

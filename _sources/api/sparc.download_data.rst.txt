@@ -3,5 +3,5 @@ sparc.download\_data module
 
 .. automodule:: sparc.download_data
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.calculator &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -49,7 +49,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -80,36 +79,36 @@
            <div itemprop="articleBody">
              
   <h1>Source code for sparc.calculator</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">signal</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>
-<span class="kn">import</span> <span class="nn">tempfile</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span><span class="p">,</span> <span class="n">warn_explicit</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">signal</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span><span class="p">,</span> <span class="n">warn_explicit</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">psutil</span>
-<span class="kn">from</span> <span class="nn">ase.atoms</span> <span class="kn">import</span> <span class="n">Atoms</span>
-<span class="kn">from</span> <span class="nn">ase.calculators.calculator</span> <span class="kn">import</span> <span class="n">Calculator</span><span class="p">,</span> <span class="n">FileIOCalculator</span><span class="p">,</span> <span class="n">all_changes</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">psutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.atoms</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atoms</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.calculators.calculator</span><span class="w"> </span><span class="kn">import</span> <span class="n">Calculator</span><span class="p">,</span> <span class="n">FileIOCalculator</span><span class="p">,</span> <span class="n">all_changes</span>
 
 <span class="c1"># 2024-11-28: @alchem0x2a add support for ase.config</span>
 <span class="c1"># In the first we only use cfg as parser for configurations</span>
-<span class="kn">from</span> <span class="nn">ase.config</span> <span class="kn">import</span> <span class="n">cfg</span> <span class="k">as</span> <span class="n">_cfg</span>
-<span class="kn">from</span> <span class="nn">ase.parallel</span> <span class="kn">import</span> <span class="n">world</span>
-<span class="kn">from</span> <span class="nn">ase.stress</span> <span class="kn">import</span> <span class="n">full_3x3_to_voigt_6_stress</span>
-<span class="kn">from</span> <span class="nn">ase.units</span> <span class="kn">import</span> <span class="n">Bohr</span><span class="p">,</span> <span class="n">GPa</span><span class="p">,</span> <span class="n">Hartree</span><span class="p">,</span> <span class="n">eV</span>
-<span class="kn">from</span> <span class="nn">ase.utils</span> <span class="kn">import</span> <span class="n">IOContext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">cfg</span> <span class="k">as</span> <span class="n">_cfg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.parallel</span><span class="w"> </span><span class="kn">import</span> <span class="n">world</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.stress</span><span class="w"> </span><span class="kn">import</span> <span class="n">full_3x3_to_voigt_6_stress</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bohr</span><span class="p">,</span> <span class="n">GPa</span><span class="p">,</span> <span class="n">Hartree</span><span class="p">,</span> <span class="n">eV</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">IOContext</span>
 
-<span class="kn">from</span> <span class="nn">.api</span> <span class="kn">import</span> <span class="n">SparcAPI</span>
-<span class="kn">from</span> <span class="nn">.io</span> <span class="kn">import</span> <span class="n">SparcBundle</span>
-<span class="kn">from</span> <span class="nn">.socketio</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparcAPI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparcBundle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.socketio</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">SPARCProtocol</span><span class="p">,</span>
     <span class="n">SPARCSocketClient</span><span class="p">,</span>
     <span class="n">SPARCSocketServer</span><span class="p">,</span>
     <span class="n">generate_random_socket_name</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_find_default_sparc</span><span class="p">,</span>
     <span class="n">_find_mpi_process</span><span class="p">,</span>
     <span class="n">_get_slurm_jobid</span><span class="p">,</span>
@@ -153,7 +152,7 @@
 
 <div class="viewcode-block" id="SPARC">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC">[docs]</a>
-<span class="k">class</span> <span class="nc">SPARC</span><span class="p">(</span><span class="n">FileIOCalculator</span><span class="p">,</span> <span class="n">IOContext</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SPARC</span><span class="p">(</span><span class="n">FileIOCalculator</span><span class="p">,</span> <span class="n">IOContext</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculator interface to the SPARC codes via the FileIOCalculator&quot;&quot;&quot;</span>
 
     <span class="n">implemented_properties</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="s2">&quot;forces&quot;</span><span class="p">,</span> <span class="s2">&quot;fermi&quot;</span><span class="p">,</span> <span class="s2">&quot;stress&quot;</span><span class="p">]</span>
@@ -169,7 +168,7 @@
     <span class="c1"># TODO: remove the legacy command check for future releases</span>
     <span class="n">_legacy_default_command</span> <span class="o">=</span> <span class="s2">&quot;sparc not initialized&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">restart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
@@ -269,7 +268,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">out_socket</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ensure_socket</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_compare_system_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compare_system_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if system parameters like command etc have changed</span>
 
 <span class="sd">        Returns:</span>
@@ -290,7 +289,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">_compare_calc_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compare_calc_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if SPARC calculator parameters have changed</span>
 
 <span class="sd">        Returns:</span>
@@ -319,7 +318,7 @@
                         <span class="k">break</span>
         <span class="k">return</span> <span class="n">result</span>
 
-    <span class="k">def</span> <span class="nf">_dump_system_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_dump_system_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dict with current system parameters</span>
 
 <span class="sd">        changing these parameters will cause the calculator to reload</span>
@@ -336,7 +335,7 @@
 
 <div class="viewcode-block" id="SPARC.ensure_socket">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.ensure_socket">[docs]</a>
-    <span class="k">def</span> <span class="nf">ensure_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ensure_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># TODO: more ensure directory to other place?</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -382,25 +381,25 @@
                 <span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset upon entering the context.&quot;&quot;&quot;</span>
         <span class="n">IOContext</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Exiting the context manager and reset process&quot;&quot;&quot;</span>
         <span class="n">IOContext</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">return</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">use_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">use_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket_params</span><span class="p">[</span><span class="s2">&quot;use_socket&quot;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">socket_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">socket_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The mode of the socket calculator:</span>
 
 <span class="sd">        disabled: pure SPARC file IO interface</span>
@@ -419,17 +418,17 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;disabled&quot;</span>
 
-    <span class="k">def</span> <span class="nf">_indir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ext</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">occur</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_indir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ext</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">occur</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{:02d}</span><span class="s2">&quot;</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">_indir</span><span class="p">(</span>
             <span class="n">ext</span><span class="o">=</span><span class="n">ext</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">occur</span><span class="o">=</span><span class="n">occur</span><span class="p">,</span> <span class="n">d_format</span><span class="o">=</span><span class="n">d_format</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log</span>
 
     <span class="nd">@log</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">):</span>
         <span class="c1"># Stripe the parent direcoty information</span>
         <span class="k">if</span> <span class="n">log</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_log</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">log</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
@@ -438,7 +437,7 @@
         <span class="k">return</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">in_socket_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">in_socket_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># The actual socket name for inbound socket</span>
         <span class="c1"># Return name as /tmp/ipi_sparc_&lt;hex&gt;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_socket</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -447,14 +446,14 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_socket</span><span class="o">.</span><span class="n">socket_filename</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">directory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">directory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sparc_bundle&quot;</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory</span><span class="p">)</span>
 
     <span class="nd">@directory</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sparc_bundle&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -462,7 +461,7 @@
         <span class="k">return</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Rewrite the label from Calculator class, since we don&#39;t want to contain pathsep&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sparc_bundle&quot;</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">label</span>
@@ -470,7 +469,7 @@
             <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_label&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="nd">@label</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Rewrite the label from Calculator class,</span>
 <span class="sd">        since we don&#39;t want to contain pathsep</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -481,7 +480,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="n">label</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Like Vasp calculator</span>
 <span class="sd">        ASE atoms --&gt; sort --&gt; SPARC</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -491,7 +490,7 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">sorting</span><span class="p">[</span><span class="s2">&quot;sort&quot;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">resort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Like Vasp calculator</span>
 <span class="sd">        SPARC --&gt; resort --&gt; ASE atoms</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -502,7 +501,7 @@
 
 <div class="viewcode-block" id="SPARC.check_state">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.check_state">[docs]</a>
-    <span class="k">def</span> <span class="nf">check_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Updated check_state method.</span>
 <span class="sd">        By default self.atoms (cached from output files) contains the initial_magmoms,</span>
 <span class="sd">        so we add a zero magmoms to the atoms for comparison if it does not exist.</span>
@@ -533,7 +532,7 @@
         <span class="k">return</span> <span class="n">system_changes</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_make_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extras</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Use $ASE_SPARC_COMMAND or self.command to determine the command</span>
 <span class="sd">        as a last resort, if `sparc` exists in the PATH, use that information</span>
 
@@ -605,7 +604,7 @@
 
 <div class="viewcode-block" id="SPARC.check_input_atoms">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.check_input_atoms">[docs]</a>
-    <span class="k">def</span> <span class="nf">check_input_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_input_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if input atoms are valid for SPARC inputs.</span>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: if the atoms structure is not suitable for SPARC input file</span>
@@ -652,7 +651,7 @@
 
 <div class="viewcode-block" id="SPARC.calculate">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.calculate">[docs]</a>
-    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">],</span> <span class="n">system_changes</span><span class="o">=</span><span class="n">all_changes</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">],</span> <span class="n">system_changes</span><span class="o">=</span><span class="n">all_changes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform a calculation step&quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">check_input_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
@@ -694,7 +693,7 @@
                 <span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_calculate_as_server</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_as_server</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">],</span> <span class="n">system_changes</span><span class="o">=</span><span class="n">all_changes</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Use the server component to send instructions to socket&quot;&quot;&quot;</span>
@@ -714,7 +713,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;forces&quot;</span><span class="p">]</span>
         <span class="k">return</span>
 
-    <span class="k">def</span> <span class="nf">_calculate_with_socket</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_with_socket</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">],</span> <span class="n">system_changes</span><span class="o">=</span><span class="n">all_changes</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform one socket single point calculation&quot;&quot;&quot;</span>
@@ -794,7 +793,7 @@
 
 <div class="viewcode-block" id="SPARC.get_stress">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.get_stress">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_stress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_stress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Warn user the dimensionality change when using stress&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;stress_equiv&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
@@ -803,7 +802,7 @@
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_stress</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_check_input_exclusion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_parameters</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_input_exclusion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_parameters</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if mutually exclusive parameters are provided</span>
 
 <span class="sd">        The exclusion rules are taken from the SPARC manual and currently hard-coded.</span>
@@ -836,7 +835,7 @@
                     <span class="p">)</span>
                 <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_check_minimal_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_parameters</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_minimal_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_parameters</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the minimal input set is satisfied&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">,</span> <span class="s2">&quot;KPOINT_GRID&quot;</span><span class="p">]:</span>
             <span class="k">if</span> <span class="n">param</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">input_parameters</span><span class="p">:</span>
@@ -849,7 +848,7 @@
                 <span class="s2">&quot;You should provide at least one of ECUT, MESH_SPACING or FD_GRID.&quot;</span>
             <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_generate_inpt_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_inpt_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a key:value pair to be written to inpt file</span>
 <span class="sd">        This is an immutable dict as the ground truth</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -870,7 +869,7 @@
 
 <div class="viewcode-block" id="SPARC.write_input">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.write_input">[docs]</a>
-    <span class="k">def</span> <span class="nf">write_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[],</span> <span class="n">system_changes</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="p">[],</span> <span class="n">system_changes</span><span class="o">=</span><span class="p">[]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create input files via SparcBundle</span>
 <span class="sd">        Will use the self.keep_sold_files options to keep old output files</span>
 <span class="sd">        like .out_01, .out_02 etc</span>
@@ -913,7 +912,7 @@
 
 <div class="viewcode-block" id="SPARC.execute">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.execute">[docs]</a>
-    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a normal SPARC calculation without socket. Note we probably need to use a better handling of background process!&quot;&quot;&quot;</span>
         <span class="n">extras</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;-name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_command</span><span class="p">(</span><span class="n">extras</span><span class="o">=</span><span class="n">extras</span><span class="p">)</span>
@@ -931,7 +930,7 @@
                 <span class="p">)</span>
         <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Failed to execute &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">EnvironmentError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span>
+            <span class="k">raise</span> <span class="ne">EnvironmentError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">err</span>
 
         <span class="c1"># We probably don&#39;t want to wait the</span>
         <span class="n">errorcode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">returncode</span>
@@ -945,7 +944,7 @@
 
 <div class="viewcode-block" id="SPARC.close">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.close">[docs]</a>
-    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keep_out_socket</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keep_out_socket</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Close the socket communication, the SPARC process etc&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_socket</span><span class="p">:</span>
             <span class="k">return</span>
@@ -972,7 +971,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset_process</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_send_mpi_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_send_mpi_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send signal to the mpi process within self.process</span>
 <span class="sd">        If the process cannot be found, return without affecting the state</span>
 
@@ -1007,7 +1006,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported process type!&quot;</span><span class="p">)</span>
         <span class="k">return</span>
 
-    <span class="k">def</span> <span class="nf">_reset_process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reset_process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the record for process in the calculator.</span>
 <span class="sd">        Useful if the process is missing or reset the calculator.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1019,7 +1018,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">mpi_state</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">pid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The pid for the stored process&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -1027,17 +1026,17 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">raw_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">raw_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="p">,</span> <span class="s2">&quot;raw_results&quot;</span><span class="p">,</span> <span class="p">{})</span>
 
     <span class="nd">@raw_results</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">raw_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">raw_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">raw_results</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">return</span>
 
 <div class="viewcode-block" id="SPARC.read_results">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.read_results">[docs]</a>
-    <span class="k">def</span> <span class="nf">read_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse from the SparcBundle&quot;&quot;&quot;</span>
         <span class="c1"># self.sparc_bundle.read_raw_results()</span>
         <span class="n">last</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">convert_to_ase</span><span class="p">(</span><span class="n">indices</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">include_all_files</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -1045,7 +1044,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">last</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">results</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_restart</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_restart</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reload the input parameters and atoms from previous calculation.</span>
 
 <span class="sd">        If self.parameters is already set, the parameters will not be loaded</span>
@@ -1071,13 +1070,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">raw_results</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="k">return</span>
 
-    <span class="k">def</span> <span class="nf">get_fermi_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_fermi_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Extra get-method for Fermi level, if calculated&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fermi&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SPARC.detect_sparc_version">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.detect_sparc_version">[docs]</a>
-    <span class="k">def</span> <span class="nf">detect_sparc_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detect_sparc_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a short sparc test to determine which sparc is used&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_command</span><span class="p">()</span>
@@ -1112,7 +1111,7 @@
 
 <div class="viewcode-block" id="SPARC.run_client">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.run_client">[docs]</a>
-    <span class="k">def</span> <span class="nf">run_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_stress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_stress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Main method to start the client code&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket_mode</span> <span class="o">==</span> <span class="s2">&quot;client&quot;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
@@ -1124,7 +1123,7 @@
 
 <div class="viewcode-block" id="SPARC.detect_socket_compatibility">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.detect_socket_compatibility">[docs]</a>
-    <span class="k">def</span> <span class="nf">detect_socket_compatibility</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detect_socket_compatibility</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Test if the sparc binary supports socket mode&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">cmd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_command</span><span class="p">()</span>
@@ -1143,7 +1142,7 @@
 
 <div class="viewcode-block" id="SPARC.set">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.set">[docs]</a>
-    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Overwrite the initial parameters&quot;&quot;&quot;</span>
         <span class="c1"># Do not use JSON Schema for these arguments</span>
         <span class="k">if</span> <span class="s2">&quot;label&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
@@ -1183,7 +1182,7 @@
         <span class="k">return</span> <span class="n">changed</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_sanitize_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sanitize_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert known parameters from JSON API&quot;&quot;&quot;</span>
         <span class="n">validator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validator</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">special_params</span> <span class="o">==</span> <span class="p">{}:</span>
@@ -1222,7 +1221,7 @@
                     <span class="p">)</span>
         <span class="k">return</span>
 
-    <span class="k">def</span> <span class="nf">_convert_special_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert_special_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert ASE-compatible parameters to SPARC compatible ones</span>
 <span class="sd">        parameters like `h`, `nbands` may need atoms information</span>
 
@@ -1342,7 +1341,7 @@
 
 <div class="viewcode-block" id="SPARC.print_sysinfo">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.print_sysinfo">[docs]</a>
-    <span class="k">def</span> <span class="nf">print_sysinfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_sysinfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Record current runtime information&quot;&quot;&quot;</span>
         <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">command</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1363,42 +1362,42 @@
     <span class="c1"># Below are deprecated functions from v1</span>
     <span class="c1">###############################################</span>
     <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please use SPARC.set instead for setting grid&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">interpret_grid_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interpret_grid_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please use SPARC.set instead for setting kpoints&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">interpret_kpoint_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interpret_kpoint_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please use SPARC.set instead for setting downsampling parameter&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">interpret_downsampling_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interpret_downsampling_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please use SPARC.set instead for setting kpoint shift&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">interpret_kpoint_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interpret_kpoint_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please use SPARC.psp_dir instead&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get_pseudopotential_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pseudo_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pseudopotential_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pseudo_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparc_bundle</span><span class="o">.</span><span class="n">psp_dir</span>
 
 <div class="viewcode-block" id="SPARC.get_nstates">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.get_nstates">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_nstates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_nstates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Parsing nstates is not yet implemented.&quot;</span><span class="p">)</span></div>
 
 
     <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please set the variables separatedly&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">setup_parallel_env</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_parallel_env</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Please use SPARC._make_command instead&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">generate_command</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_command</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_command</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SPARC.estimate_memory">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.estimate_memory">[docs]</a>
-    <span class="k">def</span> <span class="nf">estimate_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;GB&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">estimate_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;GB&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        a function to estimate the amount of memory required to run</span>
 <span class="sd">        the selected calculation. This function takes in **kwargs,</span>
@@ -1448,64 +1447,64 @@
 
 <div class="viewcode-block" id="SPARC.get_scf_steps">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.get_scf_steps">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_scf_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_uncompleted_last_step</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_scf_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_uncompleted_last_step</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">raise</span> <span class="bp">NotImplemented</span></div>
 
 
     <span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Use SPARC.get_number_of_ionic_steps instead&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get_geometric_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_uncompleted_last_step</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_geometric_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_uncompleted_last_step</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">raise</span> <span class="bp">NotImplemented</span>
 
 <div class="viewcode-block" id="SPARC.get_runtime">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.get_runtime">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_runtime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_runtime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="bp">NotImplemented</span></div>
 
 
 <div class="viewcode-block" id="SPARC.get_fermi_level">
 <a class="viewcode-back" href="../../api/sparc.calculator.html#sparc.calculator.SPARC.get_fermi_level">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_fermi_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_fermi_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="bp">NotImplemented</span></div>
 
 
     <span class="nd">@deprecated</span>
-    <span class="k">def</span> <span class="nf">concatinate_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">concatinate_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;Functionality moved in sparc.SparcBundle.&quot;</span><span class="p">)</span>
 
     <span class="nd">@deprecated</span>
-    <span class="k">def</span> <span class="nf">read_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span>
             <span class="s2">&quot;Parsers for individual files have been moved to sparc.sparc_parsers module&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@deprecated</span>
-    <span class="k">def</span> <span class="nf">parse_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;Use SPARC.read_results for parsing results!&quot;</span><span class="p">)</span>
 
     <span class="nd">@deprecated</span>
-    <span class="k">def</span> <span class="nf">parse_relax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_relax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;Use SPARC.read_results for parsing results!&quot;</span><span class="p">)</span>
 
     <span class="nd">@deprecated</span>
-    <span class="k">def</span> <span class="nf">parse_MD</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_MD</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;Use SPARC.read_results for parsing results!&quot;</span><span class="p">)</span>
 
     <span class="nd">@deprecated</span>
-    <span class="k">def</span> <span class="nf">parse_input_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_block</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_input_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_block</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;Use SPARC.set for argument handling!&quot;</span><span class="p">)</span>
 
     <span class="nd">@deprecated</span>
-    <span class="k">def</span> <span class="nf">recover_index_order_from_ion_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">recover_index_order_from_ion_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span>
             <span class="s2">&quot;Use SPARC.sort and SPARC.resort for atomic index sorting!&quot;</span>
         <span class="p">)</span>
 
     <span class="nd">@deprecated</span>
-    <span class="k">def</span> <span class="nf">atoms_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">atoms_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
     <span class="nd">@deprecated</span>
-    <span class="k">def</span> <span class="nf">dict_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dict_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
 </pre></div>

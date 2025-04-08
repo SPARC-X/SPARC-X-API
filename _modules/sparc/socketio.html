@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.socketio &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -49,7 +49,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -82,16 +81,16 @@
   <h1>Source code for sparc.socketio</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;A i-PI compatible socket protocol implemented in SPARC</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">hashlib</span>
-<span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">pickle</span>
-<span class="kn">import</span> <span class="nn">random</span>
-<span class="kn">import</span> <span class="nn">socket</span>
-<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">ase.calculators.socketio</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.calculators.socketio</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">IPIProtocol</span><span class="p">,</span>
     <span class="n">SocketClient</span><span class="p">,</span>
     <span class="n">SocketClosed</span><span class="p">,</span>
@@ -102,7 +101,7 @@
 
 <div class="viewcode-block" id="generate_random_socket_name">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.generate_random_socket_name">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_random_socket_name</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;sparc_&quot;</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_random_socket_name</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;sparc_&quot;</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a random socket name with the given prefix and a specified length of random hex characters.&quot;&quot;&quot;</span>
     <span class="n">random_chars</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">hexdigits</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">k</span><span class="o">=</span><span class="n">length</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">random_chars</span></div>
@@ -111,12 +110,12 @@
 
 <div class="viewcode-block" id="SPARCProtocol">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCProtocol">[docs]</a>
-<span class="k">class</span> <span class="nc">SPARCProtocol</span><span class="p">(</span><span class="n">IPIProtocol</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SPARCProtocol</span><span class="p">(</span><span class="n">IPIProtocol</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extending the i-PI protocol to support extra routines&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SPARCProtocol.send_string">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCProtocol.send_string">[docs]</a>
-    <span class="k">def</span> <span class="nf">send_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">msglen</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">msglen</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;  send string&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
         <span class="c1"># assert msg in self.statements, msg</span>
         <span class="k">if</span> <span class="n">msglen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -130,7 +129,7 @@
 
 <div class="viewcode-block" id="SPARCProtocol.send_object">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCProtocol.send_object">[docs]</a>
-    <span class="k">def</span> <span class="nf">send_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send an object dumped into pickle&quot;&quot;&quot;</span>
         <span class="c1"># We can use the highese protocol since the</span>
         <span class="c1"># python requirement &gt;= 3.8</span>
@@ -155,7 +154,7 @@
 
 <div class="viewcode-block" id="SPARCProtocol.recv_object">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCProtocol.recv_object">[docs]</a>
-    <span class="k">def</span> <span class="nf">recv_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_header</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">recv_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_header</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a decoded file</span>
 
 <span class="sd">        include_header: should we receive the header or not</span>
@@ -182,7 +181,7 @@
 
 <div class="viewcode-block" id="SPARCProtocol.send_param">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCProtocol.send_param">[docs]</a>
-    <span class="k">def</span> <span class="nf">send_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a specific param setting to SPARC</span>
 <span class="sd">        This is just a test function to see how things may work</span>
 
@@ -204,7 +203,7 @@
 
 <div class="viewcode-block" id="SPARCProtocol.sendinit">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCProtocol.sendinit">[docs]</a>
-    <span class="k">def</span> <span class="nf">sendinit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sendinit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Mimick the old sendinit method but to provide atoms and params</span>
 <span class="sd">        to the calculator instance.</span>
 <span class="sd">        The actual behavior regarding how the calculator would be (re)-initialized, dependends on the implementation of recvinit</span>
@@ -221,14 +220,14 @@
 
 <div class="viewcode-block" id="SPARCProtocol.recvinit">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCProtocol.recvinit">[docs]</a>
-    <span class="k">def</span> <span class="nf">recvinit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">recvinit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Fallback recvinit method&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">recvinit</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="SPARCProtocol.calculate_new_protocol">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCProtocol.calculate_new_protocol">[docs]</a>
-    <span class="k">def</span> <span class="nf">calculate_new_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_new_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
         <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot; calculate with new protocol&quot;</span><span class="p">)</span>
@@ -260,13 +259,13 @@
 
 <div class="viewcode-block" id="SPARCSocketServer">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCSocketServer">[docs]</a>
-<span class="k">class</span> <span class="nc">SPARCSocketServer</span><span class="p">(</span><span class="n">SocketServer</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SPARCSocketServer</span><span class="p">(</span><span class="n">SocketServer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;We only implement the unix socket version due to simplicity</span>
 
 <span class="sd">    parent: the SPARC parent calculator</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">unixsocket</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -286,21 +285,21 @@
 
     <span class="c1"># TODO: guard cases for non-unix sockets</span>
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">socket_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">socket_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">serversocket</span><span class="o">.</span><span class="n">getsockname</span><span class="p">()</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">proc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">proc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">process</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
     <span class="nd">@proc</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">proc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">proc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="k">return</span>
 
-    <span class="k">def</span> <span class="nf">_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Use the SPARCProtocol instead&quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proc</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_accept</span><span class="p">()</span>
@@ -313,7 +312,7 @@
 
 <div class="viewcode-block" id="SPARCSocketServer.send_atoms_and_params">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCSocketServer.send_atoms_and_params">[docs]</a>
-    <span class="k">def</span> <span class="nf">send_atoms_and_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send_atoms_and_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the atoms and parameters for the SPARC calculator</span>
 <span class="sd">        The params should be assignable to SPARC.set</span>
 
@@ -328,7 +327,7 @@
 
 <div class="viewcode-block" id="SPARCSocketServer.calculate_origin_protocol">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCSocketServer.calculate_origin_protocol">[docs]</a>
-    <span class="k">def</span> <span class="nf">calculate_origin_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_origin_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send geometry to client and return calculated things as dict.</span>
 
 <span class="sd">        This will block until client has established connection, then</span>
@@ -344,7 +343,7 @@
 
 <div class="viewcode-block" id="SPARCSocketServer.calculate_new_protocol">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCSocketServer.calculate_new_protocol">[docs]</a>
-    <span class="k">def</span> <span class="nf">calculate_new_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_new_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{}):</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span>
 
         <span class="c1"># If we have not established connection yet, we must block</span>
@@ -358,8 +357,8 @@
 
 <div class="viewcode-block" id="SPARCSocketClient">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCSocketClient">[docs]</a>
-<span class="k">class</span> <span class="nc">SPARCSocketClient</span><span class="p">(</span><span class="n">SocketClient</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SPARCSocketClient</span><span class="p">(</span><span class="n">SocketClient</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
         <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -387,7 +386,7 @@
 
 <div class="viewcode-block" id="SPARCSocketClient.calculate">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCSocketClient.calculate">[docs]</a>
-    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">use_stress</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">use_stress</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Use the calculator instance&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent_calc</span>
@@ -396,7 +395,7 @@
 
 <div class="viewcode-block" id="SPARCSocketClient.irun">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCSocketClient.irun">[docs]</a>
-    <span class="k">def</span> <span class="nf">irun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">use_stress</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">irun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">use_stress</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reimplement single step calculation</span>
 
 <span class="sd">        We&#39;re free to implement the INIT method in socket protocol as most</span>
@@ -476,7 +475,7 @@
 
 <div class="viewcode-block" id="SPARCSocketClient.run">
 <a class="viewcode-back" href="../../api/sparc.socketio.html#sparc.socketio.SPARCSocketClient.run">[docs]</a>
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_stress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_stress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Socket mode in SPARC should allow arbitrary start&quot;&quot;&quot;</span>
         <span class="c1"># As a default we shall start the SPARCSocketIO always in needinit mode</span>
         <span class="k">if</span> <span class="n">atoms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

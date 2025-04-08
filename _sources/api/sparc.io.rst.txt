@@ -3,5 +3,5 @@ sparc.io module
 
 .. automodule:: sparc.io
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

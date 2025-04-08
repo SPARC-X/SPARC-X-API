@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Basic Usage &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
@@ -61,7 +61,6 @@
 <li class="toctree-l1"><a class="reference internal" href="package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -102,8 +101,8 @@ file format:</p>
 <ul class="simple">
 <li><p>Reading from a SPARC bundle</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sparc</span>
-<span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">write</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sparc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">write</span>
 <span class="n">atoms</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s2">&quot;test.sparc&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -111,9 +110,9 @@ file format:</p>
 <ul class="simple">
 <li><p>Writing a minimal SPARC bundle from atoms</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sparc</span>
-<span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">write</span>
-<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">Bulk</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sparc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">write</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bulk</span>
 <span class="n">atoms</span> <span class="o">=</span> <span class="n">Bulk</span><span class="p">(</span><span class="s2">&quot;Al&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
 <span class="n">atoms</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;test.sparc&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;sparc&quot;</span><span class="p">)</span>
 </pre></div>
@@ -153,8 +152,8 @@ as shown in the following examples:</p>
 <ol class="arabic simple">
 <li><p>Single point calculation</p></li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
-<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">molecule</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sparc.calculator</span><span class="w"> </span><span class="kn">import</span> <span class="n">SPARC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">molecule</span>
 <span class="n">atoms</span> <span class="o">=</span> <span class="n">molecule</span><span class="p">(</span><span class="s2">&quot;H2&quot;</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">pbc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;run_sp&quot;</span><span class="p">)</span>
 <span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
 <span class="n">atoms</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
@@ -169,8 +168,8 @@ for printing the forces.</p>
 <ol class="arabic simple" start="2">
 <li><p>Geometric optimization (using SPARC’s internal routines)</p></li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
-<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">bulk</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sparc.calculator</span><span class="w"> </span><span class="kn">import</span> <span class="n">SPARC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">bulk</span>
 <span class="n">atoms</span> <span class="o">=</span> <span class="n">bulk</span><span class="p">(</span><span class="s2">&quot;Al&quot;</span><span class="p">,</span> <span class="n">cubic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">atoms</span><span class="o">.</span><span class="n">rattle</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
 <span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">relax_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;run_opt&quot;</span><span class="p">)</span>
@@ -185,8 +184,8 @@ with SPARC’s default LBFGS routine.</p>
 <ol class="arabic simple" start="3">
 <li><p>AIMD in SPARC</p></li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
-<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">bulk</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sparc.calculator</span><span class="w"> </span><span class="kn">import</span> <span class="n">SPARC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">bulk</span>
 <span class="n">md_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">md_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ion_temp</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span> <span class="n">md_method</span><span class="o">=</span><span class="s2">&quot;NVE&quot;</span><span class="p">,</span> <span class="n">md_timestep</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">md_nstep</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="n">atoms</span> <span class="o">=</span> <span class="n">bulk</span><span class="p">(</span><span class="s2">&quot;Al&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="n">atoms</span><span class="o">.</span><span class="n">rattle</span><span class="p">()</span>
@@ -200,9 +199,9 @@ If you want to extract more information about the MD simulation steps, take a lo
 <li><p>Geometric optimization using ASE’s optimizers</p></li>
 </ol>
 <p>The power of <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> is to combine single point <code class="docutils literal notranslate"><span class="pre">SPARC</span></code> calculations with advanced ASE optimizers, such as <code class="docutils literal notranslate"><span class="pre">BFGS</span></code>, <code class="docutils literal notranslate"><span class="pre">FIRE</span></code> or <code class="docutils literal notranslate"><span class="pre">GPMin</span></code>. Example 2 can be re-written as:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
-<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">bulk</span>
-<span class="kn">from</span> <span class="nn">ase.optimize</span> <span class="kn">import</span> <span class="n">LBFGS</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sparc.calculator</span><span class="w"> </span><span class="kn">import</span> <span class="n">SPARC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">bulk</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">LBFGS</span>
 <span class="n">atoms</span> <span class="o">=</span> <span class="n">bulk</span><span class="p">(</span><span class="s2">&quot;Al&quot;</span><span class="p">,</span> <span class="n">cubic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">atoms</span><span class="o">.</span><span class="n">rattle</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
 <span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;run_opt_ase&quot;</span><span class="p">)</span>
@@ -342,25 +341,25 @@ unit system:</p>
 <p>Users from other DFT codes can easily port their ASE codes to <code class="docutils literal notranslate"><span class="pre">SPARC-X-API</span></code> using the special parameters with minimal modification:</p>
 <p>Example 1: VASP vs SPARC</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Using VASP</span>
-<span class="kn">from</span> <span class="nn">ase.calculators.vasp</span> <span class="kn">import</span> <span class="n">Vasp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.calculators.vasp</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vasp</span>
 <span class="n">calc</span> <span class="o">=</span> <span class="n">Vasp</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s2">&quot;rpbe&quot;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span> <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;vasp-calc&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>vs</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Using SPARC</span>
-<span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sparc.calculator</span><span class="w"> </span><span class="kn">import</span> <span class="n">SPARC</span>
 <span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s2">&quot;rpbe&quot;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span> <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;sparc-calc.sparc&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Example 2: GPAW (another real-space DFT code) vs SPARC</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Using GPAW</span>
-<span class="kn">from</span> <span class="nn">gpaw</span> <span class="kn">import</span> <span class="n">GPAW</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gpaw</span><span class="w"> </span><span class="kn">import</span> <span class="n">GPAW</span>
 <span class="n">calc</span> <span class="o">=</span> <span class="n">GPAW</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s2">&quot;PBE&quot;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span> <span class="n">h</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;gpaw-calc&quot;</span><span class="p">,</span> <span class="n">convergence</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="mf">1.e-4</span><span class="p">})</span>
 </pre></div>
 </div>
 <p>vs</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Using SPARC</span>
-<span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sparc.calculator</span><span class="w"> </span><span class="kn">import</span> <span class="n">SPARC</span>
 <span class="n">calc</span> <span class="o">=</span> <span class="n">SPARC</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s2">&quot;PBE&quot;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span> <span class="n">h</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="s2">&quot;sparc-calc.sparc&quot;</span><span class="p">,</span> <span class="n">convergence</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="mf">1.e-4</span><span class="p">})</span>
 </pre></div>
 </div>

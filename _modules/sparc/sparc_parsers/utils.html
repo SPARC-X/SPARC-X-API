@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.sparc_parsers.utils &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -49,7 +49,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -80,12 +79,12 @@
            <div itemprop="articleBody">
              
   <h1>Source code for sparc.sparc_parsers.utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
 
 
 <div class="viewcode-block" id="get_label">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.utils.html#sparc.sparc_parsers.utils.get_label">[docs]</a>
-<span class="k">def</span> <span class="nf">get_label</span><span class="p">(</span><span class="n">fileobj</span><span class="p">,</span> <span class="n">ext</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_label</span><span class="p">(</span><span class="n">fileobj</span><span class="p">,</span> <span class="n">ext</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the label of file by stripping the extension (e.g. .ion)&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">fileobj</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="n">ext</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
@@ -93,7 +92,7 @@
 
 <div class="viewcode-block" id="strip_comments">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.utils.html#sparc.sparc_parsers.utils.strip_comments">[docs]</a>
-<span class="k">def</span> <span class="nf">strip_comments</span><span class="p">(</span><span class="n">rawtext</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">strip_comments</span><span class="p">(</span><span class="n">rawtext</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Strip comments from the text, including trailing comments&quot;&quot;&quot;</span>
     <span class="n">stripped</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">comments</span> <span class="o">=</span> <span class="p">[]</span>
@@ -109,7 +108,7 @@
 
 <div class="viewcode-block" id="bisect_and_strip">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.utils.html#sparc.sparc_parsers.utils.bisect_and_strip">[docs]</a>
-<span class="k">def</span> <span class="nf">bisect_and_strip</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">bisect_and_strip</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;split string in 2 at first occurence of a character and remove whitespace</span>
 <span class="sd">    useful for separating comments from data, keys from values, etc.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -121,7 +120,7 @@
 
 <div class="viewcode-block" id="read_block_input">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.utils.html#sparc.sparc_parsers.utils.read_block_input">[docs]</a>
-<span class="k">def</span> <span class="nf">read_block_input</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_block_input</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read blocks of inputs from ion or inpt file and convert with validator</span>
 
 <span class="sd">    the following inputs are accepted:</span>
@@ -176,7 +175,7 @@
 
 <div class="viewcode-block" id="make_reverse_mapping">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.utils.html#sparc.sparc_parsers.utils.make_reverse_mapping">[docs]</a>
-<span class="k">def</span> <span class="nf">make_reverse_mapping</span><span class="p">(</span><span class="n">mapping</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_reverse_mapping</span><span class="p">(</span><span class="n">mapping</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Given a list of mapping, get its reverse mapping</span>
 
 <span class="sd">    For example:</span>

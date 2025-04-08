@@ -3,5 +3,5 @@ sparc.api module
 
 .. automodule:: sparc.api
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

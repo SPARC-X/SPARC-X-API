@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.sparc_parsers.atoms &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -49,7 +49,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -84,25 +83,25 @@
 <span class="sd">and vice versa</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Atoms</span>
-<span class="kn">from</span> <span class="nn">ase.constraints</span> <span class="kn">import</span> <span class="n">FixAtoms</span><span class="p">,</span> <span class="n">FixedLine</span><span class="p">,</span> <span class="n">FixedPlane</span>
-<span class="kn">from</span> <span class="nn">ase.units</span> <span class="kn">import</span> <span class="n">Bohr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Atoms</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.constraints</span><span class="w"> </span><span class="kn">import</span> <span class="n">FixAtoms</span><span class="p">,</span> <span class="n">FixedLine</span><span class="p">,</span> <span class="n">FixedPlane</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bohr</span>
 
-<span class="kn">from</span> <span class="nn">.inpt</span> <span class="kn">import</span> <span class="n">_inpt_cell_to_ase_cell</span>
-<span class="kn">from</span> <span class="nn">.ion</span> <span class="kn">import</span> <span class="n">_ion_coord_to_ase_pos</span>
-<span class="kn">from</span> <span class="nn">.pseudopotential</span> <span class="kn">import</span> <span class="n">find_pseudo_path</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">make_reverse_mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.inpt</span><span class="w"> </span><span class="kn">import</span> <span class="n">_inpt_cell_to_ase_cell</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.ion</span><span class="w"> </span><span class="kn">import</span> <span class="n">_ion_coord_to_ase_pos</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.pseudopotential</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_pseudo_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_reverse_mapping</span>
 
 <span class="c1"># from .sparc_parsers.ion import read_ion, write_ion</span>
 
 
 <div class="viewcode-block" id="atoms_to_dict">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.atoms_to_dict">[docs]</a>
-<span class="k">def</span> <span class="nf">atoms_to_dict</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">atoms_to_dict</span><span class="p">(</span>
     <span class="n">atoms</span><span class="p">,</span>
     <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -220,7 +219,7 @@
 
 <div class="viewcode-block" id="dict_to_atoms">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.dict_to_atoms">[docs]</a>
-<span class="k">def</span> <span class="nf">dict_to_atoms</span><span class="p">(</span><span class="n">data_dict</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">dict_to_atoms</span><span class="p">(</span><span class="n">data_dict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Given a SPARC struct dict, construct the ASE atoms object</span>
 
 <span class="sd">    Note: this method supports only 1 Atoms at a time</span>
@@ -294,7 +293,7 @@
 
 <div class="viewcode-block" id="count_symbols">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.count_symbols">[docs]</a>
-<span class="k">def</span> <span class="nf">count_symbols</span><span class="p">(</span><span class="n">symbols</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">count_symbols</span><span class="p">(</span><span class="n">symbols</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Count the number of consecutive elements.</span>
 <span class="sd">    Output tuple is: element, start, end</span>
 <span class="sd">    For example, &quot;CHCHHO&quot; --&gt; [(&#39;C&#39;, 0, 1), (&#39;H&#39;, 1, 2), (&#39;C&#39;, 2, 3), (&#39;H&#39;, 3, 5), (&#39;O&#39;, 5, 6)]</span>
@@ -317,7 +316,7 @@
 
 <div class="viewcode-block" id="constraints_from_relax">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.constraints_from_relax">[docs]</a>
-<span class="k">def</span> <span class="nf">constraints_from_relax</span><span class="p">(</span><span class="n">relax_dict</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">constraints_from_relax</span><span class="p">(</span><span class="n">relax_dict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert the SPARC RELAX fields to ASE&#39;s constraints</span>
 
@@ -373,7 +372,7 @@
 
 <div class="viewcode-block" id="relax_from_constraint">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.relax_from_constraint">[docs]</a>
-<span class="k">def</span> <span class="nf">relax_from_constraint</span><span class="p">(</span><span class="n">constraint</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">relax_from_constraint</span><span class="p">(</span><span class="n">constraint</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;returns dict of {atom_index: relax_dimensions} for the given constraint&quot;&quot;&quot;</span>
     <span class="n">type_name</span> <span class="o">=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">todict</span><span class="p">()[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="n">FixAtoms</span><span class="p">):</span>
@@ -405,7 +404,7 @@
 
 <div class="viewcode-block" id="relax_from_all_constraints">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.relax_from_all_constraints">[docs]</a>
-<span class="k">def</span> <span class="nf">relax_from_all_constraints</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">natoms</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">relax_from_all_constraints</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">natoms</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;converts ASE atom constraints to SPARC relaxed dimensions for the atoms&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[]</span>
@@ -431,7 +430,7 @@
 
 <div class="viewcode-block" id="modify_atoms_bc">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.modify_atoms_bc">[docs]</a>
-<span class="k">def</span> <span class="nf">modify_atoms_bc</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">sparc_bc</span><span class="p">,</span> <span class="n">twist_angle</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">modify_atoms_bc</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">sparc_bc</span><span class="p">,</span> <span class="n">twist_angle</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Modify the atoms boundary conditions in-place from the bc information</span>
 <span class="sd">    sparc_bc is a keyword from inpt</span>
 <span class="sd">    twist_angle is the helix twist angle in inpt</span>
@@ -472,7 +471,7 @@
 
 <div class="viewcode-block" id="atoms_bc_to_sparc">
 <a class="viewcode-back" href="../../../api/sparc.sparc_parsers.atoms.html#sparc.sparc_parsers.atoms.atoms_bc_to_sparc">[docs]</a>
-<span class="k">def</span> <span class="nf">atoms_bc_to_sparc</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">atoms_bc_to_sparc</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use atoms&#39; internal pbc and info to construct inpt blocks</span>
 
 <span class="sd">    Returns:</span>

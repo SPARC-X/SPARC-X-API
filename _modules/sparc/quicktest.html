@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.quicktest &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -49,7 +49,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -84,16 +83,16 @@
 <span class="sd">Usage:</span>
 <span class="sd">python -m sparc.quicktest</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="kn">from</span> <span class="nn">ase.data</span> <span class="kn">import</span> <span class="n">chemical_symbols</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">chemical_symbols</span>
 
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">cprint</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">cprint</span>
 
 
 <div class="viewcode-block" id="BaseTest">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.BaseTest">[docs]</a>
-<span class="k">class</span> <span class="nc">BaseTest</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BaseTest</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for all tests providing functionalities</span>
 
 <span class="sd">    Each child class will implement its own `run_test` method to</span>
@@ -104,7 +103,7 @@
 <span class="sd">    helper message at the end of the docstring</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">error_handling</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
@@ -112,12 +111,12 @@
 
     <span class="nd">@property</span>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">dislay_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dislay_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span>
 
 <div class="viewcode-block" id="BaseTest.display_docstring">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.BaseTest.display_docstring">[docs]</a>
-    <span class="k">def</span> <span class="nf">display_docstring</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display_docstring</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the class&#39;s docstring to error handling&quot;&quot;&quot;</span>
         <span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__doc__</span>
         <span class="n">error_handling_lines</span> <span class="o">=</span> <span class="p">[]</span>
@@ -153,14 +152,14 @@
 
 <div class="viewcode-block" id="BaseTest.make_test">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.BaseTest.make_test">[docs]</a>
-    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Each class should implement ways to update `result` and `info`&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
 <div class="viewcode-block" id="BaseTest.run_test">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.BaseTest.run_test">[docs]</a>
-    <span class="k">def</span> <span class="nf">run_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run test and update result etc.</span>
 <span class="sd">        If result is False, update the error handling message</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -183,7 +182,7 @@
 
 <div class="viewcode-block" id="ImportTest">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.ImportTest">[docs]</a>
-<span class="k">class</span> <span class="nc">ImportTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImportTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if external io format `sparc` can be registered in ASE</span>
 
 <span class="sd">    Error handling:</span>
@@ -196,9 +195,9 @@
 
 <div class="viewcode-block" id="ImportTest.make_test">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.ImportTest.make_test">[docs]</a>
-    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">cprint</span><span class="p">(</span><span class="s2">&quot;Testing import...&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;COMMENT&quot;</span><span class="p">)</span>
-        <span class="kn">from</span> <span class="nn">ase.io.formats</span> <span class="kn">import</span> <span class="n">ioformats</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">ase.io.formats</span><span class="w"> </span><span class="kn">import</span> <span class="n">ioformats</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;sparc&quot;</span> <span class="ow">in</span> <span class="n">ioformats</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
@@ -212,7 +211,7 @@
 
 <div class="viewcode-block" id="PspTest">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.PspTest">[docs]</a>
-<span class="k">class</span> <span class="nc">PspTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PspTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check at least one directory of Pseudopotential files exist</span>
 <span class="sd">    info[`psp_dir`] contains the first psp dir found on system</span>
 <span class="sd">    # TODO: check if all psp files can be located</span>
@@ -229,12 +228,12 @@
 
 <div class="viewcode-block" id="PspTest.make_test">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.PspTest.make_test">[docs]</a>
-    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">cprint</span><span class="p">(</span><span class="s2">&quot;Testing pseudo potential path...&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;COMMENT&quot;</span><span class="p">)</span>
-        <span class="kn">import</span> <span class="nn">tempfile</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 
-        <span class="kn">from</span> <span class="nn">.io</span> <span class="kn">import</span> <span class="n">SparcBundle</span>
-        <span class="kn">from</span> <span class="nn">.sparc_parsers.pseudopotential</span> <span class="kn">import</span> <span class="n">find_pseudo_path</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparcBundle</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.sparc_parsers.pseudopotential</span><span class="w"> </span><span class="kn">import</span> <span class="n">find_pseudo_path</span>
 
         <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
             <span class="n">sb</span> <span class="o">=</span> <span class="n">SparcBundle</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">)</span>
@@ -281,7 +280,7 @@
 
 <div class="viewcode-block" id="ApiTest">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.ApiTest">[docs]</a>
-<span class="k">class</span> <span class="nc">ApiTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ApiTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the API can be loaded, and store the Schema version.</span>
 
 <span class="sd">    # TODO: consider change to schema instead of api</span>
@@ -296,8 +295,8 @@
 
 <div class="viewcode-block" id="ApiTest.make_test">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.ApiTest.make_test">[docs]</a>
-    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">locate_api</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">locate_api</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">api</span> <span class="o">=</span> <span class="n">locate_api</span><span class="p">()</span>
@@ -320,7 +319,7 @@
 
 <div class="viewcode-block" id="CommandTest">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.CommandTest">[docs]</a>
-<span class="k">class</span> <span class="nc">CommandTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CommandTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check validity of command to run SPARC calculation. This test</span>
 <span class="sd">    also checks sparc version and socket compatibility</span>
 
@@ -336,10 +335,10 @@
 
 <div class="viewcode-block" id="CommandTest.make_test">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.CommandTest.make_test">[docs]</a>
-    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="kn">import</span> <span class="nn">tempfile</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 
-        <span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sparc.calculator</span><span class="w"> </span><span class="kn">import</span> <span class="n">SPARC</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;command&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;sparc_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
@@ -380,7 +379,7 @@
 
 <div class="viewcode-block" id="FileIOCalcTest">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.FileIOCalcTest">[docs]</a>
-<span class="k">class</span> <span class="nc">FileIOCalcTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FileIOCalcTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a simple calculation in File IO mode.</span>
 
 <span class="sd">    # TODO: check ase 3.23 config</span>
@@ -395,12 +394,12 @@
 
 <div class="viewcode-block" id="FileIOCalcTest.make_test">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.FileIOCalcTest.make_test">[docs]</a>
-    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="kn">import</span> <span class="nn">tempfile</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 
-        <span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">bulk</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">ase.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">bulk</span>
 
-        <span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sparc.calculator</span><span class="w"> </span><span class="kn">import</span> <span class="n">SPARC</span>
 
         <span class="c1"># 1x Al atoms with super bad calculation condition</span>
         <span class="n">al</span> <span class="o">=</span> <span class="n">bulk</span><span class="p">(</span><span class="s2">&quot;Al&quot;</span><span class="p">,</span> <span class="n">cubic</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -421,7 +420,7 @@
 
 <div class="viewcode-block" id="SocketCalcTest">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.SocketCalcTest">[docs]</a>
-<span class="k">class</span> <span class="nc">SocketCalcTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SocketCalcTest</span><span class="p">(</span><span class="n">BaseTest</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a simple calculation in Socket mode (UNIX socket).</span>
 
 <span class="sd">    # TODO: check ase 3.23 config</span>
@@ -434,12 +433,12 @@
 
 <div class="viewcode-block" id="SocketCalcTest.make_test">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.SocketCalcTest.make_test">[docs]</a>
-    <span class="k">def</span> <span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="kn">import</span> <span class="nn">tempfile</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 
-        <span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">bulk</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">ase.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">bulk</span>
 
-        <span class="kn">from</span> <span class="nn">sparc.calculator</span> <span class="kn">import</span> <span class="n">SPARC</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">sparc.calculator</span><span class="w"> </span><span class="kn">import</span> <span class="n">SPARC</span>
 
         <span class="c1"># Check SPARC binary socket compatibility</span>
         <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
@@ -473,7 +472,7 @@
 
 <div class="viewcode-block" id="main">
 <a class="viewcode-back" href="../../api/sparc.quicktest.html#sparc.quicktest.main">[docs]</a>
-<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
     <span class="n">cprint</span><span class="p">(</span>
         <span class="p">(</span><span class="s2">&quot;Performing a quick test on your &quot;</span> <span class="s2">&quot;SPARC and python API setup&quot;</span><span class="p">),</span>
         <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>

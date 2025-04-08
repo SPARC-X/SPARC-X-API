@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.calculator module &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
@@ -63,7 +63,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -99,7 +98,7 @@
 <span id="sparc-calculator-module"></span><h1>sparc.calculator module<a class="headerlink" href="#module-sparc.calculator" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="sparc.calculator.SPARC">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.calculator.</span></span><span class="sig-name descname"><span class="pre">SPARC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psp_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sparc.log'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparc_json_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparc_doc_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_old_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_socket</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">socket_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/calculator.html#SPARC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.calculator.SPARC" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.calculator.</span></span><span class="sig-name descname"><span class="pre">SPARC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psp_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sparc.log'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparc_json_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparc_doc_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_old_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_socket</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">socket_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/calculator.html#SPARC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.calculator.SPARC" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">FileIOCalculator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">IOContext</span></code></p>
 <p>Calculator interface to the SPARC codes via the FileIOCalculator</p>
 <dl class="py attribute">
@@ -169,7 +168,7 @@ so we add a zero magmoms to the atoms for comparison if it does not exist.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="sparc.calculator.SPARC.directory">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">directory</span></span><a class="headerlink" href="#sparc.calculator.SPARC.directory" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">directory</span></span><a class="headerlink" href="#sparc.calculator.SPARC.directory" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -241,7 +240,7 @@ input when the class was instantiated</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="sparc.calculator.SPARC.in_socket_filename">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">in_socket_filename</span></span><a class="headerlink" href="#sparc.calculator.SPARC.in_socket_filename" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">in_socket_filename</span></span><a class="headerlink" href="#sparc.calculator.SPARC.in_socket_filename" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -266,13 +265,13 @@ input when the class was instantiated</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="sparc.calculator.SPARC.label">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">label</span></span><a class="headerlink" href="#sparc.calculator.SPARC.label" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">label</span></span><a class="headerlink" href="#sparc.calculator.SPARC.label" title="Link to this definition"></a></dt>
 <dd><p>Rewrite the label from Calculator class, since we don’t want to contain pathsep</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="sparc.calculator.SPARC.log">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">log</span></span><a class="headerlink" href="#sparc.calculator.SPARC.log" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">log</span></span><a class="headerlink" href="#sparc.calculator.SPARC.log" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -302,7 +301,7 @@ input when the class was instantiated</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="sparc.calculator.SPARC.pid">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pid</span></span><a class="headerlink" href="#sparc.calculator.SPARC.pid" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pid</span></span><a class="headerlink" href="#sparc.calculator.SPARC.pid" title="Link to this definition"></a></dt>
 <dd><p>The pid for the stored process</p>
 </dd></dl>
 
@@ -314,7 +313,7 @@ input when the class was instantiated</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="sparc.calculator.SPARC.raw_results">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">raw_results</span></span><a class="headerlink" href="#sparc.calculator.SPARC.raw_results" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">raw_results</span></span><a class="headerlink" href="#sparc.calculator.SPARC.raw_results" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -335,7 +334,7 @@ input when the class was instantiated</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="sparc.calculator.SPARC.resort">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resort</span></span><a class="headerlink" href="#sparc.calculator.SPARC.resort" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resort</span></span><a class="headerlink" href="#sparc.calculator.SPARC.resort" title="Link to this definition"></a></dt>
 <dd><p>Like Vasp calculator
 SPARC –&gt; resort –&gt; ASE atoms</p>
 </dd></dl>
@@ -359,7 +358,7 @@ SPARC –&gt; resort –&gt; ASE atoms</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="sparc.calculator.SPARC.socket_mode">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">socket_mode</span></span><a class="headerlink" href="#sparc.calculator.SPARC.socket_mode" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">socket_mode</span></span><a class="headerlink" href="#sparc.calculator.SPARC.socket_mode" title="Link to this definition"></a></dt>
 <dd><p>The mode of the socket calculator:</p>
 <p>disabled: pure SPARC file IO interface
 local: Serves as a local SPARC calculator with socket support
@@ -369,7 +368,7 @@ server: Remote server</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="sparc.calculator.SPARC.sort">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sort</span></span><a class="headerlink" href="#sparc.calculator.SPARC.sort" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sort</span></span><a class="headerlink" href="#sparc.calculator.SPARC.sort" title="Link to this definition"></a></dt>
 <dd><p>Like Vasp calculator
 ASE atoms –&gt; sort –&gt; SPARC</p>
 </dd></dl>
@@ -381,7 +380,7 @@ ASE atoms –&gt; sort –&gt; SPARC</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="sparc.calculator.SPARC.use_socket">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">use_socket</span></span><a class="headerlink" href="#sparc.calculator.SPARC.use_socket" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">use_socket</span></span><a class="headerlink" href="#sparc.calculator.SPARC.use_socket" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

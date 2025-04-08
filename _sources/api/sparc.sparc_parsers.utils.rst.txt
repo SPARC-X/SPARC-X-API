@@ -3,5 +3,5 @@ sparc.sparc\_parsers.utils module
 
 .. automodule:: sparc.sparc_parsers.utils
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

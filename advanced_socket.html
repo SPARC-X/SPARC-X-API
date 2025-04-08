@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Advanced Usage: SPARC-X-API as a Socket Interface &mdash; SPARC-X-API  documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
@@ -57,7 +57,6 @@
 <li class="toctree-l1"><a class="reference internal" href="package_components.html">SPARC-X-API Package Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="advanced_topics.html">Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_changes.html">Changes in API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contribute.html">How to Contribute</a></li>
 <li class="toctree-l1"><a class="reference internal" href="maintainers.html">Documentation for Maintainers</a></li>
 </ul>
@@ -150,8 +149,8 @@ via the following approaches as shown in
 <li><p><strong>SPARC binary only</strong> (<a class="reference internal" href="#scheme-sparc-modes">Fig. 3</a> <strong>a</strong>)</p>
 <p>SPARC binary with socket support can be readily coupled with any i-PI compatible socker server, such as
 <code class="docutils literal notranslate"><span class="pre">ase.calculators.socketio.SocketIOCalculator</span></code>, for example</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ase.calculators.socketio</span> <span class="kn">import</span> <span class="n">SocketIOCalculator</span>
-<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ase.calculators.socketio</span><span class="w"> </span><span class="kn">import</span> <span class="n">SocketIOCalculator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">subprocess</span><span class="w"> </span><span class="kn">import</span> <span class="n">Popen</span>
 <span class="n">calc</span> <span class="o">=</span> <span class="n">SocketIOCalculator</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="mi">31415</span><span class="p">)</span>
 <span class="k">with</span> <span class="n">calc</span><span class="p">:</span>
     <span class="c1"># Start sparc at background</span>
