@@ -94,7 +94,7 @@ def _read_geopt_step(raw_step_text):
             # on low-dimensional systems. If the stress matrix is 3x3,
             # the unit is GPa, while lower dimensional stress matrices
             # are using Hartree / Bohr**2 or Hartree / Bohr
-            dim = raw_value.shape[0]
+            dim = np.atleast_1d(raw_value).shape[0]
             if dim == 3:
                 name = "stress"
                 stress_ev_a3 = raw_value * GPa
@@ -114,7 +114,7 @@ def _read_geopt_step(raw_step_text):
                 value = raw_value * Hartree / Bohr**2
             elif dim == 1:
                 name = "stress_1d"
-                value = raw_value * Hartree / Bohr
+                value = float(raw_value * Hartree / Bohr)
             else:
                 raise ValueError("Incorrect stress matrix dimension!")
         else:
