@@ -7,6 +7,7 @@ This file has been heavily modified since SPARC 0.1
 
 TODO: more descriptions about this file io parser
 """
+import re
 from warnings import warn
 
 import numpy as np
@@ -56,13 +57,14 @@ def _read_aimd_step(raw_aimd_text):
     e.g. E_tot = E_tot_per_atom * N_atoms
 
     """
+    header_pattern = re.compile(r"^:\w+:")
     header, body = raw_aimd_text[0], raw_aimd_text[1:]
     if ":MDSTEP:" not in header:
         raise ValueError("Wrong aimd format! The :MDSTEP: label is missing.")
     # Geopt file uses 1-indexed step names, convert to 0-indexed
     step = int(header.split(":MDSTEP:")[-1]) - 1
     print("Step ", step)
-    bounds = [i for i, x in enumerate(body) if ":" in x] + [len(body)]
+    bounds = [i for i, x in enumerate(body) if header_pattern.match(x)] + [len(body)]
     blocks = [body[start:end] for start, end in zip(bounds[:-1], bounds[1:])]
     data = {}
     for block in blocks:
@@ -128,7 +130,7 @@ def _read_aimd_step(raw_aimd_text):
         elif header_name == "STRESS":
             # Same rule as STRESS in geopt
             # no conversion to Voigt form yet
-            dim = raw_value.shape[0]
+            dim = np.atleast_1d(raw_value).shape[0]
             if dim == 3:
                 name = "stress"
                 value = raw_value * GPa
@@ -137,7 +139,7 @@ def _read_aimd_step(raw_aimd_text):
                 value = raw_value * Hartree / Bohr**2
             elif dim == 1:
                 name = "stress_1d"
-                value = raw_value * Hartree / Bohr
+                value = float(raw_value * Hartree / Bohr)
             else:
                 raise ValueError("Incorrect stress matrix dimension!")
         elif header_name == "STRIO":
@@ -156,7 +158,7 @@ def _read_aimd_step(raw_aimd_text):
             # Don't do the volume conversion now
             name = "pressure (ideal gas)"
             value = raw_value * GPa
-        elif header_name in ("AVGV", "MAXV", "MIND"):
+        elif header_name in ("AVGV", "MAXV", "MIND", "TWIST"):
             warn(f"MD output keyword {header_name} will not be parsed.")
             value = None
         else:
