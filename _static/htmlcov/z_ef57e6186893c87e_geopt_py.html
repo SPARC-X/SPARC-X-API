@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_ef57e6186893c87e_inpt_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.8.0">coverage.py v7.8.0</a>,
-            created at 2025-04-08 02:57 +0000
+            created at 2025-04-08 05:15 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -176,7 +176,7 @@
     <p class="pln"><span class="n"><a id="t94" href="#t94">94</a></span><span class="t">            <span class="com"># on low-dimensional systems. If the stress matrix is 3x3,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t95" href="#t95">95</a></span><span class="t">            <span class="com"># the unit is GPa, while lower dimensional stress matrices</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t96" href="#t96">96</a></span><span class="t">            <span class="com"># are using Hartree / Bohr**2 or Hartree / Bohr</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t97" href="#t97">97</a></span><span class="t">            <span class="nam">dim</span> <span class="op">=</span> <span class="nam">raw_value</span><span class="op">.</span><span class="nam">shape</span><span class="op">[</span><span class="num">0</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t97" href="#t97">97</a></span><span class="t">            <span class="nam">dim</span> <span class="op">=</span> <span class="nam">np</span><span class="op">.</span><span class="nam">atleast_1d</span><span class="op">(</span><span class="nam">raw_value</span><span class="op">)</span><span class="op">.</span><span class="nam">shape</span><span class="op">[</span><span class="num">0</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t98" href="#t98">98</a></span><span class="t">            <span class="key">if</span> <span class="nam">dim</span> <span class="op">==</span> <span class="num">3</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t99" href="#t99">99</a></span><span class="t">                <span class="nam">name</span> <span class="op">=</span> <span class="str">"stress"</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t100" href="#t100">100</a></span><span class="t">                <span class="nam">stress_ev_a3</span> <span class="op">=</span> <span class="nam">raw_value</span> <span class="op">*</span> <span class="nam">GPa</span>&nbsp;</span><span class="r"></span></p>
@@ -196,7 +196,7 @@
     <p class="run"><span class="n"><a id="t114" href="#t114">114</a></span><span class="t">                <span class="nam">value</span> <span class="op">=</span> <span class="nam">raw_value</span> <span class="op">*</span> <span class="nam">Hartree</span> <span class="op">/</span> <span class="nam">Bohr</span><span class="op">**</span><span class="num">2</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t115" href="#t115">115</a></span><span class="t">            <span class="key">elif</span> <span class="nam">dim</span> <span class="op">==</span> <span class="num">1</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t116" href="#t116">116</a></span><span class="t">                <span class="nam">name</span> <span class="op">=</span> <span class="str">"stress_1d"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t117" href="#t117">117</a></span><span class="t">                <span class="nam">value</span> <span class="op">=</span> <span class="nam">raw_value</span> <span class="op">*</span> <span class="nam">Hartree</span> <span class="op">/</span> <span class="nam">Bohr</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t117" href="#t117">117</a></span><span class="t">                <span class="nam">value</span> <span class="op">=</span> <span class="nam">float</span><span class="op">(</span><span class="nam">raw_value</span> <span class="op">*</span> <span class="nam">Hartree</span> <span class="op">/</span> <span class="nam">Bohr</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t118" href="#t118">118</a></span><span class="t">            <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t119" href="#t119">119</a></span><span class="t">                <span class="key">raise</span> <span class="nam">ValueError</span><span class="op">(</span><span class="str">"Incorrect stress matrix dimension!"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t120" href="#t120">120</a></span><span class="t">        <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -232,7 +232,7 @@
             <a class="nav" href="z_ef57e6186893c87e_inpt_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.8.0">coverage.py v7.8.0</a>,
-            created at 2025-04-08 02:57 +0000
+            created at 2025-04-08 05:15 +0000
         </p>
     </div>
 </footer>
