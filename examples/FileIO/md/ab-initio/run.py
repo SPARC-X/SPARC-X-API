@@ -1,16 +1,25 @@
-from sparc.calculator import SPARC
-from ase import Atoms
 import numpy as np
+from ase import Atoms
 
-Ag_cluster = Atoms('Ag5', positions = [(0.0, 2.6579, 0.9366), (0.0, -1.3587, -1.4045), (0.0, 0.0, 0.9358), (0.0, -2.6579, 0.9366),
-                                      (0.0, 1.3587, -1.4045)],
-                  pbc = (0,0,0))
-Ag_cluster.set_cell([20., 24., 24.])
+from sparc.calculator import SPARC
+
+Ag_cluster = Atoms(
+    "Ag5",
+    positions=[
+        (0.0, 2.6579, 0.9366),
+        (0.0, -1.3587, -1.4045),
+        (0.0, 0.0, 0.9358),
+        (0.0, -2.6579, 0.9366),
+        (0.0, 1.3587, -1.4045),
+    ],
+    pbc=(0, 0, 0),
+)
+Ag_cluster.set_cell([20.0, 24.0, 24.0])
 Ag_cluster.center()
 
 calc_params = {
     "EXCHANGE_CORRELATION": "GGA_PBE",
-    "KPOINT_GRID": [1,1,1],
+    "KPOINT_GRID": [1, 1, 1],
     "MESH_SPACING": 0.35,
     "TOL_SCF": 0.0001,
     "MAXIT_SCF": 100,
@@ -25,8 +34,15 @@ calc_params = {
     "MD_TIMESTEP": 2,
 }
 
-Ag_cluster.calc = SPARC(label = "Ag_cluster", **calc_params)
-energy = Ag_cluster.get_potential_energy()
-print("Energy: ", energy)
-forces = Ag_cluster.get_forces()
-print("Max Force: ", np.max(forces))
+
+def main():
+    """Running a simple MD calculation using ab initio SPARC in FileIO mode"""
+    Ag_cluster.calc = SPARC(label="Ag_cluster", **calc_params)
+    energy = Ag_cluster.get_potential_energy()
+    print("Energy: ", energy)
+    forces = Ag_cluster.get_forces()
+    print("Max Force: ", np.max(forces))
+
+
+if __name__ == "__main__":
+    main()
