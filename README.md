@@ -60,7 +60,7 @@ Install the pre-compiled SPARC binary alongside SPARC-X-API (Linux only).
 conda install -c conda-forge sparc-x
 ```
 
-*Note: the official SPARC binary in the conda-forge channel does not come with [socket support]() yet. Please follow this [instruction]() if you wish to install socket-compatible SPARC code*
+*Note: the official SPARC binary in the conda-forge channel does not come with [socket support](https://github.com/SPARC-X/SPARC-X-API?tab=readme-ov-file#socket-mode) yet. Please follow this [instruction](https://sparc-x.github.io/SPARC-X-API/installation.html#manual-compilation-of-the-sparc-binary-code) if you wish to install socket-compatible SPARC code*
 
 ### Setup SPARC-X-API
 
@@ -94,8 +94,8 @@ atoms = read("sparc_calc_dir/", format="sparc")
 - Write input files
 ```python
 # `format="sparc"` should be specified
-from ase.build import Bulk
-atoms = Bulk("Al") * [4, 4, 4]
+from ase.build import bulk
+atoms = bulk("Al") * [4, 4, 4]
 atoms.write("sparc_calc_dir/", format="sparc")
 ```
 
@@ -155,7 +155,7 @@ atoms.get_forces()
 ```
 
 #### Socket mode
-*Note: A socket-compatible SPARC binary installation is required. Please check this [instruction]() for more details.*
+*Note: A socket-compatible SPARC binary installation is required. Please check this [instruction](https://sparc-x.github.io/SPARC-X-API/installation.html#manual-compilation-of-the-sparc-binary-code) for more details.*
 
 Switching to the socket mode requires just a few parameters, ideal for
 workflows with hundreds or thousands of single point DFT calls with
@@ -168,7 +168,7 @@ from ase.build import molecule
 from ase.optimize import BFGS
 atoms = molecule("H2", cell=(10, 10, 10), pbc=False)
 atoms.center()
-atoms.calc = SPARC(h=0.25, , directory="run_sp", use_socket=True) # 0.25 Å mesh spacing
+atoms.calc = SPARC(h=0.25, directory="run_sp", use_socket=True) # 0.25 Å mesh spacing
 opt = BFGS(atoms)
 with atoms.calc:
     opt.run(fmax=0.01)
