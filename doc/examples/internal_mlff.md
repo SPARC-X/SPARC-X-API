@@ -9,7 +9,7 @@ be accessed via the API by passing the appropriate sparc flags to the
 available in the [SPARC
 documentation](https://github.com/SPARC-X/SPARC/tree/master/doc).
 
-The full python script for training MLFF using SPARC calculated geometric relaxation data can be downloaded [here](https://github.com/SPARC-X/SPARC-X-API/blob/master/examples/FileIO/relax/relax_coords/mlff/run.py).
+The full python script for training MLFF using SPARC calculated geometric relaxation data can be downloaded [here](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/refs/heads/master/examples/FileIO/relax/relax_coords/mlff/run.py).
 
 The primary flag of interest is the `MLFF_FLAG` which must be set to `1` to train a MLFF from scratch. This needs to be included in a parameter dictionary that will later be passed to a SPARC calculator instance:
 
@@ -106,4 +106,4 @@ with SPARC(use_socket=True, **calc_params) as calc:
 
 A MLFF is still trained on-the-fly using SPARC DFT energies, forces, and stresses; but the structures are generated from the `ASE` optimization algorithm.
 
-The full script for socket-enabled MLFF training and optimization can be downloaded [here](https://github.com/SPARC-X/SPARC-X-API/blob/master/examples/socket/relax/mlff/coords/run.py).
+The full script for socket-enabled MLFF training and optimization can be downloaded [here](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/refs/heads/master/examples/socket/md/mlff/plumed/run.py).
