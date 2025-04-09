@@ -102,4 +102,4 @@ with SPARC(use_socket=True, **calc_params) as calc:
     dyn.run(10)
 ```
 
-The full script can be downloaded [here](https://github.com/SPARC-X/SPARC-X-API/blob/master/examples/socket/md/mlff/plumed/run.py).
+The full script can be downloaded [here](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/refs/heads/master/examples/socket/md/mlff/plumed/run.py).

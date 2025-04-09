@@ -79,7 +79,7 @@ calculations:
 You can overcome these using the socket mode, effectively by just
 invoking the `use_socket=True` flag in above case.
 ```{note}
-Make sure your SPARC binary is compiled with socket support. See [installation guide](installation.md) for more details.
+Make sure your SPARC binary is compiled with socket support. See [installation guide](../installation.md) for more details.
 ```
 
 ```{code} python
@@ -106,7 +106,7 @@ Example outputs from the different ways of running the optimization
 are as follows:
 
 SPARC internal LBFGS routine
-```{raw}
+```
 SPARC internal LBFGS:
 Final energy: -330.8388527992713 eV
 Final fmax: 0.014610782237434465 eV/Ang
@@ -114,7 +114,7 @@ N steps: 23
 ```
 
 ASE LBFGS + file I/O mode
-```{raw}
+```
 ASE LBFGS
 Final energy: -330.8460713860338 eV
 Final fmax: 0.008090338967301871 eV/Ang
@@ -122,7 +122,7 @@ N steps: 21
 ```
 
 ASE LBFGS + socket I/O mode
-```{raw}
+```
 ASE LBFGS (socket mode)
 Final energy: -330.8356141220578 eV
 Final fmax: 0.015431850436823448 eV/Ang

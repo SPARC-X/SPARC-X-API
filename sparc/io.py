@@ -988,6 +988,9 @@ def read_sparc_aimd(filename, index=-1, **kwargs):
 read_aimd = read_sparc_aimd
 
 
+@deprecated(
+    "__register_new_filetype will be deprecated for future releases. Please upgrade ase>=3.23."
+)
 def __register_new_filetype():
     """Register the filetype() function that allows recognizing .sparc as directory
     This method should only be called for ase==3.22 compatibility and for ase-gui
