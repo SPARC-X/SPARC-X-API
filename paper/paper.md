@@ -82,27 +82,35 @@ simplicity and wide range of applicability.  Among the various
 numerical implementations of DFT, the plane-wave pseudopotential
 method has gained significant popularity, owing to both its robustness
 and the maturity of associated software packages. However, despite
-their widespread use, plane-wave methods are not without limitations.
-One long-standing challenge in DFT is to develop methods that
-overcome the huge computational cost for solving the Kohn-Sham
-equation, which scales cubically with respect to the system size.
-This becomes especially problematic in massively parallel computing
-environments, where the extensive global communication required during
-Fourier transformations limits the scalability, making it challenging
-to efficiently simulate very large systems in plane-wave DFT.  In
-plane-wave methods, the global nature of the Fourier basis used limits
-the ability to achieve linear scaling
-[@bowler_order_n_dft_2012]. Moreover, the periodic nature of the
-Fourier basis enforces the use of periodic boundary conditions, making
-the simulation setup of isolated and semi-finite systems
-non-straightforward. A compelling alternative to overcome these
-limitations is to solve the Kohn-Sham equations using a
+their widespread use, plane-wave methods face several long-standing
+challenges, mostly related with the reliance of Fourier transformation
+to switch between reciprocal and real-space representations, including
+1) establishing efficient schemes on massively parallel computing
+environments, 2) overcoming the extensive global communication during
+Fourier transformation calculations on very large systems, 3)
+developing linear scaling routines[@bowler_order_n_dft_2012] and 4)
+handle non-periodic boundary conditions for isolated and semi-finite
+systems.  <!-- One --> <!-- long-standing challenge in DFT is to
+develop methods that overcome the --> <!-- huge computational cost for
+solving the Kohn-Sham equation, which --> <!-- scales cubically with
+respect to the system size.  This becomes --> <!-- especially
+problematic in massively parallel computing environments, --> <!--
+where the extensive global communication required during Fourier -->
+<!-- transformations limits the scalability, making it challenging to
+--> <!-- efficiently simulate very large systems in plane-wave DFT.
+In --> <!-- plane-wave methods, the global nature of the Fourier basis
+used limits --> <!-- the ability to achieve linear scaling --> <!--
+[@bowler_order_n_dft_2012]. Moreover, the periodic nature of the -->
+<!-- Fourier basis enforces the use of periodic boundary conditions,
+making --> <!-- the simulation setup of isolated and semi-finite
+systems --> <!-- non-straightforward.  --> A compelling alternative to
+overcome these limitations is to solve the Kohn-Sham equations using a
 finite-difference (FD) approach on real-space grids. The locality of
 the FD method makes real-space DFT methods inherently scalable and
 paves the way for the development of linearly-scaling solutions to the
-Kohn-Sham equations.  Real-space DFT also naturally supports
-periodic and Dirichlet boundary conditions, and combinations thereof,
-allowing for the flexible treatment of systems in any dimensionality.
+Kohn-Sham equations.  Real-space DFT also naturally supports periodic
+and Dirichlet boundary conditions, and combinations thereof, allowing
+for the flexible treatment of systems in any dimensionality.
 
 In the past few years, the SPARC-X project
 ([https://github.com/SPARC-X](https://github.com/SPARC-X)) has led
@@ -128,13 +136,16 @@ method [@suryanarayana_sparc_sq_2018], cyclic/helical symmetry
 perturbation theory (DFPT) [@sharma_sparc_dfpt_2023], orbital-free DFT
 (ODFT) [@ghosh_sparc_ofdft_2016], on-the-fly machine-learning force
 fields (OTF-MLFF) [@kumar_ofdft_delta_ml_2023;
-@timmerman_sparc_mlff_2024; @kumar_sparc_mlff_2024]. The rapid
-development of SPARC has led to the need for a fully functional and
-user-friendly interface that facilitates the use of SPARC with
-high-throughput workflows.  To address this, we introduce the
-SPARC-X-API, a Python interface designed to bridge the SPARC code with
-a wide range of scientific workflows. The SPARC-X-API builds upon the
-Python wrapper originally shipped with SPARC version 1.0
+@timmerman_sparc_mlff_2024; @kumar_sparc_mlff_2024].
+
+The rapid development of SPARC has naturally created a demand for a
+fully functional and user-friendly interface that integrates SPARC
+smoothly into high-throughput workflows, which also completes the SPARC-X toolkit and complements its philosophy of
+usability and portability.
+To address this, we introduce the SPARC-X-API, a
+Python interface designed to bridge the SPARC code with a wide range
+of scientific workflows. The SPARC-X-API builds upon the Python
+wrapper originally shipped with SPARC version 1.0
 [@xu_sparc-1.0_2021], offering an API compatible with the widely-used
 ASE (ASE [@larsen_ase_2017]) standard and updated with the latest
 versions of SPARC. With ASE's support for various popular DFT methods,
@@ -147,8 +158,8 @@ workflows, allowing users to incorporate real-space DFT calculations
 with minimal adjustments.  The modular design of SPARC-X-API makes it
 straightforward to be plugged into complex computational workflows,
 for example high-throughput dynamics simulations by i-PI
-[@litman_i-pi-3.0_2024] and PLUMED [@bonomi_plumed_2019], as
-well as active machine learning frameworks including FineTuna
+[@litman_i-pi-3.0_2024] and PLUMED [@bonomi_plumed_2019], as well as
+active machine learning frameworks including FineTuna
 [@musielewicz_finetuna_2022], powered by state-of-art neural network
 interatomic potentials such as FAIR-Chem
 (https://github.com/FAIR-Chem/fairchem)[https://github.com/FAIR-Chem/fairchem]
