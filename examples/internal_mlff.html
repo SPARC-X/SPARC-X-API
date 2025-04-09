@@ -101,7 +101,7 @@ be accessed via the API by passing the appropriate sparc flags to the
 <code class="docutils literal notranslate"><span class="pre">SPARC</span></code> calculator object. An exhaustive list of MLFF parameters are
 available in the <a class="reference external" href="https://github.com/SPARC-X/SPARC/tree/master/doc">SPARC
 documentation</a>.</p>
-<p>The full python script for training MLFF using SPARC calculated geometric relaxation data can be downloaded <a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/blob/master/examples/FileIO/relax/relax_coords/mlff/run.py">here</a>.</p>
+<p>The full python script for training MLFF using SPARC calculated geometric relaxation data can be downloaded <a class="reference external" href="https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/refs/heads/master/examples/FileIO/relax/relax_coords/mlff/run.py">here</a>.</p>
 <p>The primary flag of interest is the <code class="docutils literal notranslate"><span class="pre">MLFF_FLAG</span></code> which must be set to <code class="docutils literal notranslate"><span class="pre">1</span></code> to train a MLFF from scratch. This needs to be included in a parameter dictionary that will later be passed to a SPARC calculator instance:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calc_params</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;EXCHANGE_CORRELATION&quot;</span><span class="p">:</span> <span class="s2">&quot;GGA_PBE&quot;</span><span class="p">,</span>
@@ -187,7 +187,7 @@ can be modified to use the <code class="docutils literal notranslate"><span clas
 </pre></div>
 </div>
 <p>A MLFF is still trained on-the-fly using SPARC DFT energies, forces, and stresses; but the structures are generated from the <code class="docutils literal notranslate"><span class="pre">ASE</span></code> optimization algorithm.</p>
-<p>The full script for socket-enabled MLFF training and optimization can be downloaded <a class="reference external" href="https://github.com/SPARC-X/SPARC-X-API/blob/master/examples/socket/relax/mlff/coords/run.py">here</a>.</p>
+<p>The full script for socket-enabled MLFF training and optimization can be downloaded <a class="reference external" href="https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/refs/heads/master/examples/socket/md/mlff/plumed/run.py">here</a>.</p>
 </section>
 </section>
 

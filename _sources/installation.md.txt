@@ -91,7 +91,7 @@ python -m sparc.download_data
 
 
 For developers, please check the [how to
-contribute](#setting-up-environment) page for setting up a dev-environment for SPARC-X-API.
+contribute](#dev-env-setup) page for setting up a dev-environment for SPARC-X-API.
 
 ```{note}
 Please avoid mixing `conda` and `pip` installations for the same package like `sparc-x-api` in the same environment, as this may lead to unexpected behavior.

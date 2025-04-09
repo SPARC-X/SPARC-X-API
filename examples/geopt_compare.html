@@ -166,7 +166,7 @@ calculations:</p>
 invoking the <code class="docutils literal notranslate"><span class="pre">use_socket=True</span></code> flag in above case.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Make sure your SPARC binary is compiled with socket support. See <a class="reference internal" href="#installation.md"><span class="xref myst">installation guide</span></a> for more details.</p>
+<p>Make sure your SPARC binary is compiled with socket support. See <a class="reference internal" href="../installation.html"><span class="std std-doc">installation guide</span></a> for more details.</p>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">optimize_ase_bfgs_socket</span><span class="p">():</span>
     <span class="n">atoms</span> <span class="o">=</span> <span class="n">nh3</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -190,8 +190,26 @@ invoking the <code class="docutils literal notranslate"><span class="pre">use_so
 <p>Example outputs from the different ways of running the optimization
 are as follows:</p>
 <p>SPARC internal LBFGS routine</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SPARC</span> <span class="n">internal</span> <span class="n">LBFGS</span><span class="p">:</span>
+<span class="n">Final</span> <span class="n">energy</span><span class="p">:</span> <span class="o">-</span><span class="mf">330.8388527992713</span> <span class="n">eV</span>
+<span class="n">Final</span> <span class="n">fmax</span><span class="p">:</span> <span class="mf">0.014610782237434465</span> <span class="n">eV</span><span class="o">/</span><span class="n">Ang</span>
+<span class="n">N</span> <span class="n">steps</span><span class="p">:</span> <span class="mi">23</span>
+</pre></div>
+</div>
 <p>ASE LBFGS + file I/O mode</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ASE</span> <span class="n">LBFGS</span>
+<span class="n">Final</span> <span class="n">energy</span><span class="p">:</span> <span class="o">-</span><span class="mf">330.8460713860338</span> <span class="n">eV</span>
+<span class="n">Final</span> <span class="n">fmax</span><span class="p">:</span> <span class="mf">0.008090338967301871</span> <span class="n">eV</span><span class="o">/</span><span class="n">Ang</span>
+<span class="n">N</span> <span class="n">steps</span><span class="p">:</span> <span class="mi">21</span>
+</pre></div>
+</div>
 <p>ASE LBFGS + socket I/O mode</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ASE</span> <span class="n">LBFGS</span> <span class="p">(</span><span class="n">socket</span> <span class="n">mode</span><span class="p">)</span>
+<span class="n">Final</span> <span class="n">energy</span><span class="p">:</span> <span class="o">-</span><span class="mf">330.8356141220578</span> <span class="n">eV</span>
+<span class="n">Final</span> <span class="n">fmax</span><span class="p">:</span> <span class="mf">0.015431850436823448</span> <span class="n">eV</span><span class="o">/</span><span class="n">Ang</span>
+<span class="n">N</span> <span class="n">steps</span><span class="p">:</span> <span class="mi">18</span>
+</pre></div>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The result may be slightly different when further reducing <code class="docutils literal notranslate"><span class="pre">h</span></code> and increase the box size. When running socket mode calculation with a large <code class="docutils literal notranslate"><span class="pre">h</span></code> the error accumulation may lead to divergence.</p>
