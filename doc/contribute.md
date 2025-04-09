@@ -16,6 +16,7 @@ information:
 
 We recommend the following steps to setup the test environment and modify codes.
 
+(dev-env-setup)=
 ### Setting up environment
 
 We recommend to work in a clean conda environment (or virtualenv),
@@ -146,6 +147,6 @@ Please check the [maintenance guide](maintainers.md) for roles
 involving admin privileges.
 
 ```{toctree}
-:max_depth: 1
+:maxdepth: 1
 test_coverage.md
 ```
