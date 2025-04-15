@@ -80,6 +80,11 @@ def _read_static_block(raw_block):
         name = "net_magnetization"
     elif "Atomic magnetization" in header_name:
         name = "atomic_magnetization"
+        if type(value) is list:
+            try:
+                value = np.array(value)
+            except:
+                print("Cannot convert atomic magnetization to array")
     elif "Stress (GPa)" in header_name:
         name = "stress"
     elif "Stress equiv." in header_name:

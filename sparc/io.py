@@ -552,9 +552,7 @@ class SparcBundle:
                 partial_results["forces"] = static_results["forces"][self.resort]
 
             if "atomic_magnetization" in static_results:
-                partial_results["magmoms"] = static_results["atomic_magnetization"][
-                    self.resort
-                ]
+                partial_results["magmoms"] = static_results["atomic_magnetization"][self.resort]
 
             if "net_magnetization" in static_results:
                 partial_results["magmom"] = static_results["net_magnetization"]
