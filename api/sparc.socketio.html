@@ -101,7 +101,7 @@
 <dt class="sig sig-object py" id="sparc.socketio.SPARCProtocol">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.socketio.</span></span><span class="sig-name descname"><span class="pre">SPARCProtocol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">socket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/socketio.html#SPARCProtocol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.socketio.SPARCProtocol" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IPIProtocol</span></code></p>
-<p>Extending the i-PI protocol to support extra routines</p>
+<p>Accounting for row major layout in SPARC</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="sparc.socketio.SPARCProtocol.calculate_new_protocol">
 <span class="sig-name descname"><span class="pre">calculate_new_protocol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/socketio.html#SPARCProtocol.calculate_new_protocol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.socketio.SPARCProtocol.calculate_new_protocol" title="Link to this definition"></a></dt>
@@ -147,6 +147,11 @@ This is just a test function to see how things may work</p>
 to the calculator instance.
 The actual behavior regarding how the calculator would be (re)-initialized, dependends on the implementation of recvinit</p>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sparc.socketio.SPARCProtocol.sendposdata">
+<span class="sig-name descname"><span class="pre">sendposdata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">icell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/socketio.html#SPARCProtocol.sendposdata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.socketio.SPARCProtocol.sendposdata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
