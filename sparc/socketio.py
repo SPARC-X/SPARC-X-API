@@ -16,6 +16,7 @@ from ase.calculators.socketio import (
     SocketServer,
     actualunixsocketname,
 )
+from ase import units
 
 
 def generate_random_socket_name(prefix="sparc_", length=6):
@@ -25,6 +26,19 @@ def generate_random_socket_name(prefix="sparc_", length=6):
 
 
 class SPARCProtocol(IPIProtocol):
+    """Accounting for row major layout in SPARC"""
+    def sendposdata(self, cell, icell, positions):
+        assert cell.size == 9
+        assert icell.size == 9
+        assert positions.size % 3 == 0
+
+        self.log(' sendposdata')
+        self.sendmsg('POSDATA')
+        self.send(cell / units.Bohr, np.float64)
+        self.send(icell * units.Bohr, np.float64)
+        self.send(len(positions), np.int32)
+        self.send(positions / units.Bohr, np.float64)
+
     """Extending the i-PI protocol to support extra routines"""
 
     def send_string(self, msg, msglen=None):
