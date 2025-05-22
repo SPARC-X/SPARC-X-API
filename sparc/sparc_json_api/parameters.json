@@ -1,5 +1,5 @@
 {
- "sparc_version": "2024.12.11",
+ "sparc_version": "2025.04.24",
  "categories": [
   "system",
   "scf",
@@ -13,8 +13,8 @@
   "orbital free dft",
   "socket communication",
   "spectral quadrature",
-  "mlff",
-  "cyclix"
+  "cyclix",
+  "mlff"
  ],
  "parameters": {
   "ATOM_TYPE": {
@@ -2238,6 +2238,21 @@
    "remark": "",
    "category": "spectral quadrature"
   },
+  "TWIST_ANGLE": {
+   "symbol": "TWIST_ANGLE",
+   "label": "TWIST_ANGLE",
+   "type": "double",
+   "default": 0.0,
+   "unit": "rad/Bohr",
+   "example": "TWIST_ANGLE: 0.0045",
+   "description": "External twist per unit length applied on the nanotube.",
+   "remark": "If using helical symmetry (D C H), we also have to add the intrinsic twist.",
+   "allow_bool_input": false,
+   "default_remark": "0",
+   "description_raw": "External twist per unit length applied on the nanotube.",
+   "remark_raw": "If using helical symmetry (D C H), we also have to add the intrinsic twist.",
+   "category": "cyclix"
+  },
   "MLFF_ANGULAR_BASIS": {
    "symbol": "{MLFF_ANGULAR_BASIS",
    "label": "MLFF_ANGULAR_BASIS",
@@ -2514,21 +2529,6 @@
    "description_raw": "Number of grid points to use for spline interpolation of hnl.",
    "remark_raw": "A larger number can result in better accuracy of MLFF forces.",
    "category": "mlff"
-  },
-  "TWIST_ANGLE": {
-   "symbol": "TWIST_ANGLE",
-   "label": "TWIST_ANGLE",
-   "type": "double",
-   "default": 0.0,
-   "unit": "rad/Bohr",
-   "example": "TWIST_ANGLE: 0.0045",
-   "description": "External twist per unit length applied on the nanotube.",
-   "remark": "If using helical symmetry (D C H), we also have to add the intrinsic twist.",
-   "allow_bool_input": false,
-   "default_remark": "0",
-   "description_raw": "External twist per unit length applied on the nanotube.",
-   "remark_raw": "If using helical symmetry (D C H), we also have to add the intrinsic twist.",
-   "category": "cyclix"
   }
  },
  "other_parameters": {},
