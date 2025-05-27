@@ -57,8 +57,8 @@ Matlab (M-SPARC [@xu_m-sparc-1.0_2020; @zhang_m-sparc-2.0_2023]) and C/C++
 of SPARC’s feature set has created the need for a fully functional
 interface to drive SPARC in high-throughput calculations.  Here we
 introduce SPARC-X-API, a Python package designed to bridge the SPARC-X
-project with broader computational frameworks. Built on the atomic
-simulation environment (ASE [@larsen_ase_2017]) standard, the SPARC-X-API
+project with broader computational frameworks. Built on the Atomic
+Simulation Environment (ASE [@larsen_ase_2017]) standard, the SPARC-X-API
 allows users to handle SPARC file formats and run SPARC calculations
 through the same interface as with other ASE-compatible DFT packages.
 Beyond standard ASE capabilities, SPARC-X-API provides additional
@@ -88,7 +88,7 @@ to switch between reciprocal and real-space representations, including
 1) establishing efficient schemes on massively parallel computing
 environments, 2) overcoming the extensive global communication during
 Fourier transformation calculations on very large systems, 3)
-developing linear scaling routines[@bowler_order_n_dft_2012] and 4)
+developing linear scaling routines [@bowler_order_n_dft_2012] and 4)
 handle non-periodic boundary conditions for isolated and semi-finite
 systems.  <!-- One --> <!-- long-standing challenge in DFT is to
 develop methods that overcome the --> <!-- huge computational cost for
@@ -119,7 +119,7 @@ user-friendly and competitive with state-of-the-art plane-wave
 codes. The philosophy of the SPARC-X project is to provide codes that
 are highly efficient and portable (i.e., straightforward to install and
 use across various computational environments). The codes also seek to
-be user-friendly and developer-friendly to facilitate the
+be both user- and developer-friendly to facilitate the
 implementation of new algorithms. In line with this, SPARC-X offers
 real-space DFT algorithms through two implementations: 1) Matlab-based
 M-SPARC [@xu_m-sparc-1.0_2020; @zhang_m-sparc-2.0_2023] for algorithm
@@ -134,7 +134,7 @@ interactions, and advanced exchange-correlation (xc) functionals
 method [@suryanarayana_sparc_sq_2018], cyclic/helical symmetry
 [@sharma_sparc_cyclix_2021], real-space density functional
 perturbation theory (DFPT) [@sharma_sparc_dfpt_2023], orbital-free DFT
-(ODFT) [@ghosh_sparc_ofdft_2016], on-the-fly machine-learning force
+(ODFT) [@ghosh_sparc_ofdft_2016], and on-the-fly machine-learning force
 fields (OTF-MLFF) [@kumar_ofdft_delta_ml_2023;
 @timmerman_sparc_mlff_2024; @kumar_sparc_mlff_2024].
 
@@ -162,7 +162,7 @@ for example high-throughput dynamics simulations by i-PI
 active machine learning frameworks including FineTuna
 [@musielewicz_finetuna_2022], powered by state-of-art neural network
 interatomic potentials such as FAIR-Chem
-(https://github.com/FAIR-Chem/fairchem)[https://github.com/FAIR-Chem/fairchem]
+([https://github.com/FAIR-Chem/fairchem](https://github.com/FAIR-Chem/fairchem))
 and MACE-MP [@ilyes_mace_2023] model series.  A summary of the role
 SPARC-X-API in the SPARC-X project is shown in
 \autoref{fig:sparc-overview}.  In addition to the capabilities
@@ -203,7 +203,7 @@ treating each calculation directory as a "SPARC bundle". The
 this bundle, ensuring that all necessary input and output files are
 properly handled. By default, the SPARC-X-API also copies relevant
 pseudopotential files into the calculation directory, making the SPARC
-bundle portable across different machines. From version 2.0 onwards,
+bundle portable across different machines. From version 1.0.7 onwards,
 the SPARC-X-API leverages the new features introduced in ASE version 3.23
 to register as an external I/O format, allowing reading and writing
 SPARC files directly using `ase.io` submodule:
@@ -322,9 +322,9 @@ requiring recompilation.
 
 The communication protocol used in the SPARC-X-API socket, referred to as the
 SPARC protocol, is based on the i-PI protocol
-[@ceriotti_i-pi-1.0_2014; @kapil_i-pi-2.0_2019], which is also adapted
+[@ceriotti_i-pi-1.0_2014; @kapil_i-pi-2.0_2019], which is also adopted
 by a wide range of ASE calculators. The SPARC protocol introduces
-additional header types and supporting binary data transfers via
+additional header types and supports binary data transfers via
 Python's pickle format.  While SPARC’s C/C++ code maintains compatibility
 with the original i-PI standard, the SPARC-X-API leverages the extended
 protocol with pickle decoding. The two-tier design offers flexibility
@@ -347,7 +347,7 @@ computational setups.
 The design of the SPARC protocol allows insertion of bidirectional
 additional routines between two DFT calls, allowing further control
 over the low-level C/C++ code.
-Figure \autoref{fig:socket-hetero} summarizes the
+\autoref{fig:socket-hetero} summarizes the
 server-client setup across hybrid computing platforms.
 
 ![Example of socket communication across hybrid computing platforms using SPARC-X-API
