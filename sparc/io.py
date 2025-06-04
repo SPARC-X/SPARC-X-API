@@ -411,7 +411,7 @@ class SparcBundle:
         for ext in ("ion", "inpt"):
             f = self._indir(ext, occur=0)
             if f.is_file():
-                data_dict = globals()[f"_read_{ext}"](f)
+                data_dict = globals()[f"_read_{ext}"](f, validator=self.validator)
                 results_dict.update(data_dict)
         for ext in ("geopt", "static", "aimd", "out"):
             f = self._indir(ext, occur=index, d_format=d_format)
@@ -552,7 +552,9 @@ class SparcBundle:
                 partial_results["forces"] = static_results["forces"][self.resort]
 
             if "atomic_magnetization" in static_results:
-                partial_results["magmoms"] = static_results["atomic_magnetization"][self.resort]
+                partial_results["magmoms"] = static_results["atomic_magnetization"][
+                    self.resort
+                ]
 
             if "net_magnetization" in static_results:
                 partial_results["magmom"] = static_results["net_magnetization"]

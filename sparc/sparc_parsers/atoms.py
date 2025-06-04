@@ -105,7 +105,9 @@ def atoms_to_dict(
         if write_spin:
             # TODO: should we process atoms with already calculated magmoms?
             n_atom = len(p_atoms)
-            block_dict["SPIN"] = p_atoms.get_initial_magnetic_moments().reshape(n_atom,-1)
+            block_dict["SPIN"] = p_atoms.get_initial_magnetic_moments().reshape(
+                n_atom, -1
+            )
         if write_relax:
             relax_this_block = relax_mask[start:end]
             block_dict["RELAX"] = relax_this_block
@@ -128,6 +130,7 @@ def atoms_to_dict(
         "atom_blocks": atom_blocks,
         "comments": comments,
         "sorting": {"sort": sort_, "resort": resort_},
+        "extra": {},
     }
     inpt_data = {"params": inpt_blocks, "comments": []}
     return {"ion": ion_data, "inpt": inpt_data}
@@ -139,6 +142,7 @@ def dict_to_atoms(data_dict):
     Note: this method supports only 1 Atoms at a time
     """
     ase_cell = _inpt_cell_to_ase_cell(data_dict)
+    # TODO: is the new_data_dict really needed?
     new_data_dict = deepcopy(data_dict)
     _ion_coord_to_ase_pos(new_data_dict, ase_cell)
     # Now the real thing to construct an atom object
@@ -201,6 +205,18 @@ def dict_to_atoms(data_dict):
     twist_angle = float(new_data_dict["inpt"]["params"].get("TWIST_ANGLE", 0))
     modify_atoms_bc(atoms, sparc_bc, twist_angle)
 
+    # @2025.06.04 HUBBARD parameters
+    # The hubbard parameters are only recorded in the atoms
+    # for the last calculator results. Users should be careful
+    # when reusing them
+    hubbard_flag = new_data_dict["inpt"]["params"].get("HUBBARD_FLAG", 0)
+    if hubbard_flag > 0:
+        u_pairs = new_data_dict["ion"]["extra"].get("hubbard", {})
+        # TODO: make sure it makes sense for gpaw-like setups
+        # we should keep whatever value SPARC uses when recording
+        # the HUBBARD-U, and use eV-Angstrom only when using
+        # the SPARC calculator instance
+        atoms.info["hubbard_u (hartree)"] = u_pairs
     return atoms
 
 

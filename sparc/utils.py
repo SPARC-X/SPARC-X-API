@@ -21,6 +21,7 @@ import psutil
 
 # 2024-11-28 @alchem0x2a add config
 from ase.config import cfg as _cfg
+from ase.units import Hartree
 
 from .api import SparcAPI
 from .docparser import SparcDocParser
@@ -114,6 +115,30 @@ def h2gpts(h, cell_cv, idiv=4):
     grid = np.ceil(cell_lengths / h)
     grid = np.maximum(idiv, grid)
     return [int(a) for a in grid]
+
+
+def parse_hubbard_string(hubbard_str):
+    """setups: {element: hubbard_string} parser from gpaw"""
+    # Parse DFT+U parameters from type-string:
+    # Examples: "type:l,U" or "type:l,U,scale"
+    # we rarely use the type as SPARC is read-space code
+    # the input should be in eV
+    # return a u_value array
+    # "U_VAL": 4-tupe-in-hartreee}
+    _, lus = hubbard_str.split(":")
+
+    l = []
+    U = []
+    scale = []
+    U = [0, 0, 0, 0]  # s, p, d, f
+    for lu in lus.split(";"):  # Multiple U corrections
+        # Scale is not used
+        l_, u_, scale_ = (lu + ",,").split(",")[:3]
+        l_ind = "spdf".find(l_)
+        if U[l_ind] != 0:
+            raise ValueError("Bad HUBBARD U value formatting. Multiple keys?")
+        U[l_ind] = float(u_) / Hartree  # eV --> Hartree
+    return U
 
 
 def cprint(content, color=None, bold=False, underline=False, **kwargs):
