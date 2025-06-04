@@ -464,8 +464,7 @@ def convert_tex_example(text):
     new_text = copy(text)
     for m, r in mapper.items():
         new_text = new_text.replace(m, r)
-
-    symbol, values = new_text.split(":")
+    symbol, values = new_text.split(":", maxsplit=1)
     symbol = symbol.strip()
     values = re.sub("\n+", "\n", values.strip())
     # Remove all comment lines
