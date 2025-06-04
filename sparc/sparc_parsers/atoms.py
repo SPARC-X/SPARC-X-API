@@ -216,6 +216,7 @@ def dict_to_atoms(data_dict):
         # we should keep whatever value SPARC uses when recording
         # the HUBBARD-U, and use eV-Angstrom only when using
         # the SPARC calculator instance
+        # TODO: may need consistent naming for info
         atoms.info["hubbard_u (hartree)"] = u_pairs
     return atoms
 

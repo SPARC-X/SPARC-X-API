@@ -308,6 +308,13 @@ class SparcBundle:
         )
         merged_inputs = input_parameters.copy()
         merged_inputs.update(kwargs)
+        # @TT 2025.06.04 HUBBARD-U requires some special treatment
+        # HUBBARD section should be poped and written under
+        # .ion file (currently done via atoms conversion)
+        hubbard_u_pairs = merged_inputs.pop("HUBBARD", [])
+        # TODO: may need consistent naming for info
+        if merged_inputs.get("HUBBARD_FLAG", 0) > 0:
+            atoms.info["hubbard_u (hartree)"] = hubbard_u_pairs
         data_dict["inpt"]["params"].update(merged_inputs)
 
         # If copy_psp, change the PSEUDO_POT field and copy the files
