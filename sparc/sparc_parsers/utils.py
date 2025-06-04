@@ -36,7 +36,7 @@ def read_block_input(block, validator=None):
     2) multiline input: KEY: VALUE1 \n VALUE2 --> (concanate the values)
     3) multiline input w/ blank first line: KEY: \n VALUE1 \n VALUE2 --> (append the values)
     """
-    print(block)
+    # print(block)
     block_dict = {}
     multiline_key = ""
     concat = False

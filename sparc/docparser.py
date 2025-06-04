@@ -275,7 +275,6 @@ class SparcDocParser(object):
         parameter_dict = {}
         for match in re.findall(pattern_block, text_params):
             cat = match[0].lower()
-            # print(cat)
             if cat in parameter_categories:
                 raise ValueError(
                     f"Key {cat} already exists! You might have a wrong LaTeX doc file!"

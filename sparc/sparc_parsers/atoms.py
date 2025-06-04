@@ -398,7 +398,7 @@ def atoms_bc_to_sparc(atoms):
         stored_sparc_bc = atoms.info["sparc_bc"]
         for bc1, bc2 in zip(sparc_bc, stored_sparc_bc):
             # We store helix and cyclic BCs as non-periodic in ase-atoms
-            print(bc1, bc2)
+            # print(bc1, bc2)
             if ((bc1 == "D") and (bc2 != "P")) or ((bc1 == "P") and (bc2 == "P")):
                 converted_bc.append(bc2)
             else:
