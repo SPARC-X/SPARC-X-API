@@ -180,7 +180,7 @@ def _write_ion(
     # @TT 2025.06.04 add support for HUBBARD parameters
     extra_blocks = ion_dict.get("extra", {})
     if "hubbard" in extra_blocks:
-        _write_hubbard_blocks(fileobj, extra_blocks["hubbard"], validator)
+        _write_hubbard_block(fileobj, extra_blocks["hubbard"], validator)
     return
 
 
