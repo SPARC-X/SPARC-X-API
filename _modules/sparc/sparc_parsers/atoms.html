@@ -188,7 +188,9 @@
         <span class="k">if</span> <span class="n">write_spin</span><span class="p">:</span>
             <span class="c1"># TODO: should we process atoms with already calculated magmoms?</span>
             <span class="n">n_atom</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">p_atoms</span><span class="p">)</span>
-            <span class="n">block_dict</span><span class="p">[</span><span class="s2">&quot;SPIN&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_atoms</span><span class="o">.</span><span class="n">get_initial_magnetic_moments</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_atom</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">block_dict</span><span class="p">[</span><span class="s2">&quot;SPIN&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_atoms</span><span class="o">.</span><span class="n">get_initial_magnetic_moments</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="n">n_atom</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="n">write_relax</span><span class="p">:</span>
             <span class="n">relax_this_block</span> <span class="o">=</span> <span class="n">relax_mask</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
             <span class="n">block_dict</span><span class="p">[</span><span class="s2">&quot;RELAX&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">relax_this_block</span>
@@ -211,6 +213,7 @@
         <span class="s2">&quot;atom_blocks&quot;</span><span class="p">:</span> <span class="n">atom_blocks</span><span class="p">,</span>
         <span class="s2">&quot;comments&quot;</span><span class="p">:</span> <span class="n">comments</span><span class="p">,</span>
         <span class="s2">&quot;sorting&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;sort&quot;</span><span class="p">:</span> <span class="n">sort_</span><span class="p">,</span> <span class="s2">&quot;resort&quot;</span><span class="p">:</span> <span class="n">resort_</span><span class="p">},</span>
+        <span class="s2">&quot;extra&quot;</span><span class="p">:</span> <span class="p">{},</span>
     <span class="p">}</span>
     <span class="n">inpt_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">inpt_blocks</span><span class="p">,</span> <span class="s2">&quot;comments&quot;</span><span class="p">:</span> <span class="p">[]}</span>
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;ion&quot;</span><span class="p">:</span> <span class="n">ion_data</span><span class="p">,</span> <span class="s2">&quot;inpt&quot;</span><span class="p">:</span> <span class="n">inpt_data</span><span class="p">}</span></div>
@@ -225,6 +228,7 @@
 <span class="sd">    Note: this method supports only 1 Atoms at a time</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ase_cell</span> <span class="o">=</span> <span class="n">_inpt_cell_to_ase_cell</span><span class="p">(</span><span class="n">data_dict</span><span class="p">)</span>
+    <span class="c1"># TODO: is the new_data_dict really needed?</span>
     <span class="n">new_data_dict</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">data_dict</span><span class="p">)</span>
     <span class="n">_ion_coord_to_ase_pos</span><span class="p">(</span><span class="n">new_data_dict</span><span class="p">,</span> <span class="n">ase_cell</span><span class="p">)</span>
     <span class="c1"># Now the real thing to construct an atom object</span>
@@ -287,6 +291,19 @@
     <span class="n">twist_angle</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">new_data_dict</span><span class="p">[</span><span class="s2">&quot;inpt&quot;</span><span class="p">][</span><span class="s2">&quot;params&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TWIST_ANGLE&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
     <span class="n">modify_atoms_bc</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">sparc_bc</span><span class="p">,</span> <span class="n">twist_angle</span><span class="p">)</span>
 
+    <span class="c1"># @2025.06.04 HUBBARD parameters</span>
+    <span class="c1"># The hubbard parameters are only recorded in the atoms</span>
+    <span class="c1"># for the last calculator results. Users should be careful</span>
+    <span class="c1"># when reusing them</span>
+    <span class="n">hubbard_flag</span> <span class="o">=</span> <span class="n">new_data_dict</span><span class="p">[</span><span class="s2">&quot;inpt&quot;</span><span class="p">][</span><span class="s2">&quot;params&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HUBBARD_FLAG&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">hubbard_flag</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">u_pairs</span> <span class="o">=</span> <span class="n">new_data_dict</span><span class="p">[</span><span class="s2">&quot;ion&quot;</span><span class="p">][</span><span class="s2">&quot;extra&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hubbard&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="c1"># TODO: make sure it makes sense for gpaw-like setups</span>
+        <span class="c1"># we should keep whatever value SPARC uses when recording</span>
+        <span class="c1"># the HUBBARD-U, and use eV-Angstrom only when using</span>
+        <span class="c1"># the SPARC calculator instance</span>
+        <span class="c1"># TODO: may need consistent naming for info</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;hubbard_u (hartree)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">u_pairs</span>
     <span class="k">return</span> <span class="n">atoms</span></div>
 
 
@@ -485,7 +502,7 @@
         <span class="n">stored_sparc_bc</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;sparc_bc&quot;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">bc1</span><span class="p">,</span> <span class="n">bc2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sparc_bc</span><span class="p">,</span> <span class="n">stored_sparc_bc</span><span class="p">):</span>
             <span class="c1"># We store helix and cyclic BCs as non-periodic in ase-atoms</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">bc1</span><span class="p">,</span> <span class="n">bc2</span><span class="p">)</span>
+            <span class="c1"># print(bc1, bc2)</span>
             <span class="k">if</span> <span class="p">((</span><span class="n">bc1</span> <span class="o">==</span> <span class="s2">&quot;D&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">bc2</span> <span class="o">!=</span> <span class="s2">&quot;P&quot;</span><span class="p">))</span> <span class="ow">or</span> <span class="p">((</span><span class="n">bc1</span> <span class="o">==</span> <span class="s2">&quot;P&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">bc2</span> <span class="o">==</span> <span class="s2">&quot;P&quot;</span><span class="p">)):</span>
                 <span class="n">converted_bc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bc2</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>

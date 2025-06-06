@@ -128,13 +128,13 @@
 <span class="sd">    2) multiline input: KEY: VALUE1 \n VALUE2 --&gt; (concanate the values)</span>
 <span class="sd">    3) multiline input w/ blank first line: KEY: \n VALUE1 \n VALUE2 --&gt; (append the values)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># print(block)</span>
     <span class="n">block_dict</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">multiline_key</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">concat</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">use_validator</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">validator</span> <span class="k">else</span> <span class="kc">False</span>
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">block</span><span class="p">:</span>
         <span class="k">if</span> <span class="s2">&quot;:&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
-            <span class="c1"># import pdb; pdb.set_trace()</span>
             <span class="c1"># no key, assume multiline value.</span>
             <span class="c1"># be careful not to add blank lines</span>
             <span class="k">if</span> <span class="n">multiline_key</span><span class="p">:</span>

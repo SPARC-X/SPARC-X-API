@@ -367,7 +367,6 @@
         <span class="n">parameter_dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">pattern_block</span><span class="p">,</span> <span class="n">text_params</span><span class="p">):</span>
             <span class="n">cat</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-            <span class="c1"># print(cat)</span>
             <span class="k">if</span> <span class="n">cat</span> <span class="ow">in</span> <span class="n">parameter_categories</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">cat</span><span class="si">}</span><span class="s2"> already exists! You might have a wrong LaTeX doc file!&quot;</span>
@@ -577,8 +576,7 @@
     <span class="n">new_text</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">mapper</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">new_text</span> <span class="o">=</span> <span class="n">new_text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-
-    <span class="n">symbol</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="n">new_text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+    <span class="n">symbol</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="n">new_text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">symbol</span> <span class="o">=</span> <span class="n">symbol</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
     <span class="n">values</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">+&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">values</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
     <span class="c1"># Remove all comment lines</span>

@@ -88,6 +88,7 @@
 
 <span class="sd">TODO: more descriptions about this file io parser</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
 
@@ -136,16 +137,40 @@
     <span class="n">sort</span><span class="p">,</span> <span class="n">resort</span><span class="p">,</span> <span class="n">new_comments</span> <span class="o">=</span> <span class="n">_read_sort_comment</span><span class="p">(</span><span class="n">comments</span><span class="p">)</span>
 
     <span class="c1"># find the index for all atom type lines. They should be at the top of their block</span>
-    <span class="n">atom_type_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;ATOM_TYPE&quot;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)]</span>
+    <span class="c1"># @TT 2025.06.04 HUBBARD block comes at the end of the</span>
+    <span class="c1"># ion file defines the last line in data</span>
+    <span class="n">hubbard_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;HUBBARD&quot;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hubbard_bounds</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">atom_type_bounds_lim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">hubbard_bounds</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># The hubbard bounds</span>
+        <span class="n">atom_type_bounds_lim</span> <span class="o">=</span> <span class="n">hubbard_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># TODO: make it a format error</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bad .ion file format, multiple HUBBARD sections exist.&quot;</span><span class="p">)</span>
+
+    <span class="n">atom_type_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^ATOM_TYPE&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)]</span>
+    <span class="n">atom_type_bounds</span> <span class="o">+=</span> <span class="p">[</span><span class="n">atom_type_bounds_lim</span><span class="p">]</span>
     <span class="n">atom_blocks</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">read_block_input</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">],</span> <span class="n">validator</span><span class="o">=</span><span class="n">validator</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">atom_type_bounds</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">atom_type_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
     <span class="p">]</span>
 
+    <span class="n">extra_blocks</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># Now handle hubbard information --&gt; extra</span>
+    <span class="c1"># the hubbard block is currently the last to appear in</span>
+    <span class="c1"># .ion file</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hubbard_bounds</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">hubbard_settings</span> <span class="o">=</span> <span class="n">_parse_hubbard_block</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">hubbard_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:],</span> <span class="n">validator</span><span class="o">=</span><span class="n">validator</span>
+        <span class="p">)</span>
+        <span class="n">extra_blocks</span><span class="p">[</span><span class="s2">&quot;hubbard&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hubbard_settings</span>
+
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">&quot;ion&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;atom_blocks&quot;</span><span class="p">:</span> <span class="n">atom_blocks</span><span class="p">,</span>
             <span class="s2">&quot;comments&quot;</span><span class="p">:</span> <span class="n">new_comments</span><span class="p">,</span>
+            <span class="s2">&quot;extra&quot;</span><span class="p">:</span> <span class="n">extra_blocks</span><span class="p">,</span>
             <span class="s2">&quot;sorting&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;sort&quot;</span><span class="p">:</span> <span class="n">sort</span><span class="p">,</span> <span class="s2">&quot;resort&quot;</span><span class="p">:</span> <span class="n">resort</span><span class="p">},</span>
         <span class="p">}</span>
     <span class="p">}</span>
@@ -235,6 +260,12 @@
         <span class="c1"># Write a split line</span>
         <span class="c1"># TODO: do we need to distinguish the last line?</span>
         <span class="n">fileobj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># @TT 2025.06.04 add support for HUBBARD parameters</span>
+    <span class="n">extra_blocks</span> <span class="o">=</span> <span class="n">ion_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;extra&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">if</span> <span class="s2">&quot;hubbard&quot;</span> <span class="ow">in</span> <span class="n">extra_blocks</span><span class="p">:</span>
+        <span class="n">_check_hubbard_block</span><span class="p">(</span><span class="n">ion_dict</span><span class="p">,</span> <span class="n">extra_blocks</span><span class="p">[</span><span class="s2">&quot;hubbard&quot;</span><span class="p">])</span>
+        <span class="n">_write_hubbard_block</span><span class="p">(</span><span class="n">fileobj</span><span class="p">,</span> <span class="n">extra_blocks</span><span class="p">[</span><span class="s2">&quot;hubbard&quot;</span><span class="p">],</span> <span class="n">validator</span><span class="p">)</span>
     <span class="k">return</span>
 
 
@@ -308,6 +339,77 @@
     <span class="n">sort</span> <span class="o">=</span> <span class="n">make_reverse_mapping</span><span class="p">(</span><span class="n">resort</span><span class="p">)</span>
     <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">sort</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">resort</span><span class="p">),</span> <span class="s2">&quot;Sort and resort info are of different length!&quot;</span>
     <span class="k">return</span> <span class="n">sort</span><span class="p">,</span> <span class="n">resort</span><span class="p">,</span> <span class="n">new_lines</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_hubbard_block</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">defaultAPI</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the hubbard blocks into the following list</span>
+<span class="sd">    [{&quot;U_ATOM_TYPE&quot;: &lt;atom-name&gt;,</span>
+<span class="sd">    &quot;U_VAL&quot;: array},</span>
+<span class="sd">    ]</span>
+
+<span class="sd">    A hubbard block (after stripping the extra comments) may look like:</span>
+<span class="sd">    [&#39;HUBBARD:&#39;</span>
+<span class="sd">    &#39;U_ATOM_TYPE: Ni&#39;,</span>
+<span class="sd">    &#39;U_VAL: 0 0 0.05 0&#39;]</span>
+
+<span class="sd">    The U_ATOM_TYPE and U_VAL must come in pairs ordered</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;HUBBARD:&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">block</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Ill-formatted HUBBARD block in .ion file!&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;U_ATOM_TYPE and U_VAL are not paired in the HUBBARD block!&quot;</span><span class="p">)</span>
+    <span class="n">u_pairs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">u_sub_block</span> <span class="o">=</span> <span class="n">block</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span>
+        <span class="n">u_dict</span> <span class="o">=</span> <span class="n">read_block_input</span><span class="p">(</span><span class="n">u_sub_block</span><span class="p">,</span> <span class="n">validator</span><span class="p">)</span>
+        <span class="n">u_pairs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">u_dict</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">u_pairs</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_hubbard_block</span><span class="p">(</span><span class="n">ion_dict</span><span class="p">,</span> <span class="n">hubbard_u_pairs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sanity check for hubbard parameters</span>
+<span class="sd">    1. U_ATOM_TYPE must match one existing element</span>
+<span class="sd">    2. No duplicated element of U_ATOM_TYPE</span>
+<span class="sd">    3. U value must be 4-tuples</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">structure_elements</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;ATOM_TYPE&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">ion_dict</span><span class="p">[</span><span class="s2">&quot;atom_blocks&quot;</span><span class="p">]])</span>
+    <span class="n">hubbard_elements</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">hubbard_u_pairs</span><span class="p">:</span>
+        <span class="n">elem</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="s2">&quot;U_ATOM_TYPE&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">elem</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">structure_elements</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Element </span><span class="si">{</span><span class="n">elem</span><span class="si">}</span><span class="s2"> in the HUBBARD setting does not exist in the input structure!&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">hubbard_elements</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Element </span><span class="si">{</span><span class="n">elem</span><span class="si">}</span><span class="s2"> is duplicated in the HUBBARD setting!&quot;</span><span class="p">)</span>
+        <span class="n">hubbard_elements</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="s2">&quot;U_VAL&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;U_VAL for element </span><span class="si">{</span><span class="n">elem</span><span class="si">}</span><span class="s2"> must have length of 4!&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_write_hubbard_block</span><span class="p">(</span><span class="n">fileobj</span><span class="p">,</span> <span class="n">u_pairs</span><span class="o">=</span><span class="p">[],</span> <span class="n">validator</span><span class="o">=</span><span class="n">defaultAPI</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write the HUBBARD U-blocks at the end of the .ion file</span>
+<span class="sd">    format</span>
+
+<span class="sd">    HUBBARD:</span>
+<span class="sd">    U_ATOM_TYPE: Ni</span>
+<span class="sd">    U_VAL: 0 0 0.05 0</span>
+
+<span class="sd">    U_ATOM_TYPE: Cr</span>
+<span class="sd">    U_VAL: 0 0 0.05 0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_pairs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">fileobj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;HUBBARD:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">u_pair</span> <span class="ow">in</span> <span class="n">u_pairs</span><span class="p">:</span>
+        <span class="c1"># TODO: add value checker</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;U_ATOM_TYPE&quot;</span><span class="p">,</span> <span class="s2">&quot;U_VAL&quot;</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">u_pair</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="n">val_string</span> <span class="o">=</span> <span class="n">validator</span><span class="o">.</span><span class="n">convert_value_to_string</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            <span class="n">fileobj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">val_string</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">fileobj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span>
 </pre></div>
 
            </div>
