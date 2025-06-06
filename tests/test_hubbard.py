@@ -197,10 +197,34 @@ def test_bad_hubbard_block_write():
     # We will create a input file with user-provided HUBBARD
     # blocks
     atoms = read_sparc(test_output_dir / "MoO3_hubbard.sparc")
-    print(atoms.info["hubbard_u (hartree)"][0])
-    # Generate an error when writing .ion file
+    atoms.info.pop("hubbard_u (hartree)", None)
+    # Generate an error when writing .ion file for bad element
     input_params = {
         "HUBBARD": [{"U_ATOM_TYPE": "Ni", "U_VAL": [0, 0, 1.0, 0]}],
+        "HUBBARD_FLAG": 1,
+    }
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        calc = SPARC(directory=tmpdir, **input_params)
+        with pytest.raises(ValueError):
+            calc.write_input(atoms)
+
+    # Generate an error when writing .ion file for duplicated element
+    input_params = {
+        "HUBBARD": [
+            {"U_ATOM_TYPE": "Ni", "U_VAL": [0, 0, 1.0, 0]},
+            {"U_ATOM_TYPE": "Ni", "U_VAL": [0, 0, 2.0, 0]},
+        ],
+        "HUBBARD_FLAG": 1,
+    }
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        calc = SPARC(directory=tmpdir, **input_params)
+        with pytest.raises(ValueError):
+            calc.write_input(atoms)
+
+    # Generate an error when writing .ion file for no hubbard info
+    input_params = {
         "HUBBARD_FLAG": 1,
     }
     with tempfile.TemporaryDirectory() as tmpdir:
