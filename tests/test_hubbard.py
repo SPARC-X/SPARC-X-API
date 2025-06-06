@@ -260,3 +260,19 @@ def test_gpaw_style_setups():
         assert np.isclose(
             atoms_read.info["hubbard_u (hartree)"][0]["U_VAL"][2], 5.0 / Hartree
         )
+
+
+def test_read_hubbard_raw_results():
+    """Parse the outputfiles from HUBBARD calculations"""
+    from ase.units import Hartree
+
+    from sparc.io import SparcBundle, read_sparc
+
+    sb = SparcBundle(test_output_dir / "MoO3_hubbard.sparc")
+    raw_results = sb.read_raw_results()
+    first_ionic_step = raw_results["out"]["ionic_steps"][0]
+    assert "u correction" in first_ionic_step
+    assert first_ionic_step["u correction"]["unit"] == "eV"
+    assert np.isclose(
+        first_ionic_step["u correction"]["value"], 8.6236340534e-02 * Hartree
+    )
