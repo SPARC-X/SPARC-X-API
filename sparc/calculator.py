@@ -52,6 +52,7 @@ sparc_python_inputs = [
     "convergence",
     "gpts",
     "nbands",
+    "setups",
 ]
 
 # The socket mode in SPARC calculator uses a relay-based mechanism

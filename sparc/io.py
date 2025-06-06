@@ -314,7 +314,14 @@ class SparcBundle:
         hubbard_u_pairs = merged_inputs.pop("HUBBARD", [])
         # TODO: may need consistent naming for info
         if merged_inputs.get("HUBBARD_FLAG", 0) > 0:
-            atoms.info["hubbard_u (hartree)"] = hubbard_u_pairs
+            atoms_info_hubbard_u_pairs = atoms.info.get("hubbard_u (hartree)", [])
+            # We will overwrite all existing hubbard info
+            if len(hubbard_u_pairs) > 0:
+                data_dict["ion"]["extra"]["hubbard"] = hubbard_u_pairs
+            elif len(atoms_info_hubbard_u_pairs) > 0:
+                data_dict["ion"]["extra"]["hubbard"] = atoms_info_hubbard_u_pairs
+            else:
+                raise ValueError("HUBBARD_FLAG=1 but not U correction provided!")
         data_dict["inpt"]["params"].update(merged_inputs)
 
         # If copy_psp, change the PSEUDO_POT field and copy the files
@@ -326,10 +333,14 @@ class SparcBundle:
                     target_fname = copy_psp_file(origin_psp, target_dir)
                     block["PSEUDO_POT"] = target_fname
 
-        _write_ion(self._indir(".ion"), data_dict, validator=self.validator)
-        _write_inpt(self._indir(".inpt"), data_dict, validator=self.validator)
+        _write_ion(
+            self._indir(".ion", label=label), data_dict, validator=self.validator
+        )
+        _write_inpt(
+            self._indir(".inpt", label=label), data_dict, validator=self.validator
+        )
         # Update the sorting information
-        ion_dict = _read_ion(self._indir(".ion"))["ion"]
+        ion_dict = _read_ion(self._indir(".ion", label=label))["ion"]
         self.sorting = ion_dict.get("sorting", None)
         return
 
