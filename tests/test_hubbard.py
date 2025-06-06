@@ -187,6 +187,29 @@ def test_calc_hubbard_block():
         assert np.isclose(atoms_read.info["hubbard_u (hartree)"][0]["U_VAL"][2], 1.0)
 
 
+def test_bad_hubbard_block_write():
+    """Allow write calculation using hubbard block"""
+    from ase.units import Hartree
+
+    from sparc.calculator import SPARC
+    from sparc.io import read_sparc
+
+    # We will create a input file with user-provided HUBBARD
+    # blocks
+    atoms = read_sparc(test_output_dir / "MoO3_hubbard.sparc")
+    print(atoms.info["hubbard_u (hartree)"][0])
+    # Generate an error when writing .ion file
+    input_params = {
+        "HUBBARD": [{"U_ATOM_TYPE": "Ni", "U_VAL": [0, 0, 1.0, 0]}],
+        "HUBBARD_FLAG": 1,
+    }
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        calc = SPARC(directory=tmpdir, **input_params)
+        with pytest.raises(ValueError):
+            calc.write_input(atoms)
+
+
 def test_gpaw_style_setups():
     """Check whether gpaw-style setups keyword can be written"""
     from ase.units import Hartree

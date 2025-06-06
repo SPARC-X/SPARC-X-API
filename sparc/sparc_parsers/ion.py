@@ -180,6 +180,7 @@ def _write_ion(
     # @TT 2025.06.04 add support for HUBBARD parameters
     extra_blocks = ion_dict.get("extra", {})
     if "hubbard" in extra_blocks:
+        _check_hubbard_block(ion_dict, extra_blocks["hubbard"])
         _write_hubbard_block(fileobj, extra_blocks["hubbard"], validator)
     return
 
@@ -279,6 +280,28 @@ def _parse_hubbard_block(block, validator=defaultAPI):
         u_dict = read_block_input(u_sub_block, validator)
         u_pairs.append(u_dict)
     return u_pairs
+
+
+def _check_hubbard_block(ion_dict, hubbard_u_pairs):
+    """Sanity check for hubbard parameters
+    1. U_ATOM_TYPE must match one existing element
+    2. No duplicated element of U_ATOM_TYPE
+    3. U value must be 4-tuples
+    """
+    structure_elements = set([entry["ATOM_TYPE"] for entry in ion_dict["atom_blocks"]])
+    hubbard_elements = set()
+    for pair in hubbard_u_pairs:
+        elem = pair["U_ATOM_TYPE"]
+        if elem not in structure_elements:
+            raise ValueError(
+                f"Element {elem} in the HUBBARD setting does not exist in the input structure!"
+            )
+        if elem in hubbard_elements:
+            raise ValueError(f"Element {elem} is duplicated in the HUBBARD setting!")
+        hubbard_elements.add(elem)
+        val = pair["U_VAL"]
+        if len(val) != 4:
+            raise ValueError(f"U_VAL for element {elem} must have length of 4!")
 
 
 def _write_hubbard_block(fileobj, u_pairs=[], validator=defaultAPI):
