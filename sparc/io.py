@@ -313,7 +313,7 @@ class SparcBundle:
         # .ion file (currently done via atoms conversion)
         hubbard_u_pairs = merged_inputs.pop("HUBBARD", [])
         # TODO: may need consistent naming for info
-        if merged_inputs.get("HUBBARD_FLAG", 0) > 0:
+        if int(merged_inputs.get("HUBBARD_FLAG", 0)) > 0:
             atoms_info_hubbard_u_pairs = atoms.info.get("hubbard_u (hartree)", [])
             # We will overwrite all existing hubbard info
             if len(hubbard_u_pairs) > 0:
