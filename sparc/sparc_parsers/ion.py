@@ -7,6 +7,7 @@ This file has been heavily modified since SPARC 0.1
 
 TODO: more descriptions about this file io parser
 """
+import re
 import textwrap
 from warnings import warn
 
@@ -52,16 +53,40 @@ def _read_ion(fileobj, validator=defaultAPI):
     sort, resort, new_comments = _read_sort_comment(comments)
 
     # find the index for all atom type lines. They should be at the top of their block
-    atom_type_bounds = [i for i, x in enumerate(data) if "ATOM_TYPE" in x] + [len(data)]
+    # @TT 2025.06.04 HUBBARD block comes at the end of the
+    # ion file defines the last line in data
+    hubbard_bounds = [i for i, x in enumerate(data) if "HUBBARD" in x]
+    if len(hubbard_bounds) == 0:
+        atom_type_bounds_lim = len(data)
+    elif len(hubbard_bounds) == 1:
+        # The hubbard bounds
+        atom_type_bounds_lim = hubbard_bounds[0]
+    else:
+        # TODO: make it a format error
+        raise ValueError("Bad .ion file format, multiple HUBBARD sections exist.")
+
+    atom_type_bounds = [i for i, x in enumerate(data) if re.match("^ATOM_TYPE", x)]
+    atom_type_bounds += [atom_type_bounds_lim]
     atom_blocks = [
         read_block_input(data[start:end], validator=validator)
         for start, end in zip(atom_type_bounds[:-1], atom_type_bounds[1:])
     ]
 
+    extra_blocks = {}
+    # Now handle hubbard information --> extra
+    # the hubbard block is currently the last to appear in
+    # .ion file
+    if len(hubbard_bounds) == 1:
+        hubbard_settings = _parse_hubbard_block(
+            data[hubbard_bounds[0] :], validator=validator
+        )
+        extra_blocks["hubbard"] = hubbard_settings
+
     return {
         "ion": {
             "atom_blocks": atom_blocks,
             "comments": new_comments,
+            "extra": extra_blocks,
             "sorting": {"sort": sort, "resort": resort},
         }
     }
@@ -151,6 +176,12 @@ def _write_ion(
         # Write a split line
         # TODO: do we need to distinguish the last line?
         fileobj.write("\n")
+
+    # @TT 2025.06.04 add support for HUBBARD parameters
+    extra_blocks = ion_dict.get("extra", {})
+    if "hubbard" in extra_blocks:
+        _check_hubbard_block(ion_dict, extra_blocks["hubbard"])
+        _write_hubbard_block(fileobj, extra_blocks["hubbard"], validator)
     return
 
 
@@ -224,3 +255,74 @@ def _read_sort_comment(lines):
     sort = make_reverse_mapping(resort)
     assert set(sort) == set(resort), "Sort and resort info are of different length!"
     return sort, resort, new_lines
+
+
+def _parse_hubbard_block(block, validator=defaultAPI):
+    """Parse the hubbard blocks into the following list
+    [{"U_ATOM_TYPE": <atom-name>,
+    "U_VAL": array},
+    ]
+
+    A hubbard block (after stripping the extra comments) may look like:
+    ['HUBBARD:'
+    'U_ATOM_TYPE: Ni',
+    'U_VAL: 0 0 0.05 0']
+
+    The U_ATOM_TYPE and U_VAL must come in pairs ordered
+    """
+    if "HUBBARD:" not in block[0]:
+        raise ValueError("Ill-formatted HUBBARD block in .ion file!")
+    if (len(block) - 1) % 2 != 0:
+        raise ValueError("U_ATOM_TYPE and U_VAL are not paired in the HUBBARD block!")
+    u_pairs = []
+    for i in range((len(block) - 1) // 2):
+        u_sub_block = block[i + 1 : i + 3]
+        u_dict = read_block_input(u_sub_block, validator)
+        u_pairs.append(u_dict)
+    return u_pairs
+
+
+def _check_hubbard_block(ion_dict, hubbard_u_pairs):
+    """Sanity check for hubbard parameters
+    1. U_ATOM_TYPE must match one existing element
+    2. No duplicated element of U_ATOM_TYPE
+    3. U value must be 4-tuples
+    """
+    structure_elements = set([entry["ATOM_TYPE"] for entry in ion_dict["atom_blocks"]])
+    hubbard_elements = set()
+    for pair in hubbard_u_pairs:
+        elem = pair["U_ATOM_TYPE"]
+        if elem not in structure_elements:
+            raise ValueError(
+                f"Element {elem} in the HUBBARD setting does not exist in the input structure!"
+            )
+        if elem in hubbard_elements:
+            raise ValueError(f"Element {elem} is duplicated in the HUBBARD setting!")
+        hubbard_elements.add(elem)
+        val = pair["U_VAL"]
+        if len(val) != 4:
+            raise ValueError(f"U_VAL for element {elem} must have length of 4!")
+
+
+def _write_hubbard_block(fileobj, u_pairs=[], validator=defaultAPI):
+    """Write the HUBBARD U-blocks at the end of the .ion file
+    format
+
+    HUBBARD:
+    U_ATOM_TYPE: Ni
+    U_VAL: 0 0 0.05 0
+
+    U_ATOM_TYPE: Cr
+    U_VAL: 0 0 0.05 0
+    """
+    if len(u_pairs) == 0:
+        return
+    fileobj.write("HUBBARD:\n")
+    for u_pair in u_pairs:
+        # TODO: add value checker
+        for key in ("U_ATOM_TYPE", "U_VAL"):
+            val = u_pair[key]
+            val_string = validator.convert_value_to_string(key, val)
+            fileobj.write(f"{key}: {val_string}\n")
+        fileobj.write("\n")
+    return

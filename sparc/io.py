@@ -308,6 +308,20 @@ class SparcBundle:
         )
         merged_inputs = input_parameters.copy()
         merged_inputs.update(kwargs)
+        # @TT 2025.06.04 HUBBARD-U requires some special treatment
+        # HUBBARD section should be poped and written under
+        # .ion file (currently done via atoms conversion)
+        hubbard_u_pairs = merged_inputs.pop("HUBBARD", [])
+        # TODO: may need consistent naming for info
+        if int(merged_inputs.get("HUBBARD_FLAG", 0)) > 0:
+            atoms_info_hubbard_u_pairs = atoms.info.get("hubbard_u (hartree)", [])
+            # We will overwrite all existing hubbard info
+            if len(hubbard_u_pairs) > 0:
+                data_dict["ion"]["extra"]["hubbard"] = hubbard_u_pairs
+            elif len(atoms_info_hubbard_u_pairs) > 0:
+                data_dict["ion"]["extra"]["hubbard"] = atoms_info_hubbard_u_pairs
+            else:
+                raise ValueError("HUBBARD_FLAG=1 but not U correction provided!")
         data_dict["inpt"]["params"].update(merged_inputs)
 
         # If copy_psp, change the PSEUDO_POT field and copy the files
@@ -319,10 +333,14 @@ class SparcBundle:
                     target_fname = copy_psp_file(origin_psp, target_dir)
                     block["PSEUDO_POT"] = target_fname
 
-        _write_ion(self._indir(".ion"), data_dict, validator=self.validator)
-        _write_inpt(self._indir(".inpt"), data_dict, validator=self.validator)
+        _write_ion(
+            self._indir(".ion", label=label), data_dict, validator=self.validator
+        )
+        _write_inpt(
+            self._indir(".inpt", label=label), data_dict, validator=self.validator
+        )
         # Update the sorting information
-        ion_dict = _read_ion(self._indir(".ion"))["ion"]
+        ion_dict = _read_ion(self._indir(".ion", label=label))["ion"]
         self.sorting = ion_dict.get("sorting", None)
         return
 
@@ -411,7 +429,7 @@ class SparcBundle:
         for ext in ("ion", "inpt"):
             f = self._indir(ext, occur=0)
             if f.is_file():
-                data_dict = globals()[f"_read_{ext}"](f)
+                data_dict = globals()[f"_read_{ext}"](f, validator=self.validator)
                 results_dict.update(data_dict)
         for ext in ("geopt", "static", "aimd", "out"):
             f = self._indir(ext, occur=index, d_format=d_format)
@@ -552,7 +570,9 @@ class SparcBundle:
                 partial_results["forces"] = static_results["forces"][self.resort]
 
             if "atomic_magnetization" in static_results:
-                partial_results["magmoms"] = static_results["atomic_magnetization"][self.resort]
+                partial_results["magmoms"] = static_results["atomic_magnetization"][
+                    self.resort
+                ]
 
             if "net_magnetization" in static_results:
                 partial_results["magmom"] = static_results["net_magnetization"]

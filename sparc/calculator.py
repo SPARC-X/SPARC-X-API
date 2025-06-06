@@ -38,6 +38,7 @@ from .utils import (
     h2gpts,
     locate_api,
     monitor_process,
+    parse_hubbard_string,
     time_limit,
 )
 
@@ -51,6 +52,7 @@ sparc_python_inputs = [
     "convergence",
     "gpts",
     "nbands",
+    "setups",
 ]
 
 # The socket mode in SPARC calculator uses a relay-based mechanism
@@ -1214,6 +1216,15 @@ class SPARC(FileIOCalculator, IOContext):
             if tol_stress:
                 # TOL SCF: electrons / atom
                 converted_sparc_params["TOL_RELAX_CELL"] = tol_stress / GPa
+
+        # setup currently only handles HUBBARD U
+        if "setups" in params:
+            hubbard_u_pairs = []
+            # TODO: Check element validity
+            for elem, hubbard_string in params["setups"].items():
+                u_val = parse_hubbard_string(hubbard_string)
+                hubbard_u_pairs.append({"U_ATOM_TYPE": elem, "U_VAL": u_val})
+            converted_sparc_params["HUBBARD"] = hubbard_u_pairs
 
         return converted_sparc_params
 

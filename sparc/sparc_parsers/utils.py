@@ -36,13 +36,13 @@ def read_block_input(block, validator=None):
     2) multiline input: KEY: VALUE1 \n VALUE2 --> (concanate the values)
     3) multiline input w/ blank first line: KEY: \n VALUE1 \n VALUE2 --> (append the values)
     """
+    # print(block)
     block_dict = {}
     multiline_key = ""
     concat = False
     use_validator = True if validator else False
     for line in block:
         if ":" not in line:
-            # import pdb; pdb.set_trace()
             # no key, assume multiline value.
             # be careful not to add blank lines
             if multiline_key:

@@ -275,7 +275,6 @@ class SparcDocParser(object):
         parameter_dict = {}
         for match in re.findall(pattern_block, text_params):
             cat = match[0].lower()
-            # print(cat)
             if cat in parameter_categories:
                 raise ValueError(
                     f"Key {cat} already exists! You might have a wrong LaTeX doc file!"
@@ -464,8 +463,7 @@ def convert_tex_example(text):
     new_text = copy(text)
     for m, r in mapper.items():
         new_text = new_text.replace(m, r)
-
-    symbol, values = new_text.split(":")
+    symbol, values = new_text.split(":", maxsplit=1)
     symbol = symbol.strip()
     values = re.sub("\n+", "\n", values.strip())
     # Remove all comment lines

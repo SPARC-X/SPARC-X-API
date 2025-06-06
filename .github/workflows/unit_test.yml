@@ -42,6 +42,10 @@ jobs:
     - name: Test with pytest (without all SPARC examples)
       run: |
         export ASE_SPARC_COMMAND="mpirun -n 1 sparc"
+        # Do not use default SPARC doc
+        unset SPARC_DOC_PATH
+        # Run a quicktest
+        python -m sparc.quicktest
         coverage run -a -m pytest -svv tests/
         coverage json --omit="tests/*.py"
         coverage html --omit="tests/*.py"
