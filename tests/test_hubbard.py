@@ -160,6 +160,33 @@ def test_write_atoms_to_ion():
         assert ["U_ATOM_TYPE: Mo" in line for line in ion_content]
 
 
+def test_calc_hubbard_block():
+    """Allow write calculation using hubbard block"""
+    from ase.units import Hartree
+
+    from sparc.calculator import SPARC
+    from sparc.io import read_sparc
+
+    # We will create a input file with user-provided HUBBARD
+    # blocks
+    atoms = read_sparc(test_output_dir / "MoO3_hubbard.sparc")
+    print(atoms.info["hubbard_u (hartree)"][0])
+    input_params = {
+        "HUBBARD": [{"U_ATOM_TYPE": "Mo", "U_VAL": [0, 0, 1.0, 0]}],
+        "HUBBARD_FLAG": 1,
+    }
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        calc = SPARC(directory=tmpdir, **input_params)
+        calc.write_input(atoms)
+        with open(tmpdir / "SPARC.ion", "r") as fd:
+            ion_content = fd.readlines()
+        assert any(["HUBBARD" in line for line in ion_content])
+        atoms_read = read_sparc(tmpdir)
+        assert "hubbard_u (hartree)" in atoms_read.info
+        assert np.isclose(atoms_read.info["hubbard_u (hartree)"][0]["U_VAL"][2], 1.0)
+
+
 def test_gpaw_style_setups():
     """Check whether gpaw-style setups keyword can be written"""
     from ase.units import Hartree
@@ -170,6 +197,7 @@ def test_gpaw_style_setups():
     atoms = read_sparc(test_output_dir / "MoO3_hubbard.sparc")
     # 5.0 eV HUBBARD U. For safety concern we will only write
     # HUBBARD settings when HUBBARD_FLAG=1
+    # note the new HUBBARD U_VAL is overwritten!
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
         calc = SPARC(setups={"Mo": ":d,5.0"}, hubbard_flag=1, directory=tmpdir)
@@ -179,6 +207,8 @@ def test_gpaw_style_setups():
         assert any(["HUBBARD" in line for line in ion_content])
         atoms_read = read_sparc(tmpdir)
         assert "hubbard_u (hartree)" in atoms_read.info
+        print(atoms.info["hubbard_u (hartree)"][0])
+        print(atoms_read.info["hubbard_u (hartree)"][0])
         # The u_val for Mo is 5.0 eV, now converted to Ha
         assert np.isclose(
             atoms_read.info["hubbard_u (hartree)"][0]["U_VAL"][2], 5.0 / Hartree
