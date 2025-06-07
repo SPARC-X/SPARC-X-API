@@ -51,7 +51,8 @@ jobs:
         echo API version is "${API_VERSION}"
       continue-on-error: true
     - name: Create or Update Pull Request
-      if: env.UPDATE_NEEDED == 'true'
+      # Manually disable to make sure it can rerun
+      #if: env.UPDATE_NEEDED == 'true'
       uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
