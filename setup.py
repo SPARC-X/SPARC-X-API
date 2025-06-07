@@ -5,6 +5,9 @@ from warnings import warn
 
 from setuptools import find_packages
 from setuptools.command.install import install
+from setuptools_scm import get_version
+
+print(f"Version from setuptools_scm is {get_version()}")
 
 test_requires = [
     "pytest",
@@ -25,7 +28,9 @@ doc_requires = [
 
 setup(
     name="sparc-x-api",
-    version="1.1.0",
+    # @TT 2025.06.07 we use setuptools_scm for future
+    # releases before fully transition to pyproject.toml
+    version=get_version(),
     python_requires=">=3.8",
     description="Python API for the SPARC DFT Code",
     long_description=open("README.md").read(),
