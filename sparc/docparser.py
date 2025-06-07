@@ -728,6 +728,7 @@ def sanitize_type(param_dict, suppress_warnings=False):
                     f"The error is {e}"
                 )
             _array_test = False  # Retain
+            _bool_test = False
 
         if _array_test is True:
             sanitized_type = f"{origin_type} array"
