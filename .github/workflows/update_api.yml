@@ -17,6 +17,8 @@ jobs:
       run:
         shell: bash -l {0}
     runs-on: ubuntu-latest
+    # Only run the create-PR action o upstream
+    # if: github.repository == "SPARC-X/SPARC-X-API"
 
     steps:
     - uses: actions/checkout@v4
@@ -48,37 +50,33 @@ jobs:
         echo UPDATE_NEEDED is "${UPDATE_NEEDED}"
         echo API version is "${API_VERSION}"
       continue-on-error: true
-    - name: Create PR body text
+    - name: Create or Update Pull Request
       if: env.UPDATE_NEEDED == 'true'
-      run: |
-        touch pr_body.txt
-        echo "## Automated JSON API Update" >> pr_body.txt
-        echo "Hello! This is an automatic pull request to merge the new JSON API version **${API_VERSION}** into the master branch." >> pr_body.txt
-        echo "### Details" >> pr_body.txt
-        echo "- **Workflow Trigger**: This update is triggered by the **Update JSON API (recurring job)** workflow." >> pr_body.txt
-        echo "- **Reason for Update**: A new JSON schema version was generated that differs from the existing one in the repository." >> pr_body.txt
-        echo "### Notes" >> pr_body.txt
-        echo "- If you notice any issues or have questions regarding this update, please contact @alchem0x2a or other maintainers of the repository." >> pr_body.txt
-        echo "Thank you for keeping the SPARC-X-API project up-to-date! 🚀" >> pr_body.txt
-        cat pr_body.txt
-    - name: Create Pull Request
-      # Do not create PR from another PR
-      if: (env.UPDATE_NEEDED == 'true') && (github.event_name != 'pull_request')
-      run: |
-        git config --global user.email "alchem0x2a@gmail.com"
-        git config --global user.name "Github Action Bot"
-        echo "New version is ${API_VERSION}"
-        BRANCH_NAME="update-api-${GITHUB_RUN_ID}"
-        echo "Checking new branch ${BRANCH_NAME}"
-        git checkout -b $BRANCH_NAME
-        mv parameters.json sparc/sparc_json_api/
-        git add sparc/sparc_json_api/parameters.json
-        git commit -m "Add new json api version ${API_VERSION}"
-        git push --force --set-upstream origin ${BRANCH_NAME}
+      uses: peter-evans/create-pull-request@v7
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: |
+          Update JSON API to version ${{ env.API_VERSION }}
 
-        gh pr create --base master \
-                     --title "[PR Bot] New JSON API version ${API_VERSION}"  \
-                     --body-file pr_body.txt \
-                     -R ${{ github.repository_owner }}/SPARC-X-API
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          The commit is created by a scheduled CI job.
+          ""
+        branch: update-api-${{ env.API_VERSION }}
+        title: "[Automated] Update JSON API to version ${{ env.API_VERSION }}"
+        body: |
+          ## Automated JSON API Update
+
+          Hello! This is an automatic pull request to merge the new JSON API to version **${{ env.API_VERSION }}**.
+
+          ### Details
+          - **Workflow Trigger:** Update JSON API (recurring job).
+          - **Reason for Update:** A new JSON schema version was generated that differs from the existing one in the repository.
+
+          ### Notes
+          - If you notice any issues or have questions regarding this update, please reach out to the maintainers.
+
+          # Eliminate unnecessary PRs if not closed
+          delete-branch: true
+          # Prevent PRs on forks
+          base: master
+      delete-branch: true
+      base: master
