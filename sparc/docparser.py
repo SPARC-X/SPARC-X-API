@@ -728,6 +728,7 @@ def sanitize_type(param_dict, suppress_warnings=False):
                     f"The error is {e}"
                 )
             _array_test = False  # Retain
+            _bool_test = False
 
         if _array_test is True:
             sanitized_type = f"{origin_type} array"
@@ -796,4 +797,4 @@ if __name__ == "__main__":
     with open(output, "w", encoding="utf8") as fd:
         fd.write(json_string)
     print(f"SPARC parameter specifications written to {output}!")
-    print("If you need to fintune the definitions, please edit them manually.")
+    print("If you need to finetune the definitions, please edit them manually.")

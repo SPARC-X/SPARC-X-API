@@ -29,9 +29,9 @@ authors:
     corresponding: true
     affiliation: "1, 2"
 affiliations:
-  - name: College of Engineering, Georgia Institute of Technology, Atlanta, GA 30332, USA
+  - name: College of Engineering, Georgia Institute of Technology, Atlanta, GA 30332, United States of America
     index: 1
-  - name: College of Computing, Georgia Institute of Technology, Atlanta, GA 30332, USA
+  - name: College of Computing, Georgia Institute of Technology, Atlanta, GA 30332, United States of America
     index: 2
   - name: Department of Chemical and Materials Engineering, University of Alberta, Edmonton AB, T6G 2R3, Canada
     index: 3

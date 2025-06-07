@@ -5,5 +5,5 @@
 #
 # Note: the actual installation is still handled by setup.py
 [build-system]
-requires = ["setuptools >= 64", "wheel"]
+requires = ["setuptools >= 64", "wheel", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
