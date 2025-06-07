@@ -19,10 +19,10 @@ jobs:
       id-token: write
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: conda-incubator/setup-miniconda@v3
       with:
-        python-version: "3.10"
+        python-version: "3.11"
         mamba-version: "*"
         channels: conda-forge,defaults
         channel-priority: true
