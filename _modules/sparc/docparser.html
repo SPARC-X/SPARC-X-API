@@ -865,6 +865,7 @@
                     <span class="sa">f</span><span class="s2">&quot;The error is </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
             <span class="n">_array_test</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Retain</span>
+            <span class="n">_bool_test</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">if</span> <span class="n">_array_test</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">sanitized_type</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">origin_type</span><span class="si">}</span><span class="s2"> array&quot;</span>
@@ -934,7 +935,7 @@
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
         <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json_string</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SPARC parameter specifications written to </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">!&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;If you need to fintune the definitions, please edit them manually.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;If you need to finetune the definitions, please edit them manually.&quot;</span><span class="p">)</span>
 </pre></div>
 
            </div>
