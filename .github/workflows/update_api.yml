@@ -78,5 +78,5 @@ jobs:
           delete-branch: true
           # Prevent PRs on forks
           base: master
-      delete-branch: true
-      base: master
+        delete-branch: true
+        base: master
