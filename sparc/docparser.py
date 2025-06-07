@@ -796,4 +796,4 @@ if __name__ == "__main__":
     with open(output, "w", encoding="utf8") as fd:
         fd.write(json_string)
     print(f"SPARC parameter specifications written to {output}!")
-    print("If you need to fintune the definitions, please edit them manually.")
+    print("If you need to finetune the definitions, please edit them manually.")
