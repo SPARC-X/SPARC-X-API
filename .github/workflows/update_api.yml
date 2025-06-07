@@ -17,9 +17,8 @@ jobs:
       run:
         shell: bash -l {0}
     runs-on: ubuntu-latest
+    # Only the upstream repo runs the automatic API update
     if: |
-      # Only run the create-PR action o upstream for automatic workflows
-      # the fork maintainer can run using dispatch though
       !github.event.repository.fork || github.event_name == 'workflow_dispatch'
 
     steps:
