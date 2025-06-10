@@ -183,7 +183,7 @@ guidelines.
 ## How to cite
 If you find SPARC-X-API help, please consider cite the relevant
 publications below:
-- The SPARC-X-API package itself: [Tian et al. 2024](https://github.com/openjournals/joss-reviews/issues/7747)
+- The SPARC-X-API package itself: [Tian et al. 2025](https://joss.theoj.org/papers/10.21105/joss.07747)
 - The SPARC C/C++ code
   - v2.0 [Zhang et al., 2024](https://doi.org/10.1016/j.simpa.2024.100649)
   - v1.0 [Xu et al., 2021](https://doi.org/10.1016/j.softx.2021.100709)
