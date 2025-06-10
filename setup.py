@@ -28,11 +28,11 @@ doc_requires = [
 
 setup(
     name="sparc-x-api",
-    # @TT 2025.06.07 we use setuptools_scm for future
-    # releases before fully transition to pyproject.toml
+    # @TT 2025.06.10 the use_scm_version is now the default
+    # to prevent unwanted vertag mismatch. I assume no user is
+    # going to install from truncated tarballs. This only affects
+    # the sparc-x-api feedstock
     use_scm_version=True,
-    setup_requires=["setuptools_scm>=8"],
-    fallback_version="1.1.0",
     python_requires=">=3.9",
     description="Python API for the SPARC DFT Code",
     long_description=open("README.md").read(),
