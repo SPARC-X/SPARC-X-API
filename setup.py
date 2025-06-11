@@ -28,10 +28,12 @@ doc_requires = [
 
 setup(
     name="sparc-x-api",
-    # @TT 2025.06.07 we use setuptools_scm for future
-    # releases before fully transition to pyproject.toml
-    version=get_version(),
-    python_requires=">=3.8",
+    # @TT 2025.06.10 the use_scm_version is now the default
+    # to prevent unwanted vertag mismatch. I assume no user is
+    # going to install from truncated tarballs. This only affects
+    # the sparc-x-api feedstock
+    use_scm_version=True,
+    python_requires=">=3.9",
     description="Python API for the SPARC DFT Code",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
@@ -39,8 +41,7 @@ setup(
     author_email="alchem0x2a@gmail.com, ltimmerman3@gatech.edu, ben.comer@gatech.edu",
     url="https://github.com/SPARC-X/SPARC-X-API",
     packages=find_packages(),
-    # ASE 3.22 dependency will be deprecated in 2.0+ release
-    install_requires=["ase>=3.22.0", "numpy>=1.23", "packaging>=20.0", "psutil>=5.0.0"],
+    install_requires=["ase>=3.23.0", "numpy>=1.23", "packaging>=20.0", "psutil>=5.0.0"],
     entry_points={
         # The ioformats are only compatible with ase>=3.23
         "ase.ioformats": [

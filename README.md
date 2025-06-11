@@ -6,7 +6,7 @@
 [![Unit tests for SPARC-X-API](https://github.com/SPARC-X/SPARC-X-API/actions/workflows/unit_test.yml/badge.svg)](https://github.com/SPARC-X/SPARC-X-API/actions/workflows/unit_test.yml)
 [![JSON-API](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/api_version.svg)](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/master/sparc/sparc_json_api/parameters.json)
 [![Doc](https://raw.githubusercontent.com/SPARC-X/SPARC-X-API/badges/badges/doc.svg)](https://sparc-x.github.io/SPARC-X-API/)
-
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.07747/status.svg)](https://doi.org/10.21105/joss.07747)
 
 SPARC-X-API is a versatile Python API for the real-space density
 functional (DFT) package [SPARC](https://github.com/SPARC-X/SPARC)
@@ -183,7 +183,7 @@ guidelines.
 ## How to cite
 If you find SPARC-X-API help, please consider cite the relevant
 publications below:
-- The SPARC-X-API package itself: [Tian et al. 2024](https://github.com/openjournals/joss-reviews/issues/7747)
+- The SPARC-X-API package itself: [Tian et al. 2025](https://joss.theoj.org/papers/10.21105/joss.07747)
 - The SPARC C/C++ code
   - v2.0 [Zhang et al., 2024](https://doi.org/10.1016/j.simpa.2024.100649)
   - v1.0 [Xu et al., 2021](https://doi.org/10.1016/j.softx.2021.100709)
