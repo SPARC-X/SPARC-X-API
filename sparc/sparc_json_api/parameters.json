@@ -1,5 +1,5 @@
 {
- "sparc_version": "2025.06.03",
+ "sparc_version": "2025.06.17",
  "categories": [
   "system",
   "scf",
@@ -12,9 +12,9 @@
   "parallelization options",
   "orbital free dft",
   "socket communication",
-  "cyclix",
   "mlff",
-  "spectral quadrature"
+  "spectral quadrature",
+  "cyclix"
  ],
  "parameters": {
   "ATOM_TYPE": {
@@ -703,7 +703,7 @@
   "KPT_PATHS": {
    "symbol": "KPT_PATHS",
    "label": "KPT_PATHS",
-   "type": "double array",
+   "type": "double",
    "default": null,
    "unit": "No unit",
    "example": "KPT_PATHS: 2\n0.0 0.0 0.0 \n# Gamma\n0.5 0.5 0.5 \n# A\n0.5 0.5 0.5 \n# A\n0.5 0.5 0.0 \n# M",
@@ -2193,21 +2193,6 @@
    "remark": "",
    "category": "system"
   },
-  "TWIST_ANGLE": {
-   "symbol": "TWIST_ANGLE",
-   "label": "TWIST_ANGLE",
-   "type": "double",
-   "default": 0.0,
-   "unit": "rad/Bohr",
-   "example": "TWIST_ANGLE: 0.0045",
-   "description": "External twist per unit length applied on the nanotube.",
-   "remark": "If using helical symmetry (D C H), we also have to add the intrinsic twist.",
-   "allow_bool_input": false,
-   "default_remark": "0",
-   "description_raw": "External twist per unit length applied on the nanotube.",
-   "remark_raw": "If using helical symmetry (D C H), we also have to add the intrinsic twist.",
-   "category": "cyclix"
-  },
   "MLFF_ANGULAR_BASIS": {
    "symbol": "{MLFF_ANGULAR_BASIS",
    "label": "MLFF_ANGULAR_BASIS",
@@ -2589,6 +2574,21 @@
    "remark_raw": "",
    "remark": "",
    "category": "spectral quadrature"
+  },
+  "TWIST_ANGLE": {
+   "symbol": "TWIST_ANGLE",
+   "label": "TWIST_ANGLE",
+   "type": "double",
+   "default": 0.0,
+   "unit": "rad/Bohr",
+   "example": "TWIST_ANGLE: 0.0045",
+   "description": "External twist per unit length applied on the nanotube.",
+   "remark": "If using helical symmetry (D C H), we also have to add the intrinsic twist.",
+   "allow_bool_input": false,
+   "default_remark": "0",
+   "description_raw": "External twist per unit length applied on the nanotube.",
+   "remark_raw": "If using helical symmetry (D C H), we also have to add the intrinsic twist.",
+   "category": "cyclix"
   }
  },
  "other_parameters": {},
