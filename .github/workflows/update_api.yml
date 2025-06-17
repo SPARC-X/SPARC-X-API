@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     # Only the upstream repo runs the automatic API update
     if: |
-      !github.event.repository.fork || github.event_name == 'workflow_dispatch'
+      (!github.event.repository.fork || github.event_name == 'workflow_dispatch') && (github.event_name != 'pull_request')
 
     steps:
     - uses: actions/checkout@v4
@@ -35,6 +35,7 @@ jobs:
         pip install -e ".[test]"
     - name: Generate json api from github master
       run: |
+        # A new file parameters.json will be created
         python -m sparc.docparser --git --include-subdirs
     - name: Env variable for api version
       run: |
@@ -47,6 +48,8 @@ jobs:
            echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
         else
            echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
+           # Move new parameters.json to place
+           mv parameters.json ./sparc/sparc_json_api
         fi
         echo UPDATE_NEEDED is "${UPDATE_NEEDED}"
         echo API version is "${API_VERSION}"
@@ -64,6 +67,8 @@ jobs:
           ""
         branch: update-api-${{ env.API_VERSION }}
         title: "[Automated] Update JSON API to version ${{ env.API_VERSION }}"
+        add-paths: |
+          ./sparc/sparc_json_api/parameters.json
         body: |
           ## Automated JSON API Update
 
