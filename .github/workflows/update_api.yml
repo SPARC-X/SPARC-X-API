@@ -54,10 +54,6 @@ jobs:
         echo UPDATE_NEEDED is "${UPDATE_NEEDED}"
         echo API version is "${API_VERSION}"
       continue-on-error: true
-    - name:
-      id: probe
-      run: |
-
     - name: Create or Update Pull Request
       # Manually disable to make sure it can rerun
       if: env.UPDATE_NEEDED == 'true'
