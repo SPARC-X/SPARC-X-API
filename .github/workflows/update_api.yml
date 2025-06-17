@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     # Only the upstream repo runs the automatic API update
     if: |
-      !github.event.repository.fork || github.event_name == 'workflow_dispatch'
+      (!github.event.repository.fork || github.event_name == 'workflow_dispatch') && (github.event_name != 'pull_request')
 
     steps:
     - uses: actions/checkout@v4
