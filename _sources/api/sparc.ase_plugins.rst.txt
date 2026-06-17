@@ -1,0 +1,7 @@
+sparc.ase\_plugins module
+=========================
+
+.. automodule:: sparc.ase_plugins
+   :members:
+   :show-inheritance:
+   :undoc-members:

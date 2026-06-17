@@ -21,6 +21,7 @@ Submodules
    :maxdepth: 4
 
    sparc.api
+   sparc.ase_plugins
    sparc.calculator
    sparc.cli
    sparc.client

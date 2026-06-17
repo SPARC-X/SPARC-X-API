@@ -8,14 +8,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sparc.utils module &mdash; SPARC-X-API  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -99,14 +99,14 @@
 <p>Utilities that are loosely related to core sparc functionalities</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="sparc.utils.ProcessReturned">
-<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.utils.</span></span><span class="sig-name descname"><span class="pre">ProcessReturned</span></span><a class="reference internal" href="../_modules/sparc/utils.html#ProcessReturned"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.utils.ProcessReturned" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">sparc.utils.</span></span><span class="sig-name descname"><span class="pre">ProcessReturned</span></span><a class="reference internal" href="../_modules/sparc/utils.html#ProcessReturned"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.utils.ProcessReturned" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 <p>Simple class for process that has returned</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="sparc.utils.TimeoutException">
-<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sparc.utils.</span></span><span class="sig-name descname"><span class="pre">TimeoutException</span></span><a class="reference internal" href="../_modules/sparc/utils.html#TimeoutException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.utils.TimeoutException" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">sparc.utils.</span></span><span class="sig-name descname"><span class="pre">TimeoutException</span></span><a class="reference internal" href="../_modules/sparc/utils.html#TimeoutException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.utils.TimeoutException" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 <p>Simple class for timeout</p>
 </dd></dl>
@@ -137,7 +137,7 @@ Only a few color names are provided</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sparc.utils.locate_api">
-<span class="sig-prename descclassname"><span class="pre">sparc.utils.</span></span><span class="sig-name descname"><span class="pre">locate_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_file=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_path=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg=&lt;ase.config.Config</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/utils.html#locate_api"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.utils.locate_api" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">sparc.utils.</span></span><span class="sig-name descname"><span class="pre">locate_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;ase.config.Config</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sparc/utils.html#locate_api"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sparc.utils.locate_api" title="Link to this definition"></a></dt>
 <dd><p>Locate the SPARC API setup file with the following priority:
 1) If <cite>json_file</cite> is provided (either from parameter or cfg), use it directly.
 2) If <cite>doc_path</cite> is provided:</p>
