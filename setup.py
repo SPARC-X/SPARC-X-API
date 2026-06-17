@@ -43,6 +43,10 @@ setup(
     packages=find_packages(),
     install_requires=["ase>=3.23.0", "numpy>=1.23", "packaging>=20.0", "psutil>=5.0.0"],
     entry_points={
+        # Use the new ASE-4 format plugin system
+        "ase.plugins": [                                                              
+           "sparc = sparc.ase_plugins",
+       ], 
         # The ioformats are only compatible with ase>=3.23
         "ase.ioformats": [
             "sparc = sparc.io:format_sparc",
